@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QMS Vendor Selection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            background: #f4f6f9;
+        }
+
+        .qms-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+            border: none;
+            border-left: 5px solid transparent;
+        }
+
+            .qms-card:hover {
+                transform: scale(1.01);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+                border-left: 5px solid #0d6efd;
+                background-color: #e9f2ff;
+                cursor: pointer;
+            }
+
+            .qms-card .icon {
+                font-size: 2.5rem;
+                color: #0d6efd;
+                transition: transform 0.3s;
+            }
+
+            .qms-card:hover .icon {
+                transform: rotate(5deg) scale(1.1);
+            }
+
+        .details-section {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out forwards;
+            background: #fff;
+            border-left: 4px solid #0d6efd;
+        }
+
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container py-5">
+        <a>
+            <img id="imglogo" name="imglogo" src="~/images/wipro-logo.png" class="img-fluid  shadow-0 " alt="" />
+    
+        <h3 class="text-center mb-4">Quality Management System</h3>
+        </a>
+        <!-- Card List -->
+        <div class="d-flex flex-column gap-3">
+
+            <div class="card qms-card p-3" onclick="location.href='@Url.Action("Index","Dashboard")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-building icon me-3"></i>
+                    <h5 class="mb-0">Wipro</h5>
+                </div>
+            </div>
+
+            <div class="card qms-card p-3" onclick="showDetails('Vendor')">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-badge icon me-3" style="color:darkred"></i>
+                    <h5 class="mb-0">Vendor</h5>
+                </div>
+            </div>
+
+            <div class="card qms-card p-3" onclick="showDetails('Service')">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
+                    <h5 class="mb-0">Service</h5>
+                </div>
+            </div>
+
+            <div class="card qms-card p-3" onclick="showDetails('NPI')">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-clipboard-data icon me-3" style="color:seagreen"></i>
+                    <h5 class="mb-0">NPI</h5>
+                </div>
+            </div>
+
+            <div class="card qms-card p-3" onclick="showDetails('Supply Chain')">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-truck icon me-3" style="color:darkblue;"></i>
+                    <h5 class="mb-0">Supply Chain</h5>
+                </div>
+            </div>
+
+        </div>
+
+        
+    </div>
+    <div class="content-wrapper">
+        @RenderBody()
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>function showDetails(title) {
+    const section = document.getElementById("detailsSection");
+    const titleElement = document.getElementById("detailsTitle");
+    section.style.display = 'block';
+    titleElement.textContent = ${title} - Details;
+  }</script>
+
+</body>
+</html>

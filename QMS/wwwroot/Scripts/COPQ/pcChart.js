@@ -1,15 +1,15 @@
-﻿let filterStartDatePO = moment().startOf('month').format('YYYY-MM-DD');
-let filterEndDatePO = moment().endOf('month').format('YYYY-MM-DD');
-let tablePO = null;
-let vendorOptions = {};
+﻿let filterStartDatePc= moment().startOf('month').format('YYYY-MM-DD');
+let filterEndDatePc = moment().endOf('month').format('YYYY-MM-DD');
+let tablePc = null;
+
 $(document).ready(function () {
 
-    $('#POdateRangeText').text(
-        moment(filterStartDatePO).format('MMMM D, YYYY') + ' - ' + moment(filterEndDatePO).format('MMMM D, YYYY')
+    $('#PcdateRangeText').text(
+        moment(filterStartDatePc).format('MMMM D, YYYY') + ' - ' + moment(filterEndDatePc).format('MMMM D, YYYY')
     );
 
     const picker = new Litepicker({
-        element: document.getElementById('customDateTriggerPO'),
+        element: document.getElementById('customDateTriggerPc'),
         singleMode: false,
         format: 'DD-MM-YYYY',
         numberOfMonths: 2,
@@ -18,16 +18,16 @@ $(document).ready(function () {
         plugins: ['ranges'],
         setup: (picker) => {
             picker.on('selected', (start, end) => {
-                filterStartDatePO = start.format('YYYY-MM-DD');
-                filterEndDatePO = end.format('YYYY-MM-DD');
-                $('#POdateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                loadDatapo();
+                filterStartDatePc = start.format('YYYY-MM-DD');
+                filterEndDatePc = end.format('YYYY-MM-DD');
+                $('#PcdateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                loadPcData();
             });
             picker.on('clear', () => {
-                filterStartDatePO = "";
-                filterEndDatePO = "";
-                $('#POdateRangeText').text("Select Date Range");
-                loadDatapo();
+                filterStartDatePc = "";
+                filterEndDatePc = "";
+                $('#PcdateRangeText').text("Select Date Range");
+                loadPcData();
             });
         },
         ranges: {
@@ -42,7 +42,7 @@ $(document).ready(function () {
         endDate: moment().endOf('week').format('DD-MM-YYYY')
     });
 
-    $('#customDateTriggerPO').on('click', function () {
+    $('#customDateTriggerPc').on('click', function () {
         picker.show();
     });
 
@@ -52,57 +52,44 @@ $(document).ready(function () {
 
     $('#upload-button').on('click', async function () {
         var expectedColumns = [
-            'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination','Balance Value'
+            'Date', 'PC', 'FY', 'Qtr'
         ];
 
-        var url = '/Service/UploadPoDumpExcel';
+        var url = '/Service/UploadPcChartExcel';
         handleImportExcelFile(url, expectedColumns);
     });
 
-    loadDatapo();
+    loadPcData();
 });
 
-function loadDatapo() {
+function loadPcData() {
     Blockloadershow();
 
     $.ajax({
-        url: '/Service/GetVendor',
-        type: 'GET'
-    }).done(function (vendorData) {
-        if (Array.isArray(vendorData)) {
-            vendorOptions = vendorData.reduce((acc, v) => {
-                acc[v.value] = v.label;
-                return acc;
-            }, {});
-        }
-
-        $.ajax({
-            url: '/Service/GetAllPO',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                startDate: filterStartDatePO,
-                endDate: filterEndDatePO
-            },
-            success: function (data) {
-                if (data.success && Array.isArray(data.data)) {
-                    renderTable(data.data);
-                } else {
-                    showDangerAlert('No data available to load.');
-                    renderTable([]); // avoid errors
-                }
-            },
-            error: function (xhr, status, error) {
-                showDangerAlert('Error retrieving data: ' + error);
-                Blockloaderhide();
+        url: '/Service/GetAllPc',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            startDate: filterStartDatePc,
+            endDate: filterEndDatePc
+        },
+        success: function (data) {
+            if (data.success && Array.isArray(data.data)) {
+                renderPcTable(data.data);
+            } else {
+                showDangerAlert('No data available to load.');
+                renderPcTable([]); // avoid errors
             }
-        });
+        },
+        error: function (xhr, status, error) {
+            showDangerAlert('Error retrieving data: ' + error);
+            Blockloaderhide();
+        }
+    });
 
-    }); // <- this was missing
 }
 
-
-function renderTable(response) {
+function renderPcTable(response) {
     if (!Array.isArray(response)) {
         console.error("Invalid response, expected array:", response);
         showDangerAlert("Invalid data received. Expected array.");
@@ -118,17 +105,10 @@ function renderTable(response) {
         tabledata.push({
             Sr_No: index + 1,
             Id: item.id,
-            Vendor: item.vendor,
-            Material: item.material,
-            ReferenceNo: item.referenceNo,
-            PONo: item.poNo,
-            PODate: item.poDate ? new Date(item.poDate).toLocaleDateString("en-GB") : "",
-            PRNo: item.prNo,
-            BatchNo: item.batchNo,
-            POQty: item.poQty,
-            BalanceQty: item.balanceQty,
-            Destination: item.destination,
-            BalanceValue: item.balanceValue,
+            Date: item.date ? new Date(item.date).toLocaleDateString("en-GB") : "",
+            PC: item.pC,
+            FY: item.fY,
+            Qtr: item.qtr,
             CreatedDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString("en-GB") : "",
             CreatedBy: item.createdBy,
             UpdatedDate: item.updatedDate ? new Date(item.updatedDate).toLocaleDateString("en-GB") : "",
@@ -136,9 +116,10 @@ function renderTable(response) {
             IsDeleted: item.isDeleted
         });
     });
+
     console.log(tabledata);
-    if (tabledata.length === 0 && tablePO) {
-        tablePO.clearData();
+    if (tabledata.length === 0 && tablePc) {
+        tablePc.clearData();
         Blockloaderhide();
         return;
     }
@@ -153,37 +134,24 @@ function renderTable(response) {
             frozen: true, headerMenu: headerMenu,
             formatter: function (cell) {
                 const rowData = cell.getRow().getData();
-                return `<i onclick="delConfirmPO(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+                return `<i onclick="delConfirmPc(${rowData.Id}, this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
             }
         },
         { title: "SNo", field: "Sr_No", frozen: true, sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
-        editableColumn("PO Date", "PODate", "date", "center"),
-        editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
-            values: vendorOptions
-        }, function (cell) {
-            const val = cell.getValue();
-            return vendorOptions[val] || val;
-        }, 130),
-       // editableColumn("Vendor", "Vendor"),
-        editableColumn("Material", "Material"),
-        editableColumn("Reference No", "ReferenceNo"),
-        editableColumn("PO No", "PONo"),
-        editableColumn("PR No", "PRNo"),
-        editableColumn("Batch No", "BatchNo"),
-        editableColumn("PO Qty", "POQty", "input", "center"),
-        editableColumn("Balance Qty", "BalanceQty", "input", "center"),
-        editableColumn("Destination", "Destination"),
-        editableColumn("Balance Value", "BalanceValue", "input", "center"),
+        editableColumn("Date", "Date", "date", "center"),
+        editableColumn("PC", "PC"),
+        editableColumn("Financial Year", "FY"),
+        editableColumn("Quater", "Qtr"),
         { title: "Created By", field: "CreatedBy", visible: false, headerMenu: headerMenu, hozAlign: "center" },
         { title: "Created Date", field: "CreatedDate", visible: false, headerMenu: headerMenu, hozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", visible: false, headerMenu: headerMenu, hozAlign: "center" },
         { title: "Updated Date", field: "UpdatedDate", visible: false, headerMenu: headerMenu, hozAlign: "center" }
     ];
 
-    if (tablePO) {
-        tablePO.replaceData(tabledata);
+    if (tablePc) {
+        tablePc.replaceData(tabledata);
     } else {
-        tablePO = new Tabulator("#po-table", {
+        tablePc = new Tabulator("#pc-table", {
             data: tabledata,
             layout: "fitDataFill",
             movableColumns: true,
@@ -195,31 +163,24 @@ function renderTable(response) {
             columns: columns
         });
 
-        tablePO.on("cellEdited", function (cell) {
-            saveEditedRowPO(cell.getRow().getData());
+        tablePc.on("cellEdited", function (cell) {
+            InsertUpdatePc(cell.getRow().getData());
         });
 
-        $("#addPOButton").on("click", function () {
+        $("#addPcButton").on("click", function () {
             const newRow = {
                 Id: 0,
-                Sr_No: tablePO.getDataCount() + 1,
-                PODate: "",
-                Vendor: "",
-                Material: "",
-                ReferenceNo: "",
-                PONo: "",
-                PRNo: "",
-                BatchNo: "",
-                POQty: 0,
-                BalanceQty: 0,
-                Destination: "",
-                BalanceValue: 0,
+                Sr_No: tablePc.getDataCount() + 1,
+                Date: "",
+                PC: "",
+                FY: "",
+                Qtr: "",
                 CreatedBy: "",
                 CreatedDate: "",
                 UpdatedBy: "",
                 UpdatedDate: ""
             };
-            tablePO.addRow(newRow, false);
+            tablePc.addRow(newRow, false);
         });
     }
 
@@ -241,37 +202,28 @@ function editableColumn(title, field, editorType = true, align = "center", heade
         headerHozAlign: "left"
     };
 
-    
-
     return columnDef;
 }
 
-function saveEditedRowPO(rowData) {
-    
+function InsertUpdatePc(rowData) {
 
     function toIsoDate(value) {
         if (!value) return "";
         const parts = value.split('/');
         return parts.length === 3 ? `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` : value;
     }
-    console.log(rowData);
+
     const cleanedData = {
         Id: rowData.Id || 0,
-        PODate: toIsoDate(rowData.PODate),
-        Vendor: rowData.Vendor|| null,
-        Material: rowData.Material || null,
-        ReferenceNo: rowData.ReferenceNo || null,
-        PONo: rowData.PONo || null,
-        PRNo: rowData.PRNo || null,
-        BatchNo: rowData.BatchNo || null,
-        POQty: rowData.POQty || null,
-        BalanceQty: rowData.BalanceQty || null,
-        Destination: rowData.Destination || null,
-        BalanceValue: rowData.BalanceValue || null
+        Date: toIsoDate(rowData.Date),
+        PC: rowData.PC || null,
+        FY: rowData.FY || null,
+        Qtr: rowData.Qtr || null
+
     };
     console.log(cleanedData);
     const isNew = cleanedData.Id === 0;
-    const url = isNew ? '/Service/CreatePO' : '/Service/UpdatePO';
+    const url = isNew ? '/Service/CreatePc' : '/Service/UpdatePc';
 
     $.ajax({
         url: url,
@@ -280,13 +232,13 @@ function saveEditedRowPO(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-                loadDatapo();
+                loadPcData();
             } else {
                 showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
             }
         },
         error: function (xhr) {
-            showDangerAlert(xhr.responseText || "Error saving PO record.");
+            showDangerAlert(xhr.responseText || "Error saving Pc record.");
         }
     });
 }
@@ -320,15 +272,15 @@ var headerMenu = function () {
     return menu;
 };
 
-function delConfirmPO(Id, element) {
+function delConfirmPc(Id, element) {
 
     // Case 1: Unsaved row — delete directly without confirmation
     if (!Id || Id <= 0) {
         const rowEl = $(element).closest(".tabulator-row")[0];
-        const row = tablePO.getRow(rowEl);
+        const row = tablePc.getRow(rowEl);
         if (row) {
             row.delete();
-        }
+        } 
         return;
     }
 
@@ -343,13 +295,13 @@ function delConfirmPO(Id, element) {
         history: { history: false }
     }).get().on('pnotify.confirm', function () {
         $.ajax({
-            url: '/Service/PODelete',
+            url: '/Service/PcDelete',
             type: 'POST',
             data: { id: Id },
             success: function (data) {
                 if (data.success) {
                     showSuccessAlert("Deleted successfully.");
-                    setTimeout(() => loadDatapo(), 1000);
+                    setTimeout(() => loadPcData(), 1000);
                 } else {
                     showDangerAlert(data.message || "Deletion failed.");
                 }
@@ -388,11 +340,11 @@ Tabulator.extendModule("edit", "editors", {
     }
 });
 
-function BlankPoDown() {
+function BlankPcDown() {
     Blockloadershow();
 
     var expectedColumns = [
-        'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination', 'Balance Value'
+        'Date', 'PC', 'FY', 'Qtr'
     ];
 
     // Create worksheet with only the header row
@@ -417,14 +369,14 @@ function BlankPoDown() {
 
     // Create workbook and export
     var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "PO Dump Temaplate");
+    XLSX.utils.book_append_sheet(wb, ws, "Pc List Temaplate");
 
-    XLSX.writeFile(wb, "PO_Dump_Temaplate.xlsx");
+    XLSX.writeFile(wb, "PcList_Temaplate.xlsx");
 
     Blockloaderhide();
 };
 
-function openPoUpload() {
+function openPcUpload() {
     clearForm();
     if (!$('#uploadModal').length) {
         $('body').append(partialView);

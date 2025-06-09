@@ -1,15 +1,15 @@
-﻿let filterStartDatePO = moment().startOf('month').format('YYYY-MM-DD');
-let filterEndDatePO = moment().endOf('month').format('YYYY-MM-DD');
-let tablePO = null;
-let vendorOptions = {};
+﻿let filterStartDateInvoice = moment().startOf('month').format('YYYY-MM-DD');
+let filterEndDateInvoice = moment().endOf('month').format('YYYY-MM-DD');
+let tableInvoice = null;
+
 $(document).ready(function () {
 
-    $('#POdateRangeText').text(
-        moment(filterStartDatePO).format('MMMM D, YYYY') + ' - ' + moment(filterEndDatePO).format('MMMM D, YYYY')
+    $('#InvdateRangeText').text(
+        moment(filterStartDateInvoice).format('MMMM D, YYYY') + ' - ' + moment(filterEndDateInvoice).format('MMMM D, YYYY')
     );
 
     const picker = new Litepicker({
-        element: document.getElementById('customDateTriggerPO'),
+        element: document.getElementById('customDateTriggerInv'),
         singleMode: false,
         format: 'DD-MM-YYYY',
         numberOfMonths: 2,
@@ -18,16 +18,16 @@ $(document).ready(function () {
         plugins: ['ranges'],
         setup: (picker) => {
             picker.on('selected', (start, end) => {
-                filterStartDatePO = start.format('YYYY-MM-DD');
-                filterEndDatePO = end.format('YYYY-MM-DD');
-                $('#POdateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                loadDatapo();
+                filterStartDateInvoice = start.format('YYYY-MM-DD');
+                filterEndDateInvoice = end.format('YYYY-MM-DD');
+                $('#InvdateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                loadInvoiceData();
             });
             picker.on('clear', () => {
-                filterStartDatePO = "";
-                filterEndDatePO = "";
-                $('#POdateRangeText').text("Select Date Range");
-                loadDatapo();
+                filterStartDateInvoice = "";
+                filterEndDateInvoice = "";
+                $('#InvdateRangeText').text("Select Date Range");
+                loadInvoiceData();
             });
         },
         ranges: {
@@ -42,7 +42,7 @@ $(document).ready(function () {
         endDate: moment().endOf('week').format('DD-MM-YYYY')
     });
 
-    $('#customDateTriggerPO').on('click', function () {
+    $('#customDateTriggerInv').on('click', function () {
         picker.show();
     });
 
@@ -52,57 +52,45 @@ $(document).ready(function () {
 
     $('#upload-button').on('click', async function () {
         var expectedColumns = [
-            'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination','Balance Value'
+            'Key', 'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Description', 'Batch', 'Customer', 'Customer Name',
+            'Name', 'Collective No', 'Your Reference', 'Invoice Date', 'Quantity', 'Cost'
         ];
 
-        var url = '/Service/UploadPoDumpExcel';
+        var url = '/Service/UploadInvoiceExcel';
         handleImportExcelFile(url, expectedColumns);
     });
 
-    loadDatapo();
+    loadInvoiceData();
 });
 
-function loadDatapo() {
+function loadInvoiceData() {
     Blockloadershow();
 
     $.ajax({
-        url: '/Service/GetVendor',
-        type: 'GET'
-    }).done(function (vendorData) {
-        if (Array.isArray(vendorData)) {
-            vendorOptions = vendorData.reduce((acc, v) => {
-                acc[v.value] = v.label;
-                return acc;
-            }, {});
-        }
-
-        $.ajax({
-            url: '/Service/GetAllPO',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                startDate: filterStartDatePO,
-                endDate: filterEndDatePO
-            },
-            success: function (data) {
-                if (data.success && Array.isArray(data.data)) {
-                    renderTable(data.data);
-                } else {
-                    showDangerAlert('No data available to load.');
-                    renderTable([]); // avoid errors
-                }
-            },
-            error: function (xhr, status, error) {
-                showDangerAlert('Error retrieving data: ' + error);
-                Blockloaderhide();
+        url: '/Service/GetAllInvoice',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            startDate: filterStartDateInvoice,
+            endDate: filterEndDateInvoice
+        },
+        success: function (data) {
+            if (data.success && Array.isArray(data.data)) {
+                renderInvoiceTable(data.data);
+            } else {
+                showDangerAlert('No data available to load.');
+                renderInvoiceTable([]); // avoid errors
             }
-        });
+        },
+        error: function (xhr, status, error) {
+            showDangerAlert('Error retrieving data: ' + error);
+            Blockloaderhide();
+        }
+    });
 
-    }); // <- this was missing
 }
 
-
-function renderTable(response) {
+function renderInvoiceTable(response) {
     if (!Array.isArray(response)) {
         console.error("Invalid response, expected array:", response);
         showDangerAlert("Invalid data received. Expected array.");
@@ -118,17 +106,22 @@ function renderTable(response) {
         tabledata.push({
             Sr_No: index + 1,
             Id: item.id,
-            Vendor: item.vendor,
-            Material: item.material,
-            ReferenceNo: item.referenceNo,
-            PONo: item.poNo,
-            PODate: item.poDate ? new Date(item.poDate).toLocaleDateString("en-GB") : "",
-            PRNo: item.prNo,
-            BatchNo: item.batchNo,
-            POQty: item.poQty,
-            BalanceQty: item.balanceQty,
-            Destination: item.destination,
-            BalanceValue: item.balanceValue,
+            Key: item.key,
+            Inv_No: item.inv_No,
+            Inv_Date: item.inv_Date ? new Date(item.inv_Date).toLocaleDateString("en-GB") : "",
+            Inv_Type: item.inv_Type,
+            Sales_Order: item.sales_Order,
+            Plant_Code: item.plant_Code,
+            Material_No: item.material_No,
+            Description: item.description,
+            Batch: item.batch,
+            Customer: item.customer,
+            Customer_Name: item.customer_Name,
+            Name: item.name,
+            Collective_No: item.collective_No,
+            Reference: item.reference,
+            Quantity: item.quantity,
+            Cost: item.cost,
             CreatedDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString("en-GB") : "",
             CreatedBy: item.createdBy,
             UpdatedDate: item.updatedDate ? new Date(item.updatedDate).toLocaleDateString("en-GB") : "",
@@ -136,9 +129,10 @@ function renderTable(response) {
             IsDeleted: item.isDeleted
         });
     });
+
     console.log(tabledata);
-    if (tabledata.length === 0 && tablePO) {
-        tablePO.clearData();
+    if (tabledata.length === 0 && tableInvoice) {
+        tableInvoice.clearData();
         Blockloaderhide();
         return;
     }
@@ -153,37 +147,36 @@ function renderTable(response) {
             frozen: true, headerMenu: headerMenu,
             formatter: function (cell) {
                 const rowData = cell.getRow().getData();
-                return `<i onclick="delConfirmPO(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+                return `<i onclick="delConfirmInvoice(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
             }
         },
         { title: "SNo", field: "Sr_No", frozen: true, sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
-        editableColumn("PO Date", "PODate", "date", "center"),
-        editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
-            values: vendorOptions
-        }, function (cell) {
-            const val = cell.getValue();
-            return vendorOptions[val] || val;
-        }, 130),
-       // editableColumn("Vendor", "Vendor"),
-        editableColumn("Material", "Material"),
-        editableColumn("Reference No", "ReferenceNo"),
-        editableColumn("PO No", "PONo"),
-        editableColumn("PR No", "PRNo"),
-        editableColumn("Batch No", "BatchNo"),
-        editableColumn("PO Qty", "POQty", "input", "center"),
-        editableColumn("Balance Qty", "BalanceQty", "input", "center"),
-        editableColumn("Destination", "Destination"),
-        editableColumn("Balance Value", "BalanceValue", "input", "center"),
+        editableColumn("Key", "Key"),
+        editableColumn("Invoice Date", "Inv_Date", "date", "center"),
+        editableColumn("Invoice No.", "Inv_No"),
+        editableColumn("Invoice Type", "Inv_Type"),
+        editableColumn("Sales Order", "Sales_Order"),
+        editableColumn("Plant Code", "Plant_Code"),
+        editableColumn("Material No.", "Material_No"),
+        editableColumn("Description", "Description"),
+        editableColumn("Batch", "Batch"),
+        editableColumn("Customer", "Customer"),
+        editableColumn("Customer Name", "Customer_Name"),
+        editableColumn("Name", "Name"),
+        editableColumn("Collective_No", "Collective_No"),
+        editableColumn("Reference", "Reference"),
+        editableColumn("Quantity", "Quantity"),
+        editableColumn("Cost", "Cost"),
         { title: "Created By", field: "CreatedBy", visible: false, headerMenu: headerMenu, hozAlign: "center" },
         { title: "Created Date", field: "CreatedDate", visible: false, headerMenu: headerMenu, hozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", visible: false, headerMenu: headerMenu, hozAlign: "center" },
         { title: "Updated Date", field: "UpdatedDate", visible: false, headerMenu: headerMenu, hozAlign: "center" }
     ];
 
-    if (tablePO) {
-        tablePO.replaceData(tabledata);
+    if (tableInvoice) {
+        tableInvoice.replaceData(tabledata);
     } else {
-        tablePO = new Tabulator("#po-table", {
+        tableInvoice = new Tabulator("#inv-table", {
             data: tabledata,
             layout: "fitDataFill",
             movableColumns: true,
@@ -195,31 +188,36 @@ function renderTable(response) {
             columns: columns
         });
 
-        tablePO.on("cellEdited", function (cell) {
-            saveEditedRowPO(cell.getRow().getData());
+        tableInvoice.on("cellEdited", function (cell) {
+            InsertUpdateInvoice(cell.getRow().getData());
         });
 
-        $("#addPOButton").on("click", function () {
+        $("#addInvButton").on("click", function () {
             const newRow = {
                 Id: 0,
-                Sr_No: tablePO.getDataCount() + 1,
-                PODate: "",
-                Vendor: "",
-                Material: "",
-                ReferenceNo: "",
-                PONo: "",
-                PRNo: "",
-                BatchNo: "",
-                POQty: 0,
-                BalanceQty: 0,
-                Destination: "",
-                BalanceValue: 0,
+                Sr_No: tableInvoice.getDataCount() + 1,
+                Key: "",
+                Inv_No: "",
+                Inv_Date: "",
+                Inv_Type: "",
+                Sales_Order: "",
+                Plant_Code: "",
+                Material_No: "",
+                Description: "",
+                Batch: "",
+                Customer: "",
+                Customer_Name: "",
+                Name: "",
+                Collective_No: "",
+                Reference: "",
+                Quantity: "",
+                Cost: "",
                 CreatedBy: "",
                 CreatedDate: "",
                 UpdatedBy: "",
                 UpdatedDate: ""
             };
-            tablePO.addRow(newRow, false);
+            tableInvoice.addRow(newRow, false);
         });
     }
 
@@ -241,37 +239,41 @@ function editableColumn(title, field, editorType = true, align = "center", heade
         headerHozAlign: "left"
     };
 
-    
-
     return columnDef;
 }
 
-function saveEditedRowPO(rowData) {
-    
+function InsertUpdateInvoice(rowData) {
 
     function toIsoDate(value) {
         if (!value) return "";
         const parts = value.split('/');
         return parts.length === 3 ? `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` : value;
     }
-    console.log(rowData);
+
     const cleanedData = {
         Id: rowData.Id || 0,
-        PODate: toIsoDate(rowData.PODate),
-        Vendor: rowData.Vendor|| null,
-        Material: rowData.Material || null,
-        ReferenceNo: rowData.ReferenceNo || null,
-        PONo: rowData.PONo || null,
-        PRNo: rowData.PRNo || null,
-        BatchNo: rowData.BatchNo || null,
-        POQty: rowData.POQty || null,
-        BalanceQty: rowData.BalanceQty || null,
-        Destination: rowData.Destination || null,
-        BalanceValue: rowData.BalanceValue || null
+        Inv_Date: toIsoDate(rowData.Inv_Date),
+        Key: rowData.Key || null,
+        Inv_No: rowData.Inv_No || null,
+        Inv_Type: rowData.Inv_Type || null,
+        Sales_Order: rowData.Sales_Order || null,
+        Plant_Code: rowData.Plant_Code || null,
+        Material_No: rowData.Material_No || null,
+        Description: rowData.Description || null,
+        Batch: rowData.Batch || null,
+        Customer: rowData.Customer || null,
+        Customer_Name: rowData.Customer_Name || null,
+        Name: rowData.Name || null,
+        Collective_No: rowData.Collective_No || null,
+        Created_By: rowData.Vendor || null,
+        Reference: rowData.Reference || null,
+        Quantity: rowData.Quantity || null,
+        Cost: rowData.Cost || null
+        
     };
     console.log(cleanedData);
     const isNew = cleanedData.Id === 0;
-    const url = isNew ? '/Service/CreatePO' : '/Service/UpdatePO';
+    const url = isNew ? '/Service/CreateInvoice' : '/Service/UpdateInvoice';
 
     $.ajax({
         url: url,
@@ -280,13 +282,13 @@ function saveEditedRowPO(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-                loadDatapo();
+                loadInvoiceData();
             } else {
                 showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
             }
         },
         error: function (xhr) {
-            showDangerAlert(xhr.responseText || "Error saving PO record.");
+            showDangerAlert(xhr.responseText || "Error saving Invoice record.");
         }
     });
 }
@@ -320,12 +322,12 @@ var headerMenu = function () {
     return menu;
 };
 
-function delConfirmPO(Id, element) {
+function delConfirmInvoice(Id, element) {
 
     // Case 1: Unsaved row — delete directly without confirmation
     if (!Id || Id <= 0) {
         const rowEl = $(element).closest(".tabulator-row")[0];
-        const row = tablePO.getRow(rowEl);
+        const row = tableInvoice.getRow(rowEl);
         if (row) {
             row.delete();
         }
@@ -343,13 +345,13 @@ function delConfirmPO(Id, element) {
         history: { history: false }
     }).get().on('pnotify.confirm', function () {
         $.ajax({
-            url: '/Service/PODelete',
+            url: '/Service/InvoiceDelete',
             type: 'POST',
             data: { id: Id },
             success: function (data) {
                 if (data.success) {
                     showSuccessAlert("Deleted successfully.");
-                    setTimeout(() => loadDatapo(), 1000);
+                    setTimeout(() => loadInvoiceData(), 1000);
                 } else {
                     showDangerAlert(data.message || "Deletion failed.");
                 }
@@ -388,11 +390,12 @@ Tabulator.extendModule("edit", "editors", {
     }
 });
 
-function BlankPoDown() {
+function BlankInvDown() {
     Blockloadershow();
 
     var expectedColumns = [
-        'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination', 'Balance Value'
+        'Key', 'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Description', 'Batch', 'Customer', 'Customer Name',
+        'Name', 'Collective No', 'Your Reference', 'Invoice Date', 'Quantity', 'Cost'
     ];
 
     // Create worksheet with only the header row
@@ -417,14 +420,14 @@ function BlankPoDown() {
 
     // Create workbook and export
     var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "PO Dump Temaplate");
+    XLSX.utils.book_append_sheet(wb, ws, "Invoice List Temaplate");
 
-    XLSX.writeFile(wb, "PO_Dump_Temaplate.xlsx");
+    XLSX.writeFile(wb, "InvoiceList_Temaplate.xlsx");
 
     Blockloaderhide();
 };
 
-function openPoUpload() {
+function openInvUpload() {
     clearForm();
     if (!$('#uploadModal').length) {
         $('body').append(partialView);

@@ -7,7 +7,7 @@ $(document).ready(function () {
     if (inputElement.length) {
         // Attach the keydown event handler
         inputElement.on('keydown', function (event) {
-            handleSearch(event);
+            handleBisSearch(event);
         });
     }
 
@@ -18,7 +18,8 @@ $(document).ready(function () {
     });
 });
 
-function handleSearch(event) {
+/*let searchTimeout; // Timeout variable for debounce*/
+function handleBisSearch(event) {
     debugger
     if (event.key !== 'Enter') return;
 
@@ -33,11 +34,11 @@ function handleSearch(event) {
     searchTimeout = setTimeout(() => {
         pagedData = {}; // Clear cached data
         // Load data with the processed query
-        fetchRelatedData(searchTerms, event.target);
+        fetchBisRelatedData(searchTerms, event.target);
     }, 300); // Delay of 300ms
 }
 
-function fetchRelatedData(productCatNo, inputField) {
+function fetchBisRelatedData(productCatNo, inputField) {
     debugger
     $.ajax({
         url: '/Vendor/GetCodeSearch', // API endpoint
@@ -46,7 +47,7 @@ function fetchRelatedData(productCatNo, inputField) {
         dataType: 'json', // Expected response data type
         success: function (data) {
             if (data && data.length > 0) {
-                displaySuggestions(data, inputField);
+                displayBisSuggestions(data, inputField);
             } else {
                 showDangerAlert('No data found for the entered Product Cat No.');
             }
@@ -59,7 +60,7 @@ function fetchRelatedData(productCatNo, inputField) {
 
 
 // Function to display suggestions in a dropdown
-function displaySuggestions(data, inputField) {
+function displayBisSuggestions(data, inputField) {
     // Create a dropdown container
     const dropdown = document.createElement('div');
     dropdown.className = 'suggestion-dropdown';
@@ -112,7 +113,7 @@ function displaySuggestions(data, inputField) {
 
 // Function to remove any existing dropdowns
 function removeExistingDropdown(inputField) {
-    const existingDropdown = inputField.parentElement.querySelector('.suggestion-dropdown');
+    const existingDropdown = document.querySelector('.suggestion-dropdown');
     if (existingDropdown) {
         existingDropdown.remove();
     }
@@ -143,14 +144,14 @@ function initializeBISCertificateTable(data) {
             placeholder: "No BIS certificates available",
             columns: [
                 {
-                    title: "Action", field: "action", hozAlign: "center",  width:120, headerMenu: headerMenu,
+                    title: "Action", field: "action", hozAlign: "center", width: 120, headerMenu: headerMenu,
                     formatter: function (cell) {
                         const rowData = cell.getRow().getData();
                         return `<i class="fas fa-trash-alt text-danger" style="cursor:pointer;" title="Delete" onclick="deleteBISCertificate(${rowData.id})"></i>`;
                     }
                 },
                 {
-                    title: "Attachment", field: "fileName", hozAlign: "center",  visible: false, headerMenu: headerMenu,
+                    title: "Attachment", field: "fileName", hozAlign: "center", visible: false, headerMenu: headerMenu,
                     formatter: function (cell) {
                         const value = cell.getValue();
                         if (!value) return "";
@@ -162,22 +163,22 @@ function initializeBISCertificateTable(data) {
                         ).join(" ");
                     }
                 },
-                { title: "Sn", formatter: "rownum", width: 90, hozAlign: "center",  headerMenu: headerMenu },
+                { title: "Sn", formatter: "rownum", width: 90, hozAlign: "center", headerMenu: headerMenu },
                 { title: "ID", field: "id", visible: false, headerMenu: headerMenu },
-                { title: "BIS Certificate", field: "certificateDetail", hozAlign: "center", headerFilter: "input",  headerMenu: headerMenu },
+                { title: "BIS Certificate", field: "certificateDetail", hozAlign: "center", headerFilter: "input", headerMenu: headerMenu },
                 { title: "Product Code", field: "productCode", hozAlign: "center", headerFilter: "input", headerMenu: headerMenu },
-                { title: "Section", field: "bisSection", hozAlign: "center", headerFilter: "input", visible: false,  headerMenu: headerMenu },
-                { title: "R Number", field: "rNumber", hozAlign: "center", headerFilter: "input", visible: false,  headerMenu: headerMenu },
-                { title: "Model No", field: "modelNo", hozAlign: "center", headerFilter: "input",  headerMenu: headerMenu },
+                { title: "Section", field: "bisSection", hozAlign: "center", headerFilter: "input", visible: false, headerMenu: headerMenu },
+                { title: "R Number", field: "rNumber", hozAlign: "center", headerFilter: "input", visible: false, headerMenu: headerMenu },
+                { title: "Model No", field: "modelNo", hozAlign: "center", headerFilter: "input", headerMenu: headerMenu },
                 {
                     title: "Issue Date", field: "issueDate", hozAlign: "center", formatter: dateFormatter,
-                    headerFilter: "input",  headerMenu: headerMenu
+                    headerFilter: "input", headerMenu: headerMenu
                 },
                 {
                     title: "Expiry Date", field: "expiryDate", hozAlign: "center", formatter: dateFormatter,
-                    headerFilter: "input",  headerMenu: headerMenu
+                    headerFilter: "input", headerMenu: headerMenu
                 },
-                { title: "Remarks", field: "remarks",  hozAlign: "center", headerMenu: headerMenu },
+                { title: "Remarks", field: "remarks", hozAlign: "center", headerMenu: headerMenu },
                 {
                     title: "Created By", field: "createdBy",
                     hozAlign: "center",
@@ -217,7 +218,7 @@ function initializeBISCertificateTable(data) {
         });
 
         BISCertificateTable.on("cellClick", function (e, cell) {
-           
+
             const column = cell.getColumn().getField();
             if (column !== "action" && column !== "fileName") {
                 $('#BIScertificateModalTitle').html('<strong>Edit BIS Certificate</strong>');
@@ -266,7 +267,7 @@ function initializeBISCertificateTable(data) {
                 }
 
 
-                
+
             }
         });
     }
@@ -422,8 +423,7 @@ function InsertUpdateVendorBIS(e) {
         contentType: false,
         processData: false,
         success: function (res) {
-            if (res.success)
-            {
+            if (res.success) {
                 showSuccessAlert(res.message);
                 $('#BISCertificateModal').modal('hide');
                 $('#BIScertificateModalTitle').html('<strong>Add BIS Certificate</strong>');
@@ -432,7 +432,7 @@ function InsertUpdateVendorBIS(e) {
                 $('#BIScertificateForm')[0].reset();
                 loadBISCertificates();
             }
-           
+
         },
         error: function () {
             alert("Error saving BIS certificate.");

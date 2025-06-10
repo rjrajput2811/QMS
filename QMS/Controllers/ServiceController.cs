@@ -13,11 +13,14 @@ namespace QMS.Controllers
     {
         private readonly IComplaintIndentDumpRepository _copqRepository;
         private readonly ISystemLogService _systemLogService;
+        private readonly IJobWorkTracRepository _jobWorkRepository;
 
-        public ServiceController(IComplaintIndentDumpRepository copqRepository, ISystemLogService systemLogService)
+        public ServiceController(IComplaintIndentDumpRepository copqRepository,
+            ISystemLogService systemLogService, IJobWorkTracRepository jobWorkRepository)
         {
             _copqRepository = copqRepository;
             _systemLogService = systemLogService;
+            _jobWorkRepository = jobWorkRepository;
         }
 
         // Main page/view
@@ -1158,6 +1161,192 @@ namespace QMS.Controllers
 
 
 
+        public IActionResult JobWorkTracking()
+        {
+            return View();
+        }
+
+        //// ----------------- Job Work Tracker ------------------- ////
+
+        [HttpGet]
+        public async Task<JsonResult> GetJobWorkAll(DateTime? startDate, DateTime? endDate)
+        {
+            var list = await _jobWorkRepository.GetJobListAsync(startDate, endDate);
+            return Json(list);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetJobWorkById(int id)
+        {
+            var item = await _jobWorkRepository.GetJobByIdAsync(id);
+            return Json(item);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateJobWorkAsync([FromBody] JobWork_Tracking_Service model)
+        {
+            try
+            {
+                if (model == null)
+                    return Json(new { success = false, message = "Invalid data" });
+
+                model.CreatedDate = DateTime.Now;
+                model.CreatedBy = HttpContext.Session.GetString("FullName");
+                model.Deleted = false;
+
+                var operationResult = await _jobWorkRepository.CreateJobAsync(model);
+
+                if (operationResult != null && operationResult.Success)
+                    return Json(new { success = true, message = "Saved successfully." });
+
+                return Json(new { success = false, message = "Failed to save." });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return Json(new { success = false, message = "Error occurred while saving." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateJobWorkAsync([FromBody] JobWork_Tracking_Service model)
+        {
+            try
+            {
+                if (model == null || model.Id <= 0)
+                    return Json(new { success = false, message = "Invalid update data" });
+
+                model.UpdatedDate = DateTime.Now;
+                model.UpdatedBy = HttpContext.Session.GetString("FullName");
+
+                var result = await _jobWorkRepository.UpdateJobAsync(model);
+
+                if (result != null && result.Success)
+                    return Json(new { success = true, message = "Updated successfully." });
+
+                return Json(new { success = false, message = "Update failed." });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return Json(new { success = false, message = "Error during update." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> JobWorkDelete(int id)
+        {
+            try
+            {
+                var operationResult = await _jobWorkRepository.DeleteJobAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return Json(new { success = false, message = "Error occurred while deleting record." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadJobWorkExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        {
+            var prRecordsToAdd = new List<JobWork_TracViewModel>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName");
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.RowsUsed().Count();
+
+                for (int row = 8; row <= rowCount; row++)
+                {
+                    var model = new JobWork_TracViewModel
+                    {
+                        Vendor = worksheet.Cell(row, 1).GetString().Trim(),
+                        Wipro_Dc_No = worksheet.Cell(row, 2).GetString().Trim(),
+                        Wipro_Dc_Date = worksheet.Cell(row, 3).TryGetValue(out DateTime dcDate) ? dcDate : null,
+                        Dc_Sap_Code = worksheet.Cell(row, 4).GetString().Trim(),
+                        Qty_Wipro_Dc = worksheet.Cell(row, 5).GetString().Trim(),
+                        Wipro_Transporter = worksheet.Cell(row, 6).GetString().Trim(),
+                        Wipro_LR_No = worksheet.Cell(row, 7).GetString().Trim(),
+                        Wipro_LR_Date = worksheet.Cell(row, 8).TryGetValue(out DateTime lrDate) ? lrDate : null,
+                        Actu_Rece_Qty = worksheet.Cell(row, 9).GetString().Trim(),
+                        Dispatch_Dc = worksheet.Cell(row, 9).GetString().Trim(),
+                        Dispatch_Invoice = worksheet.Cell(row, 9).GetString().Trim(),
+                        Non_Repairable = worksheet.Cell(row, 9).GetString().Trim(),
+                        Grand_Total = worksheet.Cell(row, 9).GetString().Trim(),
+                        To_Process = worksheet.Cell(row, 9).GetString().Trim(),
+                        Remark = worksheet.Cell(row, 9).GetString().Trim(),
+                        Vendor_Transporter = worksheet.Cell(row, 9).GetString().Trim(),
+                        Vendor_LR_No = worksheet.Cell(row, 9).GetString().Trim(),
+                        Vendor_LR_Date = worksheet.Cell(row, 9).TryGetValue(out DateTime vLRDate) ? vLRDate : null,
+                        Write_Off_Approved = worksheet.Cell(row, 9).GetString().Trim(),
+                        Write_Off_Date = worksheet.Cell(row, 9).TryGetValue(out DateTime wDate) ? wDate : null,
+                        Pending_Write_Off = worksheet.Cell(row, 9).GetString().Trim(),
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now,
+                    };
+
+                    prRecordsToAdd.Add(model);
+                }
+
+                var importResult = await _jobWorkRepository.BulkCreateJobAsync(prRecordsToAdd, fileName, uploadedBy, "JobWorkTrac");
+
+                // If there are failed records, return file
+                if (importResult.FailedRecords.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "Vendor";
+                    failSheet.Cell(1, 2).Value = "Wipro Dc Date";
+                    failSheet.Cell(1, 3).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var fail in importResult.FailedRecords)
+                    {
+                        failSheet.Cell(i, 1).Value = fail.Record.Vendor;
+                        failSheet.Cell(i, 2).Value = fail.Record.Wipro_Dc_Date;
+                        failSheet.Cell(i, 3).Value = fail.Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
+            }
+        }
+
+
+        //// ----------------- Job Work Tracker ------------------- ////
+
+
+
         [HttpGet]
         public async Task<IActionResult> GetVendor()
         {
@@ -1172,9 +1361,6 @@ namespace QMS.Controllers
                 return StatusCode(500, "Error retrieving vendor dropdown.");
             }
         }
-
-
-        
 
        
     }

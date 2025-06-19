@@ -51,14 +51,14 @@ $(document).ready(function () {
         window.history.back();
     });
 
-    $('#upload-button').on('click', async function () { 
-        var expectedColumns = [
-            'CCCN Date', 'Reported By', 'Location', 'Customer Name', 'Dealer Name', 'Description', 'Status', 'Completion', 'ClosureRemarks'
-        ];
+    //$('#upload-button').on('click', async function () {
+    //    var expectedColumns = [
+    //        'CCN No', 'CCCN Date', 'ReportedBy', 'Location', 'Customer Name', 'Dealer Name', 'Description', 'Status', 'Completion', 'ClosureRemarks', 'Time Taken for Closure (DAYS)'
+    //    ];
 
-        var url = '/Service/UploadComplaintDumpExcel';
-        handleImportExcelFile(url, expectedColumns);
-    });
+    //    var url = '/Service/UploadComplaintDumpExcel';
+    //    handleImportExcelFile(url, expectedColumns);
+    //});
 
     loadData();
 });
@@ -102,6 +102,7 @@ function renderCOPQTable(response) {
     const tabledata = response.map((item, index) => ({
         Sr_No: index + 1,
         Id: item.id,
+        CCNNo: item.ccN_No,
         CCCNDate: item.cccnDate ? new Date(item.cccnDate).toLocaleDateString("en-GB") : "",
         ReportedBy: item.reportedBy,
         CLocation: item.cLocation,
@@ -109,8 +110,9 @@ function renderCOPQTable(response) {
         DealerName: item.dealerName,
         CDescription: item.cDescription,
         CStatus: item.cStatus,
-        Completion: item.completion,
+        Completion: item.completion ? new Date(item.completion).toLocaleDateString("en-GB") : "",
         Remarks: item.remarks,
+        TotalDays_Close: item.totalDays_Close,
         CreatedDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString("en-GB") : "",
         CreatedBy: item.createdBy,
         UpdatedDate: item.updatedDate ? new Date(item.updatedDate).toLocaleDateString("en-GB") : "",
@@ -131,6 +133,7 @@ function renderCOPQTable(response) {
             }
         },
         { title: "SNo", field: "Sr_No", sorter: "number", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu, frozen: true },
+        editableColumn("CCN No", "CCNNo"),
         editableColumn("CCCN Date", "CCCNDate", "date", "center"),
         editableColumn("Reported By", "ReportedBy"),
         editableColumn("Location", "CLocation"),
@@ -138,8 +141,9 @@ function renderCOPQTable(response) {
         editableColumn("Dealer Name", "DealerName"),
         editableColumn("Description", "CDescription"),
         editableColumn("Status", "CStatus"),
-        editableColumn("Completion", "Completion"),
+        editableColumn("Completion", "Completion", "date", "center"),
         editableColumn("Remarks", "Remarks"),
+        { title: "Time Taken for Closure (DAYS)", field: "TotalDays_Close", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
         { title: "Created By", field: "CreatedBy", headerMenu: headerMenu, visible: false },
         { title: "Created Date", field: "CreatedDate", headerMenu: headerMenu, visible: false },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, visible: false },
@@ -169,6 +173,7 @@ function renderCOPQTable(response) {
             const newRow = {
                 Id: 0,
                 Sr_No: table.getDataCount() + 1,
+                CCNNO: "",
                 CCCNDate: "",
                 ReportedBy: "",
                 CLocation: "",
@@ -207,6 +212,7 @@ function toIsoDatePO(value) {
 function saveEditedRow(rowData) {
     const cleanedData = {
         Id: rowData.Id || 0,
+        CCN_No: rowData.CCNNo || null,
         CCCNDate: toIsoDatePO(rowData.CCCNDate),
         ReportedBy: rowData.ReportedBy || null,
         CLocation: rowData.CLocation || null,
@@ -214,8 +220,9 @@ function saveEditedRow(rowData) {
         DealerName: rowData.DealerName || null,
         CDescription: rowData.CDescription || null,
         CStatus: rowData.CStatus || null,
-        Completion: rowData.Completion || null,
+        Completion: toIsoDatePO(rowData.Completion),
         Remarks: rowData.Remarks || null
+
     };
 
     const isNew = cleanedData.Id === 0;
@@ -313,7 +320,7 @@ function BlankComplaintDumpDown() {
     Blockloadershow();
 
     var expectedColumns = [
-        'CCCN Date', 'Reported By', 'Location', 'Customer Name', 'Dealer Name', 'Description', 'Status', 'Completion', 'ClosureRemarks'
+        'CCN No', 'CCCN Date', 'ReportedBy', 'Location', 'Customer Name', 'Dealer Name', 'Description', 'Status', 'Completion', 'ClosureRemarks', 'Time Taken for Closure (DAYS)'
     ];
 
     // Create worksheet with only the header row
@@ -345,14 +352,18 @@ function BlankComplaintDumpDown() {
     Blockloaderhide();
 };
 
-function openUpload() {
 
-    clearForm();
-    if (!$('#uploadModal').length) {
-        $('body').append(partialView);
-    }
-    $('#uploadModal').modal('show');
-}
+
+//function openUpload() {
+//    const columns = [
+//        'CCN No', 'CCCN Date', 'ReportedBy', 'Location', 'Customer Name', 'Dealer Name',
+//        'Description', 'Status', 'Completion', 'ClosureRemarks', 'Time Taken for Closure (DAYS)'
+//    ];
+//    $('#upload-url').val('/Service/UploadComplaintDumpExcel');
+//    $('#expected-columns').val(JSON.stringify(columns));
+//    $('#fileInput').val('');
+//    $('#uploadModal').modal('show');
+//}
 
 function clearForm() {
     // Clear all input fields

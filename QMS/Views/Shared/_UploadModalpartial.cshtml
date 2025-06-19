@@ -12,6 +12,8 @@
             </div>
             <div class="modal-body">
                 <input type="file" id="fileInput" accept=".xls,.xlsx" />
+                <input type="hidden" id="upload-url" />
+                <input type="hidden" id="expected-columns" />
             </div>
             @* <div class="modal-body">
                 <p>File Name: <span id="fileNameDisplay"></span></p>
@@ -37,4 +39,10 @@
     function AutoReload() {
         setTimeout(function () { window.location.reload(); }, 1500);
     }
+
+    $('#upload-button').on('click', function () {
+        const url = $('#upload-url').val();
+        const expectedColumns = JSON.parse($('#expected-columns').val());
+        handleImportExcelFile(url, expectedColumns);
+    });
 </script>

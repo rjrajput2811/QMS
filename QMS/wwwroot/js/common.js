@@ -1,4 +1,60 @@
 ﻿
+function openUploadComplaint() {
+    const columns = [
+        'CCN No', 'CCCN Date', 'ReportedBy', 'Location', 'Customer Name', 'Dealer Name',
+        'Description', 'Status', 'Completion', 'ClosureRemarks', 'Time Taken for Closure (DAYS)'
+    ];
+    setUploadConfig('/Service/UploadComplaintDumpExcel', columns);
+}
+
+function openUploadPo() {
+    const columns = [
+        'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'Batch No',
+        'PO Qty', 'Balance Qty', 'Destination', 'Balance Value'
+    ];
+    setUploadConfig('/Service/UploadPoDumpExcel', columns);
+}
+
+function openUploadIndent() {
+    const columns = [
+        'Indent No', 'Indent Date', 'Business Unit', 'Vertical', 'Branch', 'Indent Status',
+        'End Customer Name', 'CCN No', 'Customer Code', 'Customer Name', 'Bill Request Date',
+        'Created By', 'Wipro Commit Date', 'Material No', 'Item Description', 'Quantity', 'Price',
+        'Final Price', 'SAPSO No', 'Create SoQty', 'Inv_qnty', 'Inv_value', 'Wipro Catelog No',
+        'Batch Code', 'Batch Date', 'MainProd Code', 'User Name'
+    ];
+    setUploadConfig('/Service/UploadPoDumpExcel', columns);
+}
+
+function openUploadInvoice() {
+    const columns = [
+        'Key', 'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Description', 'Batch', 'Customer', 'Customer Name',
+        'Name', 'Collective No', 'Your Reference', 'Invoice Date', 'Quantity', 'Cost'
+    ];
+    setUploadConfig('/Service/UploadInvoiceExcel', columns);
+}
+
+function openUploadPCChart() {
+    const columns = [
+        'Date', 'PC', 'FY', 'Qtr'
+    ];
+    setUploadConfig('/Service/UploadPcChartExcel', columns);
+}
+
+function openUploadRegion() {
+    const columns = [
+        'Location', 'Region'
+    ];
+    setUploadConfig('/Service/UploadPcChartExcel', columns);
+}
+
+function setUploadConfig(url, columns) {
+    $('#upload-url').val(url);
+    $('#expected-columns').val(JSON.stringify(columns));
+    $('#fileInput').val('');
+    $('#uploadModal').modal('show');
+}
+
 function AutoReload() {
     setTimeout(function () {window.location.reload(); }, 1500);
 }

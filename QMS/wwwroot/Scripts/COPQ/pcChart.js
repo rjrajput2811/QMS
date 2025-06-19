@@ -50,14 +50,14 @@ $(document).ready(function () {
         window.history.back();
     });
 
-    $('#upload-button').on('click', async function () {
-        var expectedColumns = [
-            'Date', 'PC', 'FY', 'Qtr'
-        ];
+    //$('#upload-button').on('click', async function () {
+    //    var expectedColumns = [
+    //        'Date', 'PC', 'FY', 'Qtr'
+    //    ];
 
-        var url = '/Service/UploadPcChartExcel';
-        handleImportExcelFile(url, expectedColumns);
-    });
+    //    var url = '/Service/UploadPcChartExcel';
+    //    handleImportExcelFile(url, expectedColumns);
+    //});
 
     loadPcData();
 });
@@ -106,8 +106,8 @@ function renderPcTable(response) {
             Sr_No: index + 1,
             Id: item.id,
             Date: item.date ? new Date(item.date).toLocaleDateString("en-GB") : "",
-            PC: item.pC,
-            FY: item.fY,
+            PC: item.pc,
+            FY: item.fy,
             Qtr: item.qtr,
             CreatedDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString("en-GB") : "",
             CreatedBy: item.createdBy,
@@ -376,13 +376,13 @@ function BlankPcDown() {
     Blockloaderhide();
 };
 
-function openPcUpload() {
-    clearForm();
-    if (!$('#uploadModal').length) {
-        $('body').append(partialView);
-    }
-    $('#uploadModal').modal('show');
-}
+//function openPcUpload() {
+//    clearForm();
+//    if (!$('#uploadModal').length) {
+//        $('body').append(partialView);
+//    }
+//    $('#uploadModal').modal('show');
+//}
 
 function clearForm() {
     // Clear all input fields

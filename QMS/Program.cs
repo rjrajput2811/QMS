@@ -49,6 +49,7 @@ builder.Services.AddTransient<IKaizenTrackerRepository, KaizenTrackerRepository>
 builder.Services.AddTransient<ISPMReportRepository, SPMReportRepository>();
 builder.Services.AddTransient<IRMTCDetailsRepository, RMTCDetailsRepository>();
 builder.Services.AddTransient<IComplaintIndentDumpRepository, ComplaintIndentDumpRepository>();
+builder.Services.AddTransient<IJobWorkTracRepository, JobWorkTracRepository>();
 builder.Services.AddTransient<IOpenPoReposiotry, OpenPoReposiotry>();
 
 //

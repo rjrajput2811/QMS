@@ -50,14 +50,14 @@ $(document).ready(function () {
         window.history.back();
     });
 
-    $('#upload-button').on('click', async function () {
-        var expectedColumns = [
-            'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination','Balance Value'
-        ];
+    //$('#upload-button').on('click', async function () {
+    //    var expectedColumns = [
+    //        'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination','Balance Value'
+    //    ];
 
-        var url = '/Service/UploadPoDumpExcel';
-        handleImportExcelFile(url, expectedColumns);
-    });
+    //    var url = '/Service/UploadPoDumpExcel';
+    //    handleImportExcelFile(url, expectedColumns);
+    //});
 
     loadDatapo();
 });
@@ -392,7 +392,7 @@ function BlankPoDown() {
     Blockloadershow();
 
     var expectedColumns = [
-        'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination', 'Balance Value'
+        'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'Batch No', 'PO Qty', 'Balance Qty', 'Destination', 'Balance Value'
     ];
 
     // Create worksheet with only the header row
@@ -424,13 +424,13 @@ function BlankPoDown() {
     Blockloaderhide();
 };
 
-function openPoUpload() {
-    clearForm();
-    if (!$('#uploadModal').length) {
-        $('body').append(partialView);
-    }
-    $('#uploadModal').modal('show');
-}
+//function openPoUpload() {
+//    clearForm();
+//    if (!$('#uploadModal').length) {
+//        $('body').append(partialView);
+//    }
+//    $('#uploadModal').modal('show');
+//}
 
 function clearForm() {
     // Clear all input fields

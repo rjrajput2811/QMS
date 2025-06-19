@@ -29,7 +29,7 @@ namespace QMS.Core.DatabaseContext
         public string? Branch { get; set; }
         public string? Indent_Status { get; set; }
         public string? End_Cust_Name { get; set; }
-        public string? Complaint_Id { get; set; }
+        public string? CCN_No { get; set; }
         public string? Customer_Code { get; set; }
         public string? Customer_Name { get; set; }
         public DateTime? Bill_Req_Date { get; set; }
@@ -39,6 +39,7 @@ namespace QMS.Core.DatabaseContext
         public string? Item_Description { get; set; }
         public int? Quantity { get; set; }
         public string? Price { get; set; }
+        public string? Discount { get; set; }
         public string? Final_Price { get; set; }
         public string? SapSoNo { get; set; }
         public int? CreateSoQty { get; set; }

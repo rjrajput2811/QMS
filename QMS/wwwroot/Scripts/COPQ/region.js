@@ -50,14 +50,14 @@ $(document).ready(function () {
         window.history.back();
     });
 
-    $('#upload-button').on('click', async function () {
-        var expectedColumns = [
-            'Location', 'Region'
-        ];
+    //$('#upload-button').on('click', async function () {
+    //    var expectedColumns = [
+    //        'Location', 'Region'
+    //    ];
 
-        var url = '/Service/UploadRegionExcel';
-        handleImportExcelFile(url, expectedColumns);
-    });
+    //    var url = '/Service/UploadRegionExcel';
+    //    handleImportExcelFile(url, expectedColumns);
+    //});
 
     loadRegionData();
 });
@@ -367,13 +367,13 @@ function BlankRegDown() {
     Blockloaderhide();
 };
 
-function openRegUpload() {
-    clearForm();
-    if (!$('#uploadModal').length) {
-        $('body').append(partialView);
-    }
-    $('#uploadModal').modal('show');
-}
+//function openRegUpload() {
+//    clearForm();
+//    if (!$('#uploadModal').length) {
+//        $('body').append(partialView);
+//    }
+//    $('#uploadModal').modal('show');
+//}
 
 function clearForm() {
     // Clear all input fields

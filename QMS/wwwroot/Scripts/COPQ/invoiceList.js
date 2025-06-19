@@ -50,15 +50,15 @@ $(document).ready(function () {
         window.history.back();
     });
 
-    $('#upload-button').on('click', async function () {
-        var expectedColumns = [
-            'Key', 'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Description', 'Batch', 'Customer', 'Customer Name',
-            'Name', 'Collective No', 'Your Reference', 'Invoice Date', 'Quantity', 'Cost'
-        ];
+    //$('#upload-button').on('click', async function () {
+    //    var expectedColumns = [
+    //        'Key', 'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Description', 'Batch', 'Customer', 'Customer Name',
+    //        'Name', 'Collective No', 'Your Reference', 'Invoice Date', 'Quantity', 'Cost'
+    //    ];
 
-        var url = '/Service/UploadInvoiceExcel';
-        handleImportExcelFile(url, expectedColumns);
-    });
+    //    var url = '/Service/UploadInvoiceExcel';
+    //    handleImportExcelFile(url, expectedColumns);
+    //});
 
     loadInvoiceData();
 });
@@ -427,13 +427,13 @@ function BlankInvDown() {
     Blockloaderhide();
 };
 
-function openInvUpload() {
-    clearForm();
-    if (!$('#uploadModal').length) {
-        $('body').append(partialView);
-    }
-    $('#uploadModal').modal('show');
-}
+//function openInvUpload() {
+//    clearForm();
+//    if (!$('#uploadModal').length) {
+//        $('body').append(partialView);
+//    }
+//    $('#uploadModal').modal('show');
+//}
 
 function clearForm() {
     // Clear all input fields

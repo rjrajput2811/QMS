@@ -5,6 +5,7 @@ using QMS.Core.Models;
 using QMS.Core.Repositories.COPQComplaintDumpRepository;
 using QMS.Core.Services.SystemLogs;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace QMS.Controllers
@@ -58,6 +59,15 @@ namespace QMS.Controllers
                 if (model == null)
                     return Json(new { success = false, message = "Invalid data" });
 
+                // Calculate TotalCompletionDays if both dates are present
+                int? totalCompletionDays = null;
+                if (model.CCCNDate.HasValue && model.Completion.HasValue)
+                {
+                    totalCompletionDays = (model.Completion.Value - model.CCCNDate.Value).Days;
+                }
+
+                model.TotalDays_Close = totalCompletionDays;
+
                 model.CreatedDate = DateTime.Now;
                 model.CreatedBy = HttpContext.Session.GetString("FullName");
                 model.Deleted = false;
@@ -85,6 +95,14 @@ namespace QMS.Controllers
             {
                 if (model == null || model.Id <= 0)
                     return Json(new { success = false, message = "Invalid update data" });
+
+                int? totalCompletionDays = null;
+                if (model.CCCNDate.HasValue && model.Completion.HasValue)
+                {
+                    totalCompletionDays = (model.Completion.Value - model.CCCNDate.Value).Days;
+                }
+
+                model.TotalDays_Close = totalCompletionDays;
 
                 model.UpdatedDate = DateTime.Now;
                 model.UpdatedBy = HttpContext.Session.GetString("FullName");
@@ -136,17 +154,23 @@ namespace QMS.Controllers
 
                 for (int row = 2; row <= rowCount; row++)
                 {
+
+                    DateTime? cccnDate = ParseExcelDate(worksheet.Cell(row, 2));
+                    DateTime? completionDate = ParseExcelDate(worksheet.Cell(row, 9));
+
                     var model = new ComplaintViewModel
                     {
-                        CCCNDate = worksheet.Cell(row, 1).TryGetValue(out DateTime ccnDate) ? ccnDate : null,
-                        ReportedBy = worksheet.Cell(row, 2).GetString().Trim(),
-                        CLocation = worksheet.Cell(row, 3).GetString().Trim(),
-                        CustName = worksheet.Cell(row, 4).GetString().Trim(),
-                        DealerName = worksheet.Cell(row, 5).GetString().Trim(),
-                        CDescription = worksheet.Cell(row, 6).GetString().Trim(),
-                        CStatus = worksheet.Cell(row, 7).GetString().Trim(),
-                        Completion = worksheet.Cell(row, 8).GetString().Trim(),
-                        Remarks = worksheet.Cell(row, 9).GetString().Trim(),
+                        CCN_No = worksheet.Cell(row, 1).GetString().Trim(),
+                        CCCNDate = cccnDate,
+                        ReportedBy = worksheet.Cell(row, 3).GetString().Trim(),
+                        CLocation = worksheet.Cell(row, 4).GetString().Trim(),
+                        CustName = worksheet.Cell(row, 5).GetString().Trim(),
+                        DealerName = worksheet.Cell(row, 6).GetString().Trim(),
+                        CDescription = worksheet.Cell(row, 7).GetString().Trim(),
+                        CStatus = worksheet.Cell(row, 8).GetString().Trim(),
+                        Completion = completionDate,
+                        Remarks = worksheet.Cell(row, 10).GetString().Trim(),
+                        TotalDays_Close = worksheet.Cell(row, 11).GetValue<int?>(),
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,
                     };
@@ -163,14 +187,14 @@ namespace QMS.Controllers
                     using var failWb = new XLWorkbook();
                     var failSheet = failWb.Worksheets.Add("Failed Records");
 
-                    failSheet.Cell(1, 1).Value = "CCNDate";
+                    failSheet.Cell(1, 1).Value = "CCNNO";
                     failSheet.Cell(1, 2).Value = "CustName";
                     failSheet.Cell(1, 3).Value = "Reason";
 
                     int i = 2;
                     foreach (var fail in importResult.FailedRecords)
                     {
-                        failSheet.Cell(i, 1).Value = fail.Record.CCCNDate;
+                        failSheet.Cell(i, 1).Value = fail.Record.CCN_No;
                         failSheet.Cell(i, 2).Value = fail.Record.CustName;
                         failSheet.Cell(i, 3).Value = fail.Reason;
                         i++;
@@ -202,6 +226,47 @@ namespace QMS.Controllers
                     message = "Import failed: " + ex.Message
                 });
             }
+        }
+
+        // Helper function: Universal Excel date parser
+        private DateTime? ParseExcelDate(IXLCell cell)
+        {
+            try
+            {
+                if (cell == null || cell.IsEmpty())
+                    return null;
+
+                if (cell.DataType == XLDataType.DateTime)
+                {
+                    return cell.GetDateTime();
+                }
+                else if (cell.DataType == XLDataType.Number)
+                {
+                    return DateTime.FromOADate(cell.GetDouble());
+                }
+                else
+                {
+                    var strVal = cell.GetString().Trim();
+
+                    string[] formats = { "dd-MMM-yy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yyyy" };
+
+                    if (DateTime.TryParseExact(strVal, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+                    {
+                        if (dt.Year < 50) dt = dt.AddYears(2000 - dt.Year);  // handle 2-digit year case
+                        return dt;
+                    }
+                    else if (DateTime.TryParse(strVal, out dt))
+                    {
+                        return dt;
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            return null;
         }
 
 
@@ -244,6 +309,7 @@ namespace QMS.Controllers
                 return Json(new { success = false, message = "Failed to get PO details." });
             }
         }
+
         [HttpPost]
         public async Task<JsonResult> CreatePO([FromBody] PendingPo_Service model)
         {
@@ -268,6 +334,7 @@ namespace QMS.Controllers
                 return Json(new { success = false, message = "Error occurred while creating PO." });
             }
         }
+
         [HttpPost]
         public async Task<JsonResult> UpdatePO([FromBody] PendingPo_Service model)
         {
@@ -330,12 +397,11 @@ namespace QMS.Controllers
                         ReferenceNo = worksheet.Cell(row, 3).GetString().Trim(),
                         PONo = worksheet.Cell(row, 4).GetString().Trim(),
                         PODate = worksheet.Cell(row, 5).TryGetValue(out DateTime poDate) ? poDate : null,
-                        PRNo = worksheet.Cell(row, 6).GetString().Trim(),
-                        BatchNo = worksheet.Cell(row, 7).GetString().Trim(),
-                        POQty = worksheet.Cell(row, 8).GetString().Trim(),
-                        BalanceQty = worksheet.Cell(row, 9).GetString().Trim(),
-                        Destination = worksheet.Cell(row, 10).GetString().Trim(),
-                        BalanceValue = worksheet.Cell(row, 11).GetString().Trim(),
+                        BatchNo = worksheet.Cell(row, 6).GetString().Trim(),
+                        POQty = worksheet.Cell(row, 7).GetString().Trim(),
+                        BalanceQty = worksheet.Cell(row, 8).GetString().Trim(),
+                        Destination = worksheet.Cell(row, 9).GetString().Trim(),
+                        BalanceValue = worksheet.Cell(row, 10).GetString().Trim(),
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,
                     };
@@ -521,7 +587,7 @@ namespace QMS.Controllers
                         Branch = worksheet.Cell(row, 5).GetString().Trim(),
                         Indent_Status = worksheet.Cell(row, 6).GetString().Trim(),
                         End_Cust_Name = worksheet.Cell(row, 7).GetString().Trim(),
-                        Complaint_Id = worksheet.Cell(row, 8).GetString().Trim(),
+                        CCN_No = worksheet.Cell(row, 8).GetString().Trim(),
                         Customer_Code = worksheet.Cell(row, 9).GetString().Trim(),
                         Customer_Name = worksheet.Cell(row, 10).GetString().Trim(),
                         Bill_Req_Date = worksheet.Cell(row, 11).TryGetValue(out DateTime billDate) ? billDate : null,
@@ -531,16 +597,17 @@ namespace QMS.Controllers
                         Item_Description = worksheet.Cell(row, 15).GetString().Trim(),
                         Quantity = worksheet.Cell(row, 16).GetValue<int?>(),
                         Price = worksheet.Cell(row, 17).GetString().Trim(),
-                        Final_Price = worksheet.Cell(row, 18).GetString().Trim(),
-                        SapSoNo = worksheet.Cell(row, 19).GetString().Trim(),
-                        CreateSoQty = worksheet.Cell(row, 20).GetValue<int?>(),
-                        Inv_Qty = worksheet.Cell(row, 21).GetValue<int?>(),
-                        Inv_Value = worksheet.Cell(row, 22).GetString().Trim(),
-                        WiproCatelog_No = worksheet.Cell(row, 23).GetString().Trim(),
-                        Batch_Code = worksheet.Cell(row, 24).GetString().Trim(),
-                        Batch_Date = worksheet.Cell(row, 25).TryGetValue(out DateTime btDate) ? btDate : null,
-                        Main_Prodcode = worksheet.Cell(row, 26).GetString().Trim(),
-                        User_Name = worksheet.Cell(row, 27).GetString().Trim(),
+                        Discount = worksheet.Cell(row, 18).GetString().Trim(),
+                        Final_Price = worksheet.Cell(row, 19).GetString().Trim(),
+                        SapSoNo = worksheet.Cell(row, 20).GetString().Trim(),
+                        CreateSoQty = worksheet.Cell(row, 21).GetValue<int?>(),
+                        Inv_Qty = worksheet.Cell(row, 22).GetValue<int?>(),
+                        Inv_Value = worksheet.Cell(row, 23).GetString().Trim(),
+                        WiproCatelog_No = worksheet.Cell(row, 24).GetString().Trim(),
+                        Batch_Code = worksheet.Cell(row, 25).GetString().Trim(),
+                        Batch_Date = worksheet.Cell(row, 26).TryGetValue(out DateTime btDate) ? btDate : null,
+                        Main_Prodcode = worksheet.Cell(row, 27).GetString().Trim(),
+                        User_Name = worksheet.Cell(row, 28).GetString().Trim(),
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,
                     };

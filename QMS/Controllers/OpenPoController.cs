@@ -29,6 +29,13 @@ namespace QMS.Controllers
             return Json(openPoDeatilsList);
         }
 
+        [HttpGet]
+        public async Task<JsonResult> GetAllVendor(string vendor)
+        {
+            var openPoDeatilsList = await _openPoReposiotry.GetVendorListAsync(vendor);
+            return Json(openPoDeatilsList);
+        }
+
         [HttpPost]
         public async Task<IActionResult> UploadOpenPoDataExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
         {
@@ -123,5 +130,47 @@ namespace QMS.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<JsonResult> GetDeliverySchedule(int poId)
+        {
+            var data = await _openPoReposiotry.GetByPOIdAsync(poId);
+            return Json(data);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SaveDeliverySchedule([FromBody]Opne_Po_DeliverySchViewModel request)
+        {
+            try
+            {
+                string updatedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                await _openPoReposiotry.SaveDeliveryScheduleAsync(request, updatedBy);
+
+                return Json(new { success = true, message = "Delivery Schedule saved successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetOpenPOWithDelivery(string vendor)
+        {
+            // If you still want to read vendor from session:
+            if (string.IsNullOrEmpty(vendor))
+            {
+                vendor = HttpContext.Session.GetString("VendorName") ?? "";
+            }
+
+            var result = await _openPoReposiotry.GetOpenPOWithDeliveryScheduleAsync(vendor);
+
+            var response = new
+            {
+                POHeaders = result.poHeaders,
+                DeliverySchedules = result.deliverySchedules
+            };
+
+            return Json(response);
+        }
     }
 }

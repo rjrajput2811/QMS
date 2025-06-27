@@ -47,6 +47,9 @@ namespace QMS.Core.DatabaseContext
         //// ------- Supply Chain Managment -------- ////
         public DbSet<Open_Po> OpenPo { get; set; }
         public DbSet<Open_Po_Log> OpenPo_Log { get; set; }
+        public DbSet<Opne_Po_DeliverySchedule> Opne_Po_Deliveries { get; set; }
+
+
 
         /////// ------- Supply Chain Managment -------- ////
         public class InspectionResult

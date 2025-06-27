@@ -23,7 +23,7 @@ namespace QMS.Core.Models
         public string? Customer_Name { get; set; }
         public DateTime? Bill_Req_Date { get; set; }
         public string? Created_By { get; set; }
-        public string? Wipro_Commit_Date { get; set; }
+        public DateTime? Wipro_Commit_Date { get; set; }
         public string? Material_No { get; set; }
         public string? Item_Description { get; set; }
         public int? Quantity { get; set; }

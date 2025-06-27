@@ -12,6 +12,30 @@
 
 
 <style>
+
+    .nav-tabs .nav-link.active {
+        color: #333;
+        background-color: #fff;
+        border-color: #ddd #ddd #fff;
+        border: 2px solid #0c83ff !important;
+        border-bottom: none !important;
+    }
+
+    .nav-link.active {
+        color: black !important;
+        font-weight: bold;
+        background-color: #e9ecef;
+        font-size : 14px;
+    }
+
+    .row {
+        margin-bottom: 12px !important;
+    }
+
+    label {
+        margin-bottom: 2px !important;
+    }
+
     .nav-pills .nav-link {
         text-align: left;
         border-radius: 0;
@@ -145,76 +169,85 @@
     <div class="card">
         <div class="card-body">
 
-            <div class="nav nav-tabs" id="v-tabs" role="tablist">
-                <a class="nav-link active" id="v-tab1" data-bs-toggle="pill" href="#tab1" role="tab">Complaint Dump</a>
-                <a class="nav-link" id="v-tab2" data-bs-toggle="pill" href="#tab2" role="tab">Indent Dump</a>
-                <a class="nav-link" id="v-tab3" data-bs-toggle="pill" href="#tab3" role="tab">Pending Po</a>
-                <a class="nav-link" id="v-tab4" data-bs-toggle="pill" href="#tab4" role="tab">Invoice List</a>
-                <a class="nav-link" id="v-tab5" data-bs-toggle="pill" href="#tab5" role="tab">PC Chart</a>
-                <a class="nav-link" id="v-tab6" data-bs-toggle="pill" href="#tab6" role="tab">Region Names</a>
+            <div class="nav nav-tabs" id="f-tabs" role="tablist">
+                <a class="nav-link active" id="f-tab1" data-bs-toggle="pill" href="#ftab1" role="tab">Input</a>
+                <a class="nav-link" id="f-tab2" data-bs-toggle="pill" href="#ftab2" role="tab">Output</a>
             </div>
 
-            <div class="tab-content" id="v-tabContent">
+            <div class="tab-content" id="f-tabContent">
 
-                <div class="tab-pane fade show active" id="tab1" role="tabpanel">
-                    <div class="card" id="div1" style="">
-                        <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
-                            <div class="col-md-4">
-                                <div id="customDateTrigger" class="calendar-container">
-                                    <i class="fa fa-calendar"></i>
-                                    <span id="dateRangeText">Select Date Range</span>
+                <div class="tab-pane fade show active" id="ftab1" role="tabpanel">
+                    <div>
+                        <div class="nav nav-tabs" id="v-tabs" role="tablist">
+                            <a class="nav-link active" id="v-tab1" data-bs-toggle="pill" href="#tab1" role="tab">Complaint Dump</a>
+                            <a class="nav-link" id="v-tab2" data-bs-toggle="pill" href="#tab2" role="tab">Indent Dump</a>
+                            <a class="nav-link" id="v-tab3" data-bs-toggle="pill" href="#tab3" role="tab">Pending Po</a>
+                            <a class="nav-link" id="v-tab4" data-bs-toggle="pill" href="#tab4" role="tab">Invoice List</a>
+                            <a class="nav-link" id="v-tab5" data-bs-toggle="pill" href="#tab5" role="tab">PC Chart</a>
+                            <a class="nav-link" id="v-tab6" data-bs-toggle="pill" href="#tab6" role="tab">Region Names</a>
+                        </div>
+
+                        <div class="tab-content" id="v-tabContent">
+
+                            <div class="tab-pane fade show active" id="tab1" role="tabpanel">
+                                <div class="card" id="div1" style="">
+                                    <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
+                                        <div class="col-md-4">
+                                            <div id="customDateTrigger" class="calendar-container">
+                                                <i class="fa fa-calendar"></i>
+                                                <span id="dateRangeText">Select Date Range</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button id="addButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
+                                                <i class="fas fa-plus mr-2 fa-1x"></i>Add
+                                            </button>&nbsp;
+                                            <button id="exldownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankComplaintDumpDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
+                                                <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
+                                            </button>&nbsp;
+                                            <button id="exluploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadComplaint()" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                                <i class="fas fa-upload mr-2"></i>Upload Exl
+                                            </button>&nbsp;
+                                            <button id="backButton" class="btn btn-outline-info">
+                                                <i class="fas fa-arrow-left"></i> Back
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mt-2">
+                                        <div id="copq-table" class="col-12"></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <button id="addButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
-                                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
-                                </button>&nbsp;
-                                <button id="exldownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankComplaintDumpDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
-                                    <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
-                                </button>&nbsp;
-                                <button id="exluploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadComplaint()" style="margin: 10px 3px;width: 150px; font-size:15px">
-                                    <i class="fas fa-upload mr-2"></i>Upload Exl
-                                </button>&nbsp;
-                                <button id="backButton" class="btn btn-outline-info">
-                                    <i class="fas fa-arrow-left"></i> Back
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group mt-2">
-                            <div id="copq-table" class="col-12"></div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Tab 2 to Tab 6 content placeholders -->
-                <div class="tab-pane fade" id="tab2" role="tabpanel">
-                    <div class="card" id="divindent" style="">
-                        <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
-                            <div class="col-md-4">
-                                <div id="customDateTriggerIndent" class="calendar-container">
-                                    <i class="fa fa-calendar"></i>
-                                    <span id="IndentdateRangeText">Select Date Range</span>
-                                </div>
-                            </div>
-                            <div>
-                                <button id="addIndentButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
-                                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
-                                </button>&nbsp;
-                                <button id="exldownIndentButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankIndentDumpDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
-                                    <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
-                                </button>&nbsp;
-                                <button id="exluploadIndentButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadIndent()" style="margin: 10px 3px;width: 150px; font-size:15px">
-                                    <i class="fas fa-upload mr-2"></i>Upload Exl
-                                </button>&nbsp;
-                                <button id="backIndentButton" class="btn btn-outline-info">
-                                    <i class="fas fa-arrow-left"></i> Back
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group mt-2">
-                            <div id="indent-table" class="col-12"></div>
-                        </div>
-                        @* <div class="card-body px-3 py-2">
+                            <!-- Tab 2 to Tab 6 content placeholders -->
+                            <div class="tab-pane fade" id="tab2" role="tabpanel">
+                                <div class="card" id="divindent" style="">
+                                    <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
+                                        <div class="col-md-4">
+                                            <div id="customDateTriggerIndent" class="calendar-container">
+                                                <i class="fa fa-calendar"></i>
+                                                <span id="IndentdateRangeText">Select Date Range</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button id="addIndentButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
+                                                <i class="fas fa-plus mr-2 fa-1x"></i>Add
+                                            </button>&nbsp;
+                                            <button id="exldownIndentButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankIndentDumpDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
+                                                <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
+                                            </button>&nbsp;
+                                            <button id="exluploadIndentButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadIndent()" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                                <i class="fas fa-upload mr-2"></i>Upload Exl
+                                            </button>&nbsp;
+                                            <button id="backIndentButton" class="btn btn-outline-info">
+                                                <i class="fas fa-arrow-left"></i> Back
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mt-2">
+                                        <div id="indent-table" class="col-12"></div>
+                                    </div>
+                                    @* <div class="card-body px-3 py-2">
                             <div class="table-responsive" style="max-height: 600px; overflow-y: auto;">
                                 <div id="indent-table"></div>
                             </div>
@@ -222,9 +255,9 @@
                                 <button class="btn btn-primary" onclick="getIndentFormData()">Save Indent</button>
                             </div>
                         </div> *@
-                    </div>
+                                </div>
 
-                    @*  <div class="row" id="divindentGrid">
+                                @*  <div class="row" id="divindentGrid">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
@@ -245,38 +278,38 @@
                             </div>
                         </div>
                     </div> *@
-                </div>
+                            </div>
 
-                <div class="tab-pane fade" id="tab3" role="tabpanel">
-                    <div class="card" id="podiv1" style="">
-                        <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
-                            <div class="col-md-4">
-                                <div id="customDateTriggerPO" class="calendar-container">
-                                    <i class="fa fa-calendar"></i>
-                                    <span id="POdateRangeText">Select Date Range</span>
+                            <div class="tab-pane fade" id="tab3" role="tabpanel">
+                                <div class="card" id="podiv1" style="">
+                                    <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
+                                        <div class="col-md-4">
+                                            <div id="customDateTriggerPO" class="calendar-container">
+                                                <i class="fa fa-calendar"></i>
+                                                <span id="POdateRangeText">Select Date Range</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button id="addPOButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
+                                                <i class="fas fa-plus mr-2 fa-1x"></i>Add
+                                            </button>&nbsp;
+                                            <button id="exlPodownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankPoDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
+                                                <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
+                                            </button>&nbsp;
+                                            <button id="exlPouploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadPo()" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                                <i class="fas fa-upload mr-2"></i>Upload Exl
+                                            </button>&nbsp;
+                                            <button id="backButton" class="btn btn-outline-info">
+                                                <i class="fas fa-arrow-left"></i> Back
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mt-2">
+                                        <div id="po-table" class="col-12"></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <button id="addPOButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
-                                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
-                                </button>&nbsp;
-                                <button id="exlPodownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankPoDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
-                                    <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
-                                </button>&nbsp;
-                                <button id="exlPouploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openPoUpload()" style="margin: 10px 3px;width: 150px; font-size:15px">
-                                    <i class="fas fa-upload mr-2"></i>Upload Exl
-                                </button>&nbsp;
-                                <button id="backButton" class="btn btn-outline-info">
-                                    <i class="fas fa-arrow-left"></i> Back
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group mt-2">
-                            <div id="po-table" class="col-12"></div>
-                        </div>
-                    </div>
 
-                    @* <div class="row" id="podiv2Grid">
+                                @* <div class="row" id="podiv2Grid">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
@@ -297,95 +330,124 @@
                             </div>
                         </div>
                     </div> *@
-                </div>
+                            </div>
 
-                <div class="tab-pane fade" id="tab4" role="tabpanel">
-                    <div class="card" id="Invoicediv1">
-                        <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
-                            <div class="col-md-4">
-                                <div id="customDateTriggerInv" class="calendar-container">
-                                    <i class="fa fa-calendar"></i>
-                                    <span id="InvdateRangeText">Select Date Range</span>
+                            <div class="tab-pane fade" id="tab4" role="tabpanel">
+                                <div class="card" id="Invoicediv1">
+                                    <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
+                                        <div class="col-md-4">
+                                            <div id="customDateTriggerInv" class="calendar-container">
+                                                <i class="fa fa-calendar"></i>
+                                                <span id="InvdateRangeText">Select Date Range</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button id="addInvButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
+                                                <i class="fas fa-plus mr-2 fa-1x"></i>Add
+                                            </button>&nbsp;
+                                            <button id="exlInvdownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankInvDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
+                                                <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
+                                            </button>&nbsp;
+                                            <button id="exlInvuploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadInvoice()" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                                <i class="fas fa-upload mr-2"></i>Upload Exl
+                                            </button>&nbsp;
+                                            <button id="backButton" class="btn btn-outline-info">
+                                                <i class="fas fa-arrow-left"></i> Back
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mt-2">
+                                        <div id="inv-table" class="col-12"></div>
+                                    </div>
                                 </div>
                             </div>
-                            <div>
-                                <button id="addInvButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
-                                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
-                                </button>&nbsp;
-                                <button id="exlInvdownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankInvDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
-                                    <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
-                                </button>&nbsp;
-                                <button id="exlInvuploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadInvoice()" style="margin: 10px 3px;width: 150px; font-size:15px">
-                                    <i class="fas fa-upload mr-2"></i>Upload Exl
-                                </button>&nbsp;
-                                <button id="backButton" class="btn btn-outline-info">
-                                    <i class="fas fa-arrow-left"></i> Back
-                                </button>
+
+                            <div class="tab-pane fade" id="tab5" role="tabpanel">
+                                <div class="card" id="PCChartdiv1">
+                                    <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
+                                        <div class="col-md-4">
+                                            <div id="customDateTriggerPc" class="calendar-container">
+                                                <i class="fa fa-calendar"></i>
+                                                <span id="PcdateRangeText">Select Date Range</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button id="addPcButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
+                                                <i class="fas fa-plus mr-2 fa-1x"></i>Add
+                                            </button>&nbsp;
+                                            <button id="exlPcdownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankPcDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
+                                                <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
+                                            </button>&nbsp;
+                                            <button id="exlPcuploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadPCChart()" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                                <i class="fas fa-upload mr-2"></i>Upload Exl
+                                            </button>&nbsp;
+                                            <button id="backButton" class="btn btn-outline-info">
+                                                <i class="fas fa-arrow-left"></i> Back
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mt-2">
+                                        <div id="pc-table" class="col-12"></div>
+                                    </div>
+                                </div>
                             </div>
+
+
+                            <div class="tab-pane fade" id="tab6" role="tabpanel">
+                                <div class="card" id="Regiondiv1">
+                                    <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
+                                        <div class="col-md-4">
+                                            <div id="customDateTriggerReg" class="calendar-container">
+                                                <i class="fa fa-calendar"></i>
+                                                <span id="RegdateRangeText">Select Date Range</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button id="addRegButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
+                                                <i class="fas fa-plus mr-2 fa-1x"></i>Add
+                                            </button>&nbsp;
+                                            <button id="exlRegdownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankRegDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
+                                                <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
+                                            </button>&nbsp;
+                                            <button id="exlReguploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadRegion()" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                                <i class="fas fa-upload mr-2"></i>Upload Exl
+                                            </button>&nbsp;
+                                            <button id="backButton" class="btn btn-outline-info">
+                                                <i class="fas fa-arrow-left"></i> Back
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group mt-2">
+                                        <div id="reg-table" class="col-12"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
-                        <div class="form-group mt-2">
-                            <div id="inv-table" class="col-12"></div>
-                        </div>
+
                     </div>
                 </div>
 
-                <div class="tab-pane fade" id="tab5" role="tabpanel">
-                    <div class="card" id="PCChartdiv1">
+                <div class="tab-pane fade" id="ftab2" role="tabpanel">
+                    <div class="card" id="Finaldiv1">
                         <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
                             <div class="col-md-4">
-                                <div id="customDateTriggerPc" class="calendar-container">
+                                <div id="customDateTriggerFinal" class="calendar-container">
                                     <i class="fa fa-calendar"></i>
-                                    <span id="PcdateRangeText">Select Date Range</span>
+                                    <span id="FinaldateRangeText">Select Date Range</span>
                                 </div>
                             </div>
                             <div>
-                                <button id="addPcButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
-                                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
-                                </button>&nbsp;
-                                <button id="exlPcdownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankPcDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
-                                    <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
-                                </button>&nbsp;
-                                <button id="exlPcuploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadPCChart()" style="margin: 10px 3px;width: 150px; font-size:15px">
-                                    <i class="fas fa-upload mr-2"></i>Upload Exl
+                                <button id="exlExtButton" type="button" class="btn btn-outline-primary legitRipple" onclick="" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                    <i class="fas fa-upload mr-2"></i>Export Exl
                                 </button>&nbsp;
                                 <button id="backButton" class="btn btn-outline-info">
-                                    <i class="fas fa-arrow-left"></i> Back
+                                    <i class="fas fa-arrow-left"></i>Back
                                 </button>
                             </div>
                         </div>
                         <div class="form-group mt-2">
-                            <div id="pc-table" class="col-12"></div>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="tab-pane fade" id="tab6" role="tabpanel">
-                    <div class="card" id="Regiondiv1">
-                        <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
-                            <div class="col-md-4">
-                                <div id="customDateTriggerReg" class="calendar-container">
-                                    <i class="fa fa-calendar"></i>
-                                    <span id="RegdateRangeText">Select Date Range</span>
-                                </div>
-                            </div>
-                            <div>
-                                <button id="addRegButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
-                                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
-                                </button>&nbsp;
-                                <button id="exlRegdownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankRegDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
-                                    <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
-                                </button>&nbsp;
-                                <button id="exlReguploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadRegion()" style="margin: 10px 3px;width: 150px; font-size:15px">
-                                    <i class="fas fa-upload mr-2"></i>Upload Exl
-                                </button>&nbsp;
-                                <button id="backButton" class="btn btn-outline-info">
-                                    <i class="fas fa-arrow-left"></i> Back
-                                </button>
-                            </div>
-                        </div>
-                        <div class="form-group mt-2">
-                            <div id="reg-table" class="col-12"></div>
+                            <div id="final-table" class="col-12"></div>
                         </div>
                     </div>
                 </div>
@@ -430,20 +492,21 @@
 
     <!-- PNotify -->
     <script src="~/js/pnotify.js"></script>
-    <script src="~/js/pnotify.confirm.js"></script>
+    <script src="~/js/pnotify.confirm.js"></script><script src="~/scripts/copq/finalresult.js"></script>
 
     <!-- Noty (if used) -->
     <script src="https://cdn.jsdelivr.net/npm/noty/lib/noty.min.js"></script>
 
     <!-- Popup Alert -->
-    <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
+    <script src="~/lib/bootstrap/dist/js/popupalert.js"></script><script src="~/scripts/copq/finalresult.js"></script>
     <script src="~/scripts/COPQ/copq.js" asp-append-version="true"></script>
     <script src="~/scripts/COPQ/po.js" asp-append-version="true"></script>
     <script src="~/scripts/COPQ/indentDump.js" asp-append-version="true"></script>
     <script src="~/scripts/copq/invoicelist.js" asp-append-version="true"></script>
     <script src="~/scripts/copq/pcchart.js" asp-append-version="true"></script>
     <script src="~/scripts/copq/region.js" asp-append-version="true"></script>
+    <script src="~/scripts/copq/finalResult.js" asp-append-version="true"></script>
 
-}
+    }
 
 @await Html.PartialAsync("_UploadModalpartial")

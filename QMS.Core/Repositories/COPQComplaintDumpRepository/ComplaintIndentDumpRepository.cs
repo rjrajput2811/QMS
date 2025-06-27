@@ -825,14 +825,13 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 foreach (var item in listOfData)
                 {
-                    item.Indent_No = item.Indent_No?.Trim();
-                    item.Customer_Code = item.Customer_Code?.Trim();
+                    item.Material_No = item.Material_No?.Trim();
 
-                    var compositeKey = $"{item.Indent_No}|{item.Customer_Code}";
+                    var compositeKey = $"{item.Material_No}";
 
-                    if (string.IsNullOrWhiteSpace(item.Indent_No) || string.IsNullOrWhiteSpace(item.Customer_Code))
+                    if (string.IsNullOrWhiteSpace(item.CCN_No))
                     {
-                        result.FailedRecords.Add((item, "Missing Indent No. or Customer Code"));
+                        result.FailedRecords.Add((item, "Missing CCN No."));
                         continue;
                     }
 
@@ -847,7 +846,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                     // Now check against database
                     bool existsInDb = await _dbContext.IndentDump
-                        .AnyAsync(x => x.Indent_No == item.Indent_No && x.Customer_Code == item.Customer_Code);
+                        .AnyAsync(x => x.Material_No == item.Material_No);
 
                     if (existsInDb)
                     {
@@ -947,9 +946,9 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 if (startDate.HasValue && endDate.HasValue)
                 {
                     result = result.Where(x =>
-                        x.CreatedDate.HasValue &&
-                        x.CreatedDate.Value.Date >= startDate.Value.Date &&
-                        x.CreatedDate.Value.Date <= endDate.Value.Date
+                        x.Inv_Date.HasValue &&
+                        x.Inv_Date.Value.Date >= startDate.Value.Date &&
+                        x.Inv_Date.Value.Date <= endDate.Value.Date
                     ).ToList();
                 }
 
@@ -962,14 +961,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Inv_Type = x.Inv_Type,
                     Sales_Order = x.Sales_Order,
                     Plant_Code = x.Plant_Code,
+                    Plant_Name = x.Plant_Name,
                     Material_No = x.Material_No = x.Material_No,
-                    Description = x.Description,
-                    Batch = x.Batch,
-                    Customer = x.Customer,
-                    Customer_Name = x.Customer_Name,
-                    Name = x.Name,
+                    Dealer_Name = x.Dealer_Name,
+                    End_Customer = x.End_Customer,
                     Collective_No = x.Collective_No,
-                    Reference = x.Reference,
+                    Indent_No = x.Indent_No,
                     Quantity = x.Quantity,
                     Cost = x.Cost,
                     CreatedBy = x.CreatedBy,
@@ -1003,14 +1000,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Inv_Type = x.Inv_Type,
                     Sales_Order = x.Sales_Order,
                     Plant_Code = x.Plant_Code,
+                    Plant_Name = x.Plant_Name,
                     Material_No = x.Material_No = x.Material_No,
-                    Description = x.Description,
-                    Batch = x.Batch,
-                    Customer = x.Customer,
-                    Customer_Name = x.Customer_Name,
-                    Name = x.Name,
+                    Dealer_Name = x.Dealer_Name,
+                    End_Customer = x.End_Customer,
                     Collective_No = x.Collective_No,
-                    Reference = x.Reference,
+                    Indent_No = x.Indent_No,
                     Quantity = x.Quantity,
                     Cost = x.Cost,
                     CreatedBy = x.CreatedBy,
@@ -1039,14 +1034,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Inv_Type", invoicedetail.Inv_Type ?? (object)DBNull.Value),
                     new SqlParameter("@Sales_Order", invoicedetail.Sales_Order ?? (object)DBNull.Value),
                     new SqlParameter("@Plant_Code", invoicedetail.Plant_Code ?? (object)DBNull.Value),
+                    new SqlParameter("@Plant_Name", invoicedetail.Plant_Name ?? (object)DBNull.Value),
                     new SqlParameter("@Material_No", invoicedetail.Material_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Description", invoicedetail.Description ?? (object)DBNull.Value),
-                    new SqlParameter("@Batch", invoicedetail.Batch ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer", invoicedetail.Customer ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer_Name", invoicedetail.Customer_Name ?? (object)DBNull.Value),
-                    new SqlParameter("@Name", invoicedetail.Name ?? (object)DBNull.Value),
+                    new SqlParameter("@Dealer_Name", invoicedetail.Dealer_Name ?? (object)DBNull.Value),
+                    new SqlParameter("@End_Customer", invoicedetail.End_Customer ?? (object)DBNull.Value),
                     new SqlParameter("@Collective_No", invoicedetail.Collective_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Reference", invoicedetail.Reference ?? (object)DBNull.Value),
+                    new SqlParameter("@Indent_No", invoicedetail.Indent_No ?? (object)DBNull.Value),
                     new SqlParameter("@Quantity", invoicedetail.Quantity ?? (object)DBNull.Value),
                     new SqlParameter("@Cost", invoicedetail.Cost ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", invoicedetail.CreatedBy ?? (object)DBNull.Value)
@@ -1054,8 +1047,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Insert_InvoiceList 
-                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code, @Material_No, @Description, @Batch, @Customer, @Customer_Name, @Name, @Collective_No,
-                    @Reference, @Quantity, @Cost, @CreatedBy",
+                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code, @Plant_Name, @Material_No, @Dealer_Name, @End_Customer, @Collective_No,
+                    @Indent_No, @Quantity, @Cost, @CreatedBy",
                     parameters
                 );
 
@@ -1081,14 +1074,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Inv_Type", invoicedetail.Inv_Type ?? (object)DBNull.Value),
                     new SqlParameter("@Sales_Order", invoicedetail.Sales_Order ?? (object)DBNull.Value),
                     new SqlParameter("@Plant_Code", invoicedetail.Plant_Code ?? (object)DBNull.Value),
+                    new SqlParameter("@Plant_Name", invoicedetail.Plant_Name ?? (object)DBNull.Value),
                     new SqlParameter("@Material_No", invoicedetail.Material_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Description", invoicedetail.Description ?? (object)DBNull.Value),
-                    new SqlParameter("@Batch", invoicedetail.Batch ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer", invoicedetail.Customer ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer_Name", invoicedetail.Customer_Name ?? (object)DBNull.Value),
-                    new SqlParameter("@Name", invoicedetail.Name ?? (object)DBNull.Value),
+                    new SqlParameter("@Dealer_Name", invoicedetail.Dealer_Name ?? (object)DBNull.Value),
+                    new SqlParameter("@End_Customer", invoicedetail.End_Customer ?? (object)DBNull.Value),
                     new SqlParameter("@Collective_No", invoicedetail.Collective_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Reference", invoicedetail.Reference ?? (object)DBNull.Value),
+                    new SqlParameter("@Indent_No", invoicedetail.Indent_No ?? (object)DBNull.Value),
                     new SqlParameter("@Quantity", invoicedetail.Quantity ?? (object)DBNull.Value),
                     new SqlParameter("@Cost", invoicedetail.Cost ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", invoicedetail.UpdatedBy ?? (object)DBNull.Value)
@@ -1096,8 +1087,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Update_InvoiceList 
-                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code, @Material_No, @Description, @Batch, @Customer, @Customer_Name, @Name, @Collective_No,
-                    @Reference, @Quantity, @Cost, @UpdatedBy",
+                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code,@Plant_Name, @Material_No, @Dealer_Name, @End_Customer, @Collective_No,
+                    @Indent_No, @Quantity, @Cost, @UpdatedBy",
                     parameters
                 );
 
@@ -1176,14 +1167,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         Inv_Type = item.Inv_Type,
                         Sales_Order = item.Sales_Order,
                         Plant_Code = item.Plant_Code,
+                        Plant_Name = item.Plant_Name,
                         Material_No = item.Material_No = item.Material_No,
-                        Description = item.Description,
-                        Batch = item.Batch,
-                        Customer = item.Customer,
-                        Customer_Name = item.Customer_Name,
-                        Name = item.Name,
+                        Dealer_Name = item.Dealer_Name,
+                        End_Customer = item.End_Customer,
                         Collective_No = item.Collective_No,
-                        Reference = item.Reference,
+                        Indent_No = item.Indent_No,
                         Quantity = item.Quantity,
                         Cost = item.Cost,
                         CreatedBy = item.CreatedBy,

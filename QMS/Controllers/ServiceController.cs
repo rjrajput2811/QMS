@@ -592,7 +592,7 @@ namespace QMS.Controllers
                         Customer_Name = worksheet.Cell(row, 10).GetString().Trim(),
                         Bill_Req_Date = worksheet.Cell(row, 11).TryGetValue(out DateTime billDate) ? billDate : null,
                         Created_By = worksheet.Cell(row, 12).GetString().Trim(),
-                        Wipro_Commit_Date = worksheet.Cell(row, 13).GetString().Trim(),
+                        Wipro_Commit_Date = worksheet.Cell(row, 13).TryGetValue(out DateTime wpDate) ? wpDate : null,
                         Material_No = worksheet.Cell(row, 14).GetString().Trim(),
                         Item_Description = worksheet.Cell(row, 15).GetString().Trim(),
                         Quantity = worksheet.Cell(row, 16).GetValue<int?>(),
@@ -624,15 +624,15 @@ namespace QMS.Controllers
                     using var failWb = new XLWorkbook();
                     var failSheet = failWb.Worksheets.Add("Failed Records");
 
-                    failSheet.Cell(1, 1).Value = "Indent_No";
-                    failSheet.Cell(1, 2).Value = "Customer_Code";
+                    failSheet.Cell(1, 1).Value = "Material No";
+                    failSheet.Cell(1, 2).Value = "Customer Name";
                     failSheet.Cell(1, 3).Value = "Reason";
 
                     int i = 2;
                     foreach (var fail in importResult.FailedRecords)
                     {
-                        failSheet.Cell(i, 1).Value = fail.Record.Indent_No;
-                        failSheet.Cell(i, 2).Value = fail.Record.Customer_Code;
+                        failSheet.Cell(i, 1).Value = fail.Record.Material_No;
+                        failSheet.Cell(i, 2).Value = fail.Record.Customer_Name;
                         failSheet.Cell(i, 3).Value = fail.Reason;
                         i++;
                     }
@@ -793,17 +793,15 @@ namespace QMS.Controllers
                         Inv_Type = worksheet.Cell(row, 3).GetString().Trim(),
                         Sales_Order = worksheet.Cell(row, 4).GetString().Trim(),
                         Plant_Code = worksheet.Cell(row, 5).GetString().Trim(),
-                        Material_No = worksheet.Cell(row, 6).GetString().Trim(),
-                        Description = worksheet.Cell(row, 7).GetString().Trim(),
-                        Batch = worksheet.Cell(row, 8).GetString().Trim(),
-                        Customer = worksheet.Cell(row, 9).GetString().Trim(),
-                        Customer_Name = worksheet.Cell(row, 10).GetString().Trim(),
-                        Name = worksheet.Cell(row, 11).GetString().Trim(),
-                        Collective_No = worksheet.Cell(row, 12).GetString().Trim(),
-                        Reference = worksheet.Cell(row, 13).GetString().Trim(),
-                        Inv_Date = worksheet.Cell(row, 14).TryGetValue(out DateTime invDate) ? invDate : null,
-                        Quantity = worksheet.Cell(row, 15).GetString().Trim(),
-                        Cost = worksheet.Cell(row, 16).GetString().Trim(),
+                        Plant_Name = worksheet.Cell(row, 6).GetString().Trim(),
+                        Material_No = worksheet.Cell(row, 7).GetString().Trim(),
+                        Dealer_Name = worksheet.Cell(row, 8).GetString().Trim(),
+                        End_Customer = worksheet.Cell(row, 9).GetString().Trim(),
+                        Collective_No = worksheet.Cell(row, 10).GetString().Trim(),
+                        Indent_No = worksheet.Cell(row, 11).GetString().Trim(),
+                        Inv_Date = worksheet.Cell(row, 12).TryGetValue(out DateTime invDate) ? invDate : null,
+                        Quantity = worksheet.Cell(row, 13).GetString().Trim(),
+                        Cost = worksheet.Cell(row, 14).GetString().Trim(),
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,
                     };

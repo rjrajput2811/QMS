@@ -438,8 +438,8 @@ function BlankIndentDumpDown() {
     Blockloadershow();
 
     var expectedColumns = [
-        'Indent No', 'Indent Date', 'Business Unit', 'Vertical', 'Branch', 'Indent Status', 'End Customer Name', 'Complaint Id', 'Customer Code', 'Customer Name', 'Bill Request Date',
-        'Created By', 'Wipro Commit Date', 'Material No', 'Item Description', 'Quantity', 'Price', 'Final Price', 'SAPSO No', 'Create SoQty', 'Inv_qnty', 'Inv_value','Wipro Catelog No',
+        'Indent No', 'Indent Date', 'Business Unit', 'Vertical', 'Branch', 'Indent Status', 'End Customer Name', 'CCN No', 'Customer Code', 'Customer Name', 'Bill Request Date',
+        'Created By', 'Wipro Commit Date', 'Material No', 'Item Description', 'Quantity', 'Price', 'Discount', 'Final Price', 'SAPSO No', 'Create SoQty', 'Inv_qnty', 'Inv_value','Wipro Catelog No',
         'Batch Code', 'Batch Date', 'MainProd Code', 'User Name'
     ];
 

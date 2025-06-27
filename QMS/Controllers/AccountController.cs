@@ -28,13 +28,15 @@ namespace QMS.Controllers
                     HttpContext.Session.SetInt32("UserId", loginUser.Id);
                     HttpContext.Session.SetString("FullName", loginUser.Name);
                     HttpContext.Session.SetInt32("UserRole", (int)loginUser.RoleId);
-                    if (loginUser.RoleId == (int)UserRoles.Admin || loginUser.RoleId == (int)UserRoles.Manager)
+                    HttpContext.Session.SetInt32("Vendor_Id", (int)loginUser.Vendor_Id);
+                    HttpContext.Session.SetString("User_Type", loginUser.User_Type);
+                    if (loginUser.RoleId == (int)UserRoles.Admin || loginUser.RoleId == (int)UserRoles.Manager || loginUser.RoleId == (int)UserRoles.Staff)
                     {
                         return RedirectToAction("OptionSelection", "Home");
                     }
                     else
                     {
-                        return RedirectToAction("Index", "CPR");
+                        return RedirectToAction("VendorOptionSelection", "Home");
                     }
                 }
                 ModelState.AddModelError("WrongCredentials", "Incorrect email address or password.");

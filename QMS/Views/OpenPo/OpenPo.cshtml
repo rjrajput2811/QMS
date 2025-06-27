@@ -1,6 +1,10 @@
 ﻿@using QMS.Core.Enums
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 @{
     ViewData["Title"] = "Open Po Details";
+    var userType = HttpContextAccessor.HttpContext.Session.GetString("User_Type") ?? "";
+    var vendor_Name = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
 }
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
@@ -12,7 +16,7 @@
 <script src="~/js/pnotify.confirm.js"></script>
 <script src="~/js/tabulator.js"></script>
 <script src="~/js/xlsx.min.js"></script>
-
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
 
     .bborder {
@@ -80,9 +84,9 @@
 
     .tabulator .tabulator-header .tabulator-col {
         font-size: 14px;
-        background-color: #8ee0d1;
+        background-color: #D6E4F0;
         font-weight: 600;
-        border-right: 2px solid #ccc;
+        border-right: 1px solid #ccc;
     }
 
     .tabulator-row .tabulator-cell {
@@ -92,98 +96,88 @@
         height: 30px;
     }
 
-    .switch {
-        position: relative;
-        display: inline-block;
-        width: 32px;
-        height: 15px;
-    }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-    .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        transition: .4s;
-        border-radius: 20px;
-    }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 11px;
-            width: 11px;
-            left: 3px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-    input:checked + .slider {
-        /* background-color: #2196F3; */
-        background-color: #645394;
-    }
-
-        input:checked + .slider:before {
-            transform: translateX(14px);
-        }
-
-
     .tabulator-cell:hover {
-        color: #673AB7 !important;
+        color: #4682B4 !important;
         cursor: pointer !important;
         font-weight: bold;
     }
 
-    .select2-selection--single:not([class*=bg-]):not([class*=border-]) {
-        /* border-color: #673AB7; */
-        border: 2px solid #673AB7 !important;
-        border-top: none !important;
-        border-left: none !important;
-        border-right: none !important;
-        border-radius: 0px !important;
+    /* Slideout modal customization */
+    .modal-dialog-slideout {
+        position: fixed;
+        margin: auto;
+        width: 60%;
+        height: 100%;
+        right: 10px;
+        top: 250px;
+        bottom: 0;
+        transform: translate3d(100%, 0, 0);
+        transition: transform 0.5s ease-out;
     }
 
-    .large-checkbox {
-        width: 12px;
-        height: 12px;
-        transform: scale(1.5);
-        appearance: none; /* Remove default checkbox style */
-        -webkit-appearance: none;
-        background-color: #fff;
-        border: 1px solid #007bff; /* Bootstrap primary blue or any color */
-        border-radius: 3px; /* Rounded corners */
-        cursor: pointer;
+    .modal.fade .modal-dialog-slideout {
+        transform: translate3d(100%, 0, 0);
+    }
+
+    .modal.fade.show .modal-dialog-slideout {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .tabulator-tree-col .tabulator-tree-control {
+        display: none;
+    }
+
+    /* .tabulator-row.tabulator-tree-level-0 {
+        font-size: large;
+        color: #4682B4 !important;
+        font-weight: 600;
+    } */
+
+    .tabulator-row.tabulator-tree-level-1 {
+        font-size: medium;
+    }
+
+    .tabulator-row .tabulator-cell .tabulator-data-tree-control {
+        border: 2px solid #4682B4 !important;
+        background-color: #4682B4 !important;
+    }
+
+    .tabulator .tabulator-data-tree-branch {
+        border-left: 2px solid #4682B4 !important;
+        border-bottom: 2px solid #4682B4 !important;
+    }
+
+    .form-check.form-switch .form-check-input {
+        width: 2.4em;
+        height: 1.2em;
+        background-color: #ddd;
+        border-radius: 1.2em;
         position: relative;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        transition: background-color 0.3s;
     }
 
-        .large-checkbox:checked {
+        .form-check.form-switch .form-check-input:checked {
             background-color: #007bff;
-            border-color: #007bff;
         }
 
-            .large-checkbox:checked::after {
-                content: "";
-                position: absolute;
-                top: 1px;
-                left: 4px;
-                width: 3px;
-                height: 8px;
-                border: solid white;
-                border-width: 0 2px 2px 0;
-                transform: rotate(45deg);
-            }
+        .form-check.form-switch .form-check-input::before {
+            content: "";
+            position: absolute;
+            top: 0.140em;
+            left: 0.125em;
+            width: 0.9em;
+            height: 0.9em;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
 
+        .form-check.form-switch .form-check-input:checked::before {
+            transform: translateX(1.2em);
+        }
 </style>
 
 
@@ -191,18 +185,31 @@
 
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
-                <b style="font-size: large;color: #1f7d75;">Open Po Details</b>
+            <div style="font-size: large; color: #4682B4;">
+                @* <b style="font-size: large;color: #1f7d75;">Open Po Details</b> *@
+                @(userType == "Vendor" ? vendor_Name : "Vendor PO Details")
             </div>
             <!-- Back Button -->
             <div>
                 @*  <button id="download-template" class="btn btn-outline-secondary legitRipple" style="font-size:14px">
                     <i class="fas fa-regular fa-file-excel mr-2"></i>Download Blank Exl
                 </button> *@
+                <div class="ml-auto">
+                    @if (userType != "Vendor")
+                    {
+                        <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
+                            <i class="fas fa-upload mr-2"></i>Upload Xl
+                        </button>
+                    }
+                    <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
+                        <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
+                    </button>&nbsp;
 
-                <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="AutoReload()" style="font-size:14px">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
+                    <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="AutoReload()" style="font-size:14px">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -213,16 +220,24 @@
                 <div class="card-body">
                     <div class="chart-container">
                         <div class="card-body d-flex justify-content-between align-items-center" style="margin-top: -30px;margin-bottom: -15px;">
-                            <div class="ml-auto">
-                                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 10px 3px; width: 124px;font-size:14px">
-                                    <i class="fas fa-upload mr-2"></i>Upload Exl
-                                </button>
+                        </div>
 
-                                <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 10px 3px; width: 118px;font-size:14px;margin-right: -20px;">
-                                    <i class="fas fa-regular fa-file-excel mr-2"></i>Export Exl
-                                </button>
+                        <div class="row form-group align-items-center mb-2">
+                            <label class="col-1" for="toggleExpandRows" style="font-weight:600;font-size:14px;">Expand Rows :</label>
+                            <div class="col-2">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="toggleExpandRows">
+                                </div>
                             </div>
                         </div>
+
+                        @* <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="toggleExpandRows">
+                            <label class="form-check-label" for="toggleExpandRows">
+                                Expand All Rows
+                            </label>
+                        </div> *@
+
                         <div class="form-group row">
                             <div id="openPo_Table" class="col-12"></div>
                         </div>
@@ -232,6 +247,42 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="deliveryScheduleModal" tabindex="-1" aria-labelledby="deliveryScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-slideout modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background:#4682B4;">
+                <h5 class="modal-title" id="deliveryScheduleModalLabel">Delivery Schedule Entry</h5>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Close</button>
+            </div>
+
+            <div class="modal-body">
+
+                <!-- PO Info -->
+                <div class="border rounded p-3 bg-light mb-3 d-flex justify-content-between" style="font-size:larger">
+                    <div><strong>PO No : </strong> <span id="lblPONo"></span></div>
+                    <div><strong>PO Date : </strong> <span id="lblPODate"></span></div>
+                    <div><strong>PO Qty : </strong> <span id="lblPOQty"></span></div>
+                    <div><strong>Bal.Qty : </strong> <span id="lblBalanceQty"></span></div>
+                </div>
+
+                <!-- Tabulator delivery schedule table -->
+                <div id="deliveryScheduleTable"></div>
+
+                <div class="mt-3">
+
+                    <button type="button" class="btn btn-outline-primary legitRipple mr-2" onclick="addScheduleRow()" title="Add Delivery Schedule">
+                        <i class="fas fa-plus fa-1x"></i>
+                    </button>
+                    @* <button class="fas fa-plus mr-2 fa-1x" onclick="addScheduleRow()"></button> *@
+                    <button class="btn btn-outline-success float-end" onclick="saveDeliverySchedule()">Save Schedule</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 
 @* <div class="modal fade" id="uploadDetailModal" tabindex="-1" aria-labelledby="uploadDetailLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -275,6 +326,14 @@
 
          var tabledata = [];
          var table = '';
+         var userType = '@userType';
+         var vendorName = '@vendor_Name';
+
+        var deliveryScheduleTable;
+        var poRowDataCache = {};
+        var currentMainRowData = {};
+        var selectedPoId = 0;
+
 
          $(document).ready(function () {
              $('#upload-button').on('click', async function () {
@@ -288,7 +347,15 @@
                     handleImportExcelFile(url, expectedColumns);
              });
 
-             loadData();
+
+             if(userType == "Vendor")
+             {
+                 loadVendorData()
+             }
+             else
+             {
+                loadData();
+             }
          });
 
         function clearForm() {
@@ -325,12 +392,47 @@
             Blockloadershow();
 
             $.ajax({
-                url: '@Url.Action("GetAll", "OpenPo")',
+                url: '@Url.Action("GetOpenPOWithDelivery", "OpenPo")',
                 type: 'GET',
                 success: function (data) {
                     Blockloaderhide();
-                    if (data && Array.isArray(data)) {
-                        OnTabGridLoad(data);
+                    if (data && Array.isArray(data.poHeaders)) {
+
+                        const response = {
+                            poHeaders: data.poHeaders,
+                            deliverySchedules: data.deliverySchedules
+                        };
+
+                        OnTabGridLoad(response);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        function loadVendorData() {
+
+            Blockloadershow();
+            $.ajax({
+                url: '@Url.Action("GetOpenPOWithDelivery", "OpenPo")',
+                type: 'GET',
+                data: { vendor: vendorName },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data.poHeaders)) {
+
+                        const response = {
+                            poHeaders: data.poHeaders,
+                            deliverySchedules: data.deliverySchedules
+                        };
+
+                        OnTabGridLoad(response);
                     }
                     else {
                         showDangerAlert('No data available to load.');
@@ -412,13 +514,19 @@
             tabledata = [];
             let columns = [];
 
-            // Map the response to the table format
-            if (response.length > 0) {
-                $.each(response, function (index, item) {
+            var myList = response.poHeaders || [];
+            var allTS = response.deliverySchedules || [];
 
-                    function formatDate(value) {
+            // Map the response to the table format
+            if (myList.length > 0) {
+
+                function formatDate(value) {
                         return value ? new Date(value).toLocaleDateString("en-GB") : "";
-                    }
+                }
+
+                $.each(myList, function (index, item) {
+
+                    
 
                     tabledata.push({
                         Sr_No: index + 1,
@@ -443,11 +551,40 @@
                         Hold_Date: formatDate(item.hold_Date),
                         Cleared_Date: formatDate(item.cleared_Date),
                         CreatedBy: item.createdBy,
-                        CreatedDate : formatDate(item.createdDate)
+                        CreatedDate : formatDate(item.createdDate),
+                        _children: []
                     });
                 });
 
-                columns.push(
+                // Add child rows from Table2 (allTS)
+                $.each(allTS, function () {
+                    var parentRow = tabledata.find(row =>
+                        row.Id === this.ven_PoId && row.Vendor === this.vendor
+                    );
+
+                    if (parentRow) {
+                        parentRow._children.push({
+                            Sr_No: "-",
+                            PO_No: "",
+                            PO_Date: "",
+                            PO_Qty: "",
+                            Delivery_Date:formatDate(this.delivery_Date),
+                            Destination: "",
+                            Balance_Value: this.delivery_Qty,
+                            Material: this.delivery_Remark,
+                            Balance_Qty: "",  // optional for visual alignment
+                            CreatedBy: "",    // empty in child if not used
+                        });
+                    }
+                });
+            }
+
+            window.PendTSTableData = JSON.parse(JSON.stringify(tabledata));
+
+
+                if (userType != "Vendor") {
+
+                    columns.push(
                     {
                         title: "Action",
                         field: "Action",
@@ -463,49 +600,138 @@
                             // actionButtons += `<i data-toggle="modal" onclick="showEditProduct(${rowData.Id},'copy')" class="fas fa-plus mr-2 fa-1x" title="Add Using Existing" style="color:green;cursor:pointer;margin-left: 5px;"></i>`;
 
 
-                             actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
-
+                                actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
                             // Send email button
                             // actionButtons += `<i data-toggle="modal" onclick="openProdEmail(${rowData.Id})" class="fas fa-envelope text-info mr-2 fa-1x" title="Send Email" style="font-size: 20px; cursor: pointer;margin-left: 5px;"></i>`;
 
                             return actionButtons;
                         }
-                    },
-                    {
+                    });
+                }
+
+                    columns.push({
                         title: "SNo", field: "Sr_No", sorter: "number", width: 65, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
-                    },
-                    { title: "Key", field: "Key"/* , width: 110 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "PR Type", field: "PR_Type"/* , width: 160 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "PR Description", field: "PR_Desc"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "Requisitioner", field: "Requisitioner"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Tracking No", field: "Tracking_No"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "PR No", field: "PR_No"/* , width: 130 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Batch No", field: "Batch_No"/* , width: 100 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Reference No", field: "Reference_No"/* , width: 280 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "Vendor", field: "Vendor"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "PO No", field: "PO_No"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "PO Date", field: "PO_Date"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "PO Qty", field: "PO_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "BalanceQty", field: "Balance_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Destination", field: "Destination", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Delivery Date", field: "Delivery_Date", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"},
-                    { title: "Balance Value", field: "Balance_Value", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Material", field: "Material", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Hold Date", field: "Hold_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"},
-                    { title: "Cleared Date", field: "Cleared_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "ID", field: "Id", visible: false },
-                );
+                    });
+
+                    if (userType != "Vendor") {
+                        columns.push({ title: "Key", field: "Key"/* , width: 110 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
+                        columns.push({ title: "PR Type", field: "PR_Type"/* , width: 160 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "PR Description", field: "PR_Desc"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
+                        columns.push({ title: "Requisitioner", field: "Requisitioner"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "Tracking No", field: "Tracking_No"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "PR No", field: "PR_No"/* , width: 130 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "Batch No", field: "Batch_No"/* , width: 100 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "Reference No", field: "Reference_No"/* , width: 280 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "left", headerHozAlign: "left" });
+                        columns.push({ title: "Vendor", field: "Vendor"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
+                    }
+
+                    columns.push({ title: "PO No", field: "PO_No"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "PO Date", field: "PO_Date"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "PO Qty", field: "PO_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+
+                    if (userType != "Vendor")
+                    {
+                        columns.push({ title: "BalanceQty", field: "Balance_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    }
+
+                    columns.push({ title: "Destination", field: "Destination", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "Delivery Date", field: "Delivery_Date", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center",
+                        formatter: function (cell, formatterParams) {
+                             // const rowData = cell.getRow().getData();
+                             //  return `<i class="fas fa-calendar-alt text-primary" style="cursor:pointer;font-size:18px;" title="Manage Delivery Schedule" onclick="openDeliverySchedule(${rowData.Id})"></i>`;
+                             // if (!rowData._children) {
+                             //     return `<i class="fas fa-calendar-alt text-primary" title="Manage Delivery Schedule" style="cursor:pointer;font-size:18px;" onclick="openDeliverySchedule(${rowData.Id})"></i>`;
+                             // } else {
+                             //     return rowData.Delivery_Date || "";
+                             // }
+
+                                const row = cell.getRow();
+                                const data = row.getData();
+                                const isChild = row.getTreeParent() !== null;
+
+                                    function parseDateString(str) {
+                                        const parts = str?.split("/");
+                                        if (parts?.length === 3) {
+                                            const day = parseInt(parts[0], 10);
+                                            const month = parseInt(parts[1], 10) - 1;
+                                            const year = parseInt(parts[2], 10);
+                                            return new Date(year, month, day);
+                                        }
+                                        return null;
+                                    }
+
+                                if (data.Id) {
+                                    let latestDate = "";
+
+                                    const children = row.getTreeChildren();
+                                    if (children.length > 0) {
+                                        const dates = children
+                                            .map(childRow => {
+                                                const childData = childRow.getData();
+                                                return parseDateString(childData.Delivery_Date);
+                                            })
+                                            .filter(date => date instanceof Date && !isNaN(date));
+
+                                        if (dates.length > 0) {
+                                            const maxDate = new Date(Math.max(...dates));
+                                            latestDate = ` ${maxDate.toLocaleDateString("en-GB")}`;
+                                        }
+                                    }
+
+                                    // let latestDate = "";
+
+                                    // if (data._children && Array.isArray(data._children)) {
+                                    //     const dates = data._children
+                                    //         .map(child => new Date(child.Delivery_Date))
+                                    //         .filter(date => !isNaN(date));
+
+                                    //     if (dates.length > 0) {
+                                    //         const maxDate = new Date(Math.max(...dates));
+                                    //         latestDate = ` ${maxDate.toLocaleDateString("en-GB")}`;
+                                    //     }
+                                    // }
+
+                                    return `<div style="display:flex; align-items:center; justify-content:space-between;">
+                                                <span style="flex:1; text-align:center; font-weight:600; color:#59C3C3;">${latestDate}</span>
+                                                <i class="fas fa-regular fa-calendar-days"
+                                                   title="Manage Delivery Schedule"
+                                                   style="cursor:pointer; font-size:18px;"
+                                                   onclick="openDeliverySchedule(${data.Id})">
+                                                </i>
+                                            </div>`;
+                                }
+
+                                // For child rows: show the formatted delivery date if present
+                                 return data.Delivery_Date || "";
+                        }
+                    });
+                    columns.push({ title: "Balance Value", field: "Balance_Value", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "Material", field: "Material", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "Hold Date", field: "Hold_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"});
+                    columns.push({ title: "Cleared Date", field: "Cleared_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+
+                    if (userType != "Vendor")
+                    {
+                        columns.push({ title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    }
+
+                    columns.push({ title: "ID", field: "Id", visible: false });
 
                 // // Initialize Tabulator
                 table = new Tabulator("#openPo_Table", {
-                    data: tabledata, // Table data
+                    data: window.PendTSTableData, // Table data
                     renderHorizontal: "virtual",
                     movableColumns: true, // Allow column reordering
                     pagination: "local", // Enable pagination
                     paginationSize: 10, // Rows per page
                     paginationSizeSelector: [50, 100, 500, 1500, 2000],
                     paginationCounter: "rows",
+                    layout: "fitDataFill",
+                    dataTree: true,
+                    dataTreeStartExpanded: false,
+                    dataTreeChildField: "_children",
+                    dataTreeFilter: false,
+                    // placeholder: "No data available",
                     dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
                     index: "Id", // This tells Tabulator to use `Id` as the unique row key
                     columns: columns
@@ -521,1110 +747,216 @@
                 //     }
                 // });
 
+                    document.getElementById("toggleExpandRows").addEventListener("change", function () {
+                        const shouldExpand = this.checked;
+                        const allRows = table.getRows();
+
+                        allRows.forEach(row => {
+                            if (row.getTreeChildren().length > 0) {
+                                shouldExpand ? row.treeExpand() : row.treeCollapse();
+                            }
+                        });
+                    });
+
 
                 document.getElementById("exportExcel").addEventListener("click", function () {
                     table.download("xlsx", "Open Po List.xlsx", { sheetName: "Open Po List" });
                 });
-            }
-            else {
-                showDangerAlert('No data available.');
-            }
+            // }
+            // else {
+            //     showDangerAlert('No data available.');
+            // }
 
             // Hide loader
             Blockloaderhide();
         }
 
+
+        function openDeliverySchedule(id) {
+            debugger;
+            Blockloadershow();
+            // Get full row data from Tabulator
+            const row = table.getRow(id).getData();
+
+            selectedPoId = id;
+            currentMainRowData = row;
+            poRowDataCache[id] = row;
+
+            // Set PO header info
+            $("#lblPONo").text(row.PO_No);
+            $("#lblPODate").text(row.PO_Date);
+            $("#lblPOQty").text(row.PO_Qty);
+            $("#lblBalanceQty").text(row.Balance_Qty);
+
+
+
+           $("#deliveryScheduleModal").modal('show');
+           // loadDeliveryScheduleTable();
+
+            $.ajax({
+                url: '@Url.Action("GetDeliverySchedule", "OpenPo")',
+                type: 'GET',
+                data: { poId: id },
+                success: function (data) {
+                    Blockloaderhide();
+                    // $("#deliveryScheduleModal").modal('show');
+
+                    if (data && data.deliveryScheduleList && data.deliveryScheduleList.length > 0) {
+                        loadDeliveryScheduleTable(data.deliveryScheduleList);
+                    } else {
+                        loadDeliveryScheduleTable([]); // show empty table if no delivery schedule found
+                    }
+                }
+            });
+        }
+
+
+        function loadDeliveryScheduleTable(response) {
+
+            let tabledata = [];
+
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+
+                    function formatDate(value) {
+                        return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                    }
+
+                    tabledata.push({
+                        SrNo: index + 1,
+                        Delivery_Date: formatDate(item.delivery_Date),  // Assuming delivery_Date comes as raw datetime
+                        Delivery_Qty: item.delivery_Qty,
+                        Delivery_Remark: item.delivery_Remark
+                    });
+                });
+            }
+
+            deliveryScheduleTable = new Tabulator("#deliveryScheduleTable", {
+                data: tabledata,
+                layout: "fitColumns",
+                columns: [
+                    { title: "Sr No.", field: "SrNo", width: 90 ,hozAlign: "center", headerHozAlign: "center"},
+                    { title: "Date", field: "Delivery_Date", editor: "date", width: 115,hozAlign: "center", headerHozAlign: "center" },
+                    { title: "Qty", field: "Delivery_Qty", editor: "number", width: 95 ,hozAlign: "center", headerHozAlign: "center"},
+                    { title: "Remark", field: "Delivery_Remark", editor: "input", width: 455,hozAlign: "left", headerHozAlign: "left" },
+                    {
+                        title: "Action", width: 100,hozAlign: "center", headerHozAlign: "center",
+                        formatter: function () {
+                            return `<i data-toggle="modal" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+                        },
+                        cellClick: function(e, cell) {
+                            cell.getRow().delete();
+                            renumberSrNo();
+                        }
+                    }
+                ]
+            });
+        }
+
+        function renumberSrNo() {
+            const rows = deliveryScheduleTable.getRows();
+            rows.forEach((row, index) => {
+                row.update({ SrNo: index + 1 });
+            });
+        }
+
+        function addScheduleRow() {
+            let rowCount = deliveryScheduleTable.getDataCount() + 1;
+            deliveryScheduleTable.addRow(
+                { SrNo: rowCount, Delivery_Date: "", Delivery_Qty: 0, Delivery_Remark: "" },
+                     false, // Scroll to row = false (optional)
+                    "bottom" // <- Ensures row is added at the bottom
+                    ).then((row) => {
+                        setTimeout(() => {
+                    // Edit the Delivery_Date cell (date editor)
+                    row.getCell("Delivery_Date").edit();
+
+                    // Wait a bit to ensure the input is visible and focusable
+                    setTimeout(() => {
+                        // Try to trigger the calendar pop-up (HTML5 date picker)
+                        const dateInput = document.querySelector('.tabulator-editing input[type="date"]');
+
+                        if (dateInput) {
+                            dateInput.focus();            // Ensure input is focused
+                            dateInput.click();            // Trigger click to open calendar
+                            dateInput.showPicker?.();     // Try modern browser support for opening picker
+                        }
+                    }, 100); // Inner delay after edit() call
+                }, 100); // Outer delay after row rendering
+            });
+        }
+
+        function saveDeliverySchedule() {
+            Blockloadershow();
+            let data = deliveryScheduleTable.getData();
+
+            for (let row of data) {
+                if (!row.Delivery_Date && (!row.Delivery_Remarks || row.Delivery_Remarks.trim() === "")) {
+                    Blockloaderhide();
+                    showDangerAlert("Remarks mandatory if Delivery Date is blank.");
+                    return;
+                }
+            }
+
+            let totalQty = 0;
+            for (let row of data) {
+                let qty = parseFloat(row.Delivery_Qty);
+                if (!isNaN(qty)) {
+                    totalQty += qty;
+                }
+            }
+
+            let headerData = poRowDataCache[selectedPoId];
+            let poQty = parseFloat(headerData.PO_Qty);
+
+            if (totalQty > poQty) {
+                Blockloaderhide();
+                showDangerAlert(`Total Delivery Quantity (${totalQty}) cannot be greater than PO Quantity (${poQty}).`);
+                return;
+            }
+
+            let mappedData = data.map(row => ({
+                SrNo: row.SrNo,
+                Delivery_Date: row.Delivery_Date ? new Date(row.Delivery_Date) : null,
+                Delivery_Qty: row.Delivery_Qty || null,  // if you have Delivery_Qty
+                Delivery_Remark: row.Delivery_Remark || null
+            }));
+
+            let request = {
+                Id: headerData.Id || 0,
+                Ven_PoId: headerData.Id || 0,
+                Vendor: headerData.Vendor || '',
+                PO_No: headerData.PO_No || '',
+                PO_Date: headerData.PO_Date ? new Date(headerData.PO_Date) : null,
+                PO_Qty: headerData.PO_Qty || 0,
+                Balance_Qty: headerData.Balance_Qty || 0,
+                DeliveryScheduleList: mappedData
+            };
+
+            $.ajax({
+                type: "POST",
+                url: '@Url.Action("SaveDeliverySchedule", "OpenPo")',
+                data: JSON.stringify(request),
+                contentType: "application/json",
+                success: function (response) {
+                    Blockloaderhide();
+                    showSuccessAlert("Schedule saved successfully!");
+
+                     $("#deliveryScheduleModal").modal('hide');
+
+                     if(userType == "Vendor")
+                     {
+                         loadVendorData()
+                     }
+                     else
+                     {
+                        loadData();
+                     }
+                }
+            });
+        }
     </script>
-
-    @*     <script>
-                            var tabledata = [];
-                            var table = '';
-                            const searchTerms = {};
-
-                            $(document).ready(function () {
-
-                                $('.select2').select2({
-                                    placeholder: "Select User", // Placeholder text
-                                    allowClear: true,
-                                    dropdownParent: $('#prodEmailModal')
-                                });
-
-                                $('#searchMMGInput').select2({
-                                    placeholder: "MMG", // Placeholder text
-                                    allowClear: true,
-                                });
-
-                                $('#searchFirstInput').focus();
-
-                                var uploadDetailTable = '';
-                                // Back button functionality
-                                document.addEventListener('DOMContentLoaded', function () {
-                                    document.getElementById('backButton').addEventListener('click', function () {
-                                        window.history.back();
-                                    });
-                                });
-
-                                loadData();
-
-                                $('#upload-button').on('click', async function () {
-                                    // Define expected columns for this specific page
-                                    var expectedColumns = [
-                                        'Date', 'Old Part No', 'PC', 'PT', 'HF', 'Matrix',
-                                        'NC4', 'Final Part No', 'Part No Formula', 'Description', 'Len Dec', 'Chapter No', 'MMG', 'Pur Grp', 'Tax Classi', 'Hierarchy',
-                                        'Price Matl.Gr.', 'Sales Mat Grp', 'BOM', 'CPS No.', 'Branch', 'NPI MAKE', 'Category'
-                                    ];
-
-                                    var url = '@Url.Action("UploadDataFromExcel", "ProductCodeDetails")';
-                                    handleImportExcelFile(url, expectedColumns);
-                                });
-
-                                $(window).on('scroll', function () {
-                                    // Show the button when scrolled down
-                                    if ($(this).scrollTop() > 100) {
-                                        $('#scrollToTopBtn').fadeIn();
-                                    } else {
-                                        $('#scrollToTopBtn').fadeOut();
-                                    }
-                                });
-
-                                // Add click event listener to the button
-                                $('#scrollToTopBtn').on('click', function () {
-                                    $('html, body').animate({ scrollTop: 0 }, 500); // Smooth scroll to top
-                                });
-
-                                //--------------------------------------------------------------------- Validation ---------------------------------------------------------------------------------------//
-                                // List of potential input IDs
-                                const inputIds = ['searchFirstInput', 'searchLastInput', 'searchDescInput', 'searchMMGInput', 'searchPCInput', 'searchPTInput',];
-
-                                inputIds.forEach(inputId => {
-                                    // Check if the element exists in the DOM
-                                    const inputElement = $(`#${inputId}`);
-                                    if (inputElement.length) {
-                                        if (inputElement.is('select')) {
-                                            inputElement.on('change', function (event) {
-                                                handleSearch(inputId);
-                                            });
-                                        } else {
-                                            inputElement.on('keydown', function (event) {
-                                                handleSearch(inputId, event);
-                                            });
-                                        }
-                                    }
-                                });
-
-                            });
-
-                            function clearForm() {
-                                // Clear all input fields
-                                document.querySelectorAll('.form-control').forEach(function (input) {
-                                    if (input.tagName === 'INPUT') {
-                                        if (input.type === 'hidden' || input.readOnly) {
-                                            // Skip hidden or readonly inputs
-                                            return;
-                                        }
-                                        input.value = ''; // Clear input value
-                                    } else if (input.tagName === 'SELECT') {
-                                        input.selectedIndex = 0; // Reset dropdown to first option
-                                    }
-                                });
-                                $("[id*=Mate_Grp]").val(0);
-                                $("[id*=Vender]").val(0);
-                                $("[id*=NC4_Old]").val("");
-                                $("[id*=FinalPart_No]").val("");
-                                $("[id*=OldPart_No]").val("");
-                                $("[id*=Description]").val("");
-                                $("[id*=Mate_Grp]").trigger('change');
-                                $("[id*=Vender]").trigger('change');
-                                // Clear error messages if needed
-                                document.querySelectorAll('.text-danger').forEach(function (error) {
-                                    error.textContent = '';
-                                });
-                            }
-
-                            function loadData() {
-                                Blockloadershow();
-
-                                $.ajax({
-                                    url: '@Url.Action("GetAll", "ProductCodeDetails")',
-                                    type: 'GET',
-                                    success: function (data) {
-                                        Blockloaderhide();
-                                        if (data && Array.isArray(data)) {
-                                            OnTabGridLoad(data);
-                                        }
-                                        else {
-                                            showDangerAlert('No data available to load.');
-                                        }
-                                    },
-                                    error: function (xhr, status, error) {
-                                        showDangerAlert('Error retrieving data: ' + error);
-                                        Blockloaderhide();
-                                    }
-                                });
-                            }
-
-                            //define column header menu as column visibility toggle
-                            var headerMenu = function () {
-                                var menu = [];
-                                var columns = this.getColumns();
-
-                                for (let column of columns) {
-
-                                    //create checkbox element using font awesome icons
-                                    let icon = document.createElement("i");
-                                    icon.classList.add("fas");
-                                    icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
-
-                                    //build label
-                                    let label = document.createElement("span");
-                                    let title = document.createElement("span");
-
-                                    title.textContent = " " + column.getDefinition().title;
-
-                                    label.appendChild(icon);
-                                    label.appendChild(title);
-
-                                    //create menu item
-                                    menu.push({
-                                        label: label,
-                                        action: function (e) {
-                                            //prevent menu closing
-                                            e.stopPropagation();
-
-                                            //toggle current column visibility
-                                            column.toggle();
-
-                                            //change menu item icon
-                                            if (column.isVisible()) {
-                                                icon.classList.remove("fa-square");
-                                                icon.classList.add("fa-check-square");
-                                            } else {
-                                                icon.classList.remove("fa-check-square");
-                                                icon.classList.add("fa-square");
-                                            }
-                                        }
-                                    });
-                                }
-
-                                return menu;
-                            };
-
-                            function wildcardFilter(headerValue, rowValue) {
-                                if (!headerValue) return true;
-
-                                let regexStr = headerValue
-                                    .replace(/[-[\]/{}()+?.\\^$|]/g, "\\$&")  // escape special characters
-                                    .replace(/\*/g, ".*"); // convert * to regex
-
-                                try {
-                                    let regex = new RegExp("^" + regexStr + "$", "i");
-                                    return regex.test(rowValue || ""); // handle nulls gracefully
-                                } catch (e) {
-                                    return true; // fallback: show all if regex fails
-                                }
-                            }
-
-                            function OnTabGridLoad(response) {
-                                // Clear table data
-                                debugger;
-                                Blockloadershow();
-
-                                tabledata = [];
-                                let columns = [];
-
-                                // Map the response to the table format
-                                if (response.length > 0) {
-                                    $.each(response, function (index, item) {
-
-                                        // const formatDate = (dateStr) => dateStr ? new Date(dateStr).toLocaleDateString("en-GB") : "";
-                                        let formattedDate = "";
-                                        let updatedDate = "";
-                                        if (item.date) {
-                                            const dateObj = new Date(item.date);
-                                            formattedDate = dateObj.toLocaleDateString("en-GB");
-                                        }
-                                        if (item.updatedDate) {
-                                            const updatedateObj = new Date(item.updatedDate);
-                                            updatedDate = updatedateObj.toLocaleDateString("en-GB");
-                                        }
-
-                                        tabledata.push({
-                                            Sr_No: index + 1,
-                                            Id: item.id,
-                                            Date: formattedDate,
-                                            Part_No: item.oldPart_No,
-                                            PC: item.pc,
-                                            PT: item.pt,
-                                            HF: item.hf,
-                                            Matrix: item.matrix,
-                                            NC4: item.nC4,
-                                            Final_Part_No: item.finalPart_No,
-                                            Description: item.description,
-                                            MMG: item.mmg,
-                                            Vendor_Name: item.vendor_Name,
-                                            ShortName: item.shortName,
-                                            Client: item.client,
-                                            NPRCategory: item.nprCategory,
-                                            ProductType: item.productType,
-                                            Status: item.status,
-                                            IsLock: item.isLock,
-                                            CreatedBy: item.createdBy,
-                                            UpdatedBy: item.updatedBy,
-                                            UpdatedDate: updatedDate,
-                                            CPR_No: item.cpR_No || "",
-                                            Product_No: item.product_No,
-                                             Selected: false // ✅ New checkbox field
-                                        });
-                                    });
-
-                                    const UserRoles = @Html.Raw(user_Roles)
-                                        let UserRole = @userRole;
-
-                                    if (UserRole === UserRoles.Admin) {
-                                        columns.push({
-                                            title: "Lock",
-                                            field: "IsLock",
-                                            width: 50,
-                                            headerMenu: headerMenu,
-                                            hozAlign: "center",
-                                            headerHozAlign: "center",
-                                            formatter: function (cell, formatterParams) {
-                                                let rowData = cell.getRow().getData();
-                                                let checked = rowData.IsLock ? "checked" : "";  // Check if IsLock is true
-
-                                                return `<label class="switch" style="margin-top: 0px;">
-                                                                                                <input type="checkbox" ${checked} onchange="setIsLocked(${cell.getRow().getData().Id}, this)">
-                                                                                                <span class="slider round"></span>
-                                                                                            </label>`;
-                                            }
-                                        });
-                                    }
-
-                                    columns.push({
-                                    title: "<input type='checkbox' class='large-checkbox' onclick='toggleAllCheckboxes(this)' style='left:4px'/>",
-                                        field: "Selected",
-                                        hozAlign: "center",
-                                        width: 45,
-                                        headerSort : false,
-                                        formatter: function (cell, formatterParams) {
-                                            const isChecked = cell.getValue() ? "checked" : "";
-                                            return `<input type="checkbox" class="large-checkbox" ${isChecked} onchange="onSelectCheckboxChange(this, ${cell.getRow().getData().Id})">`;
-                                        },
-                                        headerTooltip: "Select row"
-                                    });
-
-                                    columns.push(
-                                        {
-                                            title: "Action",
-                                            field: "Action",
-                                            // width: 130,
-                                            headerMenu: headerMenu,
-                                            hozAlign: "center",
-                                            headerHozAlign: "center",
-                                            formatter: function (cell, formatterParams) {
-                                                const rowData = cell.getRow().getData();
-                                                let actionButtons = "";
-
-                                                // Add using existing button
-                                                actionButtons += `<i data-toggle="modal" onclick="showEditProduct(${rowData.Id},'copy')" class="fas fa-plus mr-2 fa-1x" title="Add Using Existing" style="color:green;cursor:pointer;margin-left: 5px;"></i>`;
-
-                                                if (!rowData.IsLock)
-                                                {
-                                                    actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
-                                                }
-
-                                                // Send email button
-                                                // actionButtons += `<i data-toggle="modal" onclick="openProdEmail(${rowData.Id})" class="fas fa-envelope text-info mr-2 fa-1x" title="Send Email" style="font-size: 20px; cursor: pointer;margin-left: 5px;"></i>`;
-
-                                                return actionButtons;
-                                            }
-                                        },
-                                        {
-                                            title: "SNo", field: "Sr_No", sorter: "number", width: 65, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
-                                            // , cellClick: function (e, cell) {
-                                            //     let rowData = cell.getRow().getData();
-                                            //     showEditProduct(rowData.Id, "edit"); // Call your edit function
-                                            // }
-                                        },
-                                        { title: "Date", field: "Date", sorter: "date"/* , width: 105 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "MMG", field: "MMG"/* , width: 110 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "Part No", field: "Part_No"/* , width: 160 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: wildcardFilter, hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "PC", field: "PC"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "PT", field: "PT"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "HF", field: "HF"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "Matrix", field: "Matrix"/* , width: 130 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "NC4", field: "NC4"/* , width: 100 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "Description", field: "Description"/* , width: 280 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: wildcardFilter, hozAlign: "left", headerHozAlign: "left" },
-                                        { title: "Vendor", field: "Vendor_Name"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "Short Name", field: "ShortName"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-                                        { title: "NPR Cate.", field: "NPRCategory"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "Pro. Type", field: "ProductType"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-                                        { title: "Status", field: "Status"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                                        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-                                        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-                                        { title: "Customer", field: "Client", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-                                        { title: "CPR No", field: "CPR_No", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-                                        { title: "Product No", field: "Product_No", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-                                        { title: "ID", field: "Id", visible: false },
-                                    );
-
-                                    // // Initialize Tabulator
-                                    table = new Tabulator("#product_Table", {
-                                        data: tabledata, // Table data
-                                        renderHorizontal: "virtual",
-                                        movableColumns: true, // Allow column reordering
-                                        pagination: "local", // Enable pagination
-                                        paginationSize: 10, // Rows per page
-                                        paginationSizeSelector: [50, 100, 500, 1500, 2000],
-                                        paginationCounter: "rows",
-                                        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-                                        index: "Id", // This tells Tabulator to use `Id` as the unique row key
-                                        columns: columns
-                                    });
-
-                                    table.on("cellClick", function (e, cell) {
-                                        let columnField = cell.getColumn().getField(); // Get the column index
-
-                                        // Exclude first and second column by field names
-                                        if (columnField !== "IsLock" && columnField !== "Action" && columnField !== "Delete" && columnField !== "Selected") {
-                                            let rowData = cell.getRow().getData();
-                                            showEditProduct(rowData.Id, "edit");
-                                        }
-                                    });
-
-                                    // Export to Excel on button click
-                                    document.getElementById("exportExcel").addEventListener("click", function () {
-                                        table.download("xlsx", "ProductCode_Data.xlsx", { sheetName: "Product Code Data" });
-                                    });
-
-                                     // ✅ UPPERCASE HEADER FILTER for Part_No and Description columns only
-                                    // table.on("renderComplete", function () {
-                                    //     const targetFields = ["Part_No", "Description"];
-
-                                    //     document.querySelectorAll('.tabulator-col input[type="text"]').forEach(input => {
-                                    //         const col = input.closest(".tabulator-col");
-                                    //         if (!col) return;
-
-                                    //         const field = col.getAttribute("tabulator-field");
-                                    //         if (targetFields.includes(field)) {
-                                    //             input.style.textTransform = "uppercase";
-
-                                    //             input.oninput = function () {
-                                    //                 const pos = this.selectionStart;
-                                    //                 this.value = this.value.toUpperCase();
-                                    //                 this.setSelectionRange(pos, pos);
-                                    //                 this.dispatchEvent(new Event("change"));
-                                    //             };
-                                    //         }
-                                    //     });
-                                    // });
-                                }
-                                else {
-                                    showDangerAlert('No data available.');
-                                }
-
-                                // setTimeout(() => {
-
-                                //     const targetFields = ["Part_No", "Description"];
-
-                                //     document.querySelectorAll('.tabulator-header input[type="text"]').forEach(input => {
-                                //         const columnElement = input.closest(".tabulator-col");
-                                //         if (!columnElement) return;
-
-                                //         const field = columnElement.getAttribute("tabulator-field");
-
-                                //         if (targetFields.includes(field)) {
-                                //             input.style.textTransform = "uppercase";
-                                //             input.addEventListener("input", function () {
-                                //                 const start = this.selectionStart;
-                                //                 const end = this.selectionEnd;
-                                //                 this.value = this.value.toUpperCase();
-                                //                 this.setSelectionRange(start, end);
-                                //                 this.dispatchEvent(new Event("change"));
-                                //             });
-                                //         }
-                                //     });
-
-                                // }, 300);
-
-                                // Hide loader
-                                Blockloaderhide();
-                            }
-
-                            function onSelectCheckboxChange(checkbox, rowId) {
-                                let row = table.getRow(rowId);
-                                if (row) {
-                                   const data = row.getData();
-                                   data.Selected = checkbox.checked;
-                                   row.update(data); // apply update
-                                }
-                            }
-
-                            function toggleAllCheckboxes(headerCheckbox) {
-                                const table = Tabulator.findTable("#product_Table")[0];
-                                const isChecked = headerCheckbox.checked;
-
-                                // Get table data
-                                const allData = table.getData();
-
-                                // Update Selected field in bulk
-                                allData.forEach(item => {
-                                    item.Selected = isChecked;
-                                });
-
-                                // Replace the table data at once
-                                table.replaceData(allData);
-                            }
-
-                            function setIsSubmitted()
-                            {
-                                Blockloadershow();
-                                const selectedRows = table.getData().filter(row => row.Selected);
-
-                                // Check if no rows are selected
-                                if (selectedRows.length === 0) {
-                                    Blockloaderhide(); // Hide the loader before showing the alert
-                                    showDangerAlert('Please select at least one valid product to submit.');
-                                    return;
-                                }
-
-                                if (selectedRows.length === 0) {
-                                    showDangerAlert('No rows selected.');
-                                    return;
-                                }
-
-                                const selectedIds = selectedRows.map(row => row.Id);
-
-                                $.ajax({
-                                    type: "POST",
-                                    url: '@Url.Action("SetIsSubmitted", "ProductCodeDetails")',
-                                    data: JSON.stringify(selectedIds),
-                                    contentType: "application/json",
-                                    success: function (response) {
-                                        Blockloaderhide();
-                                        if (response.success) {
-
-                                           showSuccessAlert("Product Detail is submitted successfully!");
-
-                                            setTimeout(function () {
-                                                window.location.reload();
-                                            }, 1000);
-                                        }
-                                        else {
-                                            var errorMessg = "";
-                                            for (var error in response.errors) {
-                                                errorMessg += error + "\n";
-                                            }
-                                            if (errorMessg != "") {
-                                                showDangerAlert(errorMessg);
-                                            }
-                                            else {
-                                                showDangerAlert(response.Message);
-                                            }
-                                        }
-                                    },
-                                    error: function (xhr, ststus, errors) {
-                                        Blockloaderhide();
-                                        showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
-                                    }
-                                });
-                            }
-
-                            function sendMultiMail()
-                            {
-                                Blockloadershow();
-                                const selectedRows = table.getData().filter(row => row.Selected);
-
-                                // Check if no rows are selected
-                                if (selectedRows.length === 0) {
-                                    Blockloaderhide(); // Hide the loader before showing the alert
-                                    showDangerAlert('Please select at least one valid product to send mail.');
-                                    return;
-                                }
-
-                                if (selectedRows.length === 0) {
-                                    showDangerAlert('No rows selected.');
-                                    return;
-                                }
-
-                                const selectedIds = selectedRows.map(row => row.Id);
-
-                                $.ajax({
-                                    type: "POST",
-                                    url: '@Url.Action("SendMultiEmail", "ProductCodeDetails")',
-                                    data: JSON.stringify(selectedIds),
-                                    contentType: "application/json",
-                                    success: function (response) {
-                                        Blockloaderhide();
-                                        if (response.success) {
-
-                                           showSuccessAlert(response.message);
-
-                                            setTimeout(function () {
-                                                window.location.reload();
-                                            }, 1000);
-                                        }
-                                        else {
-                                            var errorMessg = "";
-                                            for (var error in response.errors) {
-                                                errorMessg += error + "\n";
-                                            }
-                                            if (errorMessg != "") {
-                                                showDangerAlert(errorMessg);
-                                            }
-                                            else {
-                                                showDangerAlert(response.message);
-                                            }
-                                        }
-                                    },
-                                    error: function (xhr, ststus, errors) {
-                                        Blockloaderhide();
-                                        showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
-                                    }
-                                });
-                            }
-
-                            function setIsLocked(id, checkbox) {
-                                Blockloadershow();
-                                let isLocked = checkbox.checked; // Check if the checkbox is checked
-                                console.log(`Row with ID ${id} ${isLocked ? "locked" : "unlocked"}`);
-
-                                let Model = {
-                                    id: id,
-                                    isLock: isLocked ? true : false // Send 1 if checked, 0 if unchecked
-                                };
-
-                                $.ajax({
-                                    type: "POST",
-                                    url: '@Url.Action("IsLock", "ProductCodeDetails")',
-                                    data: Model,
-                                    success: function (response) {
-                                        Blockloaderhide();
-                                        if (response.success) {
-                                            let message = isLocked ? "Product Detail locked successfully!" : "Product Detail un-locked successfully!";
-
-                                            showSuccessAlert(message);
-
-                                            setTimeout(function () {
-                                                window.location.reload();
-                                            }, 1000);
-                                        }
-                                        else {
-                                            var errorMessg = "";
-                                            for (var error in response.errors) {
-                                                errorMessg += error + "\n";
-                                            }
-                                            if (errorMessg != "") {
-                                                showDangerAlert(errorMessg);
-                                            }
-                                            else {
-                                                showDangerAlert(response.Message);
-                                            }
-                                        }
-                                    },
-                                    error: function (xhr, ststus, errors) {
-                                        Blockloaderhide();
-                                        showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
-                                    }
-                                });
-
-                            }
-
-                            var searchQuery = '';
-
-                            // Fetch and Render Data
-                            function searchData(searchTerms = { searchFirstInput: "", searchLastInput: "", searchDescInput: "", searchMMGInput: "", searchPCInput: "", searchPTInput: "", }, inputId = '') {
-                                debugger
-                                Blockloadershow();
-                                table.clearFilter();
-
-                                // Check if searchFirstInput is changed, then reset other search filters
-                                if (inputId === 'searchFirstInput') {
-                                    searchTerms.searchLastInput = "";
-                                    searchTerms.searchDescInput = "";
-                                    searchTerms.searchMMGInput = "";
-                                    searchTerms.searchPCInput = "";
-                                    searchTerms.searchPTInput = "";
-                                }
-
-                                if (inputId === 'searchMMGInput') {
-                                    searchTerms.searchPCInput = "";
-                                    searchTerms.searchPTInput = "";
-                                }
-
-                                // Create a unique search query string
-                                searchQuery = JSON.stringify(searchTerms);
-
-                                const { searchFirstInput, searchLastInput, searchDescInput, searchMMGInput, searchPCInput, searchPTInput } = searchTerms;
-
-                                // Fetch Table Data
-                                $.ajax({
-                                    url: '@Url.Action("GetCustomeSearch", "ProductCodeDetails")',
-                                    type: 'GET',
-                                    data: {
-                                        searchFirst: searchFirstInput || "",
-                                        searchLast: searchLastInput || "",
-                                        searchDesc: searchDescInput || "",
-                                        searchMMG: searchMMGInput || "",
-                                        searchPC: searchPCInput || "",
-                                        searchPT: searchPTInput || "",
-                                        input: inputId
-                                    },
-                                    success: function (data) {
-                                        Blockloaderhide();
-                                        if (data && Array.isArray(data)) {
-                                            OnTabGridLoad(data);
-                                        }
-                                        else {
-                                            showDangerAlert('No data available to load.');
-                                        }
-                                    },
-                                    error: function (xhr, status, error) {
-                                        showDangerAlert('Error retrieving data: ' + error);
-                                        Blockloaderhide();
-                                    }
-                                });
-                            }
-
-                            let searchTimeout; // Timeout variable for debounce
-
-                            function handleSearch(inputId, event) {
-                                debugger
-                                if (!(inputId === 'searchMMGInput' || inputId === 'searchPCInput' || inputId === 'searchPTInput')) {
-                                    if (event.key !== 'Enter') return;
-                                }
-
-                                // Get search query based on the input ID
-                                const inputElement = $(`#${inputId}`);
-
-                                // Determine if it's a dropdown or text input
-                                let searchQuery;
-                                if (inputElement.is('select')) {
-                                    searchQuery = inputElement.val(); // Get selected value from dropdown
-                                } else {
-                                    searchQuery = inputElement.val().trim(); // Get and trim value from text input
-                                }
-
-                                // Clear previous timeout to debounce the search
-                                clearTimeout(searchTimeout);
-
-                                // Initialize processed query
-                                let processedQuery = '';
-
-                                // Process the query based on its length and the `inputId`
-                                if (inputId === 'searchFirstInput') {
-                                    if (searchQuery.length >= 4) {
-                                        processedQuery = searchQuery.substring(0, 4);
-
-                                        $('#searchLastInput').val('');
-                                        $('#searchDescInput').val('');
-                                        $('#searchMMGInput').val('');
-                                        $('#searchPCInput').val('');
-                                        $('#searchPTInput').val('');
-                                    }
-                                } else if (inputId === 'searchLastInput') {
-                                    // For 'searchLastInput', handle partial and full last 14 characters
-                                    if (searchQuery.length > 0) {
-                                        // Use the last N characters based on the input length
-                                        processedQuery = searchQuery; // This will be the partial string
-                                    }
-                                } else if (inputId === 'searchDescInput') {
-                                    if (searchQuery.length > 0) {
-                                        processedQuery = searchQuery;
-                                    }
-                                }
-                                else if (inputId === 'searchMMGInput' || inputId === 'searchPCInput' || inputId === 'searchPTInput') {
-                                    // If it's a dropdown, directly use the selected value
-                                    processedQuery = searchQuery;
-                                }
-
-                                // Update the corresponding search term
-                                searchTerms[inputId] = processedQuery;
-
-                                // Debounce to reduce the frequency of API calls
-                                searchTimeout = setTimeout(() => {
-                                    pagedData = {}; // Clear cached data
-                                    // Load data with the processed query
-                                    searchData(searchTerms, inputId);
-                                }, 300); // Delay of 300ms
-                            }
-
-                            // // Initial Load
-                            // loadData(); // Load the first page
-
-                            function delConfirm(recid) {
-                                PNotify.prototype.options.styling = "bootstrap3";
-                                (new PNotify({
-                                    title: 'Confirmation Needed',
-                                    text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
-                                    icon: 'glyphicon glyphicon-question-sign',
-                                    hide: false,
-                                    confirm: {
-                                        confirm: true
-                                    },
-                                    buttons: {
-                                        closer: false,
-                                        sticker: false
-                                    },
-                                    history: {
-                                        history: false
-                                    },
-                                })).get().on('pnotify.confirm', function () {
-                                    $.ajax({
-                                        url: '@Url.Action("Delete", "ProductCodeDetails")',
-                                        type: 'POST',
-                                        data: { id: recid },
-                                        success: function (data) {
-                                            if (data.success == true) {
-                                                showSuccessAlert("Product Code Details Deleted  successfully.");
-                                                setTimeout(function () {
-                                                    window.location.reload();
-                                                }, 2500);
-                                            }
-                                            else if (data.success == false && data.message == "Not_Deleted") {
-                                                showDangerAlert("Record is used in Product Code Log transactions.");
-                                            }
-                                            else {
-                                                showDangerAlert(data.message);
-                                            }
-                                        },
-                                        error: function () {
-                                            showDangerAlert('Error retrieving data.');
-                                        }
-                                    });
-                                }).on('pnotify.cancel', function () {
-                                    // loadData();
-                                });
-                            }
-
-                            var drp_pc = "";
-                            var drp_pt = "";
-
-                            function showEditProduct(id, mode) {
-                                debugger
-                                var url = "@Url.Action("AddProductCode", "ProductCodeDetails")";
-                                url = url + '?id=' + id + '&mode=' + mode;
-                                window.location.href = url;
-                            }
-
-                            function openUpload() {
-                                clearForm();
-                                if (!$('#uploadModal').length) {
-                                    $('body').append(partialView);
-                                }
-                                $('#uploadModal').modal('show');
-                            }
-
-                            function openUploadDeatilModal() {
-                                clearForm();
-                                $('#uploadDetailModal').modal('show');
-                                $.ajax({
-                                    url: '@Url.Action("GetUploadDetails", "ProductCodeDetails")',
-                                    type: 'GET',
-                                    success: function (data) {
-                                        if (data && Array.isArray(data)) {
-                                            const rowHeight = 40; // Approximate height of each row in pixels
-                                            const maxHeight = 1000; // Maximum height of the table in pixels
-                                            const minHeight = 400; // Minimum height for the table (adjust as necessary)
-                                            const calculatedHeight = Math.max(Math.min(data.length * rowHeight, maxHeight), minHeight); // Ensure height is within a reasonable range
-
-                                            // Format dates and add row numbers
-                                            const formattedData = data.map((row, index) => {
-                                                const dateObj = row.date ? new Date(row.date) : null;
-                                                return {
-                                                    srNo: index + 1,
-                                                    date: dateObj ? dateObj.toLocaleDateString("en-GB") : "N/A",
-                                                    filename: row.filename || "N/A",
-                                                    recordsCount: row.recordsCount || 0
-                                                };
-                                            });
-
-                                            // Initialize Tabulator with dynamic height
-                                            featuresTable = new Tabulator("#uploadDetailTable", {
-                                                //height: calculatedHeight, // Set dynamic height based on data
-                                                data: formattedData, // Use the dynamic data from AJAX response
-                                                layout: "fitColumns", // Adjust column width to fit
-                                                clipboard: true, // Enable clipboard copy/paste
-                                                autoColumns: false,   // Avoids unnecessary automatic column creation
-                                                columns: [
-                                                    { title: "No", field: "srNo", width: 50, hozAlign: "center", headerHozAlign: "center", headerHozAlign: "center", headerSort: false },
-                                                    { title: "Date", field: "date", width: 100, hozAlign: "center", headerHozAlign: "center", headerHozAlign: "center", headerSort: false },
-                                                    { title: "File Name", field: "filename", hozAlign: "left", sorter: "string", headerHozAlign: "left", headerSort: false },
-                                                    { title: "Record Count", field: "recordsCount", hozAlign: "center", sorter: "string", headerHozAlign: "left", headerSort: false, width: 130 },
-                                                ],
-                                            });
-                                        } else {
-                                            showDangerAlert('No data available to load.');
-                                        }
-                                    },
-                                    error: function (xhr, status, error) {
-                                        showDangerAlert('Error retrieving data: ' + error);
-                                    }
-                                });
-                            }
-
-                            function AutoReload() {
-                                setTimeout(function () { window.location.reload(); }, 1500);
-                            }
-
-                            function fill_Drp_PC_PT() {
-                                Noty.closeAll();
-                                var materialGroup = $('#searchMMGInput').val();  // Get the selected material group
-
-                                // Check if a valid material group is selected
-                                if (materialGroup !== "") {
-                                    $.ajax({
-                                        url: '@Url.Action("Get_PC_PT_List_ByMMG", "ProductCodeDetails")',  // Replace with your server endpoint
-                                        type: 'GET',
-                                        data: { mmg: materialGroup }, // Pass selected material group to the server
-                                        success: function (data) {
-                                            // Empty the PC dropdown before adding new options
-                                            var pc = data.pcList;
-                                            if (pc != null || pc.length > 0) {
-                                                $('#searchPCInput').empty();
-
-                                                // Add a default option
-                                                $('#searchPCInput').append('<option value="" selected>PC</option>');
-
-                                                // Loop through the response data and populate the dropdown
-                                                pc.forEach(function (item) {
-                                                    $('#searchPCInput').append('<option value="' + item.pc + '">' + item.pc + '</option>');
-                                                });
-                                            }
-
-                                            var pt = data.ptList;
-                                            if (pt != null || pt.length > 0) {
-                                                $('#searchPTInput').empty();
-
-                                                // Add a default option
-                                                $('#searchPTInput').append('<option value="" selected>PT</option>');
-
-                                                // Loop through the response data and populate the dropdown
-                                                pt.forEach(function (item) {
-                                                    $('#searchPTInput').append('<option value="' + item.pt + '">' + item.pt + '</option>');
-                                                });
-                                            }
-                                        },
-                                        error: function (error) {
-                                            console.error("Error fetching PC values: ", error);
-                                        }
-                                    });
-                                } else {
-                                    // Clear the PC dropdown if no valid material group is selected
-                                    // showDangerAlert('Error fetching PC & PT values');
-                                }
-                            }
-
-                            function openProdEmail(id)
-                            {
-                                Blockloadershow();
-                                $("#prodEmailModal").modal("show"); // Uses Bootstrap modal if applicable
-                                    var mailType = 'Prod' ;
-                                $.ajax({
-                                    url: '@Url.Action("GetMailData", "MailMatrix")',
-                                    type: 'GET',
-                                    data: { mail_Type: mailType || '' },
-                                    success: function (data) {
-                                            Blockloaderhide();
-                                            if (data) {
-                                                $("#prodHdnId").val(data.id);
-                                                $("#txt_Emsub_Prod").val(data.mail_Sub);
-                                                $("#txt_MsgHeader_Prod").val(data.msg_Header);
-                                                $("#txt_MsgFooter_Prod").val(data.msg_Footer);
-
-                                                $("#emailDate").text('02-04-2025');
-                                                $("#emailPPSNo").text('Test_123');
-                                                $("#emailCPRNo").text(6);
-                                                $("#emailProductNo").text(1);
-
-                                                // Load users and pass previously selected ones (if any)
-                                                    loadUsers(data.user || []);
-                                             }
-                                            else {
-                                                showDangerAlert('No data available to load.');
-                                            }
-                                        },
-                                        error: function (xhr, status, error) {
-                                        showDangerAlert('Error retrieving data: ' + error);
-                                        Blockloaderhide();
-                                    }
-                                });
-                            }
-
-                             function loadUsers(selectedUsers) {
-                                 $.ajax({
-                                     url: '@Url.Action("GetUser", "Users")',
-                                         type: 'GET',
-                                     dataType: 'json',
-                                     success: function (data) {
-                                         $("#drp_touser").empty();
-
-                                             // Add default "Select Users" option
-                                             $("#drp_touser").append(new Option("Select Users", "", false, false));
-
-                                         $.each(data, function (index, item) {
-                                             var isSelected = selectedUsers && selectedUsers.includes(item.userId);
-                                             var newOption = new Option(item.name, item.userId, false, isSelected);
-                                                 $("#drp_touser").append(newOption);
-                                         });
-
-                                     },
-                                     error: function () {
-                                         showDangerAlert("Error loading users.");
-                                     }
-                                 });
-                             }
-
-
-                            $('#download-template').on('click', function () {
-                                Blockloadershow();
-
-                                var expectedColumns = [
-                                    'Date', 'Old Part No', 'PC', 'PT', 'HF', 'Matrix',
-                                    'NC4', 'Final Part No', 'Part No Formula', 'Description', 'Len Dec', 'Chapter No', 'MMG', 'Pur Grp', 'Tax Classi', 'Hierarchy',
-                                    'Price Matl.Gr.', 'Sales Mat Grp', 'BOM', 'CPS No.', 'Branch', 'NPI MAKE', 'Category'
-                                ];
-
-                                // Create worksheet with only the header row
-                                var data = [expectedColumns];
-                                var ws = XLSX.utils.aoa_to_sheet(data);
-
-                                // Apply bold style to header cells
-                                expectedColumns.forEach((col, index) => {
-                                    const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
-                                    if (!ws[cellRef]) return;
-                                    ws[cellRef].s = {
-                                        font: {
-                                            bold: true
-                                        }
-                                    };
-                                });
-
-                                // Auto-width calculation
-                                const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
-                                ws['!cols'] = columnWidths;
-
-
-                                // Create workbook and export
-                                var wb = XLSX.utils.book_new();
-                                XLSX.utils.book_append_sheet(wb, ws, "Product Code Temaplate");
-
-                                XLSX.writeFile(wb, "Product_Code_Temaplate.xlsx");
-
-                                Blockloaderhide();
-                            });
-
-
-                             // function InsertUpdateEmail(type) {
-                             //     Blockloadershow();
-                             //     var errorMsg = "";
-                             //     var fields = "";
-                             //     if (fields != "") {
-                             //         errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
-                             //     }
-                             //     if (errorMsg != "") {
-                             //         Blockloaderhide();
-                             //         showDangerAlert(errorMsg);
-                             //         return false;
-                             //     }
-
-                             //     var Model = {
-                             //        Id = $("#ppsHdnId").val() || 0,
-                             //        User = $("#drp_Touser_PPS").val().join(","),
-                             //        Mail_Type = 'PPS',
-                             //        Mail_Sub = $("#txt_Emsub_PPS").val(),
-                             //        Msg_Header = $("#txt_MsgHeader_PPS").val(),
-                             //        Msg_Body = $('#mailbody_PPS').html() || '',
-                             //        Msg_Footer = $("#txt_MsgFooter_PPS").val()
-                             //     }
-
-                             //     var ajaxUrl;
-                             //     if ($("#ppsHdnId").val() != "0" && $("#ppsHdnId").val() != undefined && $("#ppsHdnId").val() != '') {
-                             //         ajaxUrl = '@Url.Action("Update_Mail", "MailMatrix")';
-                             //     } else {
-                             //         ajaxUrl = '@Url.Action("Save_Mail", "MailMatrix")';
-                             //     }
-
-                             //     $.ajax({
-                             //         type: "POST",
-                             //         url: ajaxUrl,
-                             //         data: Model,
-                             //         success: function (response) {
-                             //             Blockloaderhide();
-                             //             if (response.success) {
-                             //                 if ($("#ppsHdnId").val() != "0") {
-                             //                     showSuccessAlert("Mail updated successfully.");
-                             //                 }
-                             //                 else {
-                             //                     showSuccessAlert("Mail added  successfully.");
-                             //                 }
-                             //                 setTimeout(function () {
-                             //                     window.location.reload();
-                             //                 }, 2500);
-                             //             }
-                             //             else {
-                             //                 var errorMessg = "";
-                             //                 for (var error in response.errors) {
-                             //                     errorMessg += error + "\n";
-                             //                 }
-                             //                 if (errorMessg != "") {
-                             //                     showDangerAlert(errorMessg);
-                             //                 }
-                             //                 else {
-                             //                     showDangerAlert(response.message);
-                             //                 }
-                             //             }
-                             //         },
-                             //         error: function (xhr, ststus, errors) {
-                             //             Blockloaderhide();
-                             //             showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
-                             //         }
-                             //     });
-                             // }
-
-                        </script> *@
 }
-
-
-<!-- Custom CSS to reduce form spacing -->
-@* <style>
-    .form-group {
-        margin-bottom: 0.5rem; /* Reduce space between each input group */
-    }
-
-    .custom-header {
-        background-color: #bec6e1 !important; /* Attractive blue background */
-        color: black; /* White text */
-        border-radius: 4px 4px 0 0; /* Rounded corners */
-        font-weight: bold;
-    }
-
-    #uploadDetailModal {
-        border-collapse: collapse; /* Ensures borders collapse together */
-        width: 100%;
-    }
-
-        /* Table header styles */
-        #uploadDetailModal th {
-            height: 30px;
-            font-size: 15px;
-            background-color: #bec6e1;
-            text-align: left;
-            border: 1px solid #e0e0e0; /* Add border to header */
-            font-weight: 600;
-        }
-
-        /* Table data cell styles */
-        #uploadDetailModal td {
-            padding-left: 15px;
-            padding-right: 15px;
-            padding-top: 8px;
-            /* padding-bottom: 8px; */
-            border: 1px solid #e0e0e0; /* Add border to data cells */
-        }
-</style> *@
-
 
 @await Html.PartialAsync("_UploadModalpartial")
 

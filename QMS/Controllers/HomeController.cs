@@ -23,6 +23,11 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult VendorOptionSelection()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

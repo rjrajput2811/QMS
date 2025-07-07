@@ -2,7 +2,9 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
 
-
+@{
+    var roleId = Context.Session.GetInt32("RoleId") ?? 0;
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -99,8 +101,25 @@
                     @* <i id="verbtn" class="fas fa-info" onclick=""></i> *@
                 </div>
 
+                
+
             </ul>
             <span class="badge ml-md-3 mr-md-auto"> </span>
+
+            <div class="ml-auto">
+                @if (roleId == (int)UserRoles.Admin || roleId == (int)UserRoles.Manager || roleId == (int)UserRoles.Staff)
+                {
+                    <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
+                        <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
+                    </button>
+                }
+                else
+                {
+                    <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("VendorOptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
+                        <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
+                    </button>
+                }
+            </div>
             @if (@HttpContextAccessor.HttpContext.Session.GetInt32("UserId") > 0)
             {
                 <ul class="navbar-nav">

@@ -4,6 +4,9 @@ using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
+using System.Data;
+using Dapper;
+using System.Data.Common;
 
 
 namespace QMS.Core.Repositories.COPQComplaintDumpRepository
@@ -12,11 +15,13 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
     {
         private new readonly QMSDbContext _dbContext;
         private readonly ISystemLogService _systemLogService;
+        private readonly IDbConnection _dbConnection;
 
-        public ComplaintIndentDumpRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
+        public ComplaintIndentDumpRepository(QMSDbContext dbContext, ISystemLogService systemLogService, IDbConnection dbConnection) : base(dbContext)
         {
             _dbContext = dbContext;
             _systemLogService = systemLogService;
+            _dbConnection = dbConnection;
         }
 
         public async Task<List<ComplaintViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null)
@@ -1689,6 +1694,122 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 .Distinct()
                 .ToListAsync();
         }
+
+        //// ----------------- Final Merge ------------------- ////
+        public async Task<List<FinalMergeServiceViewModel>> GetFinalMergeServiceAsync()
+        {
+            var result = await _dbConnection.QueryAsync<dynamic>(
+                "sp_Get_FinalMerge_Service",
+                commandType: CommandType.StoredProcedure
+            );
+
+            var finalList = result.Select(r => new FinalMergeServiceViewModel
+            {
+                Complaint = new ComplaintViewModel
+                {
+                    Id = r.Complaint_Id,
+                    CCCNDate = r.CCCNDate,
+                    ReportedBy = r.ReportedBy,
+                    CLocation = r.CLocation,
+                    CustName = r.CustName,
+                    DealerName = r.DealerName,
+                    CDescription = r.CDescription,
+                    CStatus = r.CStatus,
+                    Completion = r.Completion,
+                    CreatedDate = r.Complaint_CreatedDate,
+                    UpdatedDate = r.Complaint_UpdatedDate,
+                    CreatedBy = r.Complaint_CreatedBy,
+                    UpdatedBy = r.Complaint_UpdatedBy,
+                    Remarks = r.Remarks,
+                    Deleted = r.Complaint_IsDeleted,
+                    CCN_No = r.CCN_No,
+                    TotalDays_Close = r.TotalDays_Close
+                },
+                Indent = new IndentDumpViewModel
+                {
+                    Id = r.Indent_Id,
+                    Deleted = r.Indent_IsDeleted,
+                    Indent_No = r.Indent_No,
+                    Indent_Date = r.Indent_Date,
+                    Business_Unit = r.Business_Unit,
+                    Vertical = r.Vertical,
+                    Branch = r.Branch,
+                    Indent_Status = r.Indent_Status,
+                    End_Cust_Name = r.End_Cust_Name,
+                    Customer_Code = r.Customer_Code,
+                    Customer_Name = r.Customer_Name,
+                    Bill_Req_Date = r.Bill_Req_Date,
+                    Created_By = r.Created_By,
+                    Wipro_Commit_Date = r.Wipro_Commit_Date,
+                    Material_No = r.Material_No,
+                    Item_Description = r.Item_Description,
+                    Quantity = r.Quantity,
+                    Price = r.Price,
+                    Final_Price = r.Final_Price,
+                    SapSoNo = r.SapSoNo,
+                    CreateSoQty = r.CreateSoQty,
+                    Inv_Qty = r.Inv_Qty,
+                    Inv_Value = r.Inv_Value,
+                    WiproCatelog_No = r.WiproCatelog_No,
+                    Batch_Code = r.Batch_Code,
+                    Batch_Date = r.Batch_Date,
+                    Main_Prodcode = r.Main_Prodcode,
+                    User_Name = r.User_Name,
+                    CreatedBy = r.Indent_CreatedBy,
+                    CreatedDate = r.Indent_CreatedDate,
+                    UpdatedBy = r.Indent_UpdatedBy,
+                    UpdatedDate = r.Indent_UpdatedDate,
+                    Discount = r.Discount
+                },
+                PO = new PendingPoViewModel
+                {
+                    Id = r.PO_Id,
+                    Vendor = r.Vendor,
+                    Material = r.Material,
+                    ReferenceNo = r.ReferenceNo,
+                    PONo = r.PONo,
+                    PODate = r.PODate,
+                    PRNo = r.PRNo,
+                    BatchNo = r.BatchNo,
+                    POQty = r.POQty,
+                    BalanceQty = r.BalanceQty,
+                    Destination = r.Destination,
+                    BalanceValue = r.BalanceValue,
+                    CreatedBy = r.PO_CreatedBy,
+                    CreatedDate = r.PO_CreatedDate,
+                    UpdatedBy = r.PO_UpdatedBy,
+                    UpdatedDate = r.PO_UpdatedDate,
+                    IsDelete = r.PO_IsDeleted
+                },
+                Invoice = new InvoiceListViewModel
+                {
+                    Id = r.Inv_Id,
+                    Deleted = r.Inv_IsDeleted,
+                    Key = r.Inv_Key,
+                    Inv_No = r.Inv_No,
+                    Inv_Date = r.Inv_Date,
+                    Inv_Type = r.Inv_Type,
+                    Sales_Order = r.Sales_Order,
+                    Plant_Code = r.Plant_Code,
+                    Material_No = r.Inv_Material_No,
+                    Dealer_Name = r.Inv_Dealer_Name,
+                    End_Customer = r.Inv_End_Customer,
+                    Collective_No = r.Collective_No,
+                    Indent_No = r.Inv_Indent_No,
+                    Quantity = r.Inv_Quantity,
+                    Cost = r.Inv_Cost,
+                    CreatedBy = r.Inv_CreatedBy,
+                    CreatedDate = r.Inv_CreatedDate,
+                    UpdatedBy = r.Inv_UpdatedBy,
+                    UpdatedDate = r.Inv_UpdatedDate,
+                    Plant_Name = r.Inv_Plant_Name
+                }
+            }).ToList();
+
+            return finalList;
+        }   
+
+        //// ----------------- Final Merge ------------------- ////
 
     }
 }

@@ -20,6 +20,7 @@ using QMS.Core.Repositories.KaizenTrackerRepository;
 using QMS.Core.Repositories.SPMReportRepository;
 using QMS.Core.Repositories.RMTCDetailsRepository;
 using QMS.Core.Repositories.COPQComplaintDumpRepository;
+using QMS.Core.Repositories.OpenPoRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -48,6 +49,8 @@ builder.Services.AddTransient<IKaizenTrackerRepository, KaizenTrackerRepository>
 builder.Services.AddTransient<ISPMReportRepository, SPMReportRepository>();
 builder.Services.AddTransient<IRMTCDetailsRepository, RMTCDetailsRepository>();
 builder.Services.AddTransient<IComplaintIndentDumpRepository, ComplaintIndentDumpRepository>();
+builder.Services.AddTransient<IJobWorkTracRepository, JobWorkTracRepository>();
+builder.Services.AddTransient<IOpenPoReposiotry, OpenPoReposiotry>();
 
 //
 

@@ -7,6 +7,7 @@ namespace QMS.Core.Models
         public int Id { get; set; }
         public bool Deleted { get; set; }
 
+        public string? CCN_No { get; set; }
         public DateTime? CCCNDate { get; set; }
         public string? ReportedBy { get; set; }
         public string? CLocation { get; set; }
@@ -14,9 +15,10 @@ namespace QMS.Core.Models
         public string? DealerName { get; set; }
         public string? CDescription { get; set; }
         public string? CStatus { get; set; }
-        public string? Completion { get; set; }
+        public DateTime? Completion { get; set; }
         public string? Remarks { get; set; }
 
+        public int? TotalDays_Close { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
 

@@ -10,6 +10,7 @@ namespace QMS.Core.Enums
     {
         Admin = 1,
         Manager = 2,
-        Staff = 3
+        Staff = 3,
+        Vendor = 4 
     }
 }

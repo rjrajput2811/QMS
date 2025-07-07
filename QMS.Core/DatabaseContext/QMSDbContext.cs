@@ -40,8 +40,18 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Invoice_Service> InvoiceList { get; set; }
         public DbSet<PcChart_Service> PcChart { get; set; }
         public DbSet<Region_Service> Region { get; set; }
+        public DbSet<JobWork_Tracking_Service> JobWorkTrac { get; set; }
 
         //// ------- Service -------- ////
+
+        //// ------- Supply Chain Managment -------- ////
+        public DbSet<Open_Po> OpenPo { get; set; }
+        public DbSet<Open_Po_Log> OpenPo_Log { get; set; }
+        public DbSet<Opne_Po_DeliverySchedule> Opne_Po_Deliveries { get; set; }
+
+
+
+        /////// ------- Supply Chain Managment -------- ////
         public class InspectionResult
         {
             public int InspectionID { get; set; }

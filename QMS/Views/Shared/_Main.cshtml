@@ -1,13 +1,36 @@
-﻿<!DOCTYPE html>
+﻿@using QMS.Core.Enums
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    var userRole = HttpContextAccessor.HttpContext.Session.GetInt32("UserRole") ?? 0;
+    var vendor_Id = HttpContextAccessor.HttpContext.Session.GetInt32("Vendor_Id") ?? 0;
+    var userName = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>QMS Vendor Selection</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <!-- Bootstrap CSS and Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <title>@ViewData["Title"] - QMS Module</title>
+    <link href="~/css/icomoon/styles.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    @* <link href="~/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" /> *@
+    <link href="~/css/bootstrap_limitless.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/colors.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/components.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/layout.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/all.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
         body {
@@ -56,70 +79,208 @@
                 transform: translateY(0);
             }
         }
+
+        .menu-active {
+            background-color: #eee !important;
+            color: #0c83ff !important;
+            font-weight: bold;
+            font-size: small;
+        }
+
+        .nav-group-sub {
+            display: none;
+        }
+
+            .nav-group-sub.open {
+                display: block; /* Show the submenu when it has the 'open' class */
+                color: #FFFF00 !important;
+            }
     </style>
 </head>
 <body>
 
-    <div class="container py-5" style="max-width:30%;">
-
-        <h3 class="text-center mb-4">Quality Management System</h3>
-
-        <!-- Card List -->
-        <div class="d-flex flex-column gap-3">
-
-            <div class="card qms-card p-3" onclick="location.href='@Url.Action("Index", "Dashboard")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-building icon me-3"></i>
-                    <h5 class="mb-0">Wipro</h5>
-                </div>
-            </div>
-
-            <div class="card qms-card p-3" onclick="showDetails('Vendor')">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-person-badge icon me-3" style="color:darkred"></i>
-                    <h5 class="mb-0">Vendor</h5>
-                </div>
-            </div>
-
-            <div class="card qms-card p-3" onclick="showDetails('Service')">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
-                    <h5 class="mb-0">Service</h5>
-                </div>
-            </div>
-
-            <div class="card qms-card p-3" onclick="showDetails('NPI')">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-clipboard-data icon me-3" style="color:seagreen"></i>
-                    <h5 class="mb-0">NPI</h5>
-                </div>
-            </div>
-
-            <div class="card qms-card p-3" onclick="showDetails('Supply Chain')">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-truck icon me-3" style="color:darkblue;"></i>
-                    <h5 class="mb-0">Supply Chain</h5>
-                </div>
-            </div>
-
+    <div class="navbar navbar-dark navbar-expand-lg navbar-static">
+        <div class="d-md-none">
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-mobile">
+                <i class="icon-tree5"></i>
+            </button>
+            <button class="navbar-toggler sidebar-mobile-main-toggle" type="button">
+                <i class="icon-paragraph-justify3"></i>
+            </button>
         </div>
 
+        <div class="collapse navbar-collapse" id="navbar-mobile">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a href="#" class="navbar-nav-link sidebar-control sidebar-main-toggle d-none d-md-block mt-1">
+                        <i class="icon-paragraph-justify3"></i>
+                    </a>
+                </li>
+
+                <div class="navbar-brand">
+                    <span class="h5"><strong>Quality Management System(QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.0.0 25/04/2025</span>
+                    @* <i id="verbtn" class="fas fa-info" onclick=""></i> *@
+                </div>
+
+            </ul>
+            <span class="badge ml-md-3 mr-md-auto"> </span>
+
+            @if (@HttpContextAccessor.HttpContext.Session.GetInt32("UserId") > 0)
+            {
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown dropdown-user">
+                        <a href="#" class="navbar-nav-link d-flex align-items-center dropdown-toggle" data-toggle="dropdown">
+                            <span>
+                                @if (@HttpContextAccessor.HttpContext.Session.GetString("FullName") != null)
+                                {
+                                    <span class="font-weight-bold">@HttpContextAccessor.HttpContext.Session.GetString("FullName")</span>
+                                }
+                            </span>
+                        </a>
+
+                        <div class="dropdown-menu dropdown-menu-right">
+                            <a href="#" class="dropdown-item"><i class="icon-cog5"></i> Account settings</a>
+                            <a href="@Url.Action("Logout", "Account")" class="dropdown-item"><i class="icon-switch2"></i> Logout</a>
+                        </div>
+                    </li>
+                </ul>
+            }
+            else
+            {
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a href="@Url.Action("Login", "Account")" class="navbar-nav-link">
+                            <i class="icon-switch"></i>
+                            <span class="ml-2">Login</span>
+                        </a>
+                    </li>
+                </ul>
+            }
+
+        </div>
+    </div>
+
+    <div class="container py-5" style="max-width:30%;">
+        @if (userRole == (int)UserRoles.Admin || userRole == (int)UserRoles.Manager || userRole == (int)UserRoles.Staff)
+        {
+            <!-- Card List -->
+            <div class="d-flex flex-column gap-2">
+
+                <div class="card qms-card p-2" onclick="location.href='@Url.Action("Index","Dashboard")'">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-building icon me-3"></i>
+                        <h5 class="mb-0">Wipro</h5>
+                    </div>
+                </div>
+
+                <div class="card qms-card p-2" onclick="showDetails('Vendor')">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-badge icon me-3" style="color:darkred"></i>
+                        <h5 class="mb-0">Vendor</h5>
+                    </div>
+                </div>
+
+                <div class="card qms-card p-2" onclick="showDetails('Service')">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
+                        <h5 class="mb-0">Service</h5>
+                    </div>
+                </div>
+
+                <div class="card qms-card p-3" onclick="showDetails('NPI')">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-clipboard-data icon me-3" style="color:seagreen"></i>
+                        <h5 class="mb-0">NPI</h5>
+                    </div>
+                </div>
+
+                <div class="card qms-card p-2" onclick="location.href='@Url.Action("OpenPo","OpenPo")'">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-truck icon me-3" style="color:darkblue;"></i>
+                        <h5 class="mb-0">Supply Chain</h5>
+                    </div>
+                </div>
+
+            </div>
+
+
+        }
+        else if (userRole == (int)UserRoles.Vendor)
+        {
+            <div class="d-flex flex-column gap-2">
+
+                <div class="card qms-card p-2" onclick="location.href='@Url.Action("VendorDetail","Vendor", new { id = vendor_Id })'">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-person-badge icon me-3" style="color:darkred"></i>
+                        <h5 class="mb-0">Profile</h5>
+                    </div>
+                </div>
+
+                <div class="card qms-card p-2" onclick="location.href='@Url.Action("OpenPo","OpenPo")'">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-truck icon me-3" style="color:darkblue;"></i>
+                        <h5 class="mb-0">Supply Chain</h5>
+                    </div>
+                </div>
+
+                <div class="card qms-card p-2" onclick="">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-file-earmark-bar-graph icon me-3" style="color:olivedrab;"></i>
+                        <h5 class="mb-0">Reports</h5>
+                    </div>
+                </div>
+
+                <div class="card qms-card p-2" onclick="">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-bell icon me-3" style="color:darkred;"></i>
+                        @* <i class="bi bi-truck icon me-3" style="color:darkred;"></i> *@
+                        <h5 class="mb-0">Notification</h5>
+                    </div>
+                </div>
+
+            </div>
+        }
 
     </div>
+
     <div class="content-wrapper">
         @RenderBody()
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <!-- Core JS files -->
+    <script src="~/js/app.js" asp-append-version="true"></script>
+    <script src="~/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
+    <script src="~/js/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/blockui.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/d3.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/d3_tooltip.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/switchery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/moment.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/daterangepicker.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/echarts.min.js" asp-append-version="true"></script>
+    <script src="~/js/Dashboard/progress.js" asp-append-version="true"></script>
+    <script src="~/js/Dashboard/pie_basic.js" asp-append-version="true"></script>
+    <script src="~/js/Dashboard/columns_basic.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/noty.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/popupalert.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/pnotify.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/interactions.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/touch.min.js" asp-append-version="true"></script>
+    <script src="~/js/components_collapsible.js" asp-append-version="true"></script>
 
     <script>
         function showDetails(title) {
             const section = document.getElementById("detailsSection");
             const titleElement = document.getElementById("detailsTitle");
             section.style.display = 'block';
-            titleElement.textContent = ${title} - Details;
-          }</script>
+            titleElement.textContent = `${title} - Details`;
+        }
+    </script>
 
 </body>
 </html>

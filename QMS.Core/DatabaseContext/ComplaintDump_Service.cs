@@ -16,6 +16,8 @@ namespace QMS.Core.DatabaseContext
         [Column("IsDeleted")]
         public override bool Deleted { get; set; }
 
+        public string? CCN_No { get; set; }
+
         [Column("CCCNDate")]
         public DateTime? CCCNDate { get; set; }
 
@@ -38,10 +40,11 @@ namespace QMS.Core.DatabaseContext
         public string? CStatus { get; set; }
 
         [Column("Completion")]
-        public string? Completion { get; set; }
+        public DateTime? Completion { get; set; }
 
         [Column("Remarks")]
-        public string? Remarks { get; set; }
+        public string? Remarks { get; set; } 
+        public int? TotalDays_Close { get; set; }
 
         [Column("CreatedDate")]
         public DateTime? CreatedDate { get; set; }
@@ -54,6 +57,7 @@ namespace QMS.Core.DatabaseContext
 
         [Column("UpdatedBy")]
         public string? UpdatedBy { get; set; }
+       
     }
 
     public class BulkCreateResult

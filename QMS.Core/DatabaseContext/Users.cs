@@ -34,6 +34,8 @@ namespace QMS.Core.DatabaseContext
 
         public int? RoleId { get; set; }
 
+        public int? Vendor_Id { get; set; }
+
         public string? AdId { get; set; }
 
         public string? Designation { get; set; }

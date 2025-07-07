@@ -40,6 +40,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 {
                     Id = x.Id,
                     Deleted = x.Deleted,
+                    CCN_No = x.CCN_No,
                     CCCNDate = x.CCCNDate,
                     ReportedBy = x.ReportedBy,
                     CLocation = x.CLocation,
@@ -49,6 +50,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     CStatus = x.CStatus,
                     Completion = x.Completion,
                     Remarks = x.Remarks,
+                    TotalDays_Close = x.TotalDays_Close,
                     CreatedBy = x.CreatedBy,
                     CreatedDate = x.CreatedDate,
                     UpdatedBy = x.UpdatedBy,
@@ -68,6 +70,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
             {
                 var parameters = new[]
                 {
+                    new SqlParameter("@CCNNo", record.CCN_No ?? (object)DBNull.Value),
+                    new SqlParameter("@CCCNDate", record.CCCNDate ?? (object)DBNull.Value),
                     new SqlParameter("@CCCNDate", record.CCCNDate ?? (object)DBNull.Value),
                     new SqlParameter("@ReportedBy", record.ReportedBy ?? (object)DBNull.Value),
                     new SqlParameter("@CLocation", record.CLocation ?? (object)DBNull.Value),
@@ -77,13 +81,14 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@CStatus", record.CStatus ?? (object)DBNull.Value),
                     new SqlParameter("@Completion", record.Completion ?? (object)DBNull.Value),
                     new SqlParameter("@Remarks", record.Remarks ?? (object)DBNull.Value),
+                    new SqlParameter("@TotalDayClose", record.TotalDays_Close ?? 0),
                     new SqlParameter("@CreatedDate", DateTime.Now),
                     new SqlParameter("@CreatedBy", record.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", record.Deleted)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Insert_COPQComplaintDump @CCCNDate, @ReportedBy, @CLocation, @CustName, @DealerName, @CDescription, @CStatus, @Completion, @Remarks, @CreatedDate, @CreatedBy, @IsDeleted",
+                    "EXEC sp_Insert_COPQComplaintDump @CCNNo, @CCCNDate, @ReportedBy, @CLocation, @CustName, @DealerName, @CDescription, @CStatus, @Completion, @Remarks, @TotalDayClose, @CreatedDate, @CreatedBy, @IsDeleted",
                     parameters
                 );
 
@@ -103,6 +108,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 var parameters = new[]
                 {
                     new SqlParameter("@Id", record.Id),
+                    new SqlParameter("@CCNNo", record.CCN_No ?? (object)DBNull.Value),
                     new SqlParameter("@CCCNDate", record.CCCNDate ?? (object)DBNull.Value),
                     new SqlParameter("@ReportedBy", record.ReportedBy ?? (object)DBNull.Value),
                     new SqlParameter("@CLocation", record.CLocation ?? (object)DBNull.Value),
@@ -112,11 +118,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@CStatus", record.CStatus ?? (object)DBNull.Value),
                     new SqlParameter("@Completion", record.Completion ?? (object)DBNull.Value),
                     new SqlParameter("@Remarks", record.Remarks ?? (object)DBNull.Value),
+                    new SqlParameter("@TotalDayClose", record.TotalDays_Close ?? 0),
                     new SqlParameter("@UpdatedBy", record.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Update_COPQComplaintDump @Id, @CCCNDate, @ReportedBy, @CLocation, @CustName, @DealerName, @CDescription, @CStatus, @Completion, @Remarks, @UpdatedBy",
+                    "EXEC sp_Update_COPQComplaintDump @Id, @CCNNo, @CCCNDate, @ReportedBy, @CLocation, @CustName, @DealerName, @CDescription, @CStatus, @Completion, @Remarks, @TotalDayClose, @UpdatedBy",
                     parameters
                 );
 
@@ -156,6 +163,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 {
                     Id = x.Id,
                     Deleted = x.Deleted,
+                    CCN_No = x.CCN_No,
                     CCCNDate = x.CCCNDate,
                     ReportedBy = x.ReportedBy,
                     CLocation = x.CLocation,
@@ -165,6 +173,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     CStatus = x.CStatus,
                     Completion = x.Completion,
                     Remarks = x.Remarks,
+                    TotalDays_Close = x.TotalDays_Close,
                     CreatedBy = x.CreatedBy,
                     CreatedDate = x.CreatedDate,
                     UpdatedBy = x.UpdatedBy,
@@ -189,14 +198,14 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 foreach (var item in listOfData)
                 {
-                    item.CCCNDate = item.CCCNDate;
+                    item.CCN_No = item.CCN_No;
                     item.CustName = item.CustName?.Trim();
 
-                    var compositeKey = $"{item.CCCNDate}|{item.CustName}";
+                    var compositeKey = $"{item.CCN_No}|{item.CustName}";
 
-                    if (string.IsNullOrWhiteSpace(item.CCCNDate.ToString()) || string.IsNullOrWhiteSpace(item.CustName))
+                    if (string.IsNullOrWhiteSpace(item.CCN_No) || string.IsNullOrWhiteSpace(item.CustName))
                     {
-                        result.FailedRecords.Add((item, "Missing Date or Custname"));
+                        result.FailedRecords.Add((item, "Missing CCNNo or Custname"));
                         continue;
                     }
 
@@ -211,7 +220,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                     // Now check against database
                     bool existsInDb = await _dbContext.COPQComplaintDump
-                        .AnyAsync(x => x.CCCNDate == item.CCCNDate && x.CustName == item.CustName);
+                        .AnyAsync(x => x.CCN_No == item.CCN_No && x.CustName == item.CustName);
 
                     if (existsInDb)
                     {
@@ -222,6 +231,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     // Passed all checks — add to DB
                     var entity = new ComplaintDump_Service
                     {
+                        CCN_No = item.CCN_No,
                         CCCNDate = item.CCCNDate,
                         ReportedBy = item.ReportedBy,
                         CLocation = item.CLocation,
@@ -231,6 +241,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         CStatus = item.CStatus,
                         Completion = item.Completion,
                         Remarks = item.Remarks,
+                        TotalDays_Close = item.TotalDays_Close,
                         CreatedBy = item.CreatedBy,
                         CreatedDate = item.CreatedDate
                     };
@@ -374,7 +385,6 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@ReferenceNo", podetail.ReferenceNo ?? (object)DBNull.Value),
                     new SqlParameter("@PONo", podetail.PONo ?? (object)DBNull.Value),
                     new SqlParameter("@PODate", podetail.PODate ?? (object)DBNull.Value),
-                    new SqlParameter("@PRNo", podetail.PRNo ?? (object)DBNull.Value),
                     new SqlParameter("@BatchNo", podetail.BatchNo ?? (object)DBNull.Value),
                     new SqlParameter("@POQty", podetail.POQty ?? (object)DBNull.Value),
                     new SqlParameter("@BalanceQty", podetail.BalanceQty ?? (object)DBNull.Value),
@@ -387,7 +397,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Insert_PO 
-                        @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @PRNo, @BatchNo, 
+                        @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @BatchNo, 
                         @POQty, @BalanceQty, @Destination, @BalanceValue, @CreatedDate, @CreatedBy, @IsDeleted",
                     parameters
                 );
@@ -415,7 +425,6 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@ReferenceNo", podetail.ReferenceNo ?? (object)DBNull.Value),
                     new SqlParameter("@PONo", podetail.PONo ?? (object)DBNull.Value),
                     new SqlParameter("@PODate", podetail.PODate ?? (object)DBNull.Value),
-                    new SqlParameter("@PRNo", podetail.PRNo ?? (object)DBNull.Value),
                     new SqlParameter("@BatchNo", podetail.BatchNo ?? (object)DBNull.Value),
                     new SqlParameter("@POQty", podetail.POQty ?? (object)DBNull.Value),
                     new SqlParameter("@BalanceQty", podetail.BalanceQty ?? (object)DBNull.Value),
@@ -427,7 +436,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Update_PO 
-                        @Id, @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @PRNo, @BatchNo, 
+                        @Id, @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @BatchNo, 
                         @POQty, @BalanceQty, @Destination, @BalanceValue, @UpdatedDate, @UpdatedBy",
                     parameters
                 );
@@ -589,7 +598,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Branch = x.Branch,
                     Indent_Status = x.Indent_Status,
                     End_Cust_Name = x.End_Cust_Name,
-                    Complaint_Id = x.Complaint_Id,
+                    CCN_No = x.CCN_No,
                     Customer_Code = x.Customer_Code,
                     Customer_Name = x.Customer_Name,
                     Bill_Req_Date = x.Bill_Req_Date,
@@ -599,6 +608,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Item_Description = x.Item_Description,
                     Quantity = x.Quantity,
                     Price = x.Price,
+                    Discount = x.Discount,
                     Final_Price = x.Final_Price,
                     SapSoNo = x.SapSoNo,
                     CreateSoQty = x.CreateSoQty,
@@ -641,7 +651,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Branch = x.Branch,
                     Indent_Status = x.Indent_Status,
                     End_Cust_Name = x.End_Cust_Name,
-                    Complaint_Id = x.Complaint_Id,
+                    CCN_No = x.CCN_No,
                     Customer_Code = x.Customer_Code,
                     Customer_Name = x.Customer_Name,
                     Bill_Req_Date = x.Bill_Req_Date,
@@ -651,6 +661,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Item_Description = x.Item_Description,
                     Quantity = x.Quantity,
                     Price = x.Price,
+                    Discount = x.Discount,
                     Final_Price = x.Final_Price,
                     SapSoNo = x.SapSoNo,
                     CreateSoQty = x.CreateSoQty,
@@ -687,7 +698,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Branch", indentdetail.Branch ?? (object)DBNull.Value),
                     new SqlParameter("@Indent_Status", indentdetail.Indent_Status ?? (object)DBNull.Value),
                     new SqlParameter("@End_Cust_Name", indentdetail.End_Cust_Name ?? (object)DBNull.Value),
-                    new SqlParameter("@Complaint_Id", indentdetail.Complaint_Id ?? (object)DBNull.Value),
+                    new SqlParameter("@CCN_No", indentdetail.CCN_No ?? (object)DBNull.Value),
                     new SqlParameter("@Customer_Code", indentdetail.Customer_Code ?? (object)DBNull.Value),
                     new SqlParameter("@Customer_Name", indentdetail.Customer_Name ?? (object)DBNull.Value),
                     new SqlParameter("@Bill_Req_Date", indentdetail.Bill_Req_Date ?? (object)DBNull.Value),
@@ -697,6 +708,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Item_Description", indentdetail.Item_Description ?? (object)DBNull.Value),
                     new SqlParameter("@Quantity", indentdetail.Quantity ?? (object)DBNull.Value),
                     new SqlParameter("@Price", indentdetail.Price ?? (object)DBNull.Value),
+                    new SqlParameter("@Discount", indentdetail.Discount ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Price", indentdetail.Final_Price ?? (object)DBNull.Value),
                     new SqlParameter("@SapSoNo", indentdetail.SapSoNo ?? (object)DBNull.Value),
                     new SqlParameter("@CreateSoQty", indentdetail.CreateSoQty ?? (object)DBNull.Value),
@@ -713,8 +725,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Insert_IndentDump 
-                        @Indent_No, @Indent_Date, @Business_Unit, @Vertical, @Branch, @Indent_Status, @End_Cust_Name,@Complaint_Id,@Customer_Code,@Customer_Name,@Bill_Req_Date,@Created_By,
-                        @Wipro_Commit_Date, @Material_No, @Item_Description, @Quantity, @Price, @Final_Price, @SapSoNo, @CreateSoQty,@Inv_Qty,@Inv_Value,@WiproCatelog_No,@Batch_Code,
+                        @Indent_No, @Indent_Date, @Business_Unit, @Vertical, @Branch, @Indent_Status, @End_Cust_Name,@CCN_No,@Customer_Code,@Customer_Name,@Bill_Req_Date,@Created_By,
+                        @Wipro_Commit_Date, @Material_No, @Item_Description, @Quantity, @Price,@Discount, @Final_Price, @SapSoNo, @CreateSoQty,@Inv_Qty,@Inv_Value,@WiproCatelog_No,@Batch_Code,
                         @Batch_Date, @Main_Prodcode, @User_Name, @CreatedBy, @IsDeleted",
                     parameters
                 );
@@ -744,7 +756,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Branch", indentdetail.Branch ?? (object)DBNull.Value),
                     new SqlParameter("@Indent_Status", indentdetail.Indent_Status ?? (object)DBNull.Value),
                     new SqlParameter("@End_Cust_Name", indentdetail.End_Cust_Name ?? (object)DBNull.Value),
-                    new SqlParameter("@Complaint_Id", indentdetail.Complaint_Id ?? (object)DBNull.Value),
+                    new SqlParameter("@CCN_No", indentdetail.CCN_No ??(object) DBNull.Value),
                     new SqlParameter("@Customer_Code", indentdetail.Customer_Code ?? (object)DBNull.Value),
                     new SqlParameter("@Customer_Name", indentdetail.Customer_Name ?? (object)DBNull.Value),
                     new SqlParameter("@Bill_Req_Date", indentdetail.Bill_Req_Date ?? (object)DBNull.Value),
@@ -754,6 +766,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Item_Description", indentdetail.Item_Description ?? (object)DBNull.Value),
                     new SqlParameter("@Quantity", indentdetail.Quantity ?? (object)DBNull.Value),
                     new SqlParameter("@Price", indentdetail.Price ?? (object)DBNull.Value),
+                    new SqlParameter("@Discount", indentdetail.Discount ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Price", indentdetail.Final_Price ?? (object)DBNull.Value),
                     new SqlParameter("@SapSoNo", indentdetail.SapSoNo ?? (object)DBNull.Value),
                     new SqlParameter("@CreateSoQty", indentdetail.CreateSoQty ?? (object)DBNull.Value),
@@ -770,8 +783,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Update_Indent 
-                        @Id,  @Indent_No, @Indent_Date, @Business_Unit, @Vertical, @Branch, @Indent_Status, @End_Cust_Name,@Complaint_Id,@Customer_Code,@Customer_Name,@Bill_Req_Date,@Created_By,
-                        @Wipro_Commit_Date, @Material_No, @Item_Description, @Quantity, @Price, @Final_Price, @SapSoNo, @CreateSoQty,@Inv_Qty,@Inv_Value,@WiproCatelog_No,@Batch_Code,
+                        @Id,  @Indent_No, @Indent_Date, @Business_Unit, @Vertical, @Branch, @Indent_Status, @End_Cust_Name,@CCN_No,@Customer_Code,@Customer_Name,@Bill_Req_Date,@Created_By,
+                        @Wipro_Commit_Date, @Material_No, @Item_Description, @Quantity, @Price, @Discount, @Final_Price, @SapSoNo, @CreateSoQty,@Inv_Qty,@Inv_Value,@WiproCatelog_No,@Batch_Code,
                         @Batch_Date, @Main_Prodcode, @User_Name, @UpdatedBy, @IsDeleted",
                     parameters
                 );
@@ -812,14 +825,13 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 foreach (var item in listOfData)
                 {
-                    item.Indent_No = item.Indent_No?.Trim();
-                    item.Customer_Code = item.Customer_Code?.Trim();
+                    item.Material_No = item.Material_No?.Trim();
 
-                    var compositeKey = $"{item.Indent_No}|{item.Customer_Code}";
+                    var compositeKey = $"{item.Material_No}";
 
-                    if (string.IsNullOrWhiteSpace(item.Indent_No) || string.IsNullOrWhiteSpace(item.Customer_Code))
+                    if (string.IsNullOrWhiteSpace(item.CCN_No))
                     {
-                        result.FailedRecords.Add((item, "Missing Indent No. or Customer Code"));
+                        result.FailedRecords.Add((item, "Missing CCN No."));
                         continue;
                     }
 
@@ -834,7 +846,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                     // Now check against database
                     bool existsInDb = await _dbContext.IndentDump
-                        .AnyAsync(x => x.Indent_No == item.Indent_No && x.Customer_Code == item.Customer_Code);
+                        .AnyAsync(x => x.Material_No == item.Material_No);
 
                     if (existsInDb)
                     {
@@ -852,7 +864,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         Branch = item.Branch,
                         Indent_Status = item.Indent_Status,
                         End_Cust_Name = item.End_Cust_Name,
-                        Complaint_Id = item.Complaint_Id,
+                        CCN_No = item.CCN_No,
                         Customer_Code = item.Customer_Code,
                         Customer_Name = item.Customer_Name,
                         Bill_Req_Date = item.Bill_Req_Date,
@@ -862,6 +874,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         Item_Description = item.Item_Description,
                         Quantity = item.Quantity,
                         Price = item.Price,
+                        Discount = item.Discount,
                         Final_Price = item.Final_Price,
                         SapSoNo = item.SapSoNo,
                         CreateSoQty = item.CreateSoQty,
@@ -933,9 +946,9 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 if (startDate.HasValue && endDate.HasValue)
                 {
                     result = result.Where(x =>
-                        x.CreatedDate.HasValue &&
-                        x.CreatedDate.Value.Date >= startDate.Value.Date &&
-                        x.CreatedDate.Value.Date <= endDate.Value.Date
+                        x.Inv_Date.HasValue &&
+                        x.Inv_Date.Value.Date >= startDate.Value.Date &&
+                        x.Inv_Date.Value.Date <= endDate.Value.Date
                     ).ToList();
                 }
 
@@ -948,14 +961,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Inv_Type = x.Inv_Type,
                     Sales_Order = x.Sales_Order,
                     Plant_Code = x.Plant_Code,
+                    Plant_Name = x.Plant_Name,
                     Material_No = x.Material_No = x.Material_No,
-                    Description = x.Description,
-                    Batch = x.Batch,
-                    Customer = x.Customer,
-                    Customer_Name = x.Customer_Name,
-                    Name = x.Name,
+                    Dealer_Name = x.Dealer_Name,
+                    End_Customer = x.End_Customer,
                     Collective_No = x.Collective_No,
-                    Reference = x.Reference,
+                    Indent_No = x.Indent_No,
                     Quantity = x.Quantity,
                     Cost = x.Cost,
                     CreatedBy = x.CreatedBy,
@@ -989,14 +1000,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     Inv_Type = x.Inv_Type,
                     Sales_Order = x.Sales_Order,
                     Plant_Code = x.Plant_Code,
+                    Plant_Name = x.Plant_Name,
                     Material_No = x.Material_No = x.Material_No,
-                    Description = x.Description,
-                    Batch = x.Batch,
-                    Customer = x.Customer,
-                    Customer_Name = x.Customer_Name,
-                    Name = x.Name,
+                    Dealer_Name = x.Dealer_Name,
+                    End_Customer = x.End_Customer,
                     Collective_No = x.Collective_No,
-                    Reference = x.Reference,
+                    Indent_No = x.Indent_No,
                     Quantity = x.Quantity,
                     Cost = x.Cost,
                     CreatedBy = x.CreatedBy,
@@ -1025,14 +1034,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Inv_Type", invoicedetail.Inv_Type ?? (object)DBNull.Value),
                     new SqlParameter("@Sales_Order", invoicedetail.Sales_Order ?? (object)DBNull.Value),
                     new SqlParameter("@Plant_Code", invoicedetail.Plant_Code ?? (object)DBNull.Value),
+                    new SqlParameter("@Plant_Name", invoicedetail.Plant_Name ?? (object)DBNull.Value),
                     new SqlParameter("@Material_No", invoicedetail.Material_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Description", invoicedetail.Description ?? (object)DBNull.Value),
-                    new SqlParameter("@Batch", invoicedetail.Batch ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer", invoicedetail.Customer ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer_Name", invoicedetail.Customer_Name ?? (object)DBNull.Value),
-                    new SqlParameter("@Name", invoicedetail.Name ?? (object)DBNull.Value),
+                    new SqlParameter("@Dealer_Name", invoicedetail.Dealer_Name ?? (object)DBNull.Value),
+                    new SqlParameter("@End_Customer", invoicedetail.End_Customer ?? (object)DBNull.Value),
                     new SqlParameter("@Collective_No", invoicedetail.Collective_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Reference", invoicedetail.Reference ?? (object)DBNull.Value),
+                    new SqlParameter("@Indent_No", invoicedetail.Indent_No ?? (object)DBNull.Value),
                     new SqlParameter("@Quantity", invoicedetail.Quantity ?? (object)DBNull.Value),
                     new SqlParameter("@Cost", invoicedetail.Cost ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", invoicedetail.CreatedBy ?? (object)DBNull.Value)
@@ -1040,8 +1047,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Insert_InvoiceList 
-                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code, @Material_No, @Description, @Batch, @Customer, @Customer_Name, @Name, @Collective_No,
-                    @Reference, @Quantity, @Cost, @CreatedBy",
+                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code, @Plant_Name, @Material_No, @Dealer_Name, @End_Customer, @Collective_No,
+                    @Indent_No, @Quantity, @Cost, @CreatedBy",
                     parameters
                 );
 
@@ -1067,14 +1074,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Inv_Type", invoicedetail.Inv_Type ?? (object)DBNull.Value),
                     new SqlParameter("@Sales_Order", invoicedetail.Sales_Order ?? (object)DBNull.Value),
                     new SqlParameter("@Plant_Code", invoicedetail.Plant_Code ?? (object)DBNull.Value),
+                    new SqlParameter("@Plant_Name", invoicedetail.Plant_Name ?? (object)DBNull.Value),
                     new SqlParameter("@Material_No", invoicedetail.Material_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Description", invoicedetail.Description ?? (object)DBNull.Value),
-                    new SqlParameter("@Batch", invoicedetail.Batch ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer", invoicedetail.Customer ?? (object)DBNull.Value),
-                    new SqlParameter("@Customer_Name", invoicedetail.Customer_Name ?? (object)DBNull.Value),
-                    new SqlParameter("@Name", invoicedetail.Name ?? (object)DBNull.Value),
+                    new SqlParameter("@Dealer_Name", invoicedetail.Dealer_Name ?? (object)DBNull.Value),
+                    new SqlParameter("@End_Customer", invoicedetail.End_Customer ?? (object)DBNull.Value),
                     new SqlParameter("@Collective_No", invoicedetail.Collective_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Reference", invoicedetail.Reference ?? (object)DBNull.Value),
+                    new SqlParameter("@Indent_No", invoicedetail.Indent_No ?? (object)DBNull.Value),
                     new SqlParameter("@Quantity", invoicedetail.Quantity ?? (object)DBNull.Value),
                     new SqlParameter("@Cost", invoicedetail.Cost ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", invoicedetail.UpdatedBy ?? (object)DBNull.Value)
@@ -1082,8 +1087,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Update_InvoiceList 
-                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code, @Material_No, @Description, @Batch, @Customer, @Customer_Name, @Name, @Collective_No,
-                    @Reference, @Quantity, @Cost, @UpdatedBy",
+                    @Key, @Inv_No, @Inv_Date, @Inv_Type, @Sales_Order, @Plant_Code,@Plant_Name, @Material_No, @Dealer_Name, @End_Customer, @Collective_No,
+                    @Indent_No, @Quantity, @Cost, @UpdatedBy",
                     parameters
                 );
 
@@ -1162,14 +1167,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         Inv_Type = item.Inv_Type,
                         Sales_Order = item.Sales_Order,
                         Plant_Code = item.Plant_Code,
+                        Plant_Name = item.Plant_Name,
                         Material_No = item.Material_No = item.Material_No,
-                        Description = item.Description,
-                        Batch = item.Batch,
-                        Customer = item.Customer,
-                        Customer_Name = item.Customer_Name,
-                        Name = item.Name,
+                        Dealer_Name = item.Dealer_Name,
+                        End_Customer = item.End_Customer,
                         Collective_No = item.Collective_No,
-                        Reference = item.Reference,
+                        Indent_No = item.Indent_No,
                         Quantity = item.Quantity,
                         Cost = item.Cost,
                         CreatedBy = item.CreatedBy,

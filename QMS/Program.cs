@@ -21,10 +21,15 @@ using QMS.Core.Repositories.SPMReportRepository;
 using QMS.Core.Repositories.RMTCDetailsRepository;
 using QMS.Core.Repositories.COPQComplaintDumpRepository;
 using QMS.Core.Repositories.OpenPoRepository;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
 builder.Services.AddDbContext<QMSDbContext>(Options => Options.UseSqlServer(connstring));
+
+builder.Services.AddTransient<IDbConnection>(sp =>
+    new SqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

@@ -76,5 +76,11 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
         Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync();
 
+
+        //// ----------------- Final Merge ------------------- ////
+        Task<List<FinalMergeServiceViewModel>> GetFinalMergeServiceAsync();
+
+        //// ----------------- Final Merge ------------------- ////
+
     }
 }

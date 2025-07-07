@@ -1226,7 +1226,7 @@ namespace QMS.Controllers
 
 
 
-        public IActionResult JobWorkTracking()
+        public IActionResult JobWorkTrack()
         {
             return View();
         }
@@ -1427,6 +1427,31 @@ namespace QMS.Controllers
             }
         }
 
-       
+        //// ----------------- Final Merge ------------------- ////
+
+        [HttpGet]
+        public async Task<IActionResult> GetFinalMergeData()
+        {
+            try
+            {
+                var data = await _copqRepository.GetFinalMergeServiceAsync();
+
+                if (data == null || !data.Any())
+                {
+                    return Json(new { success = false, message = "No data found", data = new List<object>() });
+                }
+
+                return Json(new { success = true, data });
+            }
+            catch (Exception ex)
+            {
+                // Optional: Log exception
+                return Json(new { success = false, message = ex.Message, data = new List<object>() });
+            }
+        }
+
+
+        //// ----------------- Final Merge ------------------- ////
+
     }
 }

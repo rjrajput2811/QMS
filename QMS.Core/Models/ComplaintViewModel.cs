@@ -25,4 +25,12 @@ namespace QMS.Core.Models
         public DateTime? UpdatedDate { get; set; }
         public string? UpdatedBy { get; set; }
     }
+
+    public class FinalMergeServiceViewModel
+    {
+        public ComplaintViewModel Complaint { get; set; } = new ComplaintViewModel();
+        public IndentDumpViewModel Indent { get; set; } = new IndentDumpViewModel();
+        public PendingPoViewModel PO { get; set; } = new PendingPoViewModel();
+        public InvoiceListViewModel Invoice { get; set; } = new InvoiceListViewModel();
+    }
 }

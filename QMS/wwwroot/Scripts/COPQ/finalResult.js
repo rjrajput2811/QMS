@@ -50,20 +50,18 @@ $(document).ready(function () {
         window.history.back();
     });
 
-    loadFinalResultData();
+    //$('#f-tab2').on('shown.bs.tab', function () {
+    //    loadFinalResultData();
+    //});
 });
 
 function loadFinalResultData() {
     Blockloadershow();
 
     $.ajax({
-        url: '/Service/GetAllFinalResult',
+        url: '/Service/GetFinalMergeData',
         type: 'GET',
         dataType: 'json',
-        data: {
-            startDate: filterStartDateFinalResult,
-            endDate: filterEndDateFinalResult
-        },
         success: function (data) {
             if (data.success && Array.isArray(data.data)) {
                 renderFinalResultTable(data.data);
@@ -77,7 +75,6 @@ function loadFinalResultData() {
             Blockloaderhide();
         }
     });
-
 }
 
 function renderFinalResultTable(response) {
@@ -132,11 +129,11 @@ function renderFinalResultTable(response) {
     });
 
     console.log(tabledata);
-    if (tabledata.length === 0 && tableFinalResult) {
-        tableFinalResult.clearData();
-        Blockloaderhide();
-        return;
-    }
+    //if (tabledata.length === 0 && tableFinalResult) {
+    //    tableFinalResult.clearData();
+    //    Blockloaderhide();
+    //    return;
+    //}
 
     // Define your columns here or outside renderTable if reused
     const columns = [

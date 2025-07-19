@@ -1,0 +1,846 @@
+﻿@using QMS.Core.Enums
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = "Sales Order Details";
+    var userType = HttpContextAccessor.HttpContext.Session.GetString("User_Type") ?? "";
+    var vendor_Name = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
+}
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/js/tabulator.js"></script>
+<script src="~/js/xlsx.min.js"></script>
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+
+    .bborder {
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    th {
+        border-bottom: 3px solid #eeeeee;
+    }
+
+    .current {
+        background-color: white !important;
+        color: blue !important;
+    }
+
+    .modal-header {
+        /* background-color: #ececec !important; */
+        padding-bottom: 7px !important;
+        font-weight: bold;
+    }
+
+    .modal-body {
+        padding: 0.4rem 1.25rem;
+    }
+
+    .form-control {
+        padding: 0 10px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #0056b3; /* Darker blue */
+    }
+
+    #scrollToTopBtn {
+        outline: none; /* Removes the focus border */
+    }
+
+    #uploadDetailTable tr {
+        background-color: #ffffff !important; /* Force all rows to be white */
+    }
+
+    #uploadDetailTable {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .modal-open .tabulator-row {
+        min-height: unset; /* Removes the min-height */
+    }
+
+    .select2-container {
+        z-index: 0 !important; /* Ensure it's above the modal */
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        /* border-right: none; */
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 30px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    /* Slideout modal customization */
+    .modal-dialog-slideout {
+        position: fixed;
+        margin: auto;
+        width: 60%;
+        height: 100%;
+        right: 10px;
+        top: 250px;
+        bottom: 0;
+        transform: translate3d(100%, 0, 0);
+        transition: transform 0.5s ease-out;
+    }
+
+    .modal.fade .modal-dialog-slideout {
+        transform: translate3d(100%, 0, 0);
+    }
+
+    .modal.fade.show .modal-dialog-slideout {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .tabulator-tree-col .tabulator-tree-control {
+        display: none;
+    }
+
+    /* .tabulator-row.tabulator-tree-level-0 {
+                            font-size: large;
+                            color: #4682B4 !important;
+                            font-weight: 600;
+                        } */
+
+    .tabulator-row.tabulator-tree-level-1 {
+        font-size: medium;
+    }
+
+    .tabulator-row .tabulator-cell .tabulator-data-tree-control {
+        border: 2px solid #4682B4 !important;
+        background-color: #4682B4 !important;
+    }
+
+    .tabulator .tabulator-data-tree-branch {
+        border-left: 2px solid #4682B4 !important;
+        border-bottom: 2px solid #4682B4 !important;
+    }
+
+    .form-check.form-switch .form-check-input {
+        width: 2.4em;
+        height: 1.2em;
+        background-color: #ddd;
+        border-radius: 1.2em;
+        position: relative;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        transition: background-color 0.3s;
+    }
+
+        .form-check.form-switch .form-check-input:checked {
+            background-color: #007bff;
+        }
+
+        .form-check.form-switch .form-check-input::before {
+            content: "";
+            position: absolute;
+            top: 0.140em;
+            left: 0.125em;
+            width: 0.9em;
+            height: 0.9em;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .form-check.form-switch .form-check-input:checked::before {
+            transform: translateX(1.2em);
+        }
+</style>
+
+
+<div class="content">
+
+    <div class="card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div style="font-size: large; color: #4682B4;">
+                Sales Order Details
+            </div>
+            <!-- Back Button -->
+            <div>
+                <div class="ml-auto">
+                    <select id="typeDropdown" class="" style="width: 130px; margin: 5px 5px;font-size:14px;border: 0;border-bottom: 2px solid #cccccc;border-radius: 0px;">
+                        <option value="">All Type</option>
+                        <option value="MTO">MTO</option>
+                        <option value="MTA">MTA</option>
+                    </select>&nbsp;
+
+                    <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
+                        <i class="fas fa-upload mr-2"></i>Upload Xl
+                    </button>&nbsp;
+
+                    <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
+                        <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
+                    </button>&nbsp;
+
+                    <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="AutoReload()" style="font-size:14px">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+
+                    <ul class="nav nav-tabs mb-3" id="salesOrderTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active" id="so-details-tab" data-toggle="tab" href="#so-details" role="tab" aria-controls="so-details" aria-selected="true">
+                                SO Details
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="pivot-tab" data-toggle="tab" href="#pivot" role="tab" onclick="loadSalesOrderSummary()" aria-controls="pivot" aria-selected="false">
+                                Pivot View
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link" id="pivot-tab" data-toggle="tab" href="#summary" role="tab" onclick="loadMatchedSummary()" aria-controls="summary" aria-selected="false">
+                                Summary
+                            </a>
+                        </li>
+                        <!-- Add more tabs here if needed -->
+                    </ul>
+                    <div class="chart-container">
+                        <div class="form-group row">
+                            <div class="tab-content col-12" id="salesOrderTabContent">
+
+                                <div class="tab-pane fade show active" id="so-details" role="tabpanel" aria-labelledby="so-details-tab">
+                                    <div id="salesOrder_Table"></div>
+                                </div>
+
+                                <div class="tab-pane fade" id="pivot" role="tabpanel" aria-labelledby="pivot-tab">
+                                    <div id="pivot_Table"></div>
+                                </div>
+
+                                <div class="tab-pane fade" id="summary" role="tabpanel" aria-labelledby="summary-tab">
+                                    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" id="summary-cards">
+                                        <div class="p-2 flex-fill text-center">
+                                            <div class="small text-muted">Total PO</div>
+                                            <div class="h4 mb-0" id="total-po">0</div>
+                                        </div>
+                                        <div class="p-2 flex-fill text-center">
+                                            <div class="small text-muted">Total SO</div>
+                                            <div class="h4 mb-0" id="total-so">0</div>
+                                        </div>
+                                        <div class="p-2 flex-fill text-center">
+                                            <div class="small text-success">Matched</div>
+                                            <div class="h4 mb-0" id="matched">0</div>
+                                        </div>
+                                        <div class="p-2 flex-fill text-center">
+                                            <div class="small text-danger">UnMatched PO</div>
+                                            <div class="h4 mb-0" id="notmatched-po">0</div>
+                                        </div>
+                                        <div class="p-2 flex-fill text-center">
+                                            <div class="small text-warning">UnMatched SO</div>
+                                            <div class="h4 mb-0" id="notmatched-so">0</div>
+                                        </div>
+                                    </div>
+                                    <div id="summary_Table"></div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<button id="scrollToTopBtn" style="
+    display: none;
+    position: fixed;
+    bottom: 10px;
+    right: 40px;
+    z-index: 1000;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10%;
+    padding: 10px 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: opacity 0.3s;">
+    <i class="fa fa-arrow-up"></i>
+</button>
+
+@section Scripts {
+    <script src="~/js/select2.min.js"></script>
+    <script>
+
+         var tabledata = [];
+         var table;
+         var deliveryScheduleTable;
+
+
+
+         $(document).ready(function () {
+
+             $('#typeDropdown').change(function () {
+                   var activeTab = $('.nav-tabs .active').attr('href');
+                   if (activeTab === "#so-details") loadSalesOrderTable();
+                   else if (activeTab === "#pivot") loadSalesOrderSummary();
+                   else if (activeTab === "#summary") loadMatchedSummary();
+             });
+
+             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                 var target = $(e.target).attr("href");
+                 if (target === "#pivot") {
+                     // Initialize or reload your pivot grid here
+                     loadSalesOrderSummary();
+                 }
+                 if (target === "#so-details") {
+                     // Optionally reload normal table here
+                     loadSalesOrderTable();
+                 }
+             });
+
+             $('#upload-button').on('click', async function () {
+                    var expectedColumns = [
+                       'SO', 'Sale Order Type', 'SO Date', 'Line Item', 'Indent Number', 'Indent Date', 'Order Type', 'Vertical', 'Region', 'Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip', 'Sales Person', 'Project Name', 'Project Name Tag',
+                       'Priority Tag', 'Customer', 'Customer Name', 'Dealer / Direct', 'Inspection', 'Material', 'Old Material Number', 'Description', 'SO Quantity', 'SO Value', 'Rate', 'DEL Quantity',
+                       'Open Sales Qty', 'Open Sales Value', 'Plant', 'Item Category', 'Item category as per latest', 'Procurement Type', 'Vendor PO Number', 'Vendor PO Date', 'CPR Number', 'Vendor', 'Planner', 'PO Release Qty',
+                       'Allocated Stock QTY', 'Allocated Stock Value', 'Net Qty', 'Net Value', 'Qty in week', 'Value in week', 'Qty after week', 'Value after week', 'CHK5', 'Indent Status', 'Sales call Points', 'Free stock',
+                       'GRN Qty til week', 'Last Item GRN date', 'Chk1', 'Delivery Schedule', 'Readiness schedule at vendor place. Released on From week', 'Readiness schedule at vendor place. Released on To week', 'Readiness schedule at vendor place. Released on week',
+                       'Delivery schedule PC Break up', 'Chk2', 'Line item schedule', 'R&B', 'Schedule to repeat', 'Internal pending issue', 'Pending with', 'Remarks', 'CRD Overdue', 'Delivery Date', 'Process plan Billing based on CRD (PC)', 'Last Week PC',
+                       'Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2', 'Schedule Line Qty3', 'Schedule Line Date3', 'To Consider', 'Person Name', 'Visibility'
+                    ];
+
+                    var url = '@Url.Action("UploadSalesOrderDataExcel", "OpenPo")';
+                    handleImportExcelFile(url, expectedColumns);
+             });
+
+             loadSalesOrderTable();
+         });
+
+        function clearForm() {
+            // Clear all input fields
+            document.querySelectorAll('.form-control').forEach(function (input) {
+                if (input.tagName === 'INPUT') {
+                    if (input.type === 'hidden' || input.readOnly) {
+                        // Skip hidden or readonly inputs
+                        return;
+                    }
+                    input.value = ''; // Clear input value
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0; // Reset dropdown to first option
+                }
+            });
+
+            // Clear error messages if needed
+            document.querySelectorAll('.text-danger').forEach(function (error) {
+                error.textContent = '';
+            });
+        }
+
+        function openUpload() {
+
+            clearForm();
+            if (!$('#uploadModal').length) {
+                $('body').append(partialView);
+            }
+            $('#uploadModal').modal('show');
+        }
+
+        function loadSalesOrderSummary() {
+            Blockloadershow();
+            var selectedType = $("#typeDropdown").val();
+            $.ajax({
+                url: '@Url.Action("GetSalesOrdersQty", "OpenPo")',
+                method: 'GET',
+                data: { type: selectedType },
+                success: function(response) {
+                    Blockloaderhide();
+                    tabledata = [];
+
+                    if (response.length > 0) {
+
+                        function formatDate(value) {
+                                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                        }
+
+                        $.each(response, function (index, item) {
+                            tabledata.push({
+                                Sr_No: index + 1,
+                                Id: item.id,
+                                Old_Material_No: item.old_Material_No,
+                                SO_Qty: item.sO_Qty,
+                                SO_Date : item.sO_Date,
+                                Vertical: item.vertical,
+                                Region: item.region,
+                                Process_Plan_On_Crd: item.process_Plan_On_Crd,
+                                Item_Category_Latest: item.item_Category_Latest,
+
+                            });
+                        });
+                    }
+
+                    new Tabulator("#pivot_Table", {
+                        data: tabledata,
+                        layout: "fitColumns",
+                        renderHorizontal: "virtual",
+                        movableColumns: true, // Allow column reordering
+                        pagination: "local", // Enable pagination
+                        paginationSize: 10, // Rows per page
+                        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                        paginationCounter: "rows",
+                        // placeholder: "No data available",
+                        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                        columns: [
+                            { title: "Sr No",formatter: "rownum",hozAlign: "center",headerSort: false,width: 70 },
+                            { title: "Old Material No", field: "Old_Material_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "SO Qty", field: "SO_Qty",headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            {
+                                title: "Month",
+                                field: "SO_Date", // change if your field is named differently
+                                headerMenu: headerMenu,
+                                headerFilter: "input",
+                                hozAlign: "center",
+                                headerHozAlign: "center",
+                                formatter: function(cell, formatterParams) {
+                                    var value = cell.getValue();
+                                    if (!value) return "";
+                                    var dateObj = (value instanceof Date) ? value : new Date(value);
+                                    if (isNaN(dateObj)) return value;
+                                    var yyyy = dateObj.getFullYear();
+                                    var mm = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+                                    return yyyy + "-" + mm;
+                                }
+                            },
+                            { title: "Vertical", field: "Vertical", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Region", field: "Region",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Week", field: "Process_Plan_On_Crd",headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Item Category", field: "Item_Category_Latest",headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                        ]
+                    });
+                }
+            });
+        }
+
+        function loadMatchedSummary() {
+            Blockloadershow();
+            $.ajax({
+                url: '@Url.Action("GetPOSOMatchSummary", "OpenPo")',
+                method: 'GET',
+                success: function(response) {
+                    Blockloaderhide();
+                    if (response.summary) {
+                        $('#total-po').text(response.summary.total_PO_Count || 0);
+                        $('#total-so').text(response.summary.total_SO_Count || 0);
+                        $('#matched').text(response.summary.matched_Count || 0);
+                        $('#notmatched-po').text(response.summary.not_Matched_PO_Count || 0);
+                        $('#notmatched-so').text(response.summary.not_Matched_SO_Count || 0);
+                    }
+
+                    var records = response.matched || [];
+                    tabledata = [];
+
+                    if (records.length > 0) {
+
+                        function formatDate(value) {
+                                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                        }
+
+                        $.each(records, function (index, item) {
+                            tabledata.push({
+                                Sr_No: index + 1,
+                                PO_No: item.pO_No,
+                                PO_Date: formatDate(item.pO_Date),
+                                PO_Qty: item.pO_Qty,
+                                Delivery_Date: formatDate(item.delivery_Date),
+                                SO_No: item.sO_No,
+                                SO_Date: formatDate(item.sO_Date),
+                                SO_Qty: item.sO_Qty,
+                                PO_Material: item.pO_Material,
+                                SO_Material: item.sO_Material
+                            });
+                        });
+                    }
+
+                    new Tabulator("#summary_Table", {
+                        data: tabledata,
+                        layout: "fitColumns",
+                        renderHorizontal: "virtual",
+                        movableColumns: true, // Allow column reordering
+                        pagination: "local", // Enable pagination
+                        paginationSize: 10, // Rows per page
+                        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                        paginationCounter: "rows",
+                        // placeholder: "No data available",
+                        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                        columns: [
+                            { title: "Sr No",formatter: "rownum",hozAlign: "center",headerSort: false,width: 70 },
+                            { title: "PO No", field: "PO_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "PO Date", field: "PO_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "PO Qty", field: "PO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Delivery Date", field: "Delivery_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "PO Material", field: "PO_Material",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "SO No", field: "SO_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "SO Date", field: "SO_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "SO Qty", field: "SO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "SO Material", field: "SO_Material",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                        ]
+                    });
+                }
+            });
+        }
+
+        function loadSalesOrderTable() {
+
+            Blockloadershow();
+
+            $.ajax({
+                url: '@Url.Action("GetSalesOrderAll", "OpenPo")',
+                type: 'GET',
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnTabGridLoad(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+
+                //create checkbox element using font awesome icons
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                //build label
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                //create menu item
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        //prevent menu closing
+                        e.stopPropagation();
+
+                        //toggle current column visibility
+                        column.toggle();
+
+                        //change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+        function OnTabGridLoad(response) {
+            debugger;
+            Blockloadershow();
+
+            tabledata = [];
+            let columns = [];
+
+            if (response.length > 0) {
+
+                function formatDate(value) {
+                        return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                }
+
+                $.each(response, function (index, item) {
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        SO_No: item.sO_No,
+                        SaleOrder_Type: item.saleOrder_Type,
+                        SO_Date: formatDate(item.sO_Date),
+                        Line_Item: item.line_Item,
+                        Indent_No: item.indent_No,
+                        Indent_Date: formatDate(item.indent_Date),
+                        Order_Type: item.order_Type,
+                        Vertical: item.vertical,
+                        Region: item.region,
+                        Sales_Group: item.sales_Group,
+                        Sales_Group_desc: item.sales_Group_desc,
+                        Sales_Office: item.sales_Office,
+                        Sales_Office_Desc: item.sales_Office_Desc,
+                        Sale_Person: item.sale_Person,
+                        Project_Name: item.project_Name,
+                        Project_Name_Tag: item.project_Name_Tag,
+                        Priority_Tag: item.priority_Tag,
+                        Customer_Name: item.customer_Name,
+                        Customer_Code: item.customer_Code,
+                        Dealer_Direct: item.dealer_Direct,
+                        Inspection: item.inspection,
+                        Material: item.material,
+                        Old_Material_No: item.old_Material_No,
+                        Description: item.description,
+                        SO_Qty: item.sO_Qty,
+                        SO_Value: item.sO_Value,
+                        Rate: item.rate,
+                        Del_Qty: item.del_Qty,
+                        Open_Sale_Qty: item.open_Sale_Qty,
+                        Opne_Sale_Value: item.opne_Sale_Value,
+                        Plant: item.plant,
+                        Item_Category: item.item_Category,
+                        Item_Category_Latest: item.item_Category_Latest,
+                        Procurement_Type: item.procurement_Type,
+                        Vendor_Po_No: item.vendor_Po_No,
+                        Vendor_Po_Date: formatDate(item.vendor_Po_Date),
+                        CPR_Number: item.cpr_Number,
+                        Vendor: item.vendor,
+                        Planner: item.planner,
+                        Po_Release_Qty: item.po_Release_Qty,
+                        Allocated_Stock_Qty: item.allocated_Stock_Qty,
+                        Allocated_Stock_Value: item.allocated_Stock_Value,
+                        Net_Qty: item.net_Qty,
+                        Net_Value: item.net_Value,
+                        Qty_In_Week: item.qty_In_Week,
+                        Value_In_Week: item.value_In_Week,
+                        Qty_After_Week: item.qty_After_Week,
+                        Value_After_Week: item.value_After_Week,
+                        Check5: item.check5,
+                        Indent_Status: item.indent_Status,
+                        Sales_Call_Point: item.sales_Call_Point,
+                        Free_Stock: item.free_Stock,
+                        Grn_Qty: item.grn_Qty,
+                        Last_Grn_Date: formatDate(item.last_Grn_Date),
+                        Check1: item.check1,
+                        Delivery_Schedule: item.delivery_Schedule,
+                        Readiness_Vendor_Released_Fr_Date: formatDate(item.readiness_Vendor_Released_Fr_Date),
+                        Readiness_Vendor_Released_To_Date: formatDate(item.readiness_Vendor_Released_To_Date),
+                        Readiness_Schedule_Vendor_Released: formatDate(item.readiness_Schedule_Vendor_Released),
+                        Delivery_Schedule_PC_Breakup: item.delivery_Schedule_PC_Breakup,
+                        Check2: item.check2,
+                        Line_Item_Schedule: item.line_Item_Schedule,
+                        R_B: item.r_B,
+                        Schedule_Repeat: item.schedule_Repeat,
+                        Internal_Pending_Issue: item.internal_Pending_Issue,
+                        Pending_With: item.pending_With,
+                        Remark: item.remark,
+                        CRD_OverDue: item.crd_OverDue,
+                        Delivert_Date: formatDate(item.delivert_Date),
+                        Process_Plan_On_Crd: item.process_Plan_On_Crd,
+                        Last_Week_PC: item.last_Week_PC,
+                        Schedule_Line_Qty1: item.schedule_Line_Qty1,
+                        Schedule_Line_Date1: formatDate(item.schedule_Line_Date1),
+                        Schedule_Line_Qty2: item.schedule_Line_Qty2,
+                        Schedule_Line_Date2: formatDate(item.schedule_Line_Date2),
+                        Schedule_Line_Qty3: item.schedule_Line_Qty3,
+                        Schedule_Line_Date3: formatDate(item.schedule_Line_Date3),
+                        To_Consider: item.to_Consider,
+                        Person_Name: item.person_Name,
+                        Visibility: item.visibility,
+                        CreatedDate: formatDate(item.createdDate),
+                        CreatedBy: item.createdBy
+                    });
+                });
+            }
+
+            columns.push(
+                {
+                    title: "Action",
+                    field: "Action",
+                    width: 60,
+                    headerMenu: headerMenu,
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    formatter: function (cell, formatterParams) {
+                        const rowData = cell.getRow().getData();
+                        let actionButtons = "";
+                        // Uncomment to add 'add using existing' button
+                        // actionButtons += `<i data-toggle="modal" onclick="showEditProduct(${rowData.Id},'copy')" class="fas fa-plus mr-2 fa-1x" title="Add Using Existing" style="color:green;cursor:pointer;margin-left: 5px;"></i>`;
+                        actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+                        // actionButtons += `<i data-toggle="modal" onclick="openProdEmail(${rowData.Id})" class="fas fa-envelope text-info mr-2 fa-1x" title="Send Email" style="font-size: 20px; cursor: pointer;margin-left: 5px;"></i>`;
+                        return actionButtons;
+                    }
+                });
+
+            const colDefs = [
+                { field: "Sr_No", title: "SNo" },
+                { field: "SO_No", title: "SO No" },
+                { field: "SaleOrder_Type", title: "Sale Order Type" ,visible: false},
+                { field: "SO_Date", title: "SO Date" },
+                { field: "Line_Item", title: "Line Item" },
+                { field: "Indent_No", title: "Indent No" },
+                { field: "Indent_Date", title: "Indent Date" },
+                { field: "Order_Type", title: "Order Type" ,visible: false},
+                { field: "Vertical", title: "Vertical" },
+                { field: "Region", title: "Region" },
+                { field: "Sales_Group", title: "Sales Group" },
+                { field: "Sales_Group_desc", title: "Sales Group Desc" },
+                { field: "Sales_Office", title: "Sales Office" },
+                { field: "Sales_Office_Desc", title: "Sales Office Desc" },
+                { field: "Sale_Person", title: "Sale Person" },
+                { field: "Project_Name", title: "Project Name" },
+                { field: "Project_Name_Tag", title: "Project Name Tag",visible: false },
+                { field: "Priority_Tag", title: "Priority Tag",visible: false },
+                { field: "Customer_Name", title: "Customer Name" },
+                { field: "Customer_Code", title: "Customer Code" },
+                { field: "Dealer_Direct", title: "Dealer/Direct",visible: false },
+                { field: "Inspection", title: "Inspection",visible: false },
+                { field: "Material", title: "Material" },
+                { field: "Old_Material_No", title: "Old Material No" },
+                { field: "Description", title: "Description" },
+                { field: "SO_Qty", title: "SO Qty" },
+                { field: "SO_Value", title: "SO Value" },
+                { field: "Rate", title: "Rate" },
+                { field: "Del_Qty", title: "Del Qty" },
+                { field: "Open_Sale_Qty", title: "Open Sale Qty" },
+                { field: "Opne_Sale_Value", title: "Open Sale Value" },
+                { field: "Plant", title: "Plant" },
+                { field: "Item_Category", title: "Item Category",visible: false },
+                { field: "Item_Category_Latest", title: "Item Category Latest" },
+                { field: "Procurement_Type", title: "Procurement Type",visible: false },
+                { field: "Vendor_Po_No", title: "Vendor PO No" },
+                { field: "Vendor_Po_Date", title: "Vendor PO Date" },
+                { field: "CPR_Number", title: "CPR Number" },
+                { field: "Vendor", title: "Vendor" },
+                { field: "Planner", title: "Planner" },
+                { field: "Po_Release_Qty", title: "PO Release Qty" },
+                { field: "Allocated_Stock_Qty", title: "Allocated Stock Qty" },
+                { field: "Allocated_Stock_Value", title: "Allocated Stock Value" },
+                { field: "Net_Qty", title: "Net Qty" },
+                { field: "Net_Value", title: "Net Value" },
+                { field: "Qty_In_Week", title: "Qty In Week" },
+                { field: "Value_In_Week", title: "Value In Week" },
+                { field: "Qty_After_Week", title: "Qty After Week" },
+                { field: "Value_After_Week", title: "Value After Week" },
+                { field: "Check5", title: "Check5" },
+                { field: "Indent_Status", title: "Indent Status",visible: false },
+                { field: "Sales_Call_Point", title: "Sales Call Point" ,visible: false},
+                { field: "Free_Stock", title: "Free Stock" },
+                { field: "Grn_Qty", title: "GRN Qty" },
+                { field: "Last_Grn_Date", title: "Last GRN Date" },
+                { field: "Check1", title: "Check1" },
+                { field: "Delivery_Schedule", title: "Delivery Schedule" },
+                { field: "Readiness_Vendor_Released_Fr_Date", title: "Readiness Vendor Released From Date",visible: false },
+                { field: "Readiness_Vendor_Released_To_Date", title: "Readiness Vendor Released To Date",visible: false },
+                { field: "Readiness_Schedule_Vendor_Released", title: "Readiness Schedule Vendor Released",visible: false },
+                { field: "Delivery_Schedule_PC_Breakup", title: "Delivery Schedule PC Breakup" },
+                { field: "Check2", title: "Check2" },
+                { field: "Line_Item_Schedule", title: "Line Item Schedule",visible: false },
+                { field: "R_B", title: "R&B",visible: false },
+                { field: "Schedule_Repeat", title: "Schedule Repeat" ,visible: false},
+                { field: "Internal_Pending_Issue", title: "Internal Pending Issue",visible: false },
+                { field: "Pending_With", title: "Pending With" ,visible: false},
+                { field: "Remark", title: "Remark",visible: false },
+                { field: "CRD_OverDue", title: "CRD OverDue",visible: false },
+                { field: "Delivert_Date", title: "Delivery Date" },
+                { field: "Process_Plan_On_Crd", title: "Process Plan On Crd" },
+                { field: "Last_Week_PC", title: "Last Week PC" },
+                { field: "Schedule_Line_Qty1", title: "Schedule Line Qty1" },
+                { field: "Schedule_Line_Date1", title: "Schedule Line Date1" },
+                { field: "Schedule_Line_Qty2", title: "Schedule Line Qty2" },
+                { field: "Schedule_Line_Date2", title: "Schedule Line Date2" },
+                { field: "Schedule_Line_Qty3", title: "Schedule Line Qty3" },
+                { field: "Schedule_Line_Date3", title: "Schedule Line Date3" },
+                { field: "To_Consider", title: "To Consider" },
+                { field: "Person_Name", title: "Person Name" },
+                { field: "Visibility", title: "Visibility",visible: false },
+                { field: "CreatedDate", title: "Created Date",visible: false },
+                { field: "CreatedBy", title: "Created By" ,visible: false}
+            ];
+
+            colDefs.forEach(function (col) {
+                columns.push({
+                    title: col.title,
+                    field: col.field,
+                    headerMenu: headerMenu,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "left"
+                });
+            });
+
+            columns.push({ title: "ID", field: "Id", visible: false });
+
+            // // Initialize Tabulator
+            table = new Tabulator("#salesOrder_Table", {
+                data: tabledata, // Table data
+                renderHorizontal: "virtual",
+                movableColumns: true, // Allow column reordering
+                pagination: "local", // Enable pagination
+                paginationSize: 10, // Rows per page
+                paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                paginationCounter: "rows",
+                layout: "fitDataFill",
+                // placeholder: "No data available",
+                dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                index: "Id", // This tells Tabulator to use `Id` as the unique row key
+                columns: columns
+            });
+
+            document.getElementById("exportExcel").addEventListener("click", function () {
+                table.download("xlsx", "Sales Order List.xlsx", { sheetName: "Sales Order List" });
+            });
+
+
+            // Hide loader
+            Blockloaderhide();
+        }
+
+    </script>
+}
+
+@await Html.PartialAsync("_UploadModalpartial")
+
+
+

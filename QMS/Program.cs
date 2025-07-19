@@ -23,6 +23,7 @@ using QMS.Core.Repositories.COPQComplaintDumpRepository;
 using QMS.Core.Repositories.OpenPoRepository;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -90,6 +91,11 @@ builder.Services.AddCors(opt =>
     .AllowCredentials());
 });
 builder.Services.AddDistributedMemoryCache();
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 104857600; // 100 MB
+    // You can set even higher if your files are huge.
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

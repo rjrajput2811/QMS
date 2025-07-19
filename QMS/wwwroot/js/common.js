@@ -19,7 +19,7 @@ function openUploadIndent() {
     const columns = [
         'Indent No', 'Indent Date', 'Business Unit', 'Vertical', 'Branch', 'Indent Status',
         'End Customer Name', 'CCN No', 'Customer Code', 'Customer Name', 'Bill Request Date',
-        'Created By', 'Wipro Commit Date', 'Material No', 'Item Description', 'Quantity', 'Price','Discount',
+        'Created By', 'Wipro Commit Date', 'Material No', 'Item Description', 'Quantity', 'Price', 'Discount',
         'Final Price', 'SAPSO No', 'Create SoQty', 'Inv_qnty', 'Inv_value', 'Wipro Catelog No',
         'Batch Code', 'Batch Date', 'MainProd Code', 'User Name'
     ];
@@ -56,7 +56,7 @@ function setUploadConfig(url, columns) {
 }
 
 function AutoReload() {
-    setTimeout(function () {window.location.reload(); }, 1500);
+    setTimeout(function () { window.location.reload(); }, 1500);
 }
 function createUploadButton() {
     // Create the uploadData button
@@ -318,22 +318,31 @@ function handleImportExcelFile(url, expectedColumns) {
                     // JSON result
                     const reader = new FileReader();
                     reader.onload = function () {
-                        const response = JSON.parse(reader.result);
-                        if (response.success) {
-                            showSuccessAlert(response.message);
-                        } else {
-                            showDangerAlert(response.message);
-
-                            if (response.failedRecords && response.failedRecords.length > 0) {
-                                let details = '<strong>Failed Records:</strong><ul>';
-                                response.failedRecords.forEach(function (item) {
-                                    details += `<li>Key: ${item.key || 'N/A'}, PO No: ${item.po_No || 'N/A'} — Reason: ${item.reason}</li>`;
-                                });
-                                details += '</ul>';
-                                $('#errorLogContainer').html(details).show();
+                        try {
+                            // Check if result is empty
+                            if (!reader.result || reader.result.trim() === "") {
+                                showDangerAlert("Empty response from server. Please check server logs for details.");
+                                return;
                             }
+                            const response = JSON.parse(reader.result);
+                            if (response.success) {
+                                showSuccessAlert(response.message);
+                            } else {
+                                showDangerAlert(response.message);
+
+                                if (response.failedRecords && response.failedRecords.length > 0) {
+                                    let details = '<strong>Failed Records:</strong><ul>';
+                                    response.failedRecords.forEach(function (item) {
+                                        details += `<li>Key: ${item.key || 'N/A'}, PO No: ${item.po_No || 'N/A'} — Reason: ${item.reason}</li>`;
+                                    });
+                                    details += '</ul>';
+                                    $('#errorLogContainer').html(details).show();
+                                }
+                            }
+                            AutoReload();
+                        } catch (err) {
+                            showDangerAlert("Error occurred while processing response. " + err.message);
                         }
-                        AutoReload();
                     };
                     reader.readAsText(blob);
                 }

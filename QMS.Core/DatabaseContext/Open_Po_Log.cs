@@ -37,4 +37,11 @@ namespace QMS.Core.DatabaseContext
         public OperationResult Result { get; set; } = new();
         public List<(Open_PoViewModel Record, string Reason)> FailedRecords { get; set; } = new();
     }
+
+    public class BulkSalesCreateLogResult
+    {
+        public OperationResult Result { get; set; } = new();
+        public List<(Sales_Order_ViewModel Record, string Reason)> FailedRecords { get; set; } = new();
+    }
+
 }

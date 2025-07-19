@@ -18,5 +18,13 @@ namespace QMS.Core.Repositories.OpenPoRepository
         Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel schedules, string updatedBy);
 
         Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor);
+
+        Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type);
+
+        Task<List<Sales_Order_ViewModel>> GetSalesOrdersQtyAsync(string? type);
+
+        Task<BulkSalesCreateLogResult> BulkSalesCreateAsync(List<Sales_Order_ViewModel> listOfData, string fileName, string uploadedBy);
+
+        Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type);
     }
 }

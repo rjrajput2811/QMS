@@ -48,6 +48,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Open_Po> OpenPo { get; set; }
         public DbSet<Open_Po_Log> OpenPo_Log { get; set; }
         public DbSet<Opne_Po_DeliverySchedule> Opne_Po_Deliveries { get; set; }
+        public DbSet<Sales_Order_SCM> Sales_Order { get; set; }
 
 
 

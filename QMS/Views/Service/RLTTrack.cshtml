@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "JobWork Track";
+    ViewData["Title"] = "RLT Track For Vendor";
 }
 
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
@@ -170,8 +170,8 @@
         <div class="card-body">
 
             <div class="nav nav-tabs" id="f-tabs" role="tablist">
-                <a class="nav-link active" id="f-tab1" data-bs-toggle="tab" href="#ftab1" role="tab" onclick="loadJobData()" aria-controls="ftab1" aria-selected="false">Jobwork Spares Tracking Input</a>
-                <a class="nav-link" id="f-tab2" data-bs-toggle="tab" href="#ftab2" role="tab" onclick="loadFinalJobData()" aria-controls="ftab2" aria-selected="false">Output</a>
+                <a class="nav-link active" id="f-tab1" data-bs-toggle="tab" href="#ftab1" role="tab" onclick="loadRLTData()" aria-controls="ftab1" aria-selected="false">RLT Track For Vendor Input</a>
+                <a class="nav-link" id="f-tab2" data-bs-toggle="tab" href="#ftab2" role="tab" onclick="loadFinalRLTData()" aria-controls="ftab2" aria-selected="false">Output</a>
             </div>
 
             <div class="tab-content" id="f-tabContent">
@@ -180,19 +180,19 @@
                     <div class="card" id="div1" style="">
                         <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
                             <div class="col-md-4">
-                                <div id="jobDateTrigger" class="calendar-container">
+                                <div id="rLTDateTrigger" class="calendar-container">
                                     <i class="fa fa-calendar"></i>
-                                    <span id="jobRangeText">Select Date Range</span>
+                                    <span id="rLTRangeText">Select Date Range</span>
                                 </div>
                             </div>
                             <div>
                                 <button id="addButton" type="button" class="btn btn-outline-success legitRipple" style="margin: 10px 3px;width: 100px; font-size:15px">
                                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                                 </button>&nbsp;
-                                <button id="exldownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankJobWorkTrackDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
+                                <button id="exldownButton" type="button" class="btn btn-outline-warning legitRipple" onclick="BlankRLTTrackDown()" style="margin: 10px 3px;width: 230px; font-size:15px">
                                     <i class="fas fa-regular fa-file-excel mr-2"></i>Download Template
                                 </button>&nbsp;
-                                <button id="exluploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadJob()" style="margin: 10px 3px;width: 150px; font-size:15px">
+                                <button id="exluploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadRLT()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                     <i class="fas fa-upload mr-2"></i>Upload Exl
                                 </button>&nbsp;
                                 <button id="backButton" class="btn btn-outline-info">
@@ -201,7 +201,7 @@
                             </div>
                         </div>
                         <div class="form-group mt-2">
-                            <div id="job-table" class="col-12"></div>
+                            <div id="rLT-table" class="col-12"></div>
                         </div>
                     </div>
                 </div>
@@ -209,24 +209,16 @@
 
             <div class="tab-pane fade" id="ftab2" role="tabpanel">
                 <div class="card" id="Finaldiv1">
-                    <div class="card-body d-flex justify-content-between align-items-center" style="border-bottom:1px solid #4682B4;">
-                        <div class="col-md-4">
-                            <div id="customDateTriggerFinal" class="calendar-container">
-                                <i class="fa fa-calendar"></i>
-                                <span id="FinaldateRangeText">Select Date Range</span>
-                            </div>
-                        </div>
-                        <div>
-                            <button id="exlExtButton" type="button" class="btn btn-outline-primary legitRipple" onclick="" style="margin: 10px 3px;width: 150px; font-size:15px">
-                                <i class="fas fa-upload mr-2"></i>Export Exl
-                            </button>&nbsp;
-                            <button id="backButton" class="btn btn-outline-info">
-                                <i class="fas fa-arrow-left"></i>Back
-                            </button>
-                        </div>
+                    <div class="ml-auto">
+                        <button id="exlExtButton" type="button" class="btn btn-outline-primary legitRipple" onclick="" style="margin: 10px 3px;width: 150px; font-size:15px">
+                            <i class="fas fa-upload mr-2"></i>Export Exl
+                        </button>&nbsp;
+                        <button id="backButton" class="btn btn-outline-info">
+                            <i class="fas fa-arrow-left"></i>Back
+                        </button>
                     </div>
                     <div class="form-group mt-2">
-                        <div id="finalJob-table" class="col-12"></div>
+                        <div id="finalRLT-table" class="col-12"></div>
                     </div>
                 </div>
             </div>
@@ -277,7 +269,7 @@
 
     <!-- Popup Alert -->
     <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
-    <script src="~/scripts/service/jobworktrack.js" asp-append-version="true"></script>
+    <script src="~/scripts/service/rlttrack.js" asp-append-version="true"></script>
     }
 
 @await Html.PartialAsync("_UploadModalpartial")

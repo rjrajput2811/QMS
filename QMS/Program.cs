@@ -56,6 +56,8 @@ builder.Services.AddTransient<ISPMReportRepository, SPMReportRepository>();
 builder.Services.AddTransient<IRMTCDetailsRepository, RMTCDetailsRepository>();
 builder.Services.AddTransient<IComplaintIndentDumpRepository, ComplaintIndentDumpRepository>();
 builder.Services.AddTransient<IJobWorkTracRepository, JobWorkTracRepository>();
+builder.Services.AddTransient<IRLTTracRepository, RLTTracRepository>();
+builder.Services.AddTransient<IContractorRepository, ContractorRepository>();
 builder.Services.AddTransient<IOpenPoReposiotry, OpenPoReposiotry>();
 
 //

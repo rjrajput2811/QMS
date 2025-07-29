@@ -15,13 +15,18 @@ namespace QMS.Controllers
         private readonly IComplaintIndentDumpRepository _copqRepository;
         private readonly ISystemLogService _systemLogService;
         private readonly IJobWorkTracRepository _jobWorkRepository;
+        private readonly IRLTTracRepository _rLTTracRepository;
+        private readonly IContractorRepository _contractorRepository;
 
         public ServiceController(IComplaintIndentDumpRepository copqRepository,
-            ISystemLogService systemLogService, IJobWorkTracRepository jobWorkRepository)
+            ISystemLogService systemLogService, IJobWorkTracRepository jobWorkRepository,
+            IRLTTracRepository rLTTracRepository, IContractorRepository contractorRepository)
         {
             _copqRepository = copqRepository;
             _systemLogService = systemLogService;
             _jobWorkRepository = jobWorkRepository;
+            _rLTTracRepository = rLTTracRepository;
+            _contractorRepository = contractorRepository;
         }
 
         // Main page/view
@@ -1226,12 +1231,14 @@ namespace QMS.Controllers
 
 
 
+
+
+        //// ----------------- Job Work Tracker ------------------- ////
+
         public IActionResult JobWorkTrack()
         {
             return View();
         }
-
-        //// ----------------- Job Work Tracker ------------------- ////
 
         [HttpGet]
         public async Task<JsonResult> GetJobWorkAll(DateTime? startDate, DateTime? endDate)
@@ -1327,7 +1334,7 @@ namespace QMS.Controllers
                 var worksheet = workbook.Worksheet(1);
                 var rowCount = worksheet.RowsUsed().Count();
 
-                for (int row = 8; row <= rowCount; row++)
+                for (int row = 2; row <= rowCount; row++)
                 {
                     var model = new JobWork_TracViewModel
                     {
@@ -1335,23 +1342,13 @@ namespace QMS.Controllers
                         Wipro_Dc_No = worksheet.Cell(row, 2).GetString().Trim(),
                         Wipro_Dc_Date = worksheet.Cell(row, 3).TryGetValue(out DateTime dcDate) ? dcDate : null,
                         Dc_Sap_Code = worksheet.Cell(row, 4).GetString().Trim(),
-                        Qty_Wipro_Dc = worksheet.Cell(row, 5).GetString().Trim(),
+                        Qty_Wipro_Dc = worksheet.Cell(row, 5).GetValue<int>(),
                         Wipro_Transporter = worksheet.Cell(row, 6).GetString().Trim(),
                         Wipro_LR_No = worksheet.Cell(row, 7).GetString().Trim(),
                         Wipro_LR_Date = worksheet.Cell(row, 8).TryGetValue(out DateTime lrDate) ? lrDate : null,
-                        Actu_Rece_Qty = worksheet.Cell(row, 9).GetString().Trim(),
-                        Dispatch_Dc = worksheet.Cell(row, 9).GetString().Trim(),
-                        Dispatch_Invoice = worksheet.Cell(row, 9).GetString().Trim(),
-                        Non_Repairable = worksheet.Cell(row, 9).GetString().Trim(),
-                        Grand_Total = worksheet.Cell(row, 9).GetString().Trim(),
-                        To_Process = worksheet.Cell(row, 9).GetString().Trim(),
-                        Remark = worksheet.Cell(row, 9).GetString().Trim(),
-                        Vendor_Transporter = worksheet.Cell(row, 9).GetString().Trim(),
-                        Vendor_LR_No = worksheet.Cell(row, 9).GetString().Trim(),
-                        Vendor_LR_Date = worksheet.Cell(row, 9).TryGetValue(out DateTime vLRDate) ? vLRDate : null,
                         Write_Off_Approved = worksheet.Cell(row, 9).GetString().Trim(),
-                        Write_Off_Date = worksheet.Cell(row, 9).TryGetValue(out DateTime wDate) ? wDate : null,
-                        Pending_Write_Off = worksheet.Cell(row, 9).GetString().Trim(),
+                        Write_Off_Date = worksheet.Cell(row, 10).TryGetValue(out DateTime wDate) ? wDate : null,
+                        Pending_Write_Off = worksheet.Cell(row, 11).GetString().Trim(),
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,
                     };
@@ -1412,6 +1409,297 @@ namespace QMS.Controllers
 
 
 
+        //// ----------------- RLT Tracking ------------------- ////
+
+        public IActionResult RLTTrack()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetRLTAll(DateTime? startDate, DateTime? endDate)
+        {
+            var list = await _rLTTracRepository.GetRLTListAsync(startDate, endDate);
+            return Json(list);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetRLTById(int id)
+        {
+            var item = await _rLTTracRepository.GetRLTByIdAsync(id);
+            return Json(item);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateRLTAsync([FromBody] RLT_Tracking_Service model)
+        {
+            try
+            {
+                if (model == null)
+                    return Json(new { success = false, message = "Invalid data" });
+
+                model.CreatedBy = HttpContext.Session.GetString("FullName");
+                model.Deleted = false;
+
+                var operationResult = await _rLTTracRepository.CreateRLTAsync(model);
+
+                if (operationResult != null && operationResult.Success)
+                    return Json(new { success = true, message = "Saved successfully." });
+
+                return Json(new { success = false, message = "Failed to save." });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return Json(new { success = false, message = "Error occurred while saving." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateRLTAsync([FromBody] RLT_Tracking_Service model)
+        {
+            try
+            {
+                if (model == null || model.Id <= 0)
+                    return Json(new { success = false, message = "Invalid update data" });
+
+                model.UpdatedBy = HttpContext.Session.GetString("FullName");
+
+                var result = await _rLTTracRepository.UpdateRLTAsync(model);
+
+                if (result != null && result.Success)
+                    return Json(new { success = true, message = "Updated successfully." });
+
+                return Json(new { success = false, message = "Update failed." });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return Json(new { success = false, message = "Error during update." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> RLTDelete(int id)
+        {
+            try
+            {
+                var operationResult = await _rLTTracRepository.DeleteRLTAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return Json(new { success = false, message = "Error occurred while deleting record." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadRLTExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        {
+            var prRecordsToAdd = new List<RLT_TracViewModel>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName");
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.RowsUsed().Count();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var model = new RLT_TracViewModel
+                    {
+                        Vendor = worksheet.Cell(row, 1).GetString().Trim(),
+                        Material = worksheet.Cell(row, 2).GetString().Trim(),
+                        Ref_No = worksheet.Cell(row, 3).GetString().Trim(),
+                        Po_No = worksheet.Cell(row, 4).GetString().Trim(),
+                        Po_Date = worksheet.Cell(row, 5).TryGetValue(out DateTime dcDate) ? dcDate : null,
+                        PR_No = worksheet.Cell(row, 6).GetString().Trim(),
+                        Batch_No = worksheet.Cell(row, 7).GetString().Trim(),
+                        Po_Qty = worksheet.Cell(row, 8).GetValue<int>(),
+                        Balance_Qty = worksheet.Cell(row, 9).GetValue<int>(),
+                        Destination = worksheet.Cell(row, 10).GetString().Trim(),
+                        Balance_Value = worksheet.Cell(row, 11).GetValue<double>(),
+                        Lead_Time = worksheet.Cell(row, 12).GetValue<int>(),
+                        Lead_Time_Range = worksheet.Cell(row, 13).GetString().Trim(),
+                        Wipro_Remark = worksheet.Cell(row, 14).GetString().Trim(),
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now,
+                    };
+
+                    prRecordsToAdd.Add(model);
+                }
+
+                var importResult = await _rLTTracRepository.BulkCreateRLTAsync(prRecordsToAdd, fileName, uploadedBy, "JobWorkTrac");
+
+                // If there are failed records, return file
+                if (importResult.FailedRecords.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "Vendor";
+                    failSheet.Cell(1, 2).Value = "Wipro Dc Date";
+                    failSheet.Cell(1, 3).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var fail in importResult.FailedRecords)
+                    {
+                        failSheet.Cell(i, 1).Value = fail.Record.Vendor;
+                        failSheet.Cell(i, 2).Value = fail.Record.Ref_No;
+                        failSheet.Cell(i, 3).Value = fail.Record.Po_No;
+                        failSheet.Cell(i, 4).Value = fail.Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetFinalRLT()
+        {
+            var list = await _rLTTracRepository.GetFinalRLTListAsync();
+            return Json(list);
+        }
+
+
+        //// ----------------- RLT Tracking ------------------- ////
+
+
+
+        //// ----------------- Contractor Details ------------------- ////
+
+        public IActionResult ContractorList()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> ContractorDetails(int id)
+        {
+            var model = new ContractorDetailViewModel();
+            if (id > 0)
+            {
+                model = await _contractorRepository.GetByIdAsync(id);
+                if (model == null)
+                {
+                    model = new ContractorDetailViewModel();
+                }
+            }
+            else
+            {
+                model = new ContractorDetailViewModel();
+            }
+
+            return View(model); // Always return the model, whether new or fetched
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetAllContractor()
+        {
+            var vendorList = await _contractorRepository.GetListAsync();
+            return Json(vendorList);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetContractorById(int Id)
+        {
+            var vendor = await _contractorRepository.GetByIdAsync(Id);
+            return Json(vendor);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateContractorAsync(ContractorDetail_Service model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _contractorRepository.CheckDuplicate(model.Cont_Firm_Name.Trim(), 0);
+                    if (!existingResult)
+                    {
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _contractorRepository.CreateAsync(model);
+
+                        if (operationResult != null)
+                        {
+                            return Json(new { success = true, message = "Contractor Detail saved successfully.", id = operationResult.ObjectId });
+                        }
+
+                        return Json(new { success = false, message = "Failed to save Contractor Detail.", id = 0 });
+                    }
+                    else
+                    {
+                        operationResult.Success = false;
+                        operationResult.Message = "Exist";
+                        operationResult.Payload = existingResult;
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateContractorAsync(ContractorDetail_Service model)
+        {
+            if (ModelState.IsValid)
+            {
+                model.UpdatedBy = HttpContext.Session.GetString("FullName");
+
+                var operationResult = await _contractorRepository.UpdateAsync(model);
+
+                return Json(operationResult);
+            }
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteContractor(int id)
+        {
+            var operationResult = await _contractorRepository.DeleteAsync(id);
+            return Json(operationResult);
+        }
+
+
+        //// ----------------- Contractor Details ------------------- ////
+
+
         [HttpGet]
         public async Task<IActionResult> GetVendor()
         {
@@ -1450,7 +1738,7 @@ namespace QMS.Controllers
             }
         }
 
-
+        
         //// ----------------- Final Merge ------------------- ////
 
     }

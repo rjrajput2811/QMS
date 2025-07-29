@@ -41,6 +41,8 @@ namespace QMS.Core.DatabaseContext
         public DbSet<PcChart_Service> PcChart { get; set; }
         public DbSet<Region_Service> Region { get; set; }
         public DbSet<JobWork_Tracking_Service> JobWorkTrac { get; set; }
+        public DbSet<RLT_Tracking_Service> RLTTrac { get; set; }
+        public DbSet<ContractorDetail_Service> ContractorDetails { get; set; }
 
         //// ------- Service -------- ////
 

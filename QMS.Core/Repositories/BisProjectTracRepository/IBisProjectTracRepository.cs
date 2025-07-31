@@ -17,5 +17,14 @@ namespace QMS.Core.Repositories.BisProjectTracRepository
         Task<OperationResult> DeleteAsync(int Id);
         Task<BisProjectTracViewModel?> GetByIdAsync(int id);
         Task<bool> CheckDuplicate(string searchText, int id);
+
+        Task<List<NatProjectViewModel>> GetNatProjectAsync();
+        Task<NatProject_BIS?> GetNatProjectByIdAsync(int Id);
+        Task<OperationResult> CreateNatProjectAsync(NatProjectViewModel newNatProjectRecord, bool returnCreatedRecord = false);
+        Task<OperationResult> UpdateNatProjectAsync(NatProjectViewModel updateNatProjectRecord, bool returnUpdatedRecord = false);
+        Task<OperationResult> DeleteNatProjectAsync(int Id);
+        Task<bool> CheckNatProjectDuplicate(string searchText, int Id);
+        Task<List<DropdownOptionViewModel>> GetNatProjectDropdownAsync();
+        Task<bool> UpdateAttachmentAsync(int id, string fileName);
     }
 }

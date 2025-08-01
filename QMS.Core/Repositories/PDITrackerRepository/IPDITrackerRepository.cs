@@ -13,6 +13,7 @@ namespace QMS.Core.Repositories.PDITrackerRepository
         Task<List<ProductCodeDetailViewModel>> GetCodeSearchAsync(string search = "");
         Task<List<DropdownOptionViewModel>> GetCodeSelect2OptionsAsync();
         Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync();
+        Task<bool> UpdateAttachmentAsync(int id, string fileName);
 
     }
 }

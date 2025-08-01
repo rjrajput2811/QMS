@@ -1,0 +1,321 @@
+﻿@using QMS.Core.Models
+
+@model ContractorDetailViewModel
+
+@{
+    ViewData["Title"] = "Vendor Detail";
+}
+
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<script src="~/js/tabulator.js"></script>
+<script src="~/js/xlsx.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+
+<style>
+    .nav-pills .nav-link {
+        text-align: left;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+        font-weight: 500;
+        width: 100%;
+        padding: 12px;
+        background-color: #fff;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: #f4f3f8;
+            border-left: 4px solid #4682B4;
+            color: #4682B4;
+            font-weight: bold;
+        }
+
+    .form-control {
+        padding: 0 6px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+
+    .custome-body {
+        margin-bottom: -17px !important;
+        padding: 0.75rem !important;
+        margin-top: -17px !important;
+    }
+
+    /*  .form-control {
+                                                padding: 0 10px !important;
+                                                border: 0;
+                                                border-bottom: 1px solid #cccccc;
+                                                border-radius: 0px;
+                                            } */
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #0056b3; /* Darker blue */
+    }
+
+    #scrollToTopBtn {
+        outline: none; /* Removes the focus border */
+    }
+
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 30px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+
+    .tabulator-row .tabulator-cell.tabulator-frozen.tabulator-frozen-left {
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator .tabulator-header .tabulator-frozen.tabulator-frozen-left {
+        border-right: 1px solid #ccc;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+</style>
+
+
+
+<div class="content">
+    <input type="hidden" id="hdnId" name="Id" value="@Model?.Id" />
+
+    <div class="card mb-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <b style="font-size:larger;color: #4682B4;">Contractor Details</b>
+            </div>
+            <div class="ml-auto">
+
+                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="InsertUpdateContractorDetail()" style="margin: 1px 0px;font-size:14px">
+                    <i class="fas fa-floppy-disk mr-2"></i>Save
+                </button>&nbsp;
+
+                <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="AutoReload()" style="font-size:14px">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 card" style="border-radius:10px;border:1px solid #4682B4;">
+        <div class="card-body">
+            <div class="row form-group align-items-center mb-2">
+                <label class="col-1"><b>Firm Name</b></label>
+                <div class="col-9 mr-4">
+                    <input name="firm_Name" id="firm_Name" class="form-control" required value="@Model?.Cont_Firm_Name" />
+                </div>
+            </div>
+
+            <div class="row form-group align-items-center mb-2">
+                <label class="col-1"><b>Name</b></label>
+                <div class="col-10">
+                    <input name="name" id="name" class="form-control" required value="@Model?.Cont_Name" />
+                </div>
+            </div>
+
+            <div class="row form-group align-items-center mb-2">
+                <label class="col-1"><b>Vendor Code</b></label>
+                <div class="col-2">
+                    <input name="vendor_Code" id="vendor_Code" class="form-control" required value="@Model?.Cont_Ven_Code" />
+                </div>
+
+                <label class="col-1"><b>Pan</b></label>
+                <div class="col-2">
+                    <input name="pan" id="pan" class="form-control" required value="@Model?.Pan_No" />
+                </div>
+
+                <label class="col-1"><b>Gst</b></label>
+                <div class="col-2">
+                    <input name="gst" id="gst" class="form-control" required value="@Model?.Gst" />
+                </div>
+            </div>
+
+            <div class="row form-group align-items-center mb-2">
+                <label class="col-1"><b>Validity Date </b></label>
+                <div class="col-3">
+                    <input type="date" name="validity_Date" id="validity_Date" class="form-control" required value="@Model?.Cont_Valid_Date" />
+                </div>
+
+                <label class="col-1"><b>Location </b></label>
+                <div class="col-5">
+                    <input name="location" id="location" class="form-control" required value="@Model?.Location" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card col-12" style="border-radius:10px;border:1px solid #4682B4;margin-top:15px;">
+        <div class="card-header col-12" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
+            <h5 class="card-title" style="font-weight:640">Contractor Approved Rate</h5>
+        </div>
+        <div class="card-body">
+            <div class="form-group">
+                <div class="row form-group align-items-center mb-2">
+                    <label class="col-2"><b>No of Tech.</b></label>
+                    <div class="col-3">
+                        <input name="no_Tech" id="no_Tech" class="form-control" required value="@Model?.No_Tech" />
+                        <span id="no_Tech_Error" class="text-danger"></span>
+                    </div>
+
+                    <label class="col-1"><b>Mobile</b></label>
+                    <div class="col-3 mr-1">
+                        <input name="mobile" id="mobile" class="form-control" required value="@Model?.Moblie" />
+                        <span id="mobile_Error" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row form-group align-items-center mb-2">
+                    <label class="col-2"><b>Daily wages Monthly Fixed Salary</b></label>
+                    <div class="col-3">
+                        <input name="monthly_Salary" id="monthly_Salary" class="form-control" required value="@Model?.Monthly_Salary" />
+                        <span id="monthly_Salary_Error" class="text-danger"></span>
+                    </div>
+
+                    <label class="col-3"><b>Local Conveyance For Bike User</b></label>
+                    <div class="col-3 mr-1">
+                        <input name="conv_Bike_User" id="conv_Bike_User" class="form-control" required value="@Model?.Conv_Bike_User" />
+                        <span id="conv_Bike_User_Error" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row form-group align-items-center mb-2">
+                    <label class="col-2"><b>Daily Wages Local</b></label>
+                    <div class="col-3">
+                        <input name="daily_Wage_Local" id="daily_Wage_Local" class="form-control" value="@Model?.Daily_Wages_Local" />
+                        <span id="daily_Wage_Local_Error" class="text-danger"></span>
+                    </div>
+
+                    <label class="col-3"><b>Local Conveyance -Fixed or at Actual</b></label>
+                    <div class="col-3 mr-1">
+                        <input name="conv_Fixed_Actual" id="conv_Fixed_Actual" class="form-control" value="@Model?.Conv_Fixed_Actual" />
+                        <span id="conv_Fixed_Actual_Error" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row form-group align-items-center mb-2">
+                    <label class="col-2"><b>Daily Wages Outstation</b></label>
+                    <div class="col-3">
+                        <input name="daily_Outstation" id="daily_Outstation" class="form-control" required value="@Model?.Daily_Wages_Outstation" />
+                        <span id="daily_Outstation_Error" class="text-danger"></span>
+                    </div>
+
+                    <label class="col-3"><b>Dailywages for Extra Manpower</b></label>
+                    <div class="col-3">
+                        <input name="daily_Manpower" id="daily_Manpower" class="form-control" required value="@Model?.Dailywages_Ext_Manpower" />
+                        <span id="daily_Manpower_Error" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row form-group align-items-center mb-2">
+                    <label class="col-2"><b>OT Charge Full night </b></label>
+
+                    <div class="col-3">
+                        <input name="ot_Night" id="ot_Night" class="form-control" required value="@Model?.OT_Charge_Full_Night" />
+                        <span id="ot_Night_Error" class="text-danger"></span>
+                    </div>
+
+                    <label class="col-2"><b>OT Charge Till 10.Pm </b></label>
+                    <div class="col-3">
+                        <input name="ot_10pm" id="ot_10pm" class="form-control" required value="@Model?.OT_Charge_Till_10" />
+                        <span id="ot_10pm_Error" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row form-group align-items-center mb-2">
+                    <label class="col-2"><b>OT for Outstation night Travel</b></label>
+                    <div class="col-3">
+                        <input name="ot_Out_Travel" id="ot_Out_Travel" class="form-control" required value="@Model?.OT_Outstation_night_Travel" />
+                        <span id="ot_Out_Travel_Error" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12 card" style="border-radius:10px;border:1px solid #4682B4;margin-top:15px">
+        <div class="card-body">
+            <div class="row form-group align-items-center mb-2">
+                <label class="col-4"><b>Confirm Contractor Providing ESIC to Technicians</b></label>
+                <div class="col-3">
+                    <select class="form-control" id="con_Cont_ESIC_Tech" name="con_Cont_ESIC_Tech" required value="@Model?.Con_Cont_ESIC_Tech">
+                        <option value="">-- Select --</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row form-group align-items-center mb-2">
+                <label class="col-4"><b>Confirm Contractor Providing PF to Technicians</b></label>
+                <div class="col-3">
+                    <select class="form-control" id="con_Cont_PF_Tech" name="con_Cont_PF_Tech" required value="@Model?.Con_Cont_PF_Tech">
+                        <option value="">-- Select --</option>
+                        <option value="true">Yes</option>
+                        <option value="false">No</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row form-group align-items-center mb-2">
+                <label class="col-3 col-form-label"><b>Upload Contract tab (if any)</b></label>
+                <div class="col-4">
+                    <input type="file" class="form-control" id="attachment" name="attachment" accept=".pdf,.jpg,.png,.jpeg,.doc,.docx" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script src="~/scripts/service/contractordetail.js" asp-append-version="true"></script>
+}

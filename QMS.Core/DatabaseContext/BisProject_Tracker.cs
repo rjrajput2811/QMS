@@ -32,7 +32,7 @@ namespace QMS.Core.DatabaseContext
         public string? Cat_Ref_Lea_Model { get; set; }
         public string? Section { get; set; }
         public string? Manuf_Location { get; set; }
-        public string? CCL_Id { get; set; }
+        public string? BIS_Project_Id { get; set; }
         public string? Lab { get; set; }
         public string? Report_Owner { get; set; }
         public DateTime? Start_Date { get; set; }
@@ -41,8 +41,34 @@ namespace QMS.Core.DatabaseContext
         public DateTime? Submitted_Date { get; set; }
         public DateTime? Received_Date { get; set; }
         public string? Bis_Duration { get; set; }
-        public DateTime? Dispatch_Date { get; set; }
-        public string? Remark { get; set; }
+        public DateTime? Ven_Sample_Sub_Date { get; set; }
+        public string? BIS_Attachment { get; set; }
+        public string? Current_Status { get; set; }
+        public DateTime? Effective_Date { get; set; }
+        public string? Document_No { get; set; }
+        public string? Revision_No { get; set; }
+        public DateTime? Revision_Date { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+
+    [Table("tbl_NatProject_BIS")]
+    public class NatProject_BIS : SqlTable
+    {
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("Nat_Proj_Id")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+
+        public string? Nat_Project { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }

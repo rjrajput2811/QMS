@@ -52,6 +52,11 @@ namespace QMS.Core.DatabaseContext
 
         [StringLength(255)]
         public string? Remark { get; set; }
+        public string? Attahcment { get; set; }
+        public string? Document_No { get; set; }
+        public string? Revision_No { get; set; }
+        public DateTime? Effective_Date { get; set; }
+        public DateTime? Revision_Date { get; set; }
 
         [StringLength(50)]
         public string? CreatedBy { get; set; }

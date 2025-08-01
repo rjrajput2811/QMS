@@ -147,7 +147,7 @@ function loadData() {
                 Blockloaderhide();
             });
 
-    }); 
+    });
 }
 
 
@@ -188,7 +188,13 @@ Tabulator.extendModule("edit", "editors", {
                             success(item.oldPart_No);
 
                             const row = cell.getRow();
-                            row.update({ ProductDescription: item.description });
+                            const data = row.getData();
+                            //row.update({ ProductDescription: item.description });
+                            row.update({ ProductDescription: item.description }).then(() => {
+                                // Save full row (with updated description)
+                                saveEditedRow({ ...data, ProductCode: item.oldPart_No, ProductDescription: item.description });
+                            });
+
                             removeDropdown();
                         });
 
@@ -241,7 +247,7 @@ function OnTabGridLoad(response) {
         $.each(response, function (index, item) {
             tabledata.push({
                 Sr_No: index + 1,
-                PDIId: item.id,
+                Id: item.id,
                 PC: item.pc || "",
                 DispatchDate: formatDate(item.dispatchDate),
                 ProductCode: item.productCode || "",
@@ -255,6 +261,11 @@ function OnTabGridLoad(response) {
                 BISCompliance: item.bisCompliance,
                 InspectedBy: item.inspectedBy || "",
                 Remark: item.remark || "",
+                Attahcment: item.attahcment || "",
+                Document_No: item.document_No || "",
+                Revision_No: item.revision_No || "",
+                Effective_Date: formatDate(item.effective_Date),
+                Revision_Date: formatDate(item.revision_Date),
                 UpdatedDate: item.updatedDate || "",
                 CreatedDate: item.createdDate || "",
                 CreatedBy: item.createdBy || "",
@@ -275,25 +286,55 @@ function OnTabGridLoad(response) {
             }
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
-      
-        editableColumn("Dispatch Date", "DispatchDate", "date", "center", null, {}, {}, 120),
-        editableColumn("PC", "PC", "input", "center", null, {}, {}, 160),
+
+        editableColumn("Dispatch Date", "DispatchDate", "date", "center", "input", {}, {}, 120),
+        editableColumn("PC", "PC", "input", "center", "input", {}, {}, 160),
         editableColumn("Product Code", "ProductCode", "autocomplete_ajax"),
-        editableColumn("Product Description", "ProductDescription"),
-       // editableColumn("Batch Code (Vendor)", "BatchCodeVendor", "input", "center", null, {}, {}, 140),
+        editableColumn("Product Description", "ProductDescription", "input"),
+        // editableColumn("Batch Code (Vendor)", "BatchCodeVendor", "input", "center", null, {}, {}, 140),
         editableColumn("Batch Code(Vendor)", "BatchCodeVendor", "select2", "center", "input", {}, {
             values: vendorOptions
         }, function (cell) {
             const val = cell.getValue();
             return vendorOptions[val] || val;
         }, 130),
-        editableColumn("PDI Date", "PDIDate", "date", "center", null, {}, {}, 120),
-        editableColumn("PDI Ref No", "PDIRefNo", "input", "center", null, {}, {}, 130),
-        editableColumn("Offered Qty", "OfferedQty", "input", "center", null, {}, {}, 110),
-        editableColumn("Cleared Qty", "ClearedQty", "input", "center", null, {}, {}, 110),
-        editableColumn("BIS Compliance", "BISCompliance", "tickCross", "center", null, {}, {}, 130),
-        editableColumn("Inspected By", "InspectedBy", "input", "center", null, {}, {}, 130),
+        editableColumn("PDI Date", "PDIDate", "date", "center", "input", {}, {}, 120),
+        editableColumn("PDI Ref No", "PDIRefNo", "input", "center", "input", {}, {}, 130),
+        editableColumn("Offered Qty", "OfferedQty", "input", "center", "input", {}, {}, 110),
+        editableColumn("Cleared Qty", "ClearedQty", "input", "center", "input", {}, {}, 110),
+        editableColumn("BIS Compliance", "BISCompliance", "tickCross", "center", "input", {}, {}, function (cell) {
+            return cell.getValue() ? "Yes" : "No";
+        }, 130),
+        editableColumn("Inspected By", "InspectedBy", "input", "center", "input", {}, {}, 130),
         editableColumn("Remark", "Remark", "input", "center", null, {}, {}, 180),
+        {
+            title: "Attachment",
+            field: "Attahcment",
+            hozAlign: "center",
+            headerHozAlign: "center",
+            headerMenu: headerMenu,
+            formatter: function (cell, formatterParams) {
+                const rowData = cell.getRow().getData();
+                const fileName = cell.getValue();
+                const fileDisplay = fileName
+                    ? `<a href="/PDITrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    : '';
+
+                return `
+            ${fileDisplay}
+            <input type="file" accept=".pdf,image/*" class="form-control-file pdi-upload" data-id="${cell.getRow().getData().Id}" style="width:160px;" />
+        `;
+            },
+            cellClick: function (e, cell) {
+                // prevent Tabulator from swallowing the file input click
+                e.stopPropagation();
+            }
+        },
+
+        editableColumn("Document No", "Document_No", "input", "left", "input", {}, {}),
+        editableColumn("Revision No", "Revision_No", "input", "center", "input", {}, {}),
+        editableColumn("Effective Date", "Effective_Date", "date", "center", "input", {}, {}, 120),
+        editableColumn("Revision Date", "Revision_Date", "date", "center", "input", {}, {}, 120),
         {
             title: "Created By", field: "CreatedBy",
             hozAlign: "center",
@@ -346,17 +387,17 @@ function OnTabGridLoad(response) {
 
         // Handle cell edit event
         table.on("cellEdited", function (cell) {
-            const rowData = cell.getRow().getData();
-            saveEditedRow(rowData);
+            debugger
+            saveEditedRow(cell.getRow().getData());
         });
     }
-    $("#addButton").on("click", function () {
+
+    $("#addPDIButton").on("click", function () {
         const newRow = {
-            PDIId: 0,
+            Id: 0,
             Sr_No: table.getDataCount() + 1,
-           
-            DispatchDate: "", PC: "",
-            ProductCode: "",
+            PC: "",
+            DispatchDate: "",
             ProductDescription: "",
             BatchCodeVendor: "",
             PONo: "",
@@ -366,13 +407,65 @@ function OnTabGridLoad(response) {
             ClearedQty: "",
             BISCompliance: false,
             InspectedBy: "",
-            Remark: ""
+            Remark: "",
+            Attahcment: "",
+            Document_No: "",
+            Revision_No: "",
+            Effective_Date: "",
+            Revision_Date: "",
         };
         table.addRow(newRow, false); // false = add to bottom
     });
 
     Blockloaderhide();
 }
+
+$('#pdi_table').on('change', '.pdi-upload', function () {
+    const input = this;
+    const file = input.files[0];
+
+    if (!file) return;
+
+    const allowedTypes = [
+        "application/pdf",
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "image/bmp",
+        "image/webp"
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+        showDangerAlert("Only PDF and image files (PDF, JPG, PNG, GIF, BMP, WEBP) are allowed.");
+        $(this).val(""); // reset the input
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("id", $(this).data("id"));
+
+    Blockloadershow();
+
+    $.ajax({
+        url: "/PDITracker/UploadPDIAttachment",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false
+    }).done(function (response) {
+        if (response.success) {
+            showSuccessAlert("File uploaded successfully.");
+            table.updateData([{ Id: response.id, Attachment: response.fileName }]);
+        } else {
+            showDangerAlert(response.message || "Upload failed.");
+        }
+    }).fail(function () {
+        showDangerAlert("Upload failed due to server error.");
+    }).always(function () {
+        Blockloaderhide();
+    });
+});
 
 
 // Helper functions below — place these outside of OnTabGridLoad
@@ -434,6 +527,7 @@ function delConfirm(PDIId) {
         });
     });
 }
+
 Tabulator.extendModule("edit", "editors", {
     select2: function (cell, onRendered, success, cancel, editorParams) {
         const values = editorParams.values || {};
@@ -469,35 +563,40 @@ function saveEditedRow(rowData) {
 
     // Converts "dd/MM/yyyy" to "yyyy-MM-dd"
     function toIsoDate(value) {
-        if (!value) return "";
+        if (!value) return null;
         const parts = value.split('/');
         if (parts.length === 3) {
             return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
         }
-        return value;
+        return null;
     }
 
     const cleanedData = {
-        Id: rowData.PDIId || 0,
+        Id: rowData.Id || 0,
         PC: rowData.PC || "",
         DispatchDate: toIsoDate(rowData.DispatchDate) || null,
         ProductCode: rowData.ProductCode || "",
         ProductDescription: rowData.ProductDescription || "",
         BatchCodeVendor: rowData.BatchCodeVendor || "",
         PONo: rowData.PONo || "",
-        PDIDate: toIsoDate(rowData.PDIDate)||null,
+        PDIDate: toIsoDate(rowData.PDIDate) || null,
         PDIRefNo: rowData.PDIRefNo || "",
         OfferedQty: emptyToNull(rowData.OfferedQty),
         ClearedQty: emptyToNull(rowData.ClearedQty),
-        BISCompliance: rowData.BISCompliance,
+        BISCompliance: rowData.BISCompliance || false,
         InspectedBy: rowData.InspectedBy || "",
-        Remark: rowData.Remark || ""
+        Remark: rowData.Remark || "",
+        Attahcment: rowData.Attahcment || null,
+        Document_No: rowData.Document_No || "",
+        Revision_No: rowData.Revision_No || "",
+        Effective_Date: toIsoDate(rowData.Effective_Date),
+        Revision_Date: toIsoDate(rowData.Revision_Date),
     };
 
     console.log("Cleaned data:", cleanedData);
 
     const isNew = cleanedData.Id === 0;
-    const url = isNew ? '/PDITracker/CreateAsync' : '/PDITracker/UpdateAsync';
+    const url = isNew ? '/PDITracker/Create' : '/PDITracker/Update';
 
     $.ajax({
         url: url,
@@ -506,14 +605,22 @@ function saveEditedRow(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-               if (isNew) {
-                   loadData();
-               }
+                if (isNew) {
+                    loadData();
+                }
                 if (isNew && data.id) {
                     rowData.PDIId = data.id;
                 }
             } else {
-                showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
+                var errorMessg = "";
+                if (data.errors) {
+                    for (var error in data.errors) {
+                        if (data.errors.hasOwnProperty(error)) {
+                            errorMessg += `${data.errors[error]}\n`;
+                        }
+                    }
+                }
+                showDangerAlert(errorMessg || data.message || "An error occurred while saving.");
             }
         },
         error: function (xhr, status, error) {

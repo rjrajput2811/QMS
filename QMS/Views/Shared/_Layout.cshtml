@@ -330,7 +330,6 @@
                                 <li class="nav-item nav-item-submenu">
                                     <a href="#" class="nav-link" title="Services" id="Services"><i class="fas fa-regular fa-users-between-lines"></i> <span>Services</span></a>
                                     <ul class="nav nav-group-sub" data-submenu-title="Services">
-                                        ssss
                                         <li class="nav-item">
                                             <a asp-controller="Service" asp-action="Service" class="nav-link" title="Complaint Vs indent Tracking" id="Complaint">
                                                 <i class="fas fa-regular fa-clipboard-check"></i>
@@ -346,14 +345,14 @@
                                         </li> 
 
                                         <li class="nav-item">
-                                            <a asp-controller="#" asp-action="#" class="nav-link" title="RLT" id="RLT">
+                                            <a asp-controller="Service" asp-action="RLTTrack" class="nav-link" title="RLT" id="RLT">
                                                 <i class="fas fa-regular fa-clipboard-check"></i>
                                                 <span>RLT</span>
                                             </a>
                                         </li>
 
                                         <li class="nav-item">
-                                            <a asp-controller="#" asp-action="#" class="nav-link" title="Service Contractor Portal" id="ServiceContractorPortal">
+                                            <a asp-controller="Service" asp-action="ContractorList" class="nav-link" title="Service Contractor Portal" id="ServiceContractorPortal">
                                                 <i class="fas fa-regular fa-chart-gantt"></i>
                                                 <span>Service Contractor Portal</span>
                                             </a>
@@ -396,6 +395,21 @@
                                     <a href="#" class="nav-link" title="Trackers" id="Trackers"><i class="fas fa-regular fa-chart-diagram"></i> <span>Trackers</span></a>
                                     <ul class="nav nav-group-sub" data-submenu-title="Trackers">
 
+
+                                        <li class="nav-item">
+                                            <a asp-controller="BisProjectTrac" asp-action="BisProjectTracker" class="nav-link" title="BIS Project Tracker" id="BIS_Proj_Trac">
+                                                <i class="fas fa-regular fa-chart-gantt" style="color:#DFFF00;"></i>
+                                                <span>BIS Project Tracker</span>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a asp-controller="PaymentTracker" asp-action="PaymentTracker" class="nav-link" title="Payment Tracker" id="Payment_Trac">
+                                                <i class="fas fa-regular fa-chart-gantt" style="color:mediumpurple;"></i>
+                                                <span>Payment Tracker</span>
+                                            </a>
+                                        </li>
+
                                         <li class="nav-item">
                                             <a asp-controller="NPITrac" asp-action="NPITracker" class="nav-link" title="NPI Tracker" id="NPI_Trac">
                                                 <i class="fas fa-regular fa-chart-gantt"></i>
@@ -417,12 +431,7 @@
                                             </a>
                                         </li>
 
-                                        <li class="nav-item">
-                                            <a asp-controller="BisProjectTrac" asp-action="BisProjectTracker" class="nav-link" title="BIS Project Tracker" id="BIS_Proj_Trac">
-                                                <i class="fas fa-regular fa-chart-gantt" style="color:#DFFF00;"></i>
-                                                <span>BIS Project Tracker</span>
-                                            </a>
-                                        </li>
+                                        
 
                                         <li class="nav-item">
                                             <a asp-controller="PDITracker" asp-action="PDITracker" class="nav-link" title="PDI Tracker" id="PDI_Trac">

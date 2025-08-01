@@ -21,6 +21,8 @@ namespace QMS.Core.DatabaseContext
         public DbSet<CertificationDetailViewModel> CertificationDetailViewModel { get; set; }
         public DbSet<ThirdPartyTestReportViewModel> ThirdPartyTestReportViewModels { get; set; }
         public DbSet<BisProject_Tracker> BisProject_Tracker { get; set; }
+        public DbSet<NatProject_BIS> NatProject_BIS { get; set; }
+        public DbSet<Payment_Tracker> PaymentTracker { get; set; }
         public DbSet<NPITracker> NPITracker { get; set; }
         public DbSet<VenBISCertificateViewModel> venBISCertificateViewModels { get; set; }
         public DbSet<VenBISCertificate> VenBISCertificates { get; set; }
@@ -41,6 +43,8 @@ namespace QMS.Core.DatabaseContext
         public DbSet<PcChart_Service> PcChart { get; set; }
         public DbSet<Region_Service> Region { get; set; }
         public DbSet<JobWork_Tracking_Service> JobWorkTrac { get; set; }
+        public DbSet<RLT_Tracking_Service> RLTTrac { get; set; }
+        public DbSet<ContractorDetail_Service> ContractorDetails { get; set; }
 
         //// ------- Service -------- ////
 

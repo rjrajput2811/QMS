@@ -242,18 +242,18 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
             try
             {
-                var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+                var seenKeys = new HashSet<string>(); 
 
                 foreach (var item in listOfData)
                 {
                     item.Vendor = item.Vendor;
-                    item.Wipro_Dc_No = item.Wipro_Dc_No?.Trim();
+                    item.Dc_Sap_Code = item.Dc_Sap_Code?.Trim();
 
-                    var compositeKey = $"{item.Vendor}|{item.Wipro_Dc_No}";
+                    var compositeKey = $"{item.Vendor}|{item.Dc_Sap_Code}";
 
-                    if (string.IsNullOrWhiteSpace(item.Vendor.ToString()) || string.IsNullOrWhiteSpace(item.Wipro_Dc_No))
+                    if (string.IsNullOrWhiteSpace(item.Vendor) || string.IsNullOrWhiteSpace(item.Dc_Sap_Code))
                     {
-                        result.FailedRecords.Add((item, "Missing Vendor or Wipro Dc No."));
+                        result.FailedRecords.Add((item, "Missing Vendor or DC Sap Code."));
                         continue;
                     }
 
@@ -268,7 +268,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                     // Now check against database
                     bool existsInDb = await _dbContext.JobWorkTrac
-                        .AnyAsync(x => x.Vendor == item.Vendor && x.Wipro_Dc_No == item.Wipro_Dc_No);
+                        .AnyAsync(x => x.Vendor == item.Vendor && x.Dc_Sap_Code == item.Dc_Sap_Code);
 
                     if (existsInDb)
                     {
@@ -287,16 +287,6 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         Wipro_Transporter = item.Wipro_Transporter,
                         Wipro_LR_No = item.Wipro_LR_No,
                         Wipro_LR_Date = item.Wipro_LR_Date,
-                        Actu_Rece_Qty = item.Actu_Rece_Qty,
-                        Dispatch_Dc = item.Dispatch_Dc,
-                        Dispatch_Invoice = item.Dispatch_Invoice,
-                        Non_Repairable = item.Non_Repairable,
-                        Grand_Total = item.Grand_Total,
-                        To_Process = item.To_Process,
-                        Remark = item.Remark,
-                        Vendor_Transporter = item.Vendor_Transporter,
-                        Vendor_LR_No = item.Vendor_LR_No,
-                        Vendor_LR_Date = item.Vendor_LR_Date,
                         Write_Off_Approved = item.Write_Off_Approved,
                         Write_Off_Date = item.Write_Off_Date,
                         Pending_Write_Off = item.Pending_Write_Off,

@@ -62,6 +62,11 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                     BISCompliance = data.BISCompliance,
                     InspectedBy = data.InspectedBy,
                     Remark = data.Remark,
+                    Attahcment = data.Attahcment,
+                    Document_No = data.Document_No,
+                    Revision_No = data.Revision_No,
+                    Effective_Date = data.Effective_Date,
+                    Revision_Date = data.Revision_Date,
                     IsDelete = data.Deleted,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
@@ -114,12 +119,17 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                     new SqlParameter("@BISCompliance", entity.BISCompliance ?? (object)DBNull.Value),
                     new SqlParameter("@InspectedBy", entity.InspectedBy ?? (object)DBNull.Value),
                     new SqlParameter("@Remark", entity.Remark ?? (object)DBNull.Value),
+                    new SqlParameter("@Attahcment", entity.Attahcment ?? (object)DBNull.Value),
+                    new SqlParameter("@Document_No", entity.Document_No ?? (object)DBNull.Value),
+                    new SqlParameter("@Revision_No", entity.Revision_No ?? (object)DBNull.Value),
+                    new SqlParameter("@Effective_Date", entity.Effective_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Revision_Date", entity.Revision_Date ?? (object)DBNull.Value),
                      new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object)DBNull.Value),
                    new SqlParameter("@IsDeleted", entity.Deleted)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Insert_PDITracker @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark,@CreatedBy, @IsDeleted",
+                    "EXEC sp_Insert_PDITracker @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark, @Attahcment, @Document_No, @Revision_No, @Effective_Date, @Revision_Date, @CreatedBy, @IsDeleted",
                     parameters
                 );
 
@@ -152,12 +162,17 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                     new SqlParameter("@BISCompliance", entity.BISCompliance ?? (object)DBNull.Value),
                     new SqlParameter("@InspectedBy", entity.InspectedBy ?? (object)DBNull.Value),
                     new SqlParameter("@Remark", entity.Remark ?? (object)DBNull.Value),
-                     new SqlParameter("@UpdatedBy", entity.UpdatedBy ?? (object)DBNull.Value)
+                    new SqlParameter("@Attahcment", entity.Attahcment ?? (object)DBNull.Value),
+                    new SqlParameter("@Document_No", entity.Document_No ?? (object)DBNull.Value),
+                    new SqlParameter("@Revision_No", entity.Revision_No ?? (object)DBNull.Value),
+                    new SqlParameter("@Effective_Date", entity.Effective_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Revision_Date", entity.Revision_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@UpdatedBy", entity.UpdatedBy ?? (object)DBNull.Value)
 
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Update_PDITracker @PDIId, @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark,@UpdatedBy",
+                    "EXEC sp_Update_PDITracker @PDIId, @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark, @Attahcment, @Document_No, @Revision_No, @Effective_Date, @Revision_Date, @UpdatedBy",
                     parameters
                 );
 
@@ -226,7 +241,33 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                 .ToList();
         }
 
-       
+        public async Task<bool> UpdateAttachmentAsync(int id, string fileName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return false;
+
+                var record = await _dbContext.PDITracker.FindAsync(id);
+                if (record == null)
+                    return false;
+
+                record.Attahcment = fileName;
+
+                // Only update the BIS_Attachment property
+                _dbContext.Entry(record).Property(x => x.Attahcment).IsModified = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
 
     }
 }

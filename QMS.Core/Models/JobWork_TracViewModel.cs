@@ -15,11 +15,11 @@ namespace QMS.Core.Models
         public string? Wipro_Dc_No { get; set; }
         public DateTime? Wipro_Dc_Date { get; set; }
         public string? Dc_Sap_Code { get; set; }
-        public string? Qty_Wipro_Dc { get; set; }
+        public int? Qty_Wipro_Dc { get; set; }
         public string? Wipro_Transporter { get; set; }
         public string? Wipro_LR_No { get; set; }
         public DateTime? Wipro_LR_Date { get; set; }
-        public string? Actu_Rece_Qty { get; set; }
+        public int? Actu_Rece_Qty { get; set; }
         public string? Dispatch_Dc { get; set; }
         public string? Dispatch_Invoice { get; set; }
         public string? Non_Repairable { get; set; }

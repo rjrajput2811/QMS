@@ -22,6 +22,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<ThirdPartyTestReportViewModel> ThirdPartyTestReportViewModels { get; set; }
         public DbSet<BisProject_Tracker> BisProject_Tracker { get; set; }
         public DbSet<NatProject_BIS> NatProject_BIS { get; set; }
+        public DbSet<Payment_Tracker> PaymentTracker { get; set; }
         public DbSet<NPITracker> NPITracker { get; set; }
         public DbSet<VenBISCertificateViewModel> venBISCertificateViewModels { get; set; }
         public DbSet<VenBISCertificate> VenBISCertificates { get; set; }

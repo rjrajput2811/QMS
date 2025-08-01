@@ -61,7 +61,6 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        [Route("PDITracker/CreateAsync")]
         public async Task<JsonResult> CreateAsync([FromBody] PDITracker model)
         {
             try
@@ -99,7 +98,6 @@ namespace QMS.Controllers
        
 
         [HttpPost]
-        [Route("PDITracker/UpdateAsync")]
         public async Task<JsonResult> UpdateAsync([FromBody] PDITracker model)
         {
             try
@@ -166,6 +164,46 @@ namespace QMS.Controllers
         {
             var data = await _pdiTrackerRepository.GetCodeSearchAsync(search);
             return Json(data);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadPDIAttachment(IFormFile file, int id)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file selected." });
+
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                    return Json(new { success = false, message = "Only PDF and image files are allowed." });
+
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PDITrac_Attach", id.ToString());
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
+
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+                var newFileName = $"{nameWithoutExt}_{timestamp}{extension}";
+                var filePath = Path.Combine(uploadsPath, newFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Optional: update DB with the new file name
+                await _pdiTrackerRepository.UpdateAttachmentAsync(id, newFileName);
+
+                return Json(new { success = true, id = id, fileName = newFileName });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
 
     }

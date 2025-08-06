@@ -38,6 +38,40 @@
       .closest('.nav-item-submenu') // find parent submenu
       .addClass('nav-item-expanded nav-item-open'); // open submenu
 });
+     document.addEventListener("DOMContentLoaded", function () {
+        const hash = window.location.hash.replace('#', '');
+
+        // Define mapping for valid top-level menu IDs
+        const allowedMenus = ["Supply_Chain", "Service", "Trackers"];
+
+        if (allowedMenus.includes(hash)) {
+            // Hide all top-level menu items
+            document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
+                item.style.display = "none";
+            });
+
+            // Show only the matched one
+            const menuLink = document.getElementById(hash);
+            const menuItem = menuLink?.closest("li.nav-item");
+            const submenu = menuLink?.nextElementSibling;
+
+            if (menuItem) {
+                menuItem.style.display = "block";
+                menuItem.classList.add("nav-item-open");
+
+                if (submenu && submenu.classList.contains("nav-group-sub")) {
+                    submenu.classList.add("d-block");
+                }
+            }
+        } else {
+            // Show all menus if no hash or unknown hash
+            document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
+                item.style.display = "block";
+            });
+        }
+
+        
+    });
     </script>
 
     <style type="text/css">
@@ -48,6 +82,7 @@
             font-size: small;
         
         }
+   
 
         .nav-group-sub {
             display: none;
@@ -328,31 +363,31 @@
 
                                 </li> *@
                                 <li class="nav-item nav-item-submenu">
-                                    <a href="#" class="nav-link" title="Services" id="Services"><i class="fas fa-regular fa-users-between-lines"></i> <span>Services</span></a>
-                                    <ul class="nav nav-group-sub" data-submenu-title="Services">
+                                    <a href="#" class="nav-link" title="Services" id="Service"><i class="fas fa-regular fa-users-between-lines"></i> <span>Services</span></a>
+                                    <ul class="nav nav-group-sub" data-submenu-title="Service">
                                         <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="Service" class="nav-link" title="Complaint Vs indent Tracking" id="Complaint">
+                                            <a asp-controller="Service" asp-action="Service" class="nav-link"  asp-fragment="Service"  title="Complaint Vs indent Tracking" id="Complaint">
                                                 <i class="fas fa-regular fa-clipboard-check"></i>
                                                 <span>Complaint Vs indent Tracking </span>
                                             </a>
                                         </li>
 
                                         <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="JobWorkTrack" class="nav-link" title="Jobwork Tracking " id="Jobwork_Tracking ">
+                                            <a asp-controller="Service" asp-action="JobWorkTrack" class="nav-link" asp-fragment="Service" title="Jobwork Tracking " id="Jobwork_Tracking ">
                                                 <i class="fas fa-regular fa-file-signature"></i>
                                                 <span>Jobwork Tracking </span>
                                             </a>
                                         </li> 
 
                                         <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="RLTTrack" class="nav-link" title="RLT" id="RLT">
+                                            <a asp-controller="Service" asp-action="RLTTrack" class="nav-link" asp-fragment="Service" title="RLT" id="RLT">
                                                 <i class="fas fa-regular fa-clipboard-check"></i>
                                                 <span>RLT</span>
                                             </a>
                                         </li>
 
                                         <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="ContractorList" class="nav-link" title="Service Contractor Portal" id="ServiceContractorPortal">
+                                            <a asp-controller="Service" asp-action="ContractorList" class="nav-link" asp-fragment="Service" title="Service Contractor Portal" id="ServiceContractorPortal">
                                                 <i class="fas fa-regular fa-chart-gantt"></i>
                                                 <span>Service Contractor Portal</span>
                                             </a>
@@ -462,6 +497,25 @@
                                     </ul>
 
                                 </li>
+                                  <li class="nav-item nav-item-submenu">
+                                <a href="#" class="nav-link" title="Supply Chain" id="Supply_Chain"><i class="fas fa-regular fa-manat-sign"></i> <span>Supply Chain</span></a>
+                                <ul class="nav nav-group-sub" data-submenu-title="Supply Chain">
+                                    <li class="nav-item">
+                                        <a asp-controller="/OpenPo" asp-action="OpenPo" asp-fragment="Supply_Chain" class="nav-link" title="Po Details" id="">
+                                            <i class="icon-pencil5"></i>
+                                            <span>Po Details</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="/OpenPo" asp-action="SalesOrder" asp-fragment="Supply_Chain" class="nav-link" title="Sales Order Details" id="">
+                                            <i class="icon-pencil5"></i>
+                                            <span>Sales Order Details</span>
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+                            </li>
 
                                 <li class="nav-item nav-item-submenu">
                                     <a href="#" class="nav-link" title="Customer Feedback" id="Cust_Feed"><i class="fas fa-regular fa-message"></i> <span>Customer Feedback</span></a>
@@ -588,25 +642,7 @@
 
                             </li>
 
-                            <li class="nav-item nav-item-submenu">
-                                <a href="#" class="nav-link" title="Supply Chain" id="Supply_Chain"><i class="fas fa-regular fa-manat-sign"></i> <span>Supply Chain</span></a>
-                                <ul class="nav nav-group-sub" data-submenu-title="Supply Chain">
-                                    <li class="nav-item">
-                                        <a asp-controller="/OpenPo" asp-action="OpenPo" class="nav-link" title="Vendor Certifications" id="VendorCertifications">
-                                            <i class="icon-pencil5"></i>
-                                            <span>Po Details</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="/OpenPo" asp-action="SalesOrder" class="nav-link" title="Third Party Certifications" id="ThirdPartyCertificate">
-                                            <i class="icon-pencil5"></i>
-                                            <span>Sales Order Details</span>
-                                        </a>
-                                    </li>
-
-                                </ul>
-
-                            </li>
+                          
 
                         }
                     </ul>

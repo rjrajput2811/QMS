@@ -1,8 +1,6 @@
 ﻿@{
-    ViewData["Title"] = "PDI Tracker";
+    ViewData["Title"] = "Third Party Inspection Tracker";
 }
-
-<!-- CSS files -->
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
@@ -11,9 +9,10 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+<script src="~/js/xlsx.min.js"></script>
 
 <style>
-    /* Your custom CSS */
+
     .nav-pills .nav-link {
         text-align: left;
         border-radius: 0;
@@ -146,24 +145,30 @@
     .month-item {
         font-size: 14px;
     }
+    
 </style>
+
+
 
 <div class="content">
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <b style="font-size: large; color: #4682B4;">PDI Tracker</b>
+                <b style="font-size: large;color: #4682B4;">Third Party Inspection Tracker</b>
             </div>
+
             <div>
-                <button id="addPDIButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px; font-size:15px">
+                <button id="addTPIButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button id="backButton" class="btn btn-outline-primary">
+                <button id="backButton" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
+
             </div>
         </div>
     </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -175,8 +180,8 @@
                                 <span id="dateRangeText">Select Date Range</span>
                             </div>
                         </div>
-                        <div id="pdi_table_wrapper" style="overflow-x: auto;">
-                            <div id="pdi_table"></div>
+                        <div class="form-group row">
+                            <div id="thirdInspection_Table" class="col-12"></div>
                         </div>
                     </div>
                 </div>
@@ -184,10 +189,11 @@
         </div>
     </div>
 </div>
-</div>
+
 
 @section Scripts {
-    <!-- jQuery -->
+
+
     <script src="~/js/jquery.min.js"></script>
 
     <!-- jQuery UI (if you use sortable, draggable, etc.) -->
@@ -195,14 +201,6 @@
 
     <!-- jQuery BlockUI (for popupalert.js) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
-
-    <!-- DataTables core -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-
-    <!-- DataTables Buttons extensions -->
-    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 
     <!-- Select2 -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -216,19 +214,8 @@
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
-    <!-- XLSX -->
-    <script src="~/js/xlsx.min.js"></script>
-
-    <!-- PNotify -->
-    <script src="~/js/pnotify.js"></script>
-    <script src="~/js/pnotify.confirm.js"></script>
-
-    <!-- Noty (if used) -->
-    <script src="https://cdn.jsdelivr.net/npm/noty/lib/noty.min.js"></script>
-
     <!-- Popup Alert -->
     <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
-
-    <!-- Your main PDI Tracker script -->
-    <script src="~/scripts/PDITracker/pdi-tracker.js" asp-append-version="true"></script>
+    <script src="~/scripts/thirdparty/thirdparty.js" asp-append-version="true"></script>
 }
+

@@ -50,6 +50,7 @@ namespace QMS.Core.Models
         public List<IFormFile>? AttachmentFiles { get; set; }
 
         public string? Attachment { get; set; }
+        public string? Tpi_Duration { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? UpdatedDate { get; set; }
 

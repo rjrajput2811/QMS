@@ -282,7 +282,7 @@ function OnTabGridLoad(response) {
             headerMenu: headerMenu,
             formatter: function (cell) {
                 const rowData = cell.getRow().getData();
-                return `<i onclick="delConfirm(${rowData.PDIId})" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
+                return `<i onclick="delConfirm(${rowData.PDIId},this)" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
             }
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
@@ -498,11 +498,22 @@ function editableColumn(title, field, editorType = true, align = "center", heade
     return columnDef;
 }
 
-function delConfirm(PDIId) {
+function delConfirm(PDIId, element) {
+
+
+    if (!PDIId || PDIId <= 0) {
+        const rowEl = $(element).closest(".tabulator-row")[0];
+        const row = table.getRow(rowEl);
+        if (row) {
+            row.delete();
+        }
+        return;
+    }
+
     PNotify.prototype.options.styling = "bootstrap3";
     (new PNotify({
         title: 'Confirm Deletion',
-        text: 'Are you sure you want to delete this PDI?',
+        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
         icon: 'fa fa-question-circle',
         hide: false,
         confirm: { confirm: true },

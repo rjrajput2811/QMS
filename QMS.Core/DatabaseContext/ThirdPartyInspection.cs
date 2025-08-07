@@ -33,6 +33,11 @@ namespace QMS.Core.DatabaseContext
         public string? ActionPlan { get; set; }
         public DateTime? MOMDate { get; set; }
         public string? Attachment { get; set; }
+        public string? Tpi_Duration { get; set; }
+        public string? Document_No { get; set; }
+        public string? Revision_No { get; set; }
+        public DateTime? Effective_Date { get; set; }
+        public DateTime? Revision_Date { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }

@@ -38,6 +38,40 @@
       .closest('.nav-item-submenu') // find parent submenu
       .addClass('nav-item-expanded nav-item-open'); // open submenu
 });
+     document.addEventListener("DOMContentLoaded", function () {
+        const hash = window.location.hash.replace('#', '');
+
+        // Define mapping for valid top-level menu IDs
+        const allowedMenus = ["Supply_Chain", "Service", "Trackers"];
+
+        if (allowedMenus.includes(hash)) {
+            // Hide all top-level menu items
+            document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
+                item.style.display = "none";
+            });
+
+            // Show only the matched one
+            const menuLink = document.getElementById(hash);
+            const menuItem = menuLink?.closest("li.nav-item");
+            const submenu = menuLink?.nextElementSibling;
+
+            if (menuItem) {
+                menuItem.style.display = "block";
+                menuItem.classList.add("nav-item-open");
+
+                if (submenu && submenu.classList.contains("nav-group-sub")) {
+                    submenu.classList.add("d-block");
+                }
+            }
+        } else {
+            // Show all menus if no hash or unknown hash
+            document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
+                item.style.display = "block";
+            });
+        }
+
+        
+    });
     </script>
 
     <style type="text/css">
@@ -48,6 +82,7 @@
             font-size: small;
         
         }
+   
 
         .nav-group-sub {
             display: none;
@@ -212,184 +247,28 @@
                                             </a>
                                         </li>
 
+                                      <li class="nav-item">
+                                        <a asp-controller="/Certification" asp-action="Create" class="nav-link" title="Vendor Certifications" id="VendorCertifications">
+                                            <i class="icon-pencil5"></i>
+                                            <span>Vendor Certifications</span>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a asp-controller="/ThirdPartyCertificate" asp-action="Index" class="nav-link" title="Third Party Certifications" id="ThirdPartyCertificate">
+                                            <i class="icon-pencil5"></i>
+                                            <span>Third Party Certifications</span>
+                                        </a>
+                                    </li>
                                       
-                                       @* 
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Documentation & Testing" id="Doc_Test">
-                                                <i class="fas fa-regular fa-book" style="color:#884ea0;"></i>
-                                                <span>Documentation & Testing</span>
-                                            </a>
-                                        </li>
 
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Validation Reports" id="Valid_Repo">
-                                                <i class="fas fa-regular fa-file-contract" style="color:#ca6f1e;"></i>
-                                                <span>Validation Reports</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Third Party Testing with Number" id="Thi_Party_Testing">
-                                                <i class="fas fa-regular fa-square-check" style="color:#90CAF9;"></i>
-
-                                                <span>Third Party Testing with Number</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Internal Testing" id="Inter_Testing">
-                                                <i class="fas fa-regular fa-newspaper" style="color:#841e76;"></i>
-                                                <span>Internal Testing</span>
-                                            </a>
-                                        </li> *@
-
-                                        <li class="nav-item">
-                                            <a asp-controller="ThirdPartyInspection" asp-action="Create" class="nav-link" title="Third Party Inspection" id="Third_Inspec">
-                                                <i class="fas fa-regular fa-rectangle-list" style="color:#40E0D0;"></i>
-                                                <span>Third Party Inspection</span>
-                                            </a>
-                                        </li>
+                                       
 
 
                                     </ul>
 
                                 </li>
 
-                               @*  <li class="nav-item nav-item-submenu">
-                                    <a href="#" class="nav-link" title="Performance & Compliancet" id="Perfor_Complia"><i class="fas fa-regular fa-chart-simple" style="color:dodgerblue;"></i> <span>Performance & Compliance</span></a>
-                                    <ul class="nav nav-group-sub" data-submenu-title="Performance & Compliance">
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Supplier Performance Management (SPM)" id="SPM">
-                                                <i class="fas fa-regular fa-chart-bar" style="color:#a9dfbf;"></i>
-                                                <span>Supplier Performance Management (SPM)</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="SEE Indices" id="SEE_Indi">
-                                                <i class="fas fa-regular fa-clipboard" style="color:#90CAF9;"></i>
-                                                <span>SEE Indices </span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Audit Score" id="Audit_Score">
-                                                <i class="fas fa-regular fa-calendar-days" style="color:#90CAF9;"></i>
-                                                <span>Audit Score</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="PPM (Parts Per Million)" id="PPM">
-                                                <i class="fas fa-regular fa-calendar-day"></i>
-                                                <span>PPM (Parts Per Million)</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Overall Quality Level (OQL)" id="OQL">
-                                                <i class="fas fa-regular fa-calendar-week"></i>
-                                                <span>Overall Quality Level (OQL)</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-
-                                </li> *@
-
-
-                               @*  <li class="nav-item nav-item-submenu">
-                                    <a href="#" class="nav-link" title="PDI Management" id="PDI_Mang"><i class="fas fa-regular fa-users-between-lines" style="color:orangered;"></i> <span>PDI Management</span></a>
-                                    <ul class="nav nav-group-sub" data-submenu-title="PDI Management">
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="PDI" id="PDI">
-                                                <i class="fas fa-regular fa-clipboard-check"></i>
-                                                <span>PDI</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Lot-wise PDI Report with Remarks" id="Lot-wise_PDI">
-                                                <i class="fas fa-regular fa-file-fragment"></i>
-                                                <span>Lot-wise PDI Report with Remarks </span>
-                                            </a>
-                                        </li>
-
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="PDI Authorised Signatory" id="PDI_Signatory">
-                                                <i class="fas fa-regular fa-file-signature"></i>
-                                                <span>PDI Authorised Signatory</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-
-                                </li> *@
-                                <li class="nav-item nav-item-submenu">
-                                    <a href="#" class="nav-link" title="Services" id="Services"><i class="fas fa-regular fa-users-between-lines"></i> <span>Services</span></a>
-                                    <ul class="nav nav-group-sub" data-submenu-title="Services">
-                                        <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="Service" class="nav-link" title="Complaint Vs indent Tracking" id="Complaint">
-                                                <i class="fas fa-regular fa-clipboard-check"></i>
-                                                <span>Complaint Vs indent Tracking </span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="JobWorkTrack" class="nav-link" title="Jobwork Tracking " id="Jobwork_Tracking ">
-                                                <i class="fas fa-regular fa-file-signature"></i>
-                                                <span>Jobwork Tracking </span>
-                                            </a>
-                                        </li> 
-
-                                        <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="RLTTrack" class="nav-link" title="RLT" id="RLT">
-                                                <i class="fas fa-regular fa-clipboard-check"></i>
-                                                <span>RLT</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="Service" asp-action="ContractorList" class="nav-link" title="Service Contractor Portal" id="ServiceContractorPortal">
-                                                <i class="fas fa-regular fa-chart-gantt"></i>
-                                                <span>Service Contractor Portal</span>
-                                            </a>
-                                        </li>
-
-@* 
-                                        <li class="nav-item">
-                                            <a asp-controller="#" asp-action="#" class="nav-link" title="PDI Tracker" id="PDI_Trac">
-                                                <i class="fas fa-regular fa-file-lines"></i>
-                                                <span>FIFO Tracker Waluj testing</span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="PDI Authorised Signatory" id="PDI_Signatory">
-                                                <i class="fas fa-regular fa-file-signature"></i>
-                                                <span>Outside Lab Payment Tracker</span>
-                                            </a>
-                                        </li>
-                                        
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="PDI Authorised Signatory" id="PDI_Signatory">
-                                                <i class="fas fa-regular fa-file-signature"></i>
-                                                <span>Supplier Quality Assesment Form</span>
-                                            </a>
-                                        </li>
-                                        
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="PDI Authorised Signatory" id="PDI_Signatory">
-                                                <i class="fas fa-regular fa-file-signature"></i>
-                                                <span>Customer RCA</span>
-                                            </a>
-                                        </li> *@ 
-
-                                    </ul>
-
-                                </li>
+                                    
 
                                 <li class="nav-item nav-item-submenu">
                                     <a href="#" class="nav-link" title="Trackers" id="Trackers"><i class="fas fa-regular fa-chart-diagram"></i> <span>Trackers</span></a>
@@ -402,25 +281,28 @@
                                                 <span>BIS Project Tracker</span>
                                             </a>
                                         </li>
-
+                                         <li class="nav-item">
+                                            <a asp-controller="ThirdPartyInspection" asp-action="Create" class="nav-link" title="Third Party Inspection" id="Third_Inspec">
+                                                <i class="fas fa-regular fa-rectangle-list" style="color:#40E0D0;"></i>
+                                                <span>Third Party Inspection Tracker</span>
+                                            </a>
+                                        </li>
                                         <li class="nav-item">
                                             <a asp-controller="PaymentTracker" asp-action="PaymentTracker" class="nav-link" title="Payment Tracker" id="Payment_Trac">
                                                 <i class="fas fa-regular fa-chart-gantt" style="color:mediumpurple;"></i>
                                                 <span>Payment Tracker</span>
                                             </a>
                                         </li>
-
-                                        <li class="nav-item">
+                                         <li class="nav-item">
                                             <a asp-controller="PDITracker" asp-action="PDITracker" class="nav-link" title="PDI Tracker" id="PDI_Trac">
                                                 <i class="fas fa-regular fa-file-lines" style="color:#891c0d;"></i>
                                                 <span>PDI Tracker</span>
                                             </a>
                                         </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="ThirdPartyInspection" asp-action="ThirdPartyInspection" class="nav-link" title="ThirdParty Inspection Tracker" id="TPI_Trac">
-                                                <i class="fas fa-regular fa-file-lines" style="color:#891c0d;"></i>
-                                                <span>ThirdParty Inspection Tracker</span>
+                                         <li class="nav-item">
+                                            <a asp-controller="#" asp-action="#" class="nav-link" title="PDI Tracker" id="PDI_Trac">
+                                                <i class="fas fa-regular fa-file-lines"></i>
+                                                <span>FIFO Tracker Waluj testing</span>
                                             </a>
                                         </li>
 
@@ -447,7 +329,7 @@
 
                                         
 
-                                        
+                                       
                                         <li class="nav-item">
                                             <a asp-controller="KaizenTracker" asp-action="KaizenTracker" class="nav-link" title="Kaizen Trackers" id="Kaizen_Tracker">
                                                 <i class="fas fa-regular fa-file-signature"></i>
@@ -471,6 +353,7 @@
                                     </ul>
 
                                 </li>
+                               
 
                                 <li class="nav-item nav-item-submenu">
                                     <a href="#" class="nav-link" title="Customer Feedback" id="Cust_Feed"><i class="fas fa-regular fa-message"></i> <span>Customer Feedback</span></a>
@@ -501,34 +384,7 @@
 
                                 </li> 
 
-                               @*  <li class="nav-item nav-item-submenu">
-                                    <a href="#" class="nav-link" title="Internal Processes" id="Inter_Proc"><i class="fas fa-regular fa-list-check"></i> <span>Internal Processes</span></a>
-                                    <ul class="nav nav-group-sub" data-submenu-title="Internal Processes">
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="AHP Notes" id="AHP_Notes">
-                                                <i class="fas fa-regular fa-book-open"></i>
-                                                <span>AHP Notes </span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="Replacement Lead Time (RLT)" id="RLT">
-                                                <i class="fas fa-regular fa-id-card"></i>
-                                                <span>Replacement Lead Time (RLT) </span>
-                                            </a>
-                                        </li>
-
-                                        <li class="nav-item">
-                                            <a asp-controller="" asp-action="" class="nav-link" title="RM TC" id="RM_TC">
-                                                <i class="fas fa-regular fa-file-invoice"></i>
-                                                <span>RM TC</span>
-                                            </a>
-                                        </li>
-
-                                    </ul>
-
-                                </li> *@
+                              
 
                                 <li class="nav-item nav-item-submenu">
                                     <a href="#" class="nav-link" title="Reports & Analytics" id="Rep_Analy"><i class="fas fa-regular fa-laptop-file"></i> <span>Reports & Analytics</span></a>
@@ -580,24 +436,49 @@
                             <li class="nav-item nav-item-submenu">
                                 <a href="#" class="nav-link" title="Masters" id="Masters"><i class="icon-gear"></i> <span>Masters</span></a>
                                 <ul class="nav nav-group-sub" data-submenu-title="Master">
-                                    <li class="nav-item">
-                                        <a asp-controller="/Certification" asp-action="Create" class="nav-link" title="Vendor Certifications" id="VendorCertifications">
-                                            <i class="icon-pencil5"></i>
-                                            <span>Vendor Certifications</span>
-                                        </a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a asp-controller="/ThirdPartyCertificate" asp-action="Index" class="nav-link" title="Third Party Certifications" id="ThirdPartyCertificate">
-                                            <i class="icon-pencil5"></i>
-                                            <span>Third Party Certifications</span>
-                                        </a>
-                                    </li>
+                                    
 
                                 </ul>
 
                             </li>
 
-                            <li class="nav-item nav-item-submenu">
+                                  <li class="nav-item nav-item-submenu">
+                                    <a href="#" class="nav-link" title="Services" id="Service"><i class="fas fa-regular fa-users-between-lines"></i> <span>Services</span></a>
+                                    <ul class="nav nav-group-sub" data-submenu-title="Services">
+                                        <li class="nav-item">
+                                            <a asp-controller="Service" asp-action="Service" class="nav-link" title="Complaint Vs indent Tracking" id="Complaint">
+                                                <i class="fas fa-regular fa-clipboard-check"></i>
+                                                <span>Complaint Vs indent Tracking </span>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a asp-controller="Service" asp-action="JobWorkTrack" class="nav-link" title="Jobwork Tracking " id="Jobwork_Tracking ">
+                                                <i class="fas fa-regular fa-file-signature"></i>
+                                                <span>Jobwork Tracking </span>
+                                            </a>
+                                        </li> 
+
+                                        <li class="nav-item">
+                                            <a asp-controller="Service" asp-action="RLTTrack" class="nav-link" title="RLT" id="RLT">
+                                                <i class="fas fa-regular fa-clipboard-check"></i>
+                                                <span>RLT</span>
+                                            </a>
+                                        </li>
+
+                                        <li class="nav-item">
+                                            <a asp-controller="Service" asp-action="ContractorList" class="nav-link" title="Service Contractor Portal" id="ServiceContractorPortal">
+                                                <i class="fas fa-regular fa-chart-gantt"></i>
+                                                <span>Service Contractor Portal</span>
+                                            </a>
+                                        </li>
+
+                                        
+
+                                    </ul>
+
+                                </li>
+                                <li class="nav-item nav-item-submenu">
                                 <a href="#" class="nav-link" title="Supply Chain" id="Supply_Chain"><i class="fas fa-regular fa-manat-sign"></i> <span>Supply Chain</span></a>
                                 <ul class="nav nav-group-sub" data-submenu-title="Supply Chain">
                                     <li class="nav-item">

@@ -28,7 +28,7 @@ function openUploadIndent() {
 
 function openUploadInvoice() {
     const columns = [
-        'Key', 'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Dealer Name', 'End Customer',
+        'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Dealer Name', 'End Customer',
         'Collective No', 'Indent No', 'Invoice Date', 'Quantity', 'Cost'
     ];
     setUploadConfig('/Service/UploadInvoiceExcel', columns);

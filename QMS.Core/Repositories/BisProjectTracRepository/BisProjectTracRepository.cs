@@ -25,11 +25,20 @@ namespace QMS.Core.Repositories.BisProjectTracRepository
             _systemLogService = systemLogService;
         }
 
-        public async Task<List<BisProjectTracViewModel>> GetListAsync()
+        public async Task<List<BisProjectTracViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
                 var result = await _dbContext.BisProject_Tracker.FromSqlRaw("EXEC sp_Get_BIS_Project").ToListAsync();
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    result = result
+                        .Where(x => x.CreatedDate.HasValue &&
+                                    x.CreatedDate.Value.Date >= startDate.Value.Date &&
+                                    x.CreatedDate.Value.Date <= endDate.Value.Date)
+                        .ToList();
+                }
 
                 // Map results to ViewModel
                 var viewModelList = result.Select(data => new BisProjectTracViewModel

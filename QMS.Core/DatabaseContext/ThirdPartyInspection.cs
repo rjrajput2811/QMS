@@ -1,4 +1,5 @@
 ﻿using QMS.Core.DatabaseContext.Shared;
+using QMS.Core.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -42,5 +43,11 @@ namespace QMS.Core.DatabaseContext
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
+    }
+
+    public class BulkTPICreateResult
+    {
+        public OperationResult Result { get; set; } = new();
+        public List<(ThirdPartyInspectionViewModel Record, string Reason)> FailedRecords { get; set; } = new();
     }
 }

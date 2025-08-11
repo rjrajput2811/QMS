@@ -232,7 +232,12 @@ function InsertUpdatePc(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-                loadPcData();
+                //loadPcData();
+
+                if (isNew) {
+                    showSuccessAlert("Saved successfully!.");
+                    loadPcData();
+                }
             } else {
                 showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
             }

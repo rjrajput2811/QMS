@@ -118,6 +118,7 @@ function renderTable(response) {
         tabledata.push({
             Sr_No: index + 1,
             Id: item.id,
+            Key: item.key,
             Vendor: item.vendor,
             Material: item.material,
             ReferenceNo: item.referenceNo,
@@ -157,6 +158,7 @@ function renderTable(response) {
             }
         },
         { title: "SNo", field: "Sr_No", frozen: true, sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
+        { title: "Key", field: "Key", frozen: true,headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
         editableColumn("PO Date", "PODate", "date", "center"),
         editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
             values: vendorOptions
@@ -203,6 +205,7 @@ function renderTable(response) {
             const newRow = {
                 Id: 0,
                 Sr_No: tablePO.getDataCount() + 1,
+                Key: "",
                 PODate: "",
                 Vendor: "",
                 Material: "",
@@ -280,7 +283,11 @@ function saveEditedRowPO(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-                loadDatapo();
+                //loadDatapo();
+                if (isNew) {
+                    showSuccessAlert("Saved successfully!.");
+                    loadDatapo();
+                }
             } else {
                 showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
             }

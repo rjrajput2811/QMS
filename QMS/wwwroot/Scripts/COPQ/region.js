@@ -224,7 +224,11 @@ function InsertUpdateRegion(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-                loadRegionData();
+                //loadRegionData();
+                if (isNew) {
+                    showSuccessAlert("Saved successfully!.");
+                    loadRegionData();
+                }
             } else {
                 showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
             }

@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Mvc;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Services.SystemLogs;
+using System.Globalization;
 
 namespace QMS.Controllers
 {
@@ -127,6 +129,141 @@ namespace QMS.Controllers
                 _systemLogService.WriteLog(ex.Message);
                 throw;
             }
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> UploadTPIExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        {
+            var prRecordsToAdd = new List<ThirdPartyInspectionViewModel>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName");
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.LastRowUsed().RowNumber();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+
+                    DateTime? insDate = ParseExcelDate(worksheet.Cell(row, 1));
+                    DateTime? momDate = ParseExcelDate(worksheet.Cell(row, 14));
+
+                    var model = new ThirdPartyInspectionViewModel
+                    {
+                        InspectionDate = insDate,
+                        ProjectName = worksheet.Cell(row, 2).GetString().Trim(),
+                        InspName = worksheet.Cell(row, 3).GetString().Trim(),
+                        ProductCode = worksheet.Cell(row, 4).GetString().Trim(),
+                        ProdDesc = worksheet.Cell(row, 5).GetString().Trim(),
+                        LOTQty = worksheet.Cell(row, 6).GetValue<int>(),
+                        ProjectValue = worksheet.Cell(row, 7).GetString().Trim(),
+                        Tpi_Duration = worksheet.Cell(row, 8).GetString().Trim(),
+                        Location = worksheet.Cell(row, 9).GetString().Trim(),
+                        Mode = worksheet.Cell(row, 10).GetString().Trim(),
+                        FirstAttempt = worksheet.Cell(row, 11).GetString().Trim(),
+                        Remark = worksheet.Cell(row, 12).GetString().Trim(),
+                        ActionPlan = worksheet.Cell(row, 13).GetString().Trim(),
+                        MOMDate = momDate,
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now,
+                    };
+
+                    prRecordsToAdd.Add(model);
+                }
+
+                var importResult = await _repository.BulkTPICreateAsync(prRecordsToAdd, fileName, uploadedBy, "ThirdPartyInspection");
+
+                // If there are failed records, return file
+                if (importResult.FailedRecords.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "Project Name";
+                    failSheet.Cell(1, 2).Value = "Product Code";
+                    failSheet.Cell(1, 3).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var fail in importResult.FailedRecords)
+                    {
+                        failSheet.Cell(i, 1).Value = fail.Record.ProjectName;
+                        failSheet.Cell(i, 2).Value = fail.Record.ProductCode;
+                        failSheet.Cell(i, 3).Value = fail.Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+                    //string logFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    //return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", logFileName);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
+            }
+        }
+
+        // Helper function: Universal Excel date parser
+        private DateTime? ParseExcelDate(IXLCell cell)
+        {
+            try
+            {
+                if (cell == null || cell.IsEmpty())
+                    return null;
+
+                if (cell.DataType == XLDataType.DateTime)
+                {
+                    return cell.GetDateTime();
+                }
+                else if (cell.DataType == XLDataType.Number)
+                {
+                    return DateTime.FromOADate(cell.GetDouble());
+                }
+                else
+                {
+                    var strVal = cell.GetString().Trim();
+
+                    string[] formats = { "dd-MMM-yy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yyyy" };
+
+                    if (DateTime.TryParseExact(strVal, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+                    {
+                        if (dt.Year < 50) dt = dt.AddYears(2000 - dt.Year);  // handle 2-digit year case
+                        return dt;
+                    }
+                    else if (DateTime.TryParse(strVal, out dt))
+                    {
+                        return dt;
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            return null;
         }
     }
 }

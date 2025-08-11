@@ -11,6 +11,7 @@ namespace QMS.Core.Models
     {
         public int Id { get; set; }
         public bool Deleted { get; set; }
+        public string? Key { get; set; }
         public string? Indent_No { get; set; }
         public DateTime? Indent_Date { get; set; }
         public string? Business_Unit { get; set; }

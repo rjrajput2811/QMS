@@ -778,12 +778,12 @@ body {
         }
 
         .sidebar-xs .sidebar-main.sidebar-dark .nav-sidebar > .nav-item:not(.nav-item-open):hover > .nav-link:not(.active):not(.disabled) {
-            color: #fff;
+            color: #D6E4F0;
             background-color: rgba(255,255,255,.1)
         }
 
         .sidebar-xs .sidebar-main.sidebar-dark .nav-sidebar > .nav-item-submenu > .nav-group-sub {
-            background-color: #4B4068;
+            background-color: #D6E4F0;
             border-left: 1px solid rgba(255,255,255,.1)
         }
 

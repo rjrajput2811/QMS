@@ -56,6 +56,17 @@ $(document).ready(function () {
         picker.show();
     });
 
+    $('#upload-button').on('click', async function () {
+        var expectedColumns = [
+            'Inspection Date', 'Customer/Project Name', 'Inspector Name', 'Product Code', 'Product Description', 'LOT QTY(No)',
+            'Project Value(Mn).', 'TPI Duration(DAYS)', 'Location(Waluj Lab/Vendor Location)', 'Mode Of Inspection(Physical/Online)',
+            'Cleared in first attempt', 'Remark', 'Actions plan (If any issue)', 'MOM performed date'
+        ];
+
+        var url = '/ThirdPartyInspection/UploadTPIExcel';
+        handleImportExcelFile(url, expectedColumns);
+    });
+
     loadThirdInsData();
 });
 
@@ -294,7 +305,7 @@ function OnTabThirdInsGridLoad(response) {
         editableColumn("LOT QTY(No's)", "LOTQty", "input", "center", "input", {}, {}, 110),
         editableColumn("Project Value(Mn).", "ProjectValue", "input", "left", "input", {}, {}),
         editableColumn("TPI Duration(DAYS)", "Tpi_Duration", "input", "center", "input", {}, {}),
-        editableColumn("LOCATION(Waluj Lab/Vendor Location)", "Location", "input", "left", "input", {}, {}),
+        editableColumn("Location(Waluj Lab/Vendor Location)", "Location", "input", "left", "input", {}, {}),
         editableColumn("Mode Of Inspection(Physical/Online)", "Mode", "input", "center", "input", {}, {}),
         editableColumn("Cleared in first attempt", "FirstAttempt", "input", "left", "input", {}, {}),
         editableColumn("Remark", "Remark", "input", "left", "input", {}, {}),
@@ -635,6 +646,65 @@ function saveEditedRow(rowData) {
         }
     });
 }
+
+
+function clearForm() {
+    // Clear all input fields
+    document.querySelectorAll('.form-control').forEach(function (input) {
+        if (input.tagName === 'INPUT') {
+            if (input.type === 'hidden' || input.readOnly) {
+                // Skip hidden or readonly inputs
+                return;
+            }
+            input.value = ''; // Clear input value
+        } else if (input.tagName === 'SELECT') {
+            input.selectedIndex = 0; // Reset dropdown to first option
+        }
+    });
+
+    // Clear error messages if needed
+    document.querySelectorAll('.text-danger').forEach(function (error) {
+        error.textContent = '';
+    });
+}
+function openUpload() {
+
+    clearForm();
+    if (!$('#uploadModal').length) {
+        $('body').append(partialView);
+    }
+    $('#uploadModal').modal('show');
+}
+
+$('#download-template').on('click', function () {
+    const expectedColumns = [
+        'Inspection Date',
+        'Customer/Project Name',
+        'Inspector Name',
+        'Product Code',
+        'Product Description',
+        'LOT QTY(No)',
+        'Project Value(Mn).',
+        'TPI Duration(DAYS)',
+        'Location(Waluj Lab/Vendor Location)',
+        'Mode Of Inspection(Physical/Online)',
+        'Cleared in first attempt',
+        'Remark',
+        'Actions plan (If any issue)',
+        'MOM performed date'
+    ];
+
+    // Create a worksheet with only headers
+    const worksheetData = [expectedColumns];
+
+    // Create worksheet and workbook
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "TPI Template");
+
+    // Trigger download
+    XLSX.writeFile(workbook, "TPI_Blank_Template.xlsx");
+});
 
 
 

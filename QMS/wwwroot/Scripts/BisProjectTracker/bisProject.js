@@ -6,8 +6,53 @@ const searchTerms = {};
 let vendorOptions = {};
 let natProjectOptions = {};
 let selectedNatProjectCell = null;
+let filterStartBISDate = moment().startOf('month').format('YYYY-MM-DD');
+let filterEndBISDate = moment().endOf('month').format('YYYY-MM-DD');
 
 $(document).ready(function () {
+
+    $('#dateRangeBIS').text(
+        moment(filterStartBISDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndBISDate).format('MMMM D, YYYY')
+    );
+
+    const picker = new Litepicker({
+        element: document.getElementById('customDateTriggerBIS'),
+        singleMode: false,
+        format: 'DD-MM-YYYY',
+        numberOfMonths: 2,
+        numberOfColumns: 2,
+        dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
+        plugins: ['ranges'],
+        setup: (picker) => {
+            picker.on('selected', (start, end) => {
+                filterStartBISDate = start.format('YYYY-MM-DD');
+                filterEndBISDate = end.format('YYYY-MM-DD');
+                $('#dateRangeBIS').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                loadData();
+            });
+
+            picker.on('clear', () => {
+                filterStartBISDate = "";
+                filterEndBISDate = "";
+                $('#dateRangeBIS').text("Select Date Range");
+                loadData();
+            });
+        },
+        ranges: {
+            Today: [moment(), moment()],
+            Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        },
+        startDate: moment().startOf('month').format('DD-MM-YYYY'),
+        endDate: moment().endOf('month').format('DD-MM-YYYY')
+    });
+
+    $('#customDateTriggerBIS').on('click', function () {
+        picker.show();
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('backButton').addEventListener('click', function () {
@@ -56,6 +101,11 @@ function loadData() {
             $.ajax({
                 url: '/BisProjectTrac/GetAll',
                 type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartBISDate,
+                    endDate: filterEndBISDate
+                },
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data)) {

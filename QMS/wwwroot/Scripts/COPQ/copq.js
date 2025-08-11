@@ -169,7 +169,7 @@ function renderCOPQTable(response) {
             saveEditedRow(cell.getRow().getData());
         });
 
-        $("#addButton").off("click").on("click", function () {
+        $("#addComplaintButton").on("click", function () {
             const newRow = {
                 Id: 0,
                 Sr_No: table.getDataCount() + 1,

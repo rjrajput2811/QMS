@@ -161,6 +161,12 @@
                 <button id="addTPIButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
+                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
+                    <i class="fas fa-upload mr-2"></i>Upload Xl
+                </button>
+                <button type="button" id="download-template" class="btn btn-outline-info">
+                    <i class="fas fa-download"></i> Download Blank Xl
+                </button>
                 <button id="backButton" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
@@ -218,4 +224,4 @@
     <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
     <script src="~/scripts/thirdparty/thirdparty.js" asp-append-version="true"></script>
 }
-
+@await Html.PartialAsync("_UploadModalpartial")

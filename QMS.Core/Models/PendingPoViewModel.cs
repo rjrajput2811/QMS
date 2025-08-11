@@ -10,12 +10,13 @@ namespace QMS.Core.Models
     {
         public int Id { get; set; }
         public string? Vendor { get; set; }
+        public string? Key { get; set; }
         public string? Material { get; set; }
         public string? ReferenceNo { get; set; }
         public string? PONo { get; set; }
         public DateTime? PODate { get; set; }
         public string? PRNo { get; set; }
-        public string? BatchNo { get; set; }
+        public string? Indent_No { get; set; }
         public string? POQty { get; set; }
         public string? BalanceQty { get; set; }
         public string? Destination { get; set; }

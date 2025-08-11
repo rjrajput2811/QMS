@@ -326,6 +326,7 @@ namespace QMS.Controllers
                 model.CreatedDate = DateTime.Now;
                 model.CreatedBy = HttpContext.Session.GetString("FullName") ?? "System";
                 model.Deleted = false;
+                model.Key = model.Indent_No + model.Material;
 
                 var result = await _copqRepository.CreatePOAsync(model);
                 if (result.Success)
@@ -350,6 +351,7 @@ namespace QMS.Controllers
 
                 model.UpdatedDate = DateTime.Now;
                 model.UpdatedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                model.Key = model.Indent_No + model.Material;
 
                 var result = await _copqRepository.UpdatePOAsync(model);
                 if (result.Success)
@@ -402,7 +404,7 @@ namespace QMS.Controllers
                         ReferenceNo = worksheet.Cell(row, 3).GetString().Trim(),
                         PONo = worksheet.Cell(row, 4).GetString().Trim(),
                         PODate = worksheet.Cell(row, 5).TryGetValue(out DateTime poDate) ? poDate : null,
-                        BatchNo = worksheet.Cell(row, 6).GetString().Trim(),
+                        Indent_No = worksheet.Cell(row, 6).GetString().Trim(),
                         POQty = worksheet.Cell(row, 7).GetString().Trim(),
                         BalanceQty = worksheet.Cell(row, 8).GetString().Trim(),
                         Destination = worksheet.Cell(row, 9).GetString().Trim(),
@@ -515,7 +517,7 @@ namespace QMS.Controllers
                 model.CreatedDate = DateTime.Now;
                 model.CreatedBy = HttpContext.Session.GetString("FullName") ?? "System";
                 model.Deleted = false;
-
+                model.Key = model.Indent_No + model.Material_No;
                 var result = await _copqRepository.CreateIndentAsync(model);
                 if (result.Success)
                     return Json(new { success = true, message = "Indent Dump created successfully." });
@@ -538,6 +540,7 @@ namespace QMS.Controllers
 
                 model.UpdatedDate = DateTime.Now;
                 model.UpdatedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                model.Key = model.Indent_No +model.Material_No;
 
                 var result = await _copqRepository.UpdateIndentAsync(model);
                 if (result.Success)
@@ -630,15 +633,13 @@ namespace QMS.Controllers
                     var failSheet = failWb.Worksheets.Add("Failed Records");
 
                     failSheet.Cell(1, 1).Value = "Material No";
-                    failSheet.Cell(1, 2).Value = "Customer Name";
-                    failSheet.Cell(1, 3).Value = "Reason";
+                    failSheet.Cell(1, 2).Value = "Reason";
 
                     int i = 2;
                     foreach (var fail in importResult.FailedRecords)
                     {
                         failSheet.Cell(i, 1).Value = fail.Record.Material_No;
-                        failSheet.Cell(i, 2).Value = fail.Record.Customer_Name;
-                        failSheet.Cell(i, 3).Value = fail.Reason;
+                        failSheet.Cell(i, 2).Value = fail.Reason;
                         i++;
                     }
 
@@ -720,6 +721,7 @@ namespace QMS.Controllers
                 model.CreatedDate = DateTime.Now;
                 model.CreatedBy = HttpContext.Session.GetString("FullName") ?? "System";
                 model.Deleted = false;
+                model.Key = model.Indent_No + model.Material_No;
 
                 var result = await _copqRepository.CreateInvoiceAsync(model);
 
@@ -745,6 +747,7 @@ namespace QMS.Controllers
 
                 model.UpdatedDate = DateTime.Now;
                 model.UpdatedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                model.Key = model.Indent_No + model.Material_No;
 
                 var result = await _copqRepository.UpdateInvoiceAsync(model);
 
@@ -793,20 +796,19 @@ namespace QMS.Controllers
                 {
                     var model = new InvoiceListViewModel
                     {
-                        Key = worksheet.Cell(row, 1).GetString().Trim(),
-                        Inv_No = worksheet.Cell(row, 2).GetString().Trim(),
-                        Inv_Type = worksheet.Cell(row, 3).GetString().Trim(),
-                        Sales_Order = worksheet.Cell(row, 4).GetString().Trim(),
-                        Plant_Code = worksheet.Cell(row, 5).GetString().Trim(),
-                        Plant_Name = worksheet.Cell(row, 6).GetString().Trim(),
-                        Material_No = worksheet.Cell(row, 7).GetString().Trim(),
-                        Dealer_Name = worksheet.Cell(row, 8).GetString().Trim(),
-                        End_Customer = worksheet.Cell(row, 9).GetString().Trim(),
-                        Collective_No = worksheet.Cell(row, 10).GetString().Trim(),
-                        Indent_No = worksheet.Cell(row, 11).GetString().Trim(),
-                        Inv_Date = worksheet.Cell(row, 12).TryGetValue(out DateTime invDate) ? invDate : null,
-                        Quantity = worksheet.Cell(row, 13).GetString().Trim(),
-                        Cost = worksheet.Cell(row, 14).GetString().Trim(),
+                        Inv_No = worksheet.Cell(row, 1).GetString().Trim(),
+                        Inv_Type = worksheet.Cell(row, 2).GetString().Trim(),
+                        Sales_Order = worksheet.Cell(row, 3).GetString().Trim(),
+                        Plant_Code = worksheet.Cell(row, 4).GetString().Trim(),
+                        Plant_Name = worksheet.Cell(row, 5).GetString().Trim(),
+                        Material_No = worksheet.Cell(row, 6).GetString().Trim(),
+                        Dealer_Name = worksheet.Cell(row, 7).GetString().Trim(),
+                        End_Customer = worksheet.Cell(row, 8).GetString().Trim(),
+                        Collective_No = worksheet.Cell(row, 9).GetString().Trim(),
+                        Indent_No = worksheet.Cell(row, 10).GetString().Trim(),
+                        Inv_Date = worksheet.Cell(row, 11).TryGetValue(out DateTime invDate) ? invDate : null,
+                        Quantity = worksheet.Cell(row, 12).GetString().Trim(),
+                        Cost = worksheet.Cell(row, 13).GetString().Trim(),
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,
                     };
@@ -1717,28 +1719,65 @@ namespace QMS.Controllers
 
         //// ----------------- Final Merge ------------------- ////
 
+        //[HttpGet]
+        //public async Task<IActionResult> GetFinalMergeData()
+        //{
+        //    try
+        //    {
+        //        var data = await _copqRepository.GetFinalMergeServiceAsync();
+
+        //        if (data == null || !data.Any())
+        //        {
+        //            return Json(new { success = false, message = "No data found", data = data });
+        //        }
+
+        //        return Json(new { success = true, data });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Optional: Log exception
+        //        return Json(new { success = false, message = ex.Message, data = new List<object>() });
+        //    }
+        //}
+
         [HttpGet]
-        public async Task<IActionResult> GetFinalMergeData()
+        public async Task<IActionResult> GetFinalMergeData(DateTime? startDate, DateTime? endDate)
         {
             try
             {
-                var data = await _copqRepository.GetFinalMergeServiceAsync();
+                var data = await _copqRepository.GetFinalMergeServiceAsync(startDate, endDate);
 
                 if (data == null || !data.Any())
                 {
-                    return Json(new { success = false, message = "No data found", data = new List<object>() });
+                    return Json(new
+                    {
+                        success = false,
+                        message = "No data found",
+                        data = Array.Empty<FinalMergeServiceViewModel>() // typed empty array
+                    });
                 }
 
-                return Json(new { success = true, data });
+                return Json(new
+                {
+                    success = true,
+                    data
+                });
             }
             catch (Exception ex)
             {
-                // Optional: Log exception
-                return Json(new { success = false, message = ex.Message, data = new List<object>() });
+                // Optional but recommended: log the error
+                _systemLogService.WriteLog(ex.Message);
+
+                return Json(new
+                {
+                    success = false,
+                    message = "Error occurred while fetching data.",
+                    data = Array.Empty<FinalMergeServiceViewModel>()
+                });
             }
         }
 
-        
+
         //// ----------------- Final Merge ------------------- ////
 
     }

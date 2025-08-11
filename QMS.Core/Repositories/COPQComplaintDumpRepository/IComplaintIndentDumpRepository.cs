@@ -78,7 +78,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
 
         //// ----------------- Final Merge ------------------- ////
-        Task<List<FinalMergeServiceViewModel>> GetFinalMergeServiceAsync();
+        Task<List<FinalMergeServiceViewModel>> GetFinalMergeServiceAsync(DateTime? startDate = null, DateTime? endDate = null);
 
         //// ----------------- Final Merge ------------------- ////
 

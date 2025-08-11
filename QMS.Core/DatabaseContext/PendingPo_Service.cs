@@ -17,6 +17,7 @@ namespace QMS.Core.DatabaseContext
         public override bool Deleted { get; set; }
 
         // Table Columns
+        public string? Key { get; set; }
         public string? Vendor { get; set; }
         public string? Material { get; set; }
 
@@ -30,7 +31,7 @@ namespace QMS.Core.DatabaseContext
         public DateTime? PODate { get; set; }
 
         public string? PRNo { get; set; }
-        public string? BatchNo { get; set; }
+        public string? Indent_No { get; set; }
         public string? POQty { get; set; }
         public string? BalanceQty { get; set; }
         public string? Destination { get; set; }

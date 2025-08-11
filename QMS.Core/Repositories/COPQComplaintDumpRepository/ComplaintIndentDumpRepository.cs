@@ -7,6 +7,7 @@ using QMS.Core.Services.SystemLogs;
 using System.Data;
 using Dapper;
 using System.Data.Common;
+using System.Globalization;
 
 
 namespace QMS.Core.Repositories.COPQComplaintDumpRepository
@@ -15,13 +16,11 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
     {
         private new readonly QMSDbContext _dbContext;
         private readonly ISystemLogService _systemLogService;
-        private readonly IDbConnection _dbConnection;
 
-        public ComplaintIndentDumpRepository(QMSDbContext dbContext, ISystemLogService systemLogService, IDbConnection dbConnection) : base(dbContext)
+        public ComplaintIndentDumpRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
         {
             _dbContext = dbContext;
             _systemLogService = systemLogService;
-            _dbConnection = dbConnection;
         }
 
         public async Task<List<ComplaintViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null)
@@ -319,13 +318,14 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 return result.Select(x => new PendingPoViewModel
                 {
                     Id = x.Id,
+                    Key = x.Key,
                     Vendor = x.Vendor,
                     Material = x.Material,
                     ReferenceNo = x.ReferenceNo,
                     PONo = x.PONo,
                     PODate = x.PODate,
                     PRNo = x.PRNo,
-                    BatchNo = x.BatchNo,
+                    Indent_No = x.Indent_No,
                     POQty = x.POQty,
                     BalanceQty = x.BalanceQty,
                     Destination = x.Destination,
@@ -355,13 +355,14 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 return result.Select(x => new PendingPoViewModel
                 {
                     Id = x.Id,
+                    Key = x.Key,
                     Vendor = x.Vendor,
                     Material = x.Material,
                     ReferenceNo = x.ReferenceNo,
                     PONo = x.PONo,
                     PODate = x.PODate,
                     PRNo = x.PRNo,
-                    BatchNo = x.BatchNo,
+                    Indent_No = x.Indent_No,
                     POQty = x.POQty,
                     BalanceQty = x.BalanceQty,
                     Destination = x.Destination,
@@ -390,11 +391,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@ReferenceNo", podetail.ReferenceNo ?? (object)DBNull.Value),
                     new SqlParameter("@PONo", podetail.PONo ?? (object)DBNull.Value),
                     new SqlParameter("@PODate", podetail.PODate ?? (object)DBNull.Value),
-                    new SqlParameter("@BatchNo", podetail.BatchNo ?? (object)DBNull.Value),
+                    new SqlParameter("@Indent_No", podetail.Indent_No ?? (object)DBNull.Value),
                     new SqlParameter("@POQty", podetail.POQty ?? (object)DBNull.Value),
                     new SqlParameter("@BalanceQty", podetail.BalanceQty ?? (object)DBNull.Value),
                     new SqlParameter("@Destination", podetail.Destination ?? (object)DBNull.Value),
                     new SqlParameter("@BalanceValue", podetail.BalanceValue ?? (object)DBNull.Value),
+                    new SqlParameter("@Key", podetail.Key ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedDate", DateTime.Now),
                     new SqlParameter("@CreatedBy", podetail.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", podetail.Deleted)
@@ -402,7 +404,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Insert_PO 
-                        @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @BatchNo, 
+                        @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @Indent_No, 
                         @POQty, @BalanceQty, @Destination, @BalanceValue, @CreatedDate, @CreatedBy, @IsDeleted",
                     parameters
                 );
@@ -430,19 +432,20 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@ReferenceNo", podetail.ReferenceNo ?? (object)DBNull.Value),
                     new SqlParameter("@PONo", podetail.PONo ?? (object)DBNull.Value),
                     new SqlParameter("@PODate", podetail.PODate ?? (object)DBNull.Value),
-                    new SqlParameter("@BatchNo", podetail.BatchNo ?? (object)DBNull.Value),
+                    new SqlParameter("@Indent_No", podetail.Indent_No ?? (object)DBNull.Value),
                     new SqlParameter("@POQty", podetail.POQty ?? (object)DBNull.Value),
                     new SqlParameter("@BalanceQty", podetail.BalanceQty ?? (object)DBNull.Value),
                     new SqlParameter("@Destination", podetail.Destination ?? (object)DBNull.Value),
                     new SqlParameter("@BalanceValue", podetail.BalanceValue ?? (object)DBNull.Value),
+                    new SqlParameter("@Key", podetail.Key ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedDate", DateTime.Now),
                     new SqlParameter("@UpdatedBy", podetail.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
                     @"EXEC sp_Update_PO 
-                        @Id, @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @BatchNo, 
-                        @POQty, @BalanceQty, @Destination, @BalanceValue, @UpdatedDate, @UpdatedBy",
+                        @Id, @Vendor, @Material, @ReferenceNo, @PONo, @PODate, @Indent_No, 
+                        @POQty, @BalanceQty, @Destination, @BalanceValue, @Key, @UpdatedDate, @UpdatedBy",
                     parameters
                 );
 
@@ -521,11 +524,12 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         PONo = item.PONo,
                         PODate = item.PODate,
                         PRNo = item.PRNo,
-                        BatchNo = item.BatchNo,
+                        Indent_No = item.Indent_No,
                         POQty = item.POQty,
                         BalanceQty = item.BalanceQty,
                         Destination = item.Destination,
                         BalanceValue = item.BalanceValue,
+                        Key = item.Indent_No + item.Material,
                         CreatedBy = item.CreatedBy,
                         CreatedDate = item.CreatedDate
                     };
@@ -596,6 +600,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 return result.Select(x => new IndentDumpViewModel
                 {
                     Id = x.Id,
+                    Key = x.Key,
                     Indent_No = x.Indent_No,
                     Indent_Date = x.Indent_Date,
                     Business_Unit = x.Business_Unit,
@@ -649,6 +654,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 return result.Select(x => new IndentDumpViewModel
                 {
                     Id = x.Id,
+                    Key = x.Key,
                     Indent_No = x.Indent_No,
                     Indent_Date = x.Indent_Date,
                     Business_Unit = x.Business_Unit,
@@ -723,6 +729,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Batch_Code", indentdetail.Batch_Code ?? (object)DBNull.Value),
                     new SqlParameter("@Batch_Date", indentdetail.Batch_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Main_Prodcode", indentdetail.Main_Prodcode ?? (object)DBNull.Value),
+                    new SqlParameter("@Key", indentdetail.Key ?? (object)DBNull.Value),
                     new SqlParameter("@User_Name", indentdetail.User_Name ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", indentdetail.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", indentdetail.Deleted)
@@ -732,7 +739,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     @"EXEC sp_Insert_IndentDump 
                         @Indent_No, @Indent_Date, @Business_Unit, @Vertical, @Branch, @Indent_Status, @End_Cust_Name,@CCN_No,@Customer_Code,@Customer_Name,@Bill_Req_Date,@Created_By,
                         @Wipro_Commit_Date, @Material_No, @Item_Description, @Quantity, @Price,@Discount, @Final_Price, @SapSoNo, @CreateSoQty,@Inv_Qty,@Inv_Value,@WiproCatelog_No,@Batch_Code,
-                        @Batch_Date, @Main_Prodcode, @User_Name, @CreatedBy, @IsDeleted",
+                        @Batch_Date, @Main_Prodcode,@Key, @User_Name, @CreatedBy, @IsDeleted",
                     parameters
                 );
 
@@ -781,6 +788,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     new SqlParameter("@Batch_Code", indentdetail.Batch_Code ?? (object)DBNull.Value),
                     new SqlParameter("@Batch_Date", indentdetail.Batch_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Main_Prodcode", indentdetail.Main_Prodcode ?? (object)DBNull.Value),
+                    new SqlParameter("@Key", indentdetail.Key ?? (object)DBNull.Value),
                     new SqlParameter("@User_Name", indentdetail.User_Name ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", indentdetail.UpdatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", indentdetail.Deleted)
@@ -790,7 +798,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     @"EXEC sp_Update_Indent 
                         @Id,  @Indent_No, @Indent_Date, @Business_Unit, @Vertical, @Branch, @Indent_Status, @End_Cust_Name,@CCN_No,@Customer_Code,@Customer_Name,@Bill_Req_Date,@Created_By,
                         @Wipro_Commit_Date, @Material_No, @Item_Description, @Quantity, @Price, @Discount, @Final_Price, @SapSoNo, @CreateSoQty,@Inv_Qty,@Inv_Value,@WiproCatelog_No,@Batch_Code,
-                        @Batch_Date, @Main_Prodcode, @User_Name, @UpdatedBy, @IsDeleted",
+                        @Batch_Date, @Main_Prodcode,@Key, @User_Name, @UpdatedBy, @IsDeleted",
                     parameters
                 );
 
@@ -834,9 +842,9 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                     var compositeKey = $"{item.Material_No}";
 
-                    if (string.IsNullOrWhiteSpace(item.CCN_No))
+                    if (string.IsNullOrWhiteSpace(item.Material_No))
                     {
-                        result.FailedRecords.Add((item, "Missing CCN No."));
+                        result.FailedRecords.Add((item, "Missing Material No."));
                         continue;
                     }
 
@@ -889,6 +897,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         Batch_Code = item.Batch_Code,
                         Batch_Date = item.Batch_Date,
                         Main_Prodcode = item.Main_Prodcode,
+                        Key = item.Indent_No + item.Material_No,
                         User_Name = item.User_Name,
                         CreatedBy = item.CreatedBy,
                         CreatedDate = item.CreatedDate
@@ -1133,14 +1142,13 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 foreach (var item in listOfData)
                 {
-                    item.Key = item.Key?.Trim();
                     item.Inv_No = item.Inv_No?.Trim();
 
-                    var compositeKey = $"{item.Key}|{item.Inv_No}";
+                    var compositeKey = $"{item.Inv_No}";
 
-                    if (string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Inv_No))
+                    if (string.IsNullOrWhiteSpace(item.Inv_No))
                     {
-                        result.FailedRecords.Add((item, "Missing Key or Invoice No."));
+                        result.FailedRecords.Add((item, "Missing Invoice No."));
                         continue;
                     }
 
@@ -1155,7 +1163,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                     // Now check against database
                     bool existsInDb = await _dbContext.InvoiceList
-                        .AnyAsync(x => x.Key == item.Key && x.Inv_No == item.Inv_No);
+                        .AnyAsync(x => x.Inv_No == item.Inv_No);
 
                     if (existsInDb)
                     {
@@ -1166,14 +1174,14 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     // Passed all checks — add to DB
                     var entity = new Invoice_Service
                     {
-                        Key = item.Key,
+                        Key = item.Indent_No + item.Material_No,
                         Inv_No = item.Inv_No,
                         Inv_Date = item.Inv_Date,
                         Inv_Type = item.Inv_Type,
                         Sales_Order = item.Sales_Order,
                         Plant_Code = item.Plant_Code,
                         Plant_Name = item.Plant_Name,
-                        Material_No = item.Material_No = item.Material_No,
+                        Material_No = item.Material_No,
                         Dealer_Name = item.Dealer_Name,
                         End_Customer = item.End_Customer,
                         Collective_No = item.Collective_No,
@@ -1696,121 +1704,221 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
         }
 
         //// ----------------- Final Merge ------------------- ////
-        public async Task<List<FinalMergeServiceViewModel>> GetFinalMergeServiceAsync()
+        //public async Task<List<FinalMergeServiceViewModel>> GetFinalMergeServiceAsync()
+        //{
+        //    try
+        //    {
+        //        var connectionString = _dbContext.Database.GetConnectionString();
+
+        //        await using var connection = new SqlConnection(connectionString);
+        //        await connection.OpenAsync();
+
+        //        var result = await connection.QueryAsync<dynamic>("sp_Get_FinalMerge_Service", commandType: CommandType.StoredProcedure);
+
+        //        var finalList = result.Select(r => new FinalMergeServiceViewModel
+        //        {
+        //            CCN_No = r.CCN_No,
+        //            CCCNDate = r.CCCNDate,
+        //            ReportedBy = r.ReportedBy,
+        //            CLocation = r.CLocation,
+        //            CustName = r.CustName,
+        //            DealerName = r.DealerName,
+        //            CDescription = r.CDescription,
+        //            CStatus = r.CStatus,
+        //            Completion = r.Completion,
+        //            Remarks = r.Remarks,
+        //            TotalDays_Close = r.TotalDays_Close,
+
+        //            Final_Status = r.Final_Status,
+        //            Custome = r.Custome,
+        //            Open_Lead_Time = r.Open_Lead_Time,
+        //            Final_Lead_Time = r.Final_Lead_Time,
+        //            Range = r.Range,
+        //            Indent_No = r.Indent_No,
+        //            Indent_Date = r.Indent_Date,
+        //            Ind_CCN_No = r.Ind_CCN_No,
+        //            Material_No = r.Material_No,
+        //            Item_Description = r.Item_Description,
+        //            WiproCatelog_No = r.WiproCatelog_No,
+        //            Quantity = r.Quantity,
+        //            Key = r.Key,
+
+        //            Pc = r.Pc,
+        //            Fy = r.Fy,
+
+        //            Inv_Qty = r.Inv_Qty,
+        //            Bal_Qty = r.Bal_Qty,
+        //            Vendor = r.Vendor,
+        //            PONo = r.PONo,
+        //            PODate = r.PODate,
+        //            BalanceQty = r.BalanceQty,
+        //            BalanceValue = r.BalanceValue,
+        //            Closure_Range = r.Closure_Range,
+        //            Region = r.Region,
+        //            Closure_Type = r.Closure_Type,
+        //            Indent_Lead_time = r.Indent_Lead_time,
+        //            Inv_Lead_Time = r.Inv_Lead_Time,
+        //            Last_Inv_Date = r.Last_Inv_Date
+
+        //        }).ToList();
+
+        //        return finalList;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _systemLogService.WriteLog($"DeletePOAsync: {ex.Message}");
+        //        throw;
+        //    }
+        //}
+
+        public async Task<List<FinalMergeServiceViewModel>> GetFinalMergeServiceAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
-            var result = await _dbConnection.QueryAsync<dynamic>(
-                "sp_Get_FinalMerge_Service",
-                commandType: CommandType.StoredProcedure
-            );
-
-            var finalList = result.Select(r => new FinalMergeServiceViewModel
+            try
             {
-                Complaint = new ComplaintViewModel
-                {
-                    Id = r.Complaint_Id,
-                    CCCNDate = r.CCCNDate,
-                    ReportedBy = r.ReportedBy,
-                    CLocation = r.CLocation,
-                    CustName = r.CustName,
-                    DealerName = r.DealerName,
-                    CDescription = r.CDescription,
-                    CStatus = r.CStatus,
-                    Completion = r.Completion,
-                    CreatedDate = r.Complaint_CreatedDate,
-                    UpdatedDate = r.Complaint_UpdatedDate,
-                    CreatedBy = r.Complaint_CreatedBy,
-                    UpdatedBy = r.Complaint_UpdatedBy,
-                    Remarks = r.Remarks,
-                    Deleted = r.Complaint_IsDeleted,
-                    CCN_No = r.CCN_No,
-                    TotalDays_Close = r.TotalDays_Close
-                },
-                Indent = new IndentDumpViewModel
-                {
-                    Id = r.Indent_Id,
-                    Deleted = r.Indent_IsDeleted,
-                    Indent_No = r.Indent_No,
-                    Indent_Date = r.Indent_Date,
-                    Business_Unit = r.Business_Unit,
-                    Vertical = r.Vertical,
-                    Branch = r.Branch,
-                    Indent_Status = r.Indent_Status,
-                    End_Cust_Name = r.End_Cust_Name,
-                    Customer_Code = r.Customer_Code,
-                    Customer_Name = r.Customer_Name,
-                    Bill_Req_Date = r.Bill_Req_Date,
-                    Created_By = r.Created_By,
-                    Wipro_Commit_Date = r.Wipro_Commit_Date,
-                    Material_No = r.Material_No,
-                    Item_Description = r.Item_Description,
-                    Quantity = r.Quantity,
-                    Price = r.Price,
-                    Final_Price = r.Final_Price,
-                    SapSoNo = r.SapSoNo,
-                    CreateSoQty = r.CreateSoQty,
-                    Inv_Qty = r.Inv_Qty,
-                    Inv_Value = r.Inv_Value,
-                    WiproCatelog_No = r.WiproCatelog_No,
-                    Batch_Code = r.Batch_Code,
-                    Batch_Date = r.Batch_Date,
-                    Main_Prodcode = r.Main_Prodcode,
-                    User_Name = r.User_Name,
-                    CreatedBy = r.Indent_CreatedBy,
-                    CreatedDate = r.Indent_CreatedDate,
-                    UpdatedBy = r.Indent_UpdatedBy,
-                    UpdatedDate = r.Indent_UpdatedDate,
-                    Discount = r.Discount
-                },
-                PO = new PendingPoViewModel
-                {
-                    Id = r.PO_Id,
-                    Vendor = r.Vendor,
-                    Material = r.Material,
-                    ReferenceNo = r.ReferenceNo,
-                    PONo = r.PONo,
-                    PODate = r.PODate,
-                    PRNo = r.PRNo,
-                    BatchNo = r.BatchNo,
-                    POQty = r.POQty,
-                    BalanceQty = r.BalanceQty,
-                    Destination = r.Destination,
-                    BalanceValue = r.BalanceValue,
-                    CreatedBy = r.PO_CreatedBy,
-                    CreatedDate = r.PO_CreatedDate,
-                    UpdatedBy = r.PO_UpdatedBy,
-                    UpdatedDate = r.PO_UpdatedDate,
-                    IsDelete = r.PO_IsDeleted
-                },
-                Invoice = new InvoiceListViewModel
-                {
-                    Id = r.Inv_Id,
-                    Deleted = r.Inv_IsDeleted,
-                    Key = r.Inv_Key,
-                    Inv_No = r.Inv_No,
-                    Inv_Date = r.Inv_Date,
-                    Inv_Type = r.Inv_Type,
-                    Sales_Order = r.Sales_Order,
-                    Plant_Code = r.Plant_Code,
-                    Material_No = r.Inv_Material_No,
-                    Dealer_Name = r.Inv_Dealer_Name,
-                    End_Customer = r.Inv_End_Customer,
-                    Collective_No = r.Collective_No,
-                    Indent_No = r.Inv_Indent_No,
-                    Quantity = r.Inv_Quantity,
-                    Cost = r.Inv_Cost,
-                    CreatedBy = r.Inv_CreatedBy,
-                    CreatedDate = r.Inv_CreatedDate,
-                    UpdatedBy = r.Inv_UpdatedBy,
-                    UpdatedDate = r.Inv_UpdatedDate,
-                    Plant_Name = r.Inv_Plant_Name
-                }
-            }).ToList();
+                var connectionString = _dbContext.Database.GetConnectionString();
 
-            return finalList;
-        }   
+                await using var connection = new SqlConnection(connectionString);
+                await connection.OpenAsync();
+
+                var result = await connection.QueryAsync<dynamic>(
+                    "sp_Get_FinalMerge_Service",
+                    commandType: CommandType.StoredProcedure
+                );
+
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    result = result.Where(x =>
+                    {
+                        DateTime? cccnDate = x.CCCNDate as DateTime?;
+                        return cccnDate.HasValue &&
+                               cccnDate.Value.Date >= startDate.Value.Date &&
+                               cccnDate.Value.Date <= endDate.Value.Date;
+                    }).ToList();
+                }
+
+                var finalList = new List<FinalMergeServiceViewModel>();
+                int rowIndex = 0;
+
+                foreach (var r in result)
+                {
+                    rowIndex++;
+                    var row = (IDictionary<string, object>)r;
+
+                    try
+                    {
+                        finalList.Add(new FinalMergeServiceViewModel
+                        {
+                            CCN_No = Get<string>(row, "CCN_No"),
+                            CCCNDate = Get<DateTime?>(row, "CCCNDate"),
+                            ReportedBy = Get<string>(row, "ReportedBy"),
+                            CLocation = Get<string>(row, "CLocation"),
+                            CustName = Get<string>(row, "CustName"),
+                            DealerName = Get<string>(row, "DealerName"),
+                            CDescription = Get<string>(row, "CDescription"),
+                            CStatus = Get<string>(row, "CStatus"),
+                            Completion = Get<DateTime?>(row, "Completion"),
+                            Remarks = Get<string>(row, "Remarks"),
+                            TotalDays_Close = Get<int?>(row, "TotalDays_Close"),
+                            Final_Status = Get<string>(row, "Final_Status"),
+                            Custome = Get<DateTime?>(row, "Custome"),
+                            Open_Lead_Time = Get<int?>(row, "Open_Lead_Time"),
+                            Final_Lead_Time = Get<int?>(row, "Final_Lead_Time"),
+                            Range = Get<string>(row, "Range"),
+
+                            Indent_No = Get<string>(row, "Indent_No"),
+                            Indent_Date = Get<DateTime?>(row, "Indent_Date"),
+                            Ind_CCN_No = Get<string>(row, "Ind_CCN_No"),
+                            Material_No = Get<string>(row, "Material_No"),
+                            Item_Description = Get<string>(row, "Item_Description"),
+                            WiproCatelog_No = Get<string>(row, "WiproCatelog_No"),
+                            Quantity = Get<int?>(row, "Quantity"),
+                            Key = Get<string>(row, "Key"),
+                            Pc = Get<string>(row, "Pc"),
+                            Fy = Get<string>(row, "Fy"),
+                            Inv_Qty = Get<int?>(row, "Inv_Qty"),
+                            Bal_Qty = Get<int?>(row, "Bal_Qty"),
+                            Vendor = Get<string>(row, "Vendor"),
+                            PONo = Get<string>(row, "PONo"),
+                            PODate = Get<DateTime?>(row, "PODate"),
+                            BalanceQty = Get<string>(row, "BalanceQty"),
+                            BalanceValue = Get<string?>(row, "BalanceValue"),
+                            Closure_Range = Get<string>(row, "Closure_Range"),
+                            Region = Get<string>(row, "Region"),
+                            Closure_Type = Get<string>(row, "Closure_Type"),
+                            Indent_Lead_Time = Get<int?>(row, "Indent_Lead_Time"),
+                            Inv_Lead_Time = Get<int?>(row, "Inv_Lead_Time"),
+                            Last_Inv_Date = Get<DateTime?>(row, "Last_Inv_Date"),
+                        });
+                    }
+                    catch (Exception ex)
+                    {
+                        // Bubble up with row index for quick pinpointing
+                        throw new InvalidOperationException($"Row {rowIndex}: {ex.Message}", ex);
+                    }
+                }
+
+                return finalList;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog($"GetFinalMergeServiceAsync error: {ex}");
+                throw;
+            }
+        }
+
+
+        /// <summary>
+        /// Safely gets and converts a field from a Dapper dynamic row (IDictionary<string, object>).
+        /// If conversion fails, throws with detailed info: field name, value, and actual value type.
+        /// Handles null/DBNull, Nullable<T>, enums, and common conversions (string->number/date).
+        /// </summary>
+        private static T Get<T>(IDictionary<string, object> row, string name)
+        {
+            if (!row.TryGetValue(name, out var value) || value == null || value is DBNull)
+                return default!;
+
+            var targetType = Nullable.GetUnderlyingType(typeof(T)) ?? typeof(T);
+
+            try
+            {
+                // Already the right type
+                if (targetType.IsInstanceOfType(value))
+                    return (T)value;
+
+                // Enums
+                if (targetType.IsEnum)
+                {
+                    if (value is string s)
+                        return (T)Enum.Parse(targetType, s, ignoreCase: true);
+                    return (T)Enum.ToObject(targetType, Convert.ChangeType(value, Enum.GetUnderlyingType(targetType), CultureInfo.InvariantCulture));
+                }
+
+                // Dates
+                if (targetType == typeof(DateTime))
+                {
+                    if (value is DateTime dt) return (T)(object)dt;
+                    if (value is string ds && DateTime.TryParse(ds, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, out var parsedDt))
+                        return (T)(object)parsedDt;
+                }
+
+                // Numeric conversions / general
+                var converted = Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+                return (T)converted;
+            }
+            catch (Exception convEx)
+            {
+                var actualType = value?.GetType().FullName ?? "null";
+                var actualVal = value?.ToString() ?? "null";
+                throw new InvalidOperationException(
+                    $"Failed to map field '{name}' to {typeof(T).FullName}. Value='{actualVal}', ActualType='{actualType}'.",
+                    convEx
+                );
+            }
+        }
 
         //// ----------------- Final Merge ------------------- ////
-
     }
+
 }
 

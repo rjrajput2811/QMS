@@ -11,7 +11,7 @@ namespace QMS.Core.Repositories.BisProjectTracRepository
 {
     public interface IBisProjectTracRepository
     {
-        Task<List<BisProjectTracViewModel>> GetListAsync();
+        Task<List<BisProjectTracViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null);
         Task<OperationResult> CreateAsync(BisProject_Tracker bisProject, bool returnCreatedRecord = false);
         Task<OperationResult> UpdateAsync(BisProject_Tracker bisProject, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int Id);

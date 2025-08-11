@@ -44,9 +44,9 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetAll()
+        public async Task<JsonResult> GetAll(DateTime? startDate, DateTime? endDate)
         {
-            var bisProjectList = await _bisProjectRepository.GetListAsync();
+            var bisProjectList = await _bisProjectRepository.GetListAsync(startDate, endDate);
             return Json(bisProjectList);
         }
 

@@ -17,6 +17,7 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
         Task<ThirdPartyInspection> GetByIdAsync(int inspectionId);
         Task<bool> CheckDuplicate(string projectName, int inspectionId);
         Task<bool> UpdateAttachmentAsync(int id, string fileName);
+        Task<BulkTPICreateResult> BulkTPICreateAsync(List<ThirdPartyInspectionViewModel> listOfData, string fileName, string uploadedBy, string recordType);
 
     }
 }

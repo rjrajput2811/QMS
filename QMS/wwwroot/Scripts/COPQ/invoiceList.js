@@ -149,7 +149,8 @@ function renderInvoiceTable(response) {
             }
         },
         { title: "SNo", field: "Sr_No", frozen: true, sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
-        editableColumn("Key", "Key"),
+        { title: "Key", field: "Key", frozen: true, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
+        //editableColumn("Key", "Key"),
         editableColumn("Invoice Date", "Inv_Date", "date", "center"),
         editableColumn("Invoice No.", "Inv_No"),
         editableColumn("Invoice Type", "Inv_Type"),
@@ -276,7 +277,11 @@ function InsertUpdateInvoice(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-                loadInvoiceData();
+                //loadInvoiceData();
+                if (isNew) {
+                    showSuccessAlert("Saved successfully!.");
+                    loadInvoiceData();
+                }
             } else {
                 showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
             }
@@ -388,7 +393,7 @@ function BlankInvDown() {
     Blockloadershow();
 
     var expectedColumns = [
-        'Key', 'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Dealer Name', 'End Customer ',
+        'Invoice No.', 'Invoice Type', 'Sales Order', 'Plant Code', 'Plant Name', 'Material No.', 'Dealer Name', 'End Customer ',
         'Collective No', 'Indent No', 'Invoice Date', 'Quantity', 'Cost'
     ];
 

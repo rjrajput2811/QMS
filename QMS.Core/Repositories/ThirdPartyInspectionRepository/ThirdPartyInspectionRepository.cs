@@ -372,5 +372,109 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                 throw;
             }
         }
+
+        public async Task<BulkTPICreateResult> BulkTPICreateAsync(List<ThirdPartyInspectionViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+        {
+            var result = new BulkTPICreateResult();
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+
+                foreach (var item in listOfData)
+                {
+                    item.ProjectName = item.ProjectName;
+                    item.ProductCode = item.ProductCode?.Trim();
+
+                    var compositeKey = $"{item.ProjectName}|{item.ProductCode}";
+
+                    if (string.IsNullOrWhiteSpace(item.ProjectName) || string.IsNullOrWhiteSpace(item.ProductCode))
+                    {
+                        result.FailedRecords.Add((item, "Missing ProjectName or ProductCode"));
+                        continue;
+                    }
+
+                    // Check if this key combination has already been seen in the batch
+                    if (seenKeys.Contains(compositeKey))
+                    {
+                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+                        continue;
+                    }
+
+                    seenKeys.Add(compositeKey); // Mark this combination as seen
+
+                    // Now check against database
+                    bool existsInDb = await _dbContext.ThirdPartyInspections
+                        .AnyAsync(x => x.ProjectName == item.ProjectName && x.ProductCode == item.ProductCode);
+
+                    if (existsInDb)
+                    {
+                        result.FailedRecords.Add((item, "Duplicate in database"));
+                        continue;
+                    }
+
+                    // Passed all checks — add to DB
+                    var entity = new ThirdPartyInspection
+                    {
+                        InspectionDate = item.InspectionDate,
+                        ProjectName = item.ProjectName,
+                        InspName = item.InspName,
+                        ProductCode = item.ProductCode,
+                        ProdDesc = item.ProdDesc,
+                        LOTQty = item.LOTQty,
+                        ProjectValue = item.ProjectValue,
+                        Tpi_Duration = item.Tpi_Duration,
+                        Location = item.Location,
+                        Mode = item.Mode,
+                        FirstAttempt = item.FirstAttempt,
+                        Remark = item.Remark,
+                        ActionPlan = item.ActionPlan,
+                        MOMDate = item.MOMDate,
+                        CreatedBy = item.CreatedBy,
+                        CreatedDate = item.CreatedDate
+                    };
+
+                    _dbContext.ThirdPartyInspections.Add(entity);
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                // Log the upload
+                var importLog = new FailedRecord_Log
+                {
+                    FileName = fileName,
+                    TotalRecords = listOfData.Count,
+                    ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+                    FailedRecords = result.FailedRecords.Count,
+                    RecordType = recordType,
+                    UploadedBy = uploadedBy,
+                    UploadedAt = DateTime.Now
+                };
+
+                _dbContext.FailedRecord_Log.Add(importLog);
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                result.Result = new OperationResult
+                {
+                    Success = true,
+                    Message = result.FailedRecords.Any()
+                        ? "Import completed with some skipped records."
+                        : "All records imported successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                result.Result = new OperationResult
+                {
+                    Success = false,
+                    Message = "Error during import: " + ex.Message
+                };
+            }
+
+            return result;
+        }
     }
 }

@@ -16,6 +16,7 @@
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
 <script src="~/js/xlsx.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
 
@@ -62,6 +63,44 @@
         margin-bottom: 0.5rem; /* Reduce space between each input group */
     }
 
+    .calendar-container {
+        cursor: pointer;
+        padding: 8px 8px;
+        width: 100%;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        gap: 8px;
+        border: 1px solid slategray;
+    }
+
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+            padding-left: 20px;
+        }
+
+        .calendar-container span {
+            color: #4682B4;
+            margin: 0;
+            font-size: 16px;
+        }
+
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
+    .month-item {
+        font-size: 14px;
+    }
+
     /* .tabulator .tabulator-header .tabulator-col {
         font-size: 14px;
         color: #D6E4F0 !important;
@@ -85,7 +124,12 @@
             <div>
                 <b style="font-size: large;color: #4682B4;">Bis Project Tracker</b>
             </div>
-
+            <div class="col-md-3">
+                <div id="customDateTriggerBIS" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeBIS">Select Date Range</span>
+                </div>
+            </div>
             <div>
                 <button id="addBISButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
@@ -103,6 +147,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="chart-container">
+                       
                         <div class="form-group row">
                             <div id="bisProject_Table" class="col-12"></div>
                         </div>
@@ -137,6 +182,11 @@
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Moment.js and Litepicker -->
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
     <script src="~/scripts/bisprojecttracker/bisproject.js" asp-append-version="true"></script>
 }

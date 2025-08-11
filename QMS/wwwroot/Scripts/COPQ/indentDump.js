@@ -107,6 +107,7 @@ function renderIndentTable(response) {
         tabledata.push({
             Sr_No: index + 1,
             Id: item.id,
+            Key : item.key,
             Indent_No : item.indent_No,
             Indent_Date : item.indent_Date ? new Date(item.indent_Date).toLocaleDateString("en-GB") : "",
             Business_Unit : item.business_Unit,
@@ -163,6 +164,7 @@ function renderIndentTable(response) {
             }
         },
         { title: "SNo", field: "Sr_No", frozen: true, sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
+        { title: "Key", field: "Key", frozen: true, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "center" },
         editableColumn("Indent No", "Indent_No"),
         editableColumn("Indent Date", "Indent_Date", "date", "center"),
         editableColumn("Business Unit", "Business_Unit"),
@@ -207,7 +209,11 @@ function renderIndentTable(response) {
             paginationSizeSelector: [10, 50, 100, 500],
             paginationCounter: "rows",
             placeholder: "No data available",
-            columns: columns
+            columns: columns,
+            keybindings: {
+                navNext: "enter",
+                navPrev: "enter"
+            }
         });
 
         tableIndent.on("cellEdited", function (cell) {
@@ -218,6 +224,7 @@ function renderIndentTable(response) {
             const newRow = {
                 Id: 0,
                 Sr_No: tableIndent.getDataCount() + 1,
+                Key: "",
                 Indent_No     : "",
                 Indent_Date   : "",
                 Business_Unit : "",
@@ -278,7 +285,7 @@ function editableColumn(title, field, editorType = true, align = "center", heade
 function InsertUpdateIndentDump(rowData) {
 
     function toIsoDate(value) {
-        if (!value) return "";
+        if (!value) return null;
         const parts = value.split('/');
         return parts.length === 3 ? `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}` : value;
     }
@@ -302,16 +309,17 @@ function InsertUpdateIndentDump(rowData) {
         Wipro_Commit_Date: toIsoDate(rowData.Wipro_Commit_Date),
         Material_No: rowData.Material_No || null,
         Item_Description: rowData.Item_Description || null,
-        Quantity: rowData.Quantity || "",
+        Quantity: rowData.Quantity || 0,
         Price: rowData.Price || null,
         Final_Price: rowData.Final_Price || null,
         SapSoNo: rowData.SapSoNo || null,
-        CreateSoQty: rowData.CreateSoQty || "",
-        Inv_Qty: rowData.Inv_Qty || "",
+        CreateSoQty: rowData.CreateSoQty || 0,
+        Inv_Qty: rowData.Inv_Qty || 0,
         Inv_Value: rowData.Inv_Value || null,
         WiproCatelog_No: rowData.WiproCatelog_No || null,
         Batch_Code: rowData.Batch_Code || null,
         Batch_Date: toIsoDate(rowData.Batch_Date),
+        Key : null,
         Main_Prodcode: rowData.Main_Prodcode || null,
         User_Name: rowData.User_Name || null
     };
@@ -326,7 +334,11 @@ function InsertUpdateIndentDump(rowData) {
         contentType: 'application/json',
         success: function (data) {
             if (data.success) {
-                loadIndentData();
+                //loadIndentData();
+                if (isNew) {
+                    showSuccessAlert("Saved successfully!.");
+                    loadIndentData();
+                }
             } else {
                 showDangerAlert(data.message || (isNew ? "Create failed." : "Update failed."));
             }

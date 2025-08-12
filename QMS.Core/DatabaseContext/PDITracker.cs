@@ -19,52 +19,27 @@ namespace QMS.Core.DatabaseContext
         public override bool Deleted { get; set; }
         //------------ END overrides --------
 
-        [StringLength(50)]
         public string? PC { get; set; }
-
         public DateTime? DispatchDate { get; set; }
-
-        [StringLength(100)]
         public string? ProductCode { get; set; }
-
-        [StringLength(550)]
         public string? ProductDescription { get; set; }
-
-        [StringLength(100)]
         public string? BatchCodeVendor { get; set; }
-
-        [StringLength(100)]
         public string? PONo { get; set; }
-
         public DateTime? PDIDate { get; set; }
-
-        [StringLength(100)]
         public string? PDIRefNo { get; set; }
-
         public int? OfferedQty { get; set; }
-
         public int? ClearedQty { get; set; }
-
         public bool? BISCompliance { get; set; }
-
-        [StringLength(100)]
         public string? InspectedBy { get; set; }
-
-        [StringLength(255)]
         public string? Remark { get; set; }
         public string? Attahcment { get; set; }
         public string? Document_No { get; set; }
         public string? Revision_No { get; set; }
         public DateTime? Effective_Date { get; set; }
         public DateTime? Revision_Date { get; set; }
-
-        [StringLength(50)]
         public string? CreatedBy { get; set; }
-
         public DateTime? CreatedDate { get; set; }
-
         public string? UpdatedBy { get; set; }
-
         public DateTime? UpdatedDate { get; set; }
        
     }

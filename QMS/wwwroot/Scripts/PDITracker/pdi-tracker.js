@@ -254,17 +254,17 @@ function OnTabGridLoad(response) {
                 ProductDescription: item.productDescription || "",
                 BatchCodeVendor: item.batchCodeVendor || "",
                 PONo: item.poNo || "",
-                PDIDate: formatDate(item.pdiDate),
+                PDIDate: formatDate(item.pdiDate), 
                 PDIRefNo: item.pdiRefNo || "",
-                OfferedQty: item.offeredQty,
-                ClearedQty: item.clearedQty,
+                OfferedQty: item.offeredQty || 0,
+                ClearedQty: item.clearedQty || 0,
                 BISCompliance: item.bisCompliance,
                 InspectedBy: item.inspectedBy || "",
                 Remark: item.remark || "",
                 Attahcment: item.attahcment || "",
                 Document_No: item.document_No || "",
                 Revision_No: item.revision_No || "",
-                Effective_Date: formatDate(item.effective_Date),
+                Effective_Date: formatDate(item.effective_Date), 
                 Revision_Date: formatDate(item.revision_Date),
                 UpdatedDate: item.updatedDate || "",
                 CreatedDate: item.createdDate || "",
@@ -282,7 +282,7 @@ function OnTabGridLoad(response) {
             headerMenu: headerMenu,
             formatter: function (cell) {
                 const rowData = cell.getRow().getData();
-                return `<i onclick="delConfirm(${rowData.PDIId},this)" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
+                return `<i onclick="delConfirm(${rowData.Id},this)" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
             }
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
@@ -388,34 +388,34 @@ function OnTabGridLoad(response) {
         // Handle cell edit event
         table.on("cellEdited", function (cell) {
             debugger
-            saveEditedRow(cell.getRow().getData());
+            saveEditedPDIRow(cell.getRow().getData());
+        });
+
+        $("#addPDIButton").on("click", function () {
+            const newRow = {
+                Id: 0,
+                Sr_No: table.getDataCount() + 1,
+                PC: "",
+                DispatchDate: "",
+                ProductDescription: "",
+                BatchCodeVendor: "",
+                PONo: "",
+                PDIDate: "",
+                PDIRefNo: "",
+                OfferedQty: "",
+                ClearedQty: "",
+                BISCompliance: false,
+                InspectedBy: "",
+                Remark: "",
+                Attahcment: "",
+                Document_No: "",
+                Revision_No: "",
+                Effective_Date: "",
+                Revision_Date: "",
+            };
+            table.addRow(newRow, false); // false = add to bottom
         });
     }
-
-    $("#addPDIButton").on("click", function () {
-        const newRow = {
-            Id: 0,
-            Sr_No: table.getDataCount() + 1,
-            PC: "",
-            DispatchDate: "",
-            ProductDescription: "",
-            BatchCodeVendor: "",
-            PONo: "",
-            PDIDate: "",
-            PDIRefNo: "",
-            OfferedQty: "",
-            ClearedQty: "",
-            BISCompliance: false,
-            InspectedBy: "",
-            Remark: "",
-            Attahcment: "",
-            Document_No: "",
-            Revision_No: "",
-            Effective_Date: "",
-            Revision_Date: "",
-        };
-        table.addRow(newRow, false); // false = add to bottom
-    });
 
     Blockloaderhide();
 }
@@ -498,10 +498,10 @@ function editableColumn(title, field, editorType = true, align = "center", heade
     return columnDef;
 }
 
-function delConfirm(PDIId, element) {
+function delConfirm(Id, element) {
 
 
-    if (!PDIId || PDIId <= 0) {
+    if (!Id || Id <= 0) {
         const rowEl = $(element).closest(".tabulator-row")[0];
         const row = table.getRow(rowEl);
         if (row) {
@@ -523,7 +523,7 @@ function delConfirm(PDIId, element) {
         $.ajax({
             url: '/PDITracker/Delete',
             type: 'POST',
-            data: { id: PDIId },
+            data: { id: Id },
             success: function (data) {
                 if (data.success) {
                     showSuccessAlert("Deleted successfully.");
@@ -567,41 +567,52 @@ Tabulator.extendModule("edit", "editors", {
     }
 });
 
-function saveEditedRow(rowData) {
-    function emptyToNull(value) {
-        return value === "" ? null : value;
+function saveEditedPDIRow(rowData) {
+    debugger
+    if (!rowData) {
+        showDangerAlert("Invalid data provided.");
+        return;
     }
 
-    // Converts "dd/MM/yyyy" to "yyyy-MM-dd"
+    Blockloadershow();
+    var errorMsg = "";
+
+    if (errorMsg !== "") {
+        Blockloaderhide();
+        showDangerAlert(errorMsg);
+        return false;
+    }
+
     function toIsoDate(value) {
-        if (!value) return null;
-        const parts = value.split('/');
-        if (parts.length === 3) {
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        if (!value || value === "" || value === "Invalid Date") return null;
+
+        if (typeof value === "string" && value.includes("/")) {
+            const parts = value.split("/");
+            if (parts.length === 3) {
+                const [day, month, year] = parts;
+                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            }
         }
-        return null;
+
+        const parsed = new Date(value);
+        return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
     }
 
     const cleanedData = {
         Id: rowData.Id || 0,
-        PC: rowData.PC || "",
-        DispatchDate: toIsoDate(rowData.DispatchDate) || null,
-        ProductCode: rowData.ProductCode || "",
-        ProductDescription: rowData.ProductDescription || "",
-        BatchCodeVendor: rowData.BatchCodeVendor || "",
-        PONo: rowData.PONo || "",
-        PDIDate: toIsoDate(rowData.PDIDate) || null,
-        PDIRefNo: rowData.PDIRefNo || "",
-        OfferedQty: emptyToNull(rowData.OfferedQty),
-        ClearedQty: emptyToNull(rowData.ClearedQty),
+        PC: rowData.PC || null,
+        DispatchDate: toIsoDate(rowData.DispatchDate),
+        ProductCode: rowData.ProductCode || null,
+        ProductDescription: rowData.ProductDescription || null,
+        BatchCodeVendor: rowData.BatchCodeVendor || null,
+        PONo: rowData.PONo || null,
+        PDIDate: toIsoDate(rowData.PDIDate),
+        PDIRefNo: rowData.PDIRefNo || null,
+        OfferedQty: rowData.OfferedQty || 0,
+        ClearedQty: rowData.ClearedQty || 0,
         BISCompliance: rowData.BISCompliance || false,
-        InspectedBy: rowData.InspectedBy || "",
-        Remark: rowData.Remark || "",
-        Attahcment: rowData.Attahcment || null,
-        Document_No: rowData.Document_No || "",
-        Revision_No: rowData.Revision_No || "",
-        Effective_Date: toIsoDate(rowData.Effective_Date),
-        Revision_Date: toIsoDate(rowData.Revision_Date),
+        InspectedBy: rowData.InspectedBy || null,
+        Remark: rowData.InspectedBy || null,
     };
 
     console.log("Cleaned data:", cleanedData);
@@ -618,9 +629,6 @@ function saveEditedRow(rowData) {
             if (data.success) {
                 if (isNew) {
                     loadData();
-                }
-                if (isNew && data.id) {
-                    rowData.PDIId = data.id;
                 }
             } else {
                 var errorMessg = "";

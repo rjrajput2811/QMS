@@ -753,7 +753,8 @@ function InsertUpdateBisProject(rowData) {
         Revision_Date: toIsoDate(rowData.Revision_Date)
     };
 
-    var ajaxUrl = Model.Id === 0 ? '/BisProjectTrac/Create' : '/BisProjectTrac/Update';
+    const isNew = Model.Id === 0;
+    var ajaxUrl = isNew ? '/BisProjectTrac/Create' : '/BisProjectTrac/Update';
 
     $.ajax({
         url: ajaxUrl,
@@ -763,11 +764,15 @@ function InsertUpdateBisProject(rowData) {
         success: function (response) {
             Blockloaderhide();
             if (response.success) {
-                const msg = Model.Id != 0
-                    ? "BIS Project Tracker updated successfully!"
-                    : "BIS Project Tracker saved successfully!";
-                showSuccessAlert(msg);
-                loadData();
+                //const msg = Model.Id != 0
+                //    ? "BIS Project Tracker updated successfully!"
+                //    : "BIS Project Tracker saved successfully!";
+                //showSuccessAlert(msg);
+                //loadData();
+                if (isNew) {
+                    showSuccessAlert("Saved successfully!.");
+                    loadData();
+                }
             }
             else if (response.message === "Exist") {
                 showDangerAlert("BIS Project Tracker Detail already exists.");

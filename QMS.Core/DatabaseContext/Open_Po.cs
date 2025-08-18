@@ -42,7 +42,23 @@ namespace QMS.Core.DatabaseContext
         public string? Material { get; set; }
         public DateTime? Hold_Date { get; set; }
         public DateTime? Cleared_Date { get; set; }
+
+        public string? Key1 { get; set; }
+        public DateTime? Comit_Date { get; set; }
+        public int? Comit_Qty { get; set; }
+        public int? Comit_Planner_Qty { get; set; }
+        public DateTime? Comit_Planner_date { get; set; }
+        public DateTime? Comit_Vendor_Date { get; set; }
+        public int? Comit_Vendor_Qty { get; set; }
+        public string? Comit_Planner_Remark { get; set; }
+        public DateTime? Comit_Date1 { get; set; }
+        public int? Comit_Qty1 { get; set; }
+        public DateTime? Comit_Final_Date { get; set; }
+        public int? Comit_Final_Qty { get; set; }
+
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
     }
 }

@@ -550,6 +550,20 @@
                         Material: item.material,
                         Hold_Date: formatDate(item.hold_Date),
                         Cleared_Date: formatDate(item.cleared_Date),
+
+                        Key1 : item.key1,
+                        Comit_Date : formatDate(item.comit_Date),
+                        Comit_Qty : item.comit_Qty,
+                        Comit_Planner_Qty : item.comit_Planner_Qty,
+                        Comit_Planner_date : formatDate(item.comit_Planner_date),
+                        Comit_Vendor_Date : formatDate(item.comit_Vendor_Date),
+                        Comit_Vendor_Qty : item.comit_Vendor_Qty,
+                        Comit_Planner_Remark : item.comit_Planner_Remark,
+                        Comit_Date1 : formatDate(item.comit_Date1),
+                        Comit_Qty1 : item.comit_Qty1,
+                        Comit_Final_Date : formatDate(item.comit_Final_Date),
+                        Comit_Final_Qty : item.comit_Final_Qty,
+
                         CreatedBy: item.createdBy,
                         CreatedDate : formatDate(item.createdDate),
                         _children: []
@@ -581,6 +595,10 @@
 
             window.PendTSTableData = JSON.parse(JSON.stringify(tabledata));
 
+                function isEditable(cell) {
+                    const value = cell.getValue();
+                    return value == null || value === "" || Number.isNaN(value)|| value === 0 ;
+                }
 
                 if (userType != "Vendor") {
 
@@ -615,6 +633,7 @@
 
                     if (userType != "Vendor") {
                         columns.push({ title: "Key", field: "Key"/* , width: 110 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
+                        columns.push({ title: "Key1", field: "Key1"/* , width: 110 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "PR Type", field: "PR_Type"/* , width: 160 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "PR Description", field: "PR_Desc"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "Requisitioner", field: "Requisitioner"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
@@ -712,6 +731,17 @@
 
                     if (userType != "Vendor")
                     {
+                        columns.push({ title: "1st Commitment Date", field: "Comit_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
+                        columns.push({ title: "1st Commitment Qty", field: "Comit_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
+                        columns.push({ title: "2nd Commitment Date", field: "Comit_Date1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
+                        columns.push({ title: "2nd Commitment Qty", field: "Comit_Qty1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
+                        columns.push({ title: "Final Commitment Date", field: "Comit_Final_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
+                        columns.push({ title: "Final Commitment Qty", field: "Comit_Final_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
+                        columns.push({ title: "Planner Date", field: "Comit_Planner_date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
+                        columns.push({ title: "Planner Qty", field: "Comit_Planner_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
+                        columns.push({ title: "Planner Remark", field: "Comit_Planner_Remark", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "center", editor: "input", editable: isEditable });
+                        columns.push({ title: "Vendor Date", field: "Comit_Vendor_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
+                        columns.push({ title: "Vendor Qty", field: "Comit_Vendor_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
                         columns.push({ title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     }
 
@@ -735,6 +765,15 @@
                     dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
                     index: "Id", // This tells Tabulator to use `Id` as the unique row key
                     columns: columns
+                });
+
+
+                table.on("cellEdited", function (cell) {
+                    // let columnField = cell.getColumn().getField(); // Get the column index
+                    // if (columnField !== "Action" && columnField !== "Delivery_Date") {
+                    //     saveEditedRow(cell.getRow().getData());
+                    // }
+                    saveEditedRow(cell.getRow().getData());
                 });
 
                 // table.on("cellClick", function (e, cell) {
@@ -952,6 +991,81 @@
                      {
                         loadData();
                      }
+                }
+            });
+        }
+
+        function saveEditedRow(rowData) {
+            debugger
+            if (!rowData) {
+                showDangerAlert("Invalid data provided.");
+                return;
+            }
+
+            Blockloadershow();
+            var errorMsg = "";
+
+            if (errorMsg !== "") {
+                Blockloaderhide();
+                showDangerAlert(errorMsg);
+                return false;
+            }
+
+            function toIsoDate(value) {
+                if (!value || value === "" || value === "Invalid Date") return null;
+
+                if (typeof value === "string" && value.includes("/")) {
+                    const parts = value.split("/");
+                    if (parts.length === 3) {
+                        const [day, month, year] = parts;
+                        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+                    }
+                }
+
+                const parsed = new Date(value);
+                return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
+            }
+
+            var Model = {
+                Id: rowData.Id || 0,
+                Comit_Date: toIsoDate(rowData.Comit_Date),
+                Comit_Qty: rowData.Comit_Qty || 0,
+                Comit_Planner_Qty: rowData.Comit_Planner_Qty || 0,
+                Comit_Planner_date: toIsoDate(rowData.Comit_Planner_date),
+                Comit_Vendor_Date: toIsoDate(rowData.Comit_Vendor_Date),
+                Comit_Vendor_Qty: rowData.Comit_Vendor_Qty || 0,
+                Comit_Planner_Remark: rowData.Comit_Planner_Remark || null,
+                Comit_Date1: toIsoDate(rowData.Comit_Date1),
+                Comit_Qty1: toIsoDate(rowData.Comit_Qty1),
+                Comit_Final_Date: toIsoDate(rowData.Comit_Final_Date),
+                Comit_Final_Qty: rowData.Comit_Final_Qty || 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Update", "OpenPo")',
+                type: "POST",
+                data: JSON.stringify(Model),
+                contentType: 'application/json',
+                success: function (response) {
+                    Blockloaderhide();
+                    if (response.success) {
+                        showSuccessAlert('<i class="fa fa-check-circle" style="color:green; font-size:24px;"></i>');
+                    }
+                    else {
+                        let errorMessg = "";
+                        if (response.errors) {
+                            for (var error in response.errors) {
+                                if (response.errors.hasOwnProperty(error)) {
+                                    errorMessg += `${response.errors[error]}\n`;
+                                }
+                            }
+                        }
+                        showDangerAlert(errorMessg || response.message || "An error occurred while updating.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
                 }
             });
         }

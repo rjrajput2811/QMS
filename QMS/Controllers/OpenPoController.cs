@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
+using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.OpenPoRepository;
 using QMS.Core.Services.SystemLogs;
@@ -392,6 +393,22 @@ namespace QMS.Controllers
             };
 
             return Json(response);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateAsync([FromBody] Open_Po model)
+        {
+            if (ModelState.IsValid)
+            {
+                model.UpdatedDate = DateTime.Now;
+                model.UpdatedBy = HttpContext.Session.GetString("FullName");
+
+                var operationResult = await _openPoReposiotry.UpdateAsync(model);
+
+                return Json(operationResult);
+            }
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
         }
     }
 }

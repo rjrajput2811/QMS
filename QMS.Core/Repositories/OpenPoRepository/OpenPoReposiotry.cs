@@ -58,8 +58,25 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Material = data.Material,
                     Hold_Date = data.Hold_Date,
                     Cleared_Date = data.Cleared_Date,
+
+                    Key1 = data.Key1,
+                    Comit_Date = data.Comit_Date,
+                    Comit_Qty = data.Comit_Qty,
+                    Comit_Planner_Qty = data.Comit_Planner_Qty,
+                    Comit_Planner_date = data.Comit_Planner_date,
+                    Comit_Vendor_Date = data.Comit_Vendor_Date,
+                    Comit_Vendor_Qty = data.Comit_Vendor_Qty,
+                    Comit_Planner_Remark = data.Comit_Planner_Remark,
+                    Comit_Date1 = data.Comit_Date1,
+                    Comit_Qty1 = data.Comit_Qty1,
+                    Comit_Final_Date = data.Comit_Final_Date,
+                    Comit_Final_Qty = data.Comit_Final_Qty,
+
                     CreatedDate = data.CreatedDate,
-                    CreatedBy = data.CreatedBy
+                    CreatedBy = data.CreatedBy,
+
+                    UpdatedDate = data.UpdatedDate,
+                    UpdatedBy = data.UpdatedBy
                 }).ToList();
 
                 return viewModelList;
@@ -110,8 +127,25 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Material = data.Material,
                     Hold_Date = data.Hold_Date,
                     Cleared_Date = data.Cleared_Date,
+
+                    Key1 = data.Key1,
+                    Comit_Date = data.Comit_Date,
+                    Comit_Qty = data.Comit_Qty,
+                    Comit_Planner_Qty = data.Comit_Planner_Qty,
+                    Comit_Planner_date = data.Comit_Planner_date,
+                    Comit_Vendor_Date = data.Comit_Vendor_Date,
+                    Comit_Vendor_Qty = data.Comit_Vendor_Qty,
+                    Comit_Planner_Remark = data.Comit_Planner_Remark,
+                    Comit_Date1 = data.Comit_Date1,
+                    Comit_Qty1 = data.Comit_Qty1,
+                    Comit_Final_Date = data.Comit_Final_Date,
+                    Comit_Final_Qty = data.Comit_Final_Qty,
+
                     CreatedDate = data.CreatedDate,
-                    CreatedBy = data.CreatedBy
+                    CreatedBy = data.CreatedBy,
+
+                    UpdatedDate = data.UpdatedDate,
+                    UpdatedBy = data.UpdatedBy
                 }).ToList();
 
                 return viewModelList;
@@ -124,49 +158,61 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        public async Task<List<Open_PoViewModel>> GetListAsync(string vendor)
-        {
-            try
-            {
+        //public async Task<List<Open_PoViewModel>> GetListAsync(string vendor)
+        //{
+        //    try
+        //    {
 
-                var result = await _dbContext.OpenPo.FromSqlRaw("EXEC sp_Get_Open_PO_Details").ToListAsync();
+        //        var result = await _dbContext.OpenPo.FromSqlRaw("EXEC sp_Get_Open_PO_Details").ToListAsync();
 
-                // Map results to ViewModel
-                var viewModelList = result.Select(data => new Open_PoViewModel
-                {
-                    Id = data.Id,
-                    Key = data.Key,
-                    PR_Type = data.PR_Type,
-                    PR_Desc = data.PR_Desc,
-                    Requisitioner = data.Requisitioner,
-                    Tracking_No = data.Tracking_No,
-                    PR_No = data.PR_No,
-                    Batch_No = data.Batch_No,
-                    Reference_No = data.Reference_No,
-                    Vendor = data.Vendor,
-                    PO_No = data.PO_No,
-                    PO_Date = data.PO_Date,
-                    PO_Qty = data.PO_Qty,
-                    Balance_Qty = data.Balance_Qty,
-                    Destination = data.Destination,
-                    Delivery_Date = data.Delivery_Date,
-                    Balance_Value = data.Balance_Value,
-                    Material = data.Material,
-                    Hold_Date = data.Hold_Date,
-                    Cleared_Date = data.Cleared_Date,
-                    CreatedDate = data.CreatedDate,
-                    CreatedBy = data.CreatedBy
-                }).ToList();
+        //        // Map results to ViewModel
+        //        var viewModelList = result.Select(data => new Open_PoViewModel
+        //        {
+        //            Id = data.Id,
+        //            Key = data.Key,
+        //            PR_Type = data.PR_Type,
+        //            PR_Desc = data.PR_Desc,
+        //            Requisitioner = data.Requisitioner,
+        //            Tracking_No = data.Tracking_No,
+        //            PR_No = data.PR_No,
+        //            Batch_No = data.Batch_No,
+        //            Reference_No = data.Reference_No,
+        //            Vendor = data.Vendor,
+        //            PO_No = data.PO_No,
+        //            PO_Date = data.PO_Date,
+        //            PO_Qty = data.PO_Qty,
+        //            Balance_Qty = data.Balance_Qty,
+        //            Destination = data.Destination,
+        //            Delivery_Date = data.Delivery_Date,
+        //            Balance_Value = data.Balance_Value,
+        //            Material = data.Material,
+        //            Hold_Date = data.Hold_Date,
+        //            Cleared_Date = data.Cleared_Date,
+        //            Key1 = data.Key1,
+        //            Comit_Date = data.Comit_Date,
+        //            Comit_Qty = data.Comit_Qty,
+        //            Comit_Planner_Qty = data.Comit_Planner_Qty,
+        //            Comit_Planner_date = data.Comit_Planner_date,
+        //            Comit_Vendor_Date = data.Comit_Vendor_Date,
+        //            Comit_Vendor_Qty = data.Comit_Vendor_Qty,
+        //            Comit_Planner_Remark = data.Comit_Planner_Remark,
+        //            Comit_Date1 = data.Comit_Date1,
+        //            Comit_Qty1 = data.Comit_Qty1,
+        //            Comit_Final_Date = data.Comit_Final_Date,
+        //            Comit_Final_Qty = data.Comit_Final_Qty,
+        //            CreatedDate = data.CreatedDate,
+        //            CreatedBy = data.CreatedBy
+        //        }).ToList();
 
-                return viewModelList;
+        //        return viewModelList;
 
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                throw;
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _systemLogService.WriteLog(ex.Message);
+        //        throw;
+        //    }
+        //}
 
         public async Task<BulkCreateLogResult> BulkCreateAsync(List<Open_PoViewModel> listOfData, string fileName, string uploadedBy)
         {
@@ -200,7 +246,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     seenKeys.Add(compositeKey); // Mark this combination as seen
 
                     // Now check against database
-                    var existingEntity = await _dbContext.OpenPo.FirstOrDefaultAsync(x =>x.PO_No == item.PO_No);
+                    var existingEntity = await _dbContext.OpenPo.FirstOrDefaultAsync(x => x.PO_No == item.PO_No);
 
                     if (existingEntity != null)
                     {
@@ -278,6 +324,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             Material = item.Material,
                             Hold_Date = item.Hold_Date,
                             Cleared_Date = item.Cleared_Date,
+                            Key1 = (item.Batch_No ?? string.Empty) + (item.Reference_No ?? string.Empty),
                             CreatedBy = uploadedBy,
                             CreatedDate = DateTime.Now
                         };
@@ -394,7 +441,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 if (connection.State != ConnectionState.Open)
                     await connection.OpenAsync();
 
-                using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule]",new { Vendor = vendor },commandType: CommandType.StoredProcedure))
+                using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
 
                 {
                     var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
@@ -534,7 +581,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        public async Task<(List<MatchedRecordViewModel> matched,MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
+        public async Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
         {
             var connectionString = _dbContext.Database.GetConnectionString();
 
@@ -547,7 +594,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     var matched = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
                     var summary = (await multi.ReadAsync<MatchSummaryViewModel>()).FirstOrDefault();
 
-                    return (matched,summary);
+                    return (matched, summary);
                 }
             }
         }
@@ -559,7 +606,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
             try
             {
-                var seenKeys = new HashSet<string>(); 
+                var seenKeys = new HashSet<string>();
 
                 foreach (var item in listOfData)
                 {
@@ -636,7 +683,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             existingEntity.Qty_After_Week != item.Qty_After_Week ||
                             existingEntity.Value_After_Week != item.Value_After_Week ||
                             existingEntity.Check5 != item.Check5 ||
-                            existingEntity.Indent_Status!= item.Indent_Status ||
+                            existingEntity.Indent_Status != item.Indent_Status ||
                             existingEntity.Sales_Call_Point != item.Sales_Call_Point ||
                             existingEntity.Free_Stock != item.Free_Stock ||
                             existingEntity.Grn_Qty != item.Grn_Qty ||
@@ -670,88 +717,88 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
                         if (isDifferent)
                         {
-                             existingEntity.SO_No = item.SO_No;
-                             existingEntity.SaleOrder_Type = item.SaleOrder_Type ;
-                             existingEntity.SO_Date = item.SO_Date ;
-                             existingEntity.Line_Item = item.Line_Item ;
-                             existingEntity.Indent_No = item.Indent_No ;
-                             existingEntity.Indent_Date = item.Indent_Date ;
-                             existingEntity.Order_Type = item.Order_Type ;
-                             existingEntity.Vertical = item.Vertical ;
-                             existingEntity.Region = item.Region ;
-                             existingEntity.Sales_Group = item.Sales_Group ;
-                             existingEntity.Sales_Group_desc = item.Sales_Group_desc ;
-                             existingEntity.Sales_Office = item.Sales_Office ;
-                             existingEntity.Sales_Office_Desc = item.Sales_Office_Desc ;
-                             existingEntity.Sale_Person = item.Sale_Person ;
-                             existingEntity.Project_Name = item.Project_Name ;
-                             existingEntity.Project_Name_Tag = item.Project_Name_Tag ;
-                             existingEntity.Priority_Tag = item.Priority_Tag ;
-                             existingEntity.Customer_Code = item.Customer_Code ;
-                             existingEntity.Customer_Name = item.Customer_Name ;
-                             existingEntity.Dealer_Direct = item.Dealer_Direct ;
-                             existingEntity.Inspection = item.Inspection ;
-                             existingEntity.Material = item.Material ;
-                             existingEntity.Old_Material_No = item.Old_Material_No ;
-                             existingEntity.Description = item.Description ;
-                             existingEntity.SO_Qty = item.SO_Qty ;
-                             existingEntity.SO_Value = item.SO_Value ;
-                             existingEntity.Rate = item.Rate ;
-                             existingEntity.Del_Qty = item.Del_Qty ;
-                             existingEntity.Open_Sale_Qty = item.Open_Sale_Qty ;
-                             existingEntity.Opne_Sale_Value = item.Opne_Sale_Value ;
-                             existingEntity.Plant = item.Plant ;
-                             existingEntity.Item_Category = item.Item_Category ;
-                             existingEntity.Item_Category_Latest = item.Item_Category_Latest ;
-                             existingEntity.Procurement_Type = item.Procurement_Type ;
-                             existingEntity.Vendor_Po_No = item.Vendor_Po_No ;
-                             existingEntity.Vendor_Po_Date = item.Vendor_Po_Date ;
-                             existingEntity.CPR_Number = item.CPR_Number ;
-                             existingEntity.Vendor = item.Vendor ;
-                             existingEntity.Planner = item.Planner ;
-                             existingEntity.Po_Release_Qty = item.Po_Release_Qty ;
-                             existingEntity.Allocated_Stock_Qty = item.Allocated_Stock_Qty;
-                             existingEntity.Allocated_Stock_Value = item.Allocated_Stock_Value ;
-                             existingEntity.Net_Qty = item.Net_Qty ;
-                             existingEntity.Net_Value = item.Net_Value ;
-                             existingEntity.Qty_In_Week = item.Qty_In_Week ;
-                             existingEntity.Value_In_Week = item.Value_In_Week ;
-                             existingEntity.Qty_After_Week = item.Qty_After_Week ;
-                             existingEntity.Value_After_Week = item.Value_After_Week ;
-                             existingEntity.Check5 = item.Check5 ;
-                             existingEntity.Indent_Status = item.Indent_Status ;
-                             existingEntity.Sales_Call_Point = item.Sales_Call_Point ;
-                             existingEntity.Free_Stock = item.Free_Stock ;
-                             existingEntity.Grn_Qty = item.Grn_Qty ;
-                             existingEntity.Last_Grn_Date = item.Last_Grn_Date ;
-                             existingEntity.Check1 = item.Check1 ;
-                             existingEntity.Delivery_Schedule = item.Delivery_Schedule ;
-                             existingEntity.Readiness_Vendor_Released_Fr_Date = item.Readiness_Vendor_Released_Fr_Date ;
-                             existingEntity.Readiness_Vendor_Released_To_Date = item.Readiness_Vendor_Released_To_Date ;
-                             existingEntity.Readiness_Schedule_Vendor_Released = item.Readiness_Schedule_Vendor_Released ;
-                             existingEntity.Delivery_Schedule_PC_Breakup = item.Delivery_Schedule_PC_Breakup ;
-                             existingEntity.Check2 = item.Check2 ;
-                             existingEntity.Line_Item_Schedule = item.Line_Item_Schedule ;
-                             existingEntity.R_B = item.R_B ;
-                             existingEntity.Schedule_Repeat = item.Schedule_Repeat ;
-                             existingEntity.Internal_Pending_Issue = item.Internal_Pending_Issue ;
-                             existingEntity.Pending_With = item.Pending_With ;
-                             existingEntity.Remark = item.Remark ;
-                             existingEntity.CRD_OverDue = item.CRD_OverDue ;
-                             existingEntity.Delivert_Date = item.Delivert_Date ;
-                             existingEntity.Process_Plan_On_Crd = item.Process_Plan_On_Crd ;
-                             existingEntity.Last_Week_PC = item.Last_Week_PC ;
-                             existingEntity.Schedule_Line_Qty1 = item.Schedule_Line_Qty1 ;
-                             existingEntity.Schedule_Line_Date1 = item.Schedule_Line_Date1 ;
-                             existingEntity.Schedule_Line_Qty2 = item.Schedule_Line_Qty2 ;
-                             existingEntity.Schedule_Line_Date2 = item.Schedule_Line_Date2 ;
-                             existingEntity.Schedule_Line_Qty3 = item.Schedule_Line_Qty3 ;
-                             existingEntity.Schedule_Line_Date3 = item.Schedule_Line_Date3 ;
-                             existingEntity.To_Consider = item.To_Consider ;
-                             existingEntity.Person_Name = item.Person_Name ;
-                             existingEntity.Visibility = item.Visibility;
-                             existingEntity.CreatedBy = uploadedBy;
-                             existingEntity.CreatedDate = DateTime.Now;
+                            existingEntity.SO_No = item.SO_No;
+                            existingEntity.SaleOrder_Type = item.SaleOrder_Type;
+                            existingEntity.SO_Date = item.SO_Date;
+                            existingEntity.Line_Item = item.Line_Item;
+                            existingEntity.Indent_No = item.Indent_No;
+                            existingEntity.Indent_Date = item.Indent_Date;
+                            existingEntity.Order_Type = item.Order_Type;
+                            existingEntity.Vertical = item.Vertical;
+                            existingEntity.Region = item.Region;
+                            existingEntity.Sales_Group = item.Sales_Group;
+                            existingEntity.Sales_Group_desc = item.Sales_Group_desc;
+                            existingEntity.Sales_Office = item.Sales_Office;
+                            existingEntity.Sales_Office_Desc = item.Sales_Office_Desc;
+                            existingEntity.Sale_Person = item.Sale_Person;
+                            existingEntity.Project_Name = item.Project_Name;
+                            existingEntity.Project_Name_Tag = item.Project_Name_Tag;
+                            existingEntity.Priority_Tag = item.Priority_Tag;
+                            existingEntity.Customer_Code = item.Customer_Code;
+                            existingEntity.Customer_Name = item.Customer_Name;
+                            existingEntity.Dealer_Direct = item.Dealer_Direct;
+                            existingEntity.Inspection = item.Inspection;
+                            existingEntity.Material = item.Material;
+                            existingEntity.Old_Material_No = item.Old_Material_No;
+                            existingEntity.Description = item.Description;
+                            existingEntity.SO_Qty = item.SO_Qty;
+                            existingEntity.SO_Value = item.SO_Value;
+                            existingEntity.Rate = item.Rate;
+                            existingEntity.Del_Qty = item.Del_Qty;
+                            existingEntity.Open_Sale_Qty = item.Open_Sale_Qty;
+                            existingEntity.Opne_Sale_Value = item.Opne_Sale_Value;
+                            existingEntity.Plant = item.Plant;
+                            existingEntity.Item_Category = item.Item_Category;
+                            existingEntity.Item_Category_Latest = item.Item_Category_Latest;
+                            existingEntity.Procurement_Type = item.Procurement_Type;
+                            existingEntity.Vendor_Po_No = item.Vendor_Po_No;
+                            existingEntity.Vendor_Po_Date = item.Vendor_Po_Date;
+                            existingEntity.CPR_Number = item.CPR_Number;
+                            existingEntity.Vendor = item.Vendor;
+                            existingEntity.Planner = item.Planner;
+                            existingEntity.Po_Release_Qty = item.Po_Release_Qty;
+                            existingEntity.Allocated_Stock_Qty = item.Allocated_Stock_Qty;
+                            existingEntity.Allocated_Stock_Value = item.Allocated_Stock_Value;
+                            existingEntity.Net_Qty = item.Net_Qty;
+                            existingEntity.Net_Value = item.Net_Value;
+                            existingEntity.Qty_In_Week = item.Qty_In_Week;
+                            existingEntity.Value_In_Week = item.Value_In_Week;
+                            existingEntity.Qty_After_Week = item.Qty_After_Week;
+                            existingEntity.Value_After_Week = item.Value_After_Week;
+                            existingEntity.Check5 = item.Check5;
+                            existingEntity.Indent_Status = item.Indent_Status;
+                            existingEntity.Sales_Call_Point = item.Sales_Call_Point;
+                            existingEntity.Free_Stock = item.Free_Stock;
+                            existingEntity.Grn_Qty = item.Grn_Qty;
+                            existingEntity.Last_Grn_Date = item.Last_Grn_Date;
+                            existingEntity.Check1 = item.Check1;
+                            existingEntity.Delivery_Schedule = item.Delivery_Schedule;
+                            existingEntity.Readiness_Vendor_Released_Fr_Date = item.Readiness_Vendor_Released_Fr_Date;
+                            existingEntity.Readiness_Vendor_Released_To_Date = item.Readiness_Vendor_Released_To_Date;
+                            existingEntity.Readiness_Schedule_Vendor_Released = item.Readiness_Schedule_Vendor_Released;
+                            existingEntity.Delivery_Schedule_PC_Breakup = item.Delivery_Schedule_PC_Breakup;
+                            existingEntity.Check2 = item.Check2;
+                            existingEntity.Line_Item_Schedule = item.Line_Item_Schedule;
+                            existingEntity.R_B = item.R_B;
+                            existingEntity.Schedule_Repeat = item.Schedule_Repeat;
+                            existingEntity.Internal_Pending_Issue = item.Internal_Pending_Issue;
+                            existingEntity.Pending_With = item.Pending_With;
+                            existingEntity.Remark = item.Remark;
+                            existingEntity.CRD_OverDue = item.CRD_OverDue;
+                            existingEntity.Delivert_Date = item.Delivert_Date;
+                            existingEntity.Process_Plan_On_Crd = item.Process_Plan_On_Crd;
+                            existingEntity.Last_Week_PC = item.Last_Week_PC;
+                            existingEntity.Schedule_Line_Qty1 = item.Schedule_Line_Qty1;
+                            existingEntity.Schedule_Line_Date1 = item.Schedule_Line_Date1;
+                            existingEntity.Schedule_Line_Qty2 = item.Schedule_Line_Qty2;
+                            existingEntity.Schedule_Line_Date2 = item.Schedule_Line_Date2;
+                            existingEntity.Schedule_Line_Qty3 = item.Schedule_Line_Qty3;
+                            existingEntity.Schedule_Line_Date3 = item.Schedule_Line_Date3;
+                            existingEntity.To_Consider = item.To_Consider;
+                            existingEntity.Person_Name = item.Person_Name;
+                            existingEntity.Visibility = item.Visibility;
+                            existingEntity.CreatedBy = uploadedBy;
+                            existingEntity.CreatedDate = DateTime.Now;
                         }
                         else
                         {
@@ -885,6 +932,49 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
 
             return result;
+        }
+
+        public async Task<OperationResult> UpdateAsync(Open_Po updatedRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var parameters = new[]
+                {
+                    new SqlParameter("@Ven_PoId", updatedRecord.Id),
+                    new SqlParameter("@Comit_Date", updatedRecord.Comit_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Qty", updatedRecord.Comit_Qty ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Date1", updatedRecord.Comit_Date1 ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Qty1", updatedRecord.Comit_Qty1 ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Final_Date", updatedRecord.Comit_Final_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Final_Qty", updatedRecord.Comit_Final_Qty),
+                    new SqlParameter("@Comit_Planner_Qty", updatedRecord.Comit_Planner_Qty ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Planner_Date", updatedRecord.Comit_Planner_date ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Planner_Remark", updatedRecord.Comit_Planner_Remark ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Vendor_Date", updatedRecord.Comit_Vendor_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Comit_Vendor_Qty", updatedRecord.Comit_Vendor_Qty ?? (object)DBNull.Value),
+                    new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value)
+                };
+
+                var sql = @"EXEC sp_Update_Open_PO @Ven_PoId,@Comit_Date,@Comit_Qty,@Comit_Date1,@Comit_Qty1,@Comit_Final_Date,@Comit_Final_Qty,@Comit_Planner_Qty,@Comit_Planner_Date,@Comit_Planner_Remark,
+                        @Comit_Vendor_Date,@Comit_Vendor_Qty,@UpdatedBy";
+
+                await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
+
+                if (returnUpdatedRecord)
+                {
+                    return new OperationResult
+                    {
+                        Success = true,
+                    };
+                }
+
+                return new OperationResult { Success = true };
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
 
     }

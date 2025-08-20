@@ -177,6 +177,46 @@ var headerMenu = function () {
     return menu;
 };
 
+function getFinancialYears() {
+    let today = new Date();
+    let year = today.getFullYear();
+    let month = today.getMonth() + 1; // Jan=0, so +1
+
+    let startYear;
+    if (month < 4) {
+        // Before April → FY belongs to previous year
+        startYear = year - 1;
+    } else {
+        startYear = year;
+    }
+
+    let endYear = startYear + 1;
+    return startYear + "-" + endYear.toString().slice(-2);
+}
+
+var financialYears = getFinancialYears();
+
+function getMonthOptions() {
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const yearSuffix = new Date().getFullYear().toString().slice(-2);
+    return months.map(m => `${m} - ${yearSuffix}`); // array of strings
+}
+
+function getMonthString() {
+    const months = [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+    const today = new Date();
+    const monthName = months[today.getMonth()];
+    const yearSuffix = today.getFullYear().toString().slice(-2);
+    return monthName + " - " + yearSuffix;
+}
+
+
 function OnTabGridLoad(response) {
     debugger;
     Blockloadershow();
@@ -191,6 +231,7 @@ function OnTabGridLoad(response) {
             function formatDate(value) {
                 return value ? new Date(value).toLocaleDateString("en-GB") : "";
             }
+           
 
             tabledata.push({
                 Sr_No: index + 1,
@@ -215,14 +256,10 @@ function OnTabGridLoad(response) {
                 Ven_Sample_Sub_Date: formatDate(item.ven_Sample_Sub_Date),
                 Current_Status: item.current_Status,
                 BIS_Attachment: item.biS_Attachment,
-                Effective_Date: formatDate(item.effective_Date),
-                Document_No: item.document_No,
-                Revision_No: item.revision_No,
-                Revision_Date: formatDate(item.revision_Date),
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
                 UpdatedDate: formatDate(item.updatedDate),
-                CreatedDate: formatDate(item.createdDate),
+                CreatedDate: formatDate(item.createdDate)
             });
         });
     }
@@ -253,8 +290,39 @@ function OnTabGridLoad(response) {
         {
             title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
         },
-        editableColumn("Financial Year", "Financial_Year", true),
-        editableColumn("Month/PC", "Mon_PC", true),
+        
+        {
+            title: "Financial Year",
+            field: "Financial_Year",
+            editor: "list",
+            editorParams: {
+                values: financialYears,   // array or object
+                autocomplete: true,
+                clearable: true
+            },
+            headerFilter: "list",
+            headerFilterParams: { values: financialYears },
+            hozAlign: "center",
+            headerHozAlign: "center",
+            headerMenu: headerMenu
+        },
+
+        {
+            title: "Month/PCr",
+            field: "Mon_PC",
+            editor: "list",
+            editorParams: {
+                values: getMonthOptions(),   // array or object
+                clearable: true
+            },
+            headerFilter: "list",
+            headerFilterParams: { values: getMonthOptions() },
+            hozAlign: "center",
+            headerHozAlign: "center",
+            headerMenu: headerMenu
+        },
+    
+        //editableColumn("Month/PC", "Mon_PC", true),
         //editableColumn("Nature of Project", "Nat_Project", true),
         editableColumn("Nature of Project", "Nat_Project", "select2", "center", "input", {}, {
             values: natProjectOptions
@@ -304,7 +372,7 @@ function OnTabGridLoad(response) {
             title: "BIS Duration",
             field: "Bis_Duration",
             mutator: function (value, data) {
-                const sub = parseDate(data.Submitted_Date);
+                const sub = parseDate(data.Ven_Sample_Sub_Date);
                 const recv = parseDate(data.Received_Date);
                 if (sub && recv) return Math.floor((recv - sub) / (1000 * 60 * 60 * 24));
                 return "";
@@ -332,8 +400,7 @@ function OnTabGridLoad(response) {
 
                 return `
             ${fileDisplay}
-            <input type="file" accept=".pdf,image/*" class="form-control-file bis-upload" data-id="${cell.getRow().getData().Id}" style="width:160px;" />
-        `;
+            <input type="file" accept=".pdf,image/*" class="form-control-file bis-upload" data-id="${cell.getRow().getData().Id}" style="width:160px;" />`;
             },
             cellClick: function (e, cell) {
                 // prevent Tabulator from swallowing the file input click
@@ -341,13 +408,9 @@ function OnTabGridLoad(response) {
             }
         },
 
-        editableColumn("Effective Date", "Effective_Date", "date", "center"),
-        editableColumn("Document No", "Document_No", true),
-        editableColumn("Revision No", "Revision_No", true),
-        editableColumn("Revision Date", "Revision_Date", "date", "center"),
         { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false }
     );
 
     // // Initialize Tabulator
@@ -379,8 +442,8 @@ function OnTabGridLoad(response) {
             row.update({ Test_Duration: diff.toString() });
         }
 
-        if (["Submitted_Date", "Received_Date"].includes(field)) {
-            const sub = parseDate(data.Submitted_Date);
+        if (["Ven_Sample_Sub_Date", "Received_Date"].includes(field)) {
+            const sub = parseDate(data.Ven_Sample_Sub_Date);
             const rec = parseDate(data.Received_Date);
             const diff = sub && rec ? Math.floor((rec - sub) / (1000 * 60 * 60 * 24)) : "";
             row.update({ Bis_Duration: diff.toString() });
@@ -390,11 +453,14 @@ function OnTabGridLoad(response) {
     });
 
     $("#addBISButton").on("click", function () {
+        const currentFY = getFinancialYears(); 
+        var month = getMonthString();
+
         const newRow = {
             Sr_No: table.getDataCount() + 1,
             Id: 0,
-            Financial_Year: "",
-            Mon_PC: "",
+            Financial_Year: currentFY,
+            Mon_PC: month,
             Nat_Project: "",
             Lea_Model_No: "",
             No_Seri_Add: "",
@@ -701,7 +767,7 @@ function InsertUpdateBisProject(rowData) {
         return;
     }
 
-    Blockloadershow();
+    //Blockloadershow();
     var errorMsg = "";
 
     if (errorMsg !== "") {
@@ -762,7 +828,7 @@ function InsertUpdateBisProject(rowData) {
         data: JSON.stringify(Model),
         contentType: 'application/json',
         success: function (response) {
-            Blockloaderhide();
+            //Blockloaderhide();
             if (response.success) {
                 //const msg = Model.Id != 0
                 //    ? "BIS Project Tracker updated successfully!"
@@ -790,7 +856,7 @@ function InsertUpdateBisProject(rowData) {
             }
         },
         error: function (xhr, status, error) {
-            Blockloaderhide();
+            //Blockloaderhide();
             showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
         }
     });

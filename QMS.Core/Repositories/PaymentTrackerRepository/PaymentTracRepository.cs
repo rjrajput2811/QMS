@@ -247,5 +247,169 @@ namespace QMS.Core.Repositories.PaymentTrackerRepository
                 throw;
             }
         }
+
+        public async Task<List<LabPaymentViewModel>> GetLabPaymentAsync()
+        {
+            try
+            {
+                var result = await (from pr in _dbContext.Lab_Payment
+                                    where pr.Deleted == false // Add this condition
+                                    select new LabPaymentViewModel
+                                    {
+                                        Id = pr.Id,
+                                        Lab = pr.Lab,
+                                        CreatedBy = pr.CreatedBy,
+                                        CreatedDate = pr.CreatedDate,
+                                        UpdatedBy = pr.UpdatedBy,
+                                        UpdatedDate = pr.UpdatedDate
+                                    }).ToListAsync();
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<Lab_Payment?> GetLabPaymentByIdAsync(int Id)
+        {
+            try
+            {
+                var result = await base.GetByIdAsync<Lab_Payment>(Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> CreateLabPaymentAsync(LabPaymentViewModel newNatProjectRecord, bool returnCreatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = new Lab_Payment();
+                natToCreate.Lab = newNatProjectRecord.Lab;
+                natToCreate.CreatedBy = newNatProjectRecord.CreatedBy;
+                natToCreate.CreatedDate = DateTime.Now;
+                return await base.CreateAsync<Lab_Payment>(natToCreate, returnCreatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> UpdateLabPaymentAsync(LabPaymentViewModel updateNatProjectRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = await base.GetByIdAsync<Lab_Payment>(updateNatProjectRecord.Id);
+                natToCreate.Lab = updateNatProjectRecord.Lab;
+                natToCreate.UpdatedBy = updateNatProjectRecord.UpdatedBy;
+                natToCreate.UpdatedDate = DateTime.Now;
+                return await base.UpdateAsync<Lab_Payment>(natToCreate, returnUpdatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> DeleteLabPaymentAsync(int Id)
+        {
+            try
+            {
+                return await base.DeleteAsync<Lab_Payment>(Id);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckLabPaymentDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.Lab_Payment
+                    .Where(x => x.Deleted == false && x.Lab == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.Lab_Payment
+                        .Where(x => x.Deleted == false &&
+                               x.Lab == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<DropdownOptionViewModel>> GetLabDropdownAsync()
+        {
+            return await _dbContext.Lab_Payment
+                .Where(v => !v.Deleted)
+                .Select(v => new DropdownOptionViewModel
+                {
+                    Label = v.Lab,
+                    Value = v.Id.ToString()
+                })
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateAttachmentAsync(int id, string fileName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return false;
+
+                var record = await _dbContext.PaymentTracker.FindAsync(id);
+                if (record == null)
+                    return false;
+
+                record.Attachment = fileName;
+
+                // Only update the BIS_Attachment property
+                _dbContext.Entry(record).Property(x => x.Attachment).IsModified = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
     }
 }

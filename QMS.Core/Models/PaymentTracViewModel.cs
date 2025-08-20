@@ -23,6 +23,18 @@ namespace QMS.Core.Models
         public double Testing_Fee { get; set; }
         public string? Approval_By { get; set; }
         public string? Remark { get; set; }
+        public string? Attachment { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+
+    public class LabPaymentViewModel
+    {
+        public int Id { get; set; }
+        public bool Deleted { get; set; }
+        public string? Lab { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }

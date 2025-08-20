@@ -334,14 +334,22 @@
              });
 
              $('#upload-button').on('click', async function () {
+                    // var expectedColumns = [
+                    //    'SO', 'Sale Order Type', 'SO Date', 'Line Item', 'Indent Number', 'Indent Date', 'Order Type', 'Vertical', 'Region', 'Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip', 'Sales Person', 'Project Name', 'Project Name Tag',
+                    //    'Priority Tag', 'Customer', 'Customer Name', 'Dealer / Direct', 'Inspection', 'Material', 'Old Material Number', 'Description', 'SO Quantity', 'SO Value', 'Rate', 'DEL Quantity',
+                    //    'Open Sales Qty', 'Open Sales Value', 'Plant', 'Item Category', 'Item category as per latest', 'Procurement Type', 'Vendor PO Number', 'Vendor PO Date', 'CPR Number', 'Vendor', 'Planner', 'PO Release Qty',
+                    //    'Allocated Stock QTY', 'Allocated Stock Value', 'Net Qty', 'Net Value', 'Qty in week', 'Value in week', 'Qty after week', 'Value after week', 'CHK5', 'Indent Status', 'Sales call Points', 'Free stock',
+                    //    'GRN Qty til week', 'Last Item GRN date', 'Chk1', 'Delivery Schedule', 'Readiness schedule at vendor place. Released on From week', 'Readiness schedule at vendor place. Released on To week', 'Readiness schedule at vendor place. Released on week',
+                    //    'Delivery schedule PC Break up', 'Chk2', 'Line item schedule', 'R&B', 'Schedule to repeat', 'Internal pending issue', 'Pending with', 'Remarks', 'CRD Overdue', 'Delivery Date', 'Process plan Billing based on CRD (PC)', 'Last Week PC',
+                    //    'Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2', 'Schedule Line Qty3', 'Schedule Line Date3', 'To Consider', 'Person Name', 'Visibility'
+                    // ];
+
                     var expectedColumns = [
-                       'SO', 'Sale Order Type', 'SO Date', 'Line Item', 'Indent Number', 'Indent Date', 'Order Type', 'Vertical', 'Region', 'Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip', 'Sales Person', 'Project Name', 'Project Name Tag',
-                       'Priority Tag', 'Customer', 'Customer Name', 'Dealer / Direct', 'Inspection', 'Material', 'Old Material Number', 'Description', 'SO Quantity', 'SO Value', 'Rate', 'DEL Quantity',
-                       'Open Sales Qty', 'Open Sales Value', 'Plant', 'Item Category', 'Item category as per latest', 'Procurement Type', 'Vendor PO Number', 'Vendor PO Date', 'CPR Number', 'Vendor', 'Planner', 'PO Release Qty',
-                       'Allocated Stock QTY', 'Allocated Stock Value', 'Net Qty', 'Net Value', 'Qty in week', 'Value in week', 'Qty after week', 'Value after week', 'CHK5', 'Indent Status', 'Sales call Points', 'Free stock',
-                       'GRN Qty til week', 'Last Item GRN date', 'Chk1', 'Delivery Schedule', 'Readiness schedule at vendor place. Released on From week', 'Readiness schedule at vendor place. Released on To week', 'Readiness schedule at vendor place. Released on week',
-                       'Delivery schedule PC Break up', 'Chk2', 'Line item schedule', 'R&B', 'Schedule to repeat', 'Internal pending issue', 'Pending with', 'Remarks', 'CRD Overdue', 'Delivery Date', 'Process plan Billing based on CRD (PC)', 'Last Week PC',
-                       'Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2', 'Schedule Line Qty3', 'Schedule Line Date3', 'To Consider', 'Person Name', 'Visibility'
+                       'SO', 'Sale Order Type', 'SO DATE', 'LINE ITEM', 'Indent Number', 'Indent Date','Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip', 'Sales Person', 'Project Name',
+                       'CUSTOMER', 'CUST. NAME', 'MATERIAL', 'Old material number', 'Description', 'SO QUANTITY', 'SO Value', 'DEL QUANTITY',
+                       'OPEN SALES QTY', 'OPEN SALES Value', 'Plant', 'Item Category', 'Procurement Type', 'Vendor PO Number', 'Vendor PO Date', 'PO Release Qty',
+                       'Allocated Stock QTY', 'Allocated Stock Value','Indent Status',
+                       'Delivery Schedule', 'DELIVERY DATE','Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2', 'Schedule Line Qty3', 'Schedule Line Date3'
                     ];
 
                     var url = '@Url.Action("UploadSalesOrderDataExcel", "OpenPo")';
@@ -689,7 +697,9 @@
                         Person_Name: item.person_Name,
                         Visibility: item.visibility,
                         CreatedDate: formatDate(item.createdDate),
-                        CreatedBy: item.createdBy
+                        CreatedBy: item.createdBy,
+                        Key : item.key,
+                        Key1 : item.key1
                     });
                 });
             }
@@ -715,6 +725,8 @@
 
             const colDefs = [
                 { field: "Sr_No", title: "SNo" },
+                { field: "Key", title: "Key" },
+                { field: "Key1", title: "Key1" },
                 { field: "SO_No", title: "SO No" },
                 { field: "SaleOrder_Type", title: "Sale Order Type" ,visible: false},
                 { field: "SO_Date", title: "SO Date" },

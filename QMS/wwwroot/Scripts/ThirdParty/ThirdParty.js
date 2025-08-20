@@ -298,11 +298,16 @@ function OnTabThirdInsGridLoad(response) {
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
 
         editableColumn("Inspection Date", "InspectionDate", "date", "center", "input", {}, {}, 120),
-        editableColumn("Customer/Project Name", "ProjectName", "left", "center", "input", {}, {} ),
+        editableColumn("Customer/Project Name", "ProjectName", "input", "left", "input", {}, {} ),
         editableColumn("Inspector Name", "InspName", "input", "left", "input", {}, {} ),
         editableColumn("Product Code", "ProductCode", "autocomplete_ajax"),
         editableColumn("Product Description", "ProdDesc", "input"),
-        editableColumn("LOT QTY(No's)", "LOTQty", "input", "center", "input", {}, {}, 110),
+        editableColumn("LOT QTY(No's)", "LOTQty", "number", "center", "input", {
+            min: 0,        // optional - no negative numbers
+            step: 1
+        }, {
+            validator: "integer"  
+        }, 110),
         editableColumn("Project Value(Mn).", "ProjectValue", "input", "left", "input", {}, {}),
         editableColumn("TPI Duration(DAYS)", "Tpi_Duration", "input", "center", "input", {}, {}),
         editableColumn("Location(Waluj Lab/Vendor Location)", "Location", "input", "left", "input", {}, {}),
@@ -336,10 +341,6 @@ function OnTabThirdInsGridLoad(response) {
             }
         },
 
-        editableColumn("Document No", "Document_No", "input", "left", "input", {}, {}),
-        editableColumn("Revision No", "Revision_No", "input", "center", "input", {}, {}),
-        editableColumn("Effective Date", "Effective_Date", "date", "center", "input", {}, {}, 120),
-        editableColumn("Revision Date", "Revision_Date", "date", "center", "input", {}, {}, 120),
         {
             title: "Created By", field: "CreatedBy",
             hozAlign: "center",

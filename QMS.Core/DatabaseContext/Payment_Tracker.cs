@@ -34,6 +34,28 @@ namespace QMS.Core.DatabaseContext
         public double Testing_Fee { get; set; }
         public string? Approval_By { get; set; }
         public string? Remark { get; set; }
+        public string? Attachment { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+
+    [Table("tbl_Lab_Payment")]
+    public class Lab_Payment : SqlTable
+    {
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("Lab_Id")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+
+        public string? Lab { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }

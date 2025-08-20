@@ -93,5 +93,154 @@ namespace QMS.Controllers
             var operationResult = await _paymentTracRepository.DeleteAsync(id);
             return Json(operationResult);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetLabDropdown()
+        {
+            try
+            {
+                var vendorList = await _paymentTracRepository.GetLabDropdownAsync();
+                return Json(vendorList);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return StatusCode(500, "Error retrieving Lab dropdown.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetLabPaymentByIdAsync(int Id)
+        {
+            var instId = await _paymentTracRepository.GetLabPaymentByIdAsync(Id);
+            return Json(instId);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetLabPaymentAsync()
+        {
+            var instList = await _paymentTracRepository.GetLabPaymentAsync();
+            return Json(instList);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateLabPaymentAsync([FromBody] LabPaymentViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _paymentTracRepository.CheckLabPaymentDuplicate(model.Lab.Trim(), 0);
+                    if (!existingResult)
+                    {
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        model.CreatedDate = DateTime.Now;
+                        operationResult = await _paymentTracRepository.CreateLabPaymentAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateLabPaymentAsync([FromBody] LabPaymentViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _paymentTracRepository.CheckLabPaymentDuplicate(model.Lab.Trim(), model.Id);
+                    if (!existingResult)
+                    {
+                        model.UpdatedDate = DateTime.Now;
+                        model.UpdatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _paymentTracRepository.UpdateLabPaymentAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteLabPaymentAsync(int id)
+        {
+            try
+            {
+                var operationResult = await _paymentTracRepository.DeleteLabPaymentAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadPaymentAttachment(IFormFile file, int id)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file selected." });
+
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                    return Json(new { success = false, message = "Only PDF and image files are allowed." });
+
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PaymentTrac_Attach", id.ToString());
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
+
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+                var newFileName = $"{nameWithoutExt}_{timestamp}{extension}";
+                var filePath = Path.Combine(uploadsPath, newFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Optional: update DB with the new file name
+                await _paymentTracRepository.UpdateAttachmentAsync(id, newFileName);
+
+                return Json(new { success = true, id = id, fileName = newFileName });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
     }
 }

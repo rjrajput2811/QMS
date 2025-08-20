@@ -114,14 +114,15 @@
 
     .calendar-container {
         cursor: pointer;
-        padding: 10px 15px;
+        padding: 8px 8px;
         width: 100%;
-        border-radius: 8px;
+        border-radius: 5px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
         transition: background-color 0.3s, box-shadow 0.3s;
         gap: 8px;
+        border: 1px solid slategray;
     }
 
         .calendar-container:hover {
@@ -141,7 +142,10 @@
             font-size: 16px;
         }
 
-    .container__predefined-ranges,
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
     .month-item {
         font-size: 14px;
     }
@@ -155,6 +159,13 @@
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
                 <b style="font-size: large;color: #4682B4;">Third Party Inspection Tracker</b>
+            </div>
+
+            <div class="col-md-3" >
+                <div id="customDateTrigger" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeText">Select Date Range</span>
+                </div>
             </div>
 
             <div>
@@ -180,12 +191,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="chart-container">
-                        <div class="col-md-4" style="margin-bottom:5px">
-                            <div id="customDateTrigger" class="calendar-container">
-                                <i class="fa fa-calendar"></i>
-                                <span id="dateRangeText">Select Date Range</span>
-                            </div>
-                        </div>
+                        
                         <div class="form-group row">
                             <div id="thirdInspection_Table" class="col-12"></div>
                         </div>

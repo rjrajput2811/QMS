@@ -16,5 +16,15 @@ namespace QMS.Core.Repositories.PaymentTrackerRepository
         Task<OperationResult> DeleteAsync(int Id);
         Task<PaymentTracViewModel?> GetByIdAsync(int id);
         Task<bool> CheckDuplicate(string searchText, int id);
+
+        Task<List<LabPaymentViewModel>> GetLabPaymentAsync();
+        Task<Lab_Payment?> GetLabPaymentByIdAsync(int Id);
+        Task<OperationResult> CreateLabPaymentAsync(LabPaymentViewModel newNatProjectRecord, bool returnCreatedRecord = false);
+        Task<OperationResult> UpdateLabPaymentAsync(LabPaymentViewModel updateNatProjectRecord, bool returnUpdatedRecord = false);
+        Task<OperationResult> DeleteLabPaymentAsync(int Id);
+        Task<bool> CheckLabPaymentDuplicate(string searchText, int Id);
+        Task<List<DropdownOptionViewModel>> GetLabDropdownAsync();
+
+        Task<bool> UpdateAttachmentAsync(int id, string fileName);
     }
 }

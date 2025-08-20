@@ -25,11 +25,20 @@ namespace QMS.Core.Repositories.PaymentTrackerRepository
             _systemLogService = systemLogService;
         }
 
-        public async Task<List<PaymentTracViewModel>> GetListAsync()
+        public async Task<List<PaymentTracViewModel>> GetListAsync(DateTime? startDate, DateTime? endDate)
         {
             try
             {
                 var result = await _dbContext.PaymentTracker.FromSqlRaw("EXEC sp_Get_PaymentTracker").ToListAsync();
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    result = result
+                        .Where(x => x.CreatedDate.HasValue &&
+                                    x.CreatedDate.Value.Date >= startDate.Value.Date &&
+                                    x.CreatedDate.Value.Date <= endDate.Value.Date)
+                        .ToList();
+                }
 
                 // Map results to ViewModel
                 var viewModelList = result.Select(data => new PaymentTracViewModel

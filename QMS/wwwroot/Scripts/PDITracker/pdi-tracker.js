@@ -262,10 +262,6 @@ function OnTabGridLoad(response) {
                 InspectedBy: item.inspectedBy || "",
                 Remark: item.remark || "",
                 Attahcment: item.attahcment || "",
-                Document_No: item.document_No || "",
-                Revision_No: item.revision_No || "",
-                Effective_Date: formatDate(item.effective_Date), 
-                Revision_Date: formatDate(item.revision_Date),
                 UpdatedDate: item.updatedDate || "",
                 CreatedDate: item.createdDate || "",
                 CreatedBy: item.createdBy || "",
@@ -330,11 +326,6 @@ function OnTabGridLoad(response) {
                 e.stopPropagation();
             }
         },
-
-        editableColumn("Document No", "Document_No", "input", "left", "input", {}, {}),
-        editableColumn("Revision No", "Revision_No", "input", "center", "input", {}, {}),
-        editableColumn("Effective Date", "Effective_Date", "date", "center", "input", {}, {}, 120),
-        editableColumn("Revision Date", "Revision_Date", "date", "center", "input", {}, {}, 120),
         {
             title: "Created By", field: "CreatedBy",
             hozAlign: "center",

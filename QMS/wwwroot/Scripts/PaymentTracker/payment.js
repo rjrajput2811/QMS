@@ -6,8 +6,53 @@ var tabledataLab = [];
 var tableLab = '';
 let labOptions = {};
 let selectedLabCell = null;
+let filterStartPaymentDate = moment().startOf('month').format('YYYY-MM-DD');
+let filterEndPaymentDate = moment().endOf('month').format('YYYY-MM-DD');
 
 $(document).ready(function () {
+
+    $('#dateRangePayment').text(
+        moment(filterStartPaymentDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndPaymentDate).format('MMMM D, YYYY')
+    );
+
+    const picker = new Litepicker({
+        element: document.getElementById('customDateTriggerPayment'),
+        singleMode: false,
+        format: 'DD-MM-YYYY',
+        numberOfMonths: 2,
+        numberOfColumns: 2,
+        dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
+        plugins: ['ranges'],
+        setup: (picker) => {
+            picker.on('selected', (start, end) => {
+                filterStartPaymentDate = start.format('YYYY-MM-DD');
+                filterEndPaymentDate = end.format('YYYY-MM-DD');
+                $('#dateRangePayment').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                loadData();
+            });
+
+            picker.on('clear', () => {
+                filterStartPaymentDate = "";
+                filterEndPaymentDate = "";
+                $('#dateRangePayment').text("Select Date Range");
+                loadData();
+            });
+        },
+        ranges: {
+            Today: [moment(), moment()],
+            Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        },
+        startDate: moment().startOf('month').format('DD-MM-YYYY'),
+        endDate: moment().endOf('month').format('DD-MM-YYYY')
+    });
+
+    $('#customDateTriggerPayment').on('click', function () {
+        picker.show();
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('backButton').addEventListener('click', function () {
@@ -53,6 +98,11 @@ function loadData() {
             $.ajax({
                 url: '/PaymentTracker/GetAll',
                 type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartPaymentDate,
+                    endDate: filterEndPaymentDate
+                },
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data)) {

@@ -10,7 +10,7 @@ namespace QMS.Core.Repositories.PaymentTrackerRepository
 {
     public interface IPaymentTracRepository
     {
-        Task<List<PaymentTracViewModel>> GetListAsync();
+        Task<List<PaymentTracViewModel>> GetListAsync(DateTime? startDate, DateTime? endDate);
         Task<OperationResult> CreateAsync(Payment_Tracker payment, bool returnCreatedRecord = false);
         Task<OperationResult> UpdateAsync(Payment_Tracker payment, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int Id);

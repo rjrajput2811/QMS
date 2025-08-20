@@ -1,5 +1,5 @@
-﻿let filterStartDate = moment().startOf('week').format('YYYY-MM-DD');
-let filterEndDate = moment().endOf('week').format('YYYY-MM-DD');
+﻿let filterStartDate = moment().startOf('month').format('YYYY-MM-DD');
+let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
 var table = '';
 let vendorOptions = {};
 var tabledata = [];
@@ -47,8 +47,8 @@ $(document).ready(function () {
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
         },
-        startDate: moment().startOf('week').format('DD-MM-YYYY'),
-        endDate: moment().endOf('week').format('DD-MM-YYYY')
+        startDate: moment().startOf('month').format('DD-MM-YYYY'),
+        endDate: moment().endOf('month').format('DD-MM-YYYY')
     });
 
     // 🔑 Ensure calendar opens on click
@@ -272,10 +272,6 @@ function OnTabThirdInsGridLoad(response) {
                 ActionPlan: item.actionPlan || "",
                 MOMDate: formatDate(item.mOMDate),
                 Attachment: item.attachment || "",
-                Document_No: item.document_No || "",
-                Revision_No: item.revision_No || "",
-                Effective_Date: formatDate(item.effective_Date),
-                Revision_Date: formatDate(item.revision_Date),
                 UpdatedDate: formatDate(item.updatedDate),
                 CreatedDate: formatDate(item.createdDate),
                 CreatedBy: item.createdBy || "",

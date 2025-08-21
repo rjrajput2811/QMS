@@ -41,9 +41,9 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                 if (startDate.HasValue && endDate.HasValue)
                 {
                     result = result
-                        .Where(x => x.DispatchDate.HasValue &&
-                                    x.DispatchDate.Value.Date >= startDate.Value.Date &&
-                                    x.DispatchDate.Value.Date <= endDate.Value.Date)
+                        .Where(x => x.CreatedDate.HasValue &&
+                                    x.CreatedDate.Value.Date >= startDate.Value.Date &&
+                                    x.CreatedDate.Value.Date <= endDate.Value.Date)
                         .ToList();
                 }
                 return result.Select(data => new PDITrackerViewModel
@@ -120,8 +120,8 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                     new SqlParameter("@Revision_No", entity.Revision_No ?? (object)DBNull.Value),
                     new SqlParameter("@Effective_Date", entity.Effective_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Revision_Date", entity.Revision_Date ?? (object)DBNull.Value),
-                     new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object)DBNull.Value),
-                   new SqlParameter("@IsDeleted", entity.Deleted)
+                    new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object)DBNull.Value),
+                    new SqlParameter("@IsDeleted", entity.Deleted)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(

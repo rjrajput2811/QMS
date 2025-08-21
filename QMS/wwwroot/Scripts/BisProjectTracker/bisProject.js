@@ -190,8 +190,16 @@ function getFinancialYears() {
         startYear = year;
     }
 
-    let endYear = startYear + 1;
-    return startYear + "-" + endYear.toString().slice(-2);
+    // Build last 5 financial years
+    let years = {};
+    for (let i = 0; i < 5; i++) {
+        let sYear = startYear - i;
+        let eYear = sYear + 1;
+        let fy = sYear + "-" + eYear.toString().slice(-2);
+        years[fy] = fy;
+    }
+
+    return years;
 }
 
 var financialYears = getFinancialYears();
@@ -290,14 +298,13 @@ function OnTabGridLoad(response) {
         {
             title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
         },
-        
+
         {
             title: "Financial Year",
             field: "Financial_Year",
             editor: "list",
             editorParams: {
-                values: financialYears,   // array or object
-                autocomplete: true,
+                values: financialYears,
                 clearable: true
             },
             headerFilter: "list",
@@ -453,7 +460,8 @@ function OnTabGridLoad(response) {
     });
 
     $("#addBISButton").on("click", function () {
-        const currentFY = getFinancialYears(); 
+        const fyOptions = getFinancialYears(); // returns object
+        const currentFY = Object.keys(fyOptions)[0]; // take the first key (e.g. "2025-26") 
         var month = getMonthString();
 
         const newRow = {

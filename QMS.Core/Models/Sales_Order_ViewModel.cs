@@ -108,6 +108,7 @@ namespace QMS.Core.Models
         public decimal? PO_Qty { get; set; }
         public DateTime? Delivery_Date { get; set; }
         public string? SO_No { get; set; }
+        public string? Item_Category_Latest { get; set; }
         public DateTime? SO_Date { get; set; }
         public int? SO_Qty { get; set; }
         public string? PO_Material { get; set; }

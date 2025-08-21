@@ -494,6 +494,7 @@
                                 PO_Date: formatDate(item.pO_Date),
                                 PO_Qty: item.pO_Qty,
                                 Delivery_Date: formatDate(item.delivery_Date),
+                                Item_Category_Latest: item.item_Category_Latest,
                                 SO_No: item.sO_No,
                                 SO_Date: formatDate(item.sO_Date),
                                 SO_Qty: item.sO_Qty,
@@ -516,6 +517,7 @@
                         dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
                         columns: [
                             { title: "Sr No",formatter: "rownum",hozAlign: "center",headerSort: false,width: 70 },
+                            { title: "Item Category", field: "Item_Category_Latest", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "PO No", field: "PO_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
                             { title: "PO Date", field: "PO_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "PO Qty", field: "PO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },

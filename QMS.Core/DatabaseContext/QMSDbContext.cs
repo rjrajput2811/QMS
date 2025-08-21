@@ -46,6 +46,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<JobWork_Tracking_Service> JobWorkTrac { get; set; }
         public DbSet<RLT_Tracking_Service> RLTTrac { get; set; }
         public DbSet<ContractorDetail_Service> ContractorDetails { get; set; }
+        public DbSet<DocumentDetail> Doc_Detail { get; set; }
 
         //// ------- Service -------- ////
 

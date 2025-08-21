@@ -131,10 +131,16 @@
                 </div>
             </div>
             <div>
-                <button id="addBISButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px;font-size:15px">
+                <button id="addBISButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 95px;font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button id="backButton" class="btn btn-outline-primary btn-sm">
+                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel()" style="width: 183px;font-size:15px">
+                    <i class="fas fa-regular fa-book mr-2 fa-1x"></i>Add Doc. Detail
+                </button>
+                <button id="exportButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
+                </button>
+                <button id="backButton" class="btn btn-outline-primary">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
 
@@ -191,3 +197,4 @@
     <script src="~/scripts/bisprojecttracker/bisproject.js" asp-append-version="true"></script>
 }
 
+@await Html.PartialAsync("_DocumentDetModelpartial")

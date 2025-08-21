@@ -1,0 +1,67 @@
+﻿
+<div class="modal fade" id="docDetModal" tabindex="-1" role="dialog" aria-labelledby="docDetModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header d-flex justify-content-between align-items-center">
+                <h5 class="modal-title" id="docDetModalLabel">Document Details</h5>
+
+                <div class="ml-auto">
+                    <button type="button" class="btn btn-primary" id="submitBtn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="modalClose" data-dismiss="modal" aria-label="Close">Close</button>
+                </div>
+
+            </div>
+            <div class="modal-body">
+                <div class="col-12 pt-2">
+                    <div class="form-group">
+                        <input type="hidden" id="hdnId" name="Id" />
+                        <div class="row form-group align-items-center">
+                            <label class="col-3">Document No</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
+                            <div class="col-8">
+                                <input name="doc_No" id="doc_No" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row form-group align-items-center">
+                            <label class="col-3">Revision No</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
+                            <div class="col-4">
+                                <input name="rev_No" id="rev_No" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row form-group align-items-center">
+                            <label class="col-3">Effective Date</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
+                            <div class="col-4">
+                                <input type="date" name="effect_Date" id="effect_Date" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="row form-group align-items-center">
+                            <label class="col-3">Revision Date</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
+                            <div class="col-4">
+                                <input type="date" name="rev_Date" id="rev_Date" class="form-control"  />
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    $('#close-button').on('click', function () {
+        $('#docDetModal').modal('hide');
+    });
+
+    $('#modalClose').on('click', function () {
+        $('#docDetModal').modal('hide');
+    });
+
+    function AutoReload() {
+        setTimeout(function () { window.location.reload(); }, 1500);
+    }
+
+</script>

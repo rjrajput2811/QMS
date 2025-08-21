@@ -1095,5 +1095,36 @@ function delNatProjectConfirm(recid, element) {
     });
 }
 
+function clearForm() {
+    // Clear all input fields
+    document.querySelectorAll('.form-control').forEach(function (input) {
+        if (input.tagName === 'INPUT') {
+            if (input.type === 'hidden' || input.readOnly) {
+                // Skip hidden or readonly inputs
+                return;
+            }
+            input.value = ''; // Clear input value
+        } else if (input.tagName === 'SELECT') {
+            input.selectedIndex = 0; // Reset dropdown to first option
+        }
+    });
 
+    // Clear error messages if needed
+    document.querySelectorAll('.text-danger').forEach(function (error) {
+        error.textContent = '';
+    });
+}
+
+
+function openDocModel() {
+    clearForm();
+    if (!$('#docDetModal').length) {
+        $('body').append(partialView);
+    }
+    $('#docDetModal').modal('show');
+
+    var today = new Date().toISOString().split('T')[0];
+    $('#effect_Date').val(today);
+    $('#rev_Date').val(today);
+}
 

@@ -9,6 +9,7 @@ using QMS.Core.Services.SystemLogs;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,6 +65,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Comit_Qty = data.Comit_Qty,
                     Comit_Planner_Qty = data.Comit_Planner_Qty,
                     Comit_Planner_date = data.Comit_Planner_date,
+                    PCWeekDate = data.PCWeekDate,
                     Comit_Vendor_Date = data.Comit_Vendor_Date,
                     Comit_Vendor_Qty = data.Comit_Vendor_Qty,
                     Comit_Planner_Remark = data.Comit_Planner_Remark,
@@ -133,6 +135,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Comit_Qty = data.Comit_Qty,
                     Comit_Planner_Qty = data.Comit_Planner_Qty,
                     Comit_Planner_date = data.Comit_Planner_date,
+                    PCWeekDate = data.PCWeekDate,
                     Comit_Vendor_Date = data.Comit_Vendor_Date,
                     Comit_Vendor_Qty = data.Comit_Vendor_Qty,
                     Comit_Planner_Remark = data.Comit_Planner_Remark,
@@ -713,9 +716,9 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             existingEntity.Schedule_Line_Date2 != item.Schedule_Line_Date2 ||
                             existingEntity.Schedule_Line_Qty3 != item.Schedule_Line_Qty3 ||
                             existingEntity.Schedule_Line_Date3 != item.Schedule_Line_Date3;
-                            //existingEntity.To_Consider != item.To_Consider ||
-                            //existingEntity.Person_Name != item.Person_Name ||
-                            //existingEntity.Visibility != item.Visibility;
+                        //existingEntity.To_Consider != item.To_Consider ||
+                        //existingEntity.Person_Name != item.Person_Name ||
+                        //existingEntity.Visibility != item.Visibility;
 
                         if (isDifferent)
                         {
@@ -974,11 +977,12 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     new SqlParameter("@Comit_Planner_Remark", updatedRecord.Comit_Planner_Remark ?? (object)DBNull.Value),
                     new SqlParameter("@Comit_Vendor_Date", updatedRecord.Comit_Vendor_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Comit_Vendor_Qty", updatedRecord.Comit_Vendor_Qty ?? (object)DBNull.Value),
+                    new SqlParameter("@PCWeekDate", updatedRecord.PCWeekDate ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 var sql = @"EXEC sp_Update_Open_PO @Ven_PoId,@Comit_Date,@Comit_Qty,@Comit_Date1,@Comit_Qty1,@Comit_Final_Date,@Comit_Final_Qty,@Comit_Planner_Qty,@Comit_Planner_Date,@Comit_Planner_Remark,
-                        @Comit_Vendor_Date,@Comit_Vendor_Qty,@UpdatedBy";
+                        @Comit_Vendor_Date,@Comit_Vendor_Qty,@PCWeekDate,@UpdatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -998,6 +1002,137 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 throw;
             }
         }
+
+        public async Task<List<PCCalendarViewModel>> GetPCListAsync()
+        {
+            try
+            {
+                var result = await _dbContext.PC_Calendar.FromSqlRaw("EXEC sp_Get_PcCalendar").ToListAsync();
+
+                var viewModelList = result.Select(data => new PCCalendarViewModel
+                {
+                    Id = data.Id,
+                    PC = data.PC,
+                    Week = data.Week,
+                    From = data.From,
+                    To = data.To,
+                    Days = data.Days,
+                    CreatedDate = data.CreatedDate,
+                    CreatedBy = data.CreatedBy,
+                }).ToList();
+
+                return viewModelList;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<BulkPCCreateLogResult> BulkPCCreateAsync(List<PCCalendarViewModel> listOfData, string fileName, string uploadedBy)
+        {
+            var res = new BulkPCCreateLogResult();
+            if (listOfData == null || listOfData.Count == 0)
+            {
+                res.Result = new OperationResult { Success = true, Message = "No rows to import." };
+                return res;
+            }
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            string KeyOf(PCCalendarViewModel x) =>
+                $"{x.PC}|{x.Week}|{x.From?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}|{x.To?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
+
+            int inserted = 0;
+
+            await using var tx = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                foreach (var item in listOfData)
+                {
+                    // Skip lines that don't have a coherent range
+                    if (!item.PC.HasValue || !item.Week.HasValue || !item.From.HasValue || !item.To.HasValue)
+                    {
+                        res.FailedRecords.Add((item, "Missing one of PC/Week/From/To."));
+                        continue;
+                    }
+                    if (item.From.Value.Date > item.To.Value.Date)
+                    {
+                        res.FailedRecords.Add((item, "From date is after To date."));
+                        continue;
+                    }
+
+                    // compute Days if not present
+                    if (!item.Days.HasValue)
+                        item.Days = (int)(item.To.Value.Date - item.From.Value.Date).TotalDays + 1;
+
+                    // de-dup inside this file
+                    var key = KeyOf(item);
+                    if (!seen.Add(key))
+                    {
+                        res.FailedRecords.Add((item, "Duplicate in uploaded file (same PC|Week|From|To)."));
+                        continue;
+                    }
+
+                    int pc = item.PC.Value;
+                    int wk = item.Week.Value;
+                    var from = item.From.Value.Date;
+                    var to = item.To.Value.Date;
+
+                    // exact dup in DB
+                    bool exists = await _dbContext.PC_Calendar
+                        .AnyAsync(x => x.PC == pc && x.Week == wk && x.From == from && x.To == to);
+                    if (exists)
+                    {
+                        res.FailedRecords.Add((item, "Duplicate in database (same PC|Week|From|To)."));
+                        continue;
+                    }
+
+                    // overlap on same PC (any week)
+                    bool overlaps = await _dbContext.PC_Calendar
+                        .AnyAsync(x => x.PC == pc && x.From <= to && x.To >= from);
+                    if (overlaps)
+                    {
+                        res.FailedRecords.Add((item, "Overlapping date range exists for the same PC."));
+                        continue;
+                    }
+
+                    var entity = new PC_Calendar_SCM
+                    {
+                        PC = pc,
+                        Week = wk,
+                        From = from,
+                        To = to,
+                        Days = item.Days,
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    _dbContext.PC_Calendar.Add(entity);
+                    inserted++;
+                }
+
+                await _dbContext.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                res.Result = new OperationResult
+                {
+                    Success = true,
+                    Message = res.FailedRecords.Any()
+                        ? $"Imported {inserted} of {listOfData.Count} rows. Some rows skipped."
+                        : $"All {inserted} rows imported successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                res.Result = new OperationResult { Success = false, Message = "Error during import: " + ex.Message };
+            }
+
+            return res;
+        }
+
 
     }
 }

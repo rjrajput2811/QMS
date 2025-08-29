@@ -333,6 +333,7 @@
         var poRowDataCache = {};
         var currentMainRowData = {};
         var selectedPoId = 0;
+        window.PC_CAL = []; 
 
 
          $(document).ready(function () {
@@ -354,7 +355,9 @@
              }
              else
              {
-                loadData();
+                   loadPCCalendar().always(function () {
+          loadData();
+        });
              }
          });
 
@@ -387,6 +390,52 @@
             $('#uploadModal').modal('show');
         }
 
+        function parseAnyDate(input) {
+            if (!input) return null;
+            if (input instanceof Date) return isNaN(input) ? null : input;
+
+            if (typeof input === 'string') {
+                // dd/MM/yyyy
+                let m = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (m) {
+                    const d = parseInt(m[1], 10), mo = parseInt(m[2], 10) - 1, y = parseInt(m[3], 10);
+                    const dt = new Date(y, mo, d);
+                    return isNaN(dt) ? null : dt;
+                }
+                // yyyy-MM-dd
+                m = input.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+                if (m) {
+                    const y = parseInt(m[1], 10), mo = parseInt(m[2], 10) - 1, d = parseInt(m[3], 10);
+                    const dt = new Date(y, mo, d);
+                    return isNaN(dt) ? null : dt;
+                }
+                // last resort
+                const dt = new Date(input);
+                return isNaN(dt) ? null : dt;
+            }
+            return null;
+        }
+
+        function isBetweenInclusive(d, fromStr, toStr) {
+            const from = parseAnyDate(fromStr);
+            const to   = parseAnyDate(toStr);
+            if (!d || !from || !to) return false;
+
+            const dd = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+            const ff = new Date(from.getFullYear(), from.getMonth(), from.getDate());
+            const tt = new Date(to.getFullYear(), to.getMonth(), to.getDate());
+            return dd >= ff && dd <= tt;
+        }
+
+        function getPCWeekCodeForDate(anyDate) {
+            const d = parseAnyDate(anyDate);
+            if (!d || !Array.isArray(window.PC_CAL) || window.PC_CAL.length === 0) return "";
+            const hit = window.PC_CAL.find(r => isBetweenInclusive(d, r.from, r.to));
+            if (!hit) return "";
+            return `PC${hit.pc}WK${hit.week}`;
+        }
+
+
         function loadData() {
 
             Blockloadershow();
@@ -414,6 +463,53 @@
                     Blockloaderhide();
                 }
             });
+        }
+
+        // function loadPCCalendar(callback) {
+        //     Blockloadershow();
+        //     $.ajax({
+        //         url: '@Url.Action("GetPCCalendar", "OpenPo")',
+        //         type: 'GET',
+        //         success: function (data) {
+        //             Blockloaderhide();
+        //             if (Array.isArray(data)) {
+        //                 window.PC_CAL = data.map(r => ({
+        //                     pc:   r.pc ?? r.PC ?? r.Pc ?? r.pC,
+        //                     week: r.week ?? r.Week,
+        //                     from: r.from ?? r.FROM ?? r.From,
+        //                     to:   r.to   ?? r.TO   ?? r.To
+        //                 })).filter(x => x.pc && x.week && x.from && x.to);
+        //                 if (typeof callback === "function") callback();
+        //             } else {
+        //                 showDangerAlert('PC Calendar: invalid response.');
+        //                 if (typeof callback === "function") callback(); // still proceed
+        //             }
+        //         },
+        //         error: function (xhr, status, error) {
+        //             Blockloaderhide();
+        //             showDangerAlert('PC Calendar load failed: ' + error);
+        //             if (typeof callback === "function") callback(); // still proceed
+        //         }
+        //     });
+        // }
+
+        function loadPCCalendar() {
+          // IMPORTANT: return the jqXHR
+          return $.ajax({
+           url: '@Url.Action("GetPCCalendar", "OpenPo")',
+            type: 'GET',
+            dataType: 'json'
+          }).done(function (pcRaw) {
+            window.PC_CAL = (pcRaw || []).map(r => ({
+              pc:   r.pc ?? r.PC ?? r.Pc ?? r.pC,
+              week: r.week ?? r.Week,
+              from: r.from ?? r.FROM ?? r.From,
+              to:   r.to   ?? r.TO   ?? r.To
+            })).filter(x => x.pc && x.week && x.from && x.to);
+          }).fail(function (xhr, status, err) {
+            console.warn('PC Calendar load failed:', status, err, xhr?.responseText);
+            window.PC_CAL = []; // fail-soft
+          });
         }
 
         function loadVendorData() {
@@ -506,6 +602,20 @@
             }
         }
 
+                function normalizeToEnGb(v) {
+            if (!v) return "";
+            // already dd/mm/yyyy
+            if (/^\d{2}\/\d{2}\/\d{4}$/.test(v)) return v;
+            // yyyy-mm-dd -> dd/mm/yyyy
+            if (/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+                const [y, m, d] = v.split("-");
+                return `${d}/${m}/${y}`;
+            }
+            // best-effort
+            const dt = new Date(v);
+            return isNaN(dt) ? "" : dt.toLocaleDateString("en-GB");
+        }
+
         function OnTabGridLoad(response) {
             // Clear table data
             debugger;
@@ -526,6 +636,8 @@
 
                 $.each(myList, function (index, item) {
 
+                    const plannerDateStr = formatDate(item.comit_Planner_date);
+                    const plannerPCWeek  = getPCWeekCodeForDate(plannerDateStr);
                     
 
                     tabledata.push({
@@ -555,7 +667,8 @@
                         Comit_Date : formatDate(item.comit_Date),
                         Comit_Qty : item.comit_Qty,
                         Comit_Planner_Qty : item.comit_Planner_Qty,
-                        Comit_Planner_date : formatDate(item.comit_Planner_date),
+                        Comit_Planner_date : plannerDateStr,
+                        PCWeekDate : plannerPCWeek,
                         Comit_Vendor_Date : formatDate(item.comit_Vendor_Date),
                         Comit_Vendor_Qty : item.comit_Vendor_Qty,
                         Comit_Planner_Remark : item.comit_Planner_Remark,
@@ -599,6 +712,8 @@
                     const value = cell.getValue();
                     return value == null || value === "" || Number.isNaN(value)|| value === 0 ;
                 }
+
+
 
                 if (userType != "Vendor") {
 
@@ -731,13 +846,34 @@
 
                     if (userType != "Vendor")
                     {
-                        columns.push({ title: "1st Commitment Date", field: "Comit_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
-                        columns.push({ title: "1st Commitment Qty", field: "Comit_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
-                        columns.push({ title: "2nd Commitment Date", field: "Comit_Date1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
-                        columns.push({ title: "2nd Commitment Qty", field: "Comit_Qty1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
-                        columns.push({ title: "Final Commitment Date", field: "Comit_Final_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
-                        columns.push({ title: "Final Commitment Qty", field: "Comit_Final_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
-                        columns.push({ title: "Planner Date", field: "Comit_Planner_date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
+                        columns.push({ title: "1st Commitment Date", field: "Comit_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "1st Commitment Qty", field: "Comit_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "2nd Commitment Date", field: "Comit_Date1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "2nd Commitment Qty", field: "Comit_Qty1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"});
+                        columns.push({ title: "3rd Commitment Date", field: "Comit_Final_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "3rd Commitment Qty", field: "Comit_Final_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        // columns.push({ title: "Planner Date", field: "Comit_Planner_date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: true });
+                        columns.push({
+                            title: "Planner Date",
+                            field: "Comit_Planner_date",
+                            headerMenu: headerMenu,
+                            headerFilter: "input",
+                            hozAlign: "center",
+                            headerHozAlign: "center",
+                            formatter: function (cell) {
+                              const v = cell.getValue();
+                              if (!v) return "";
+                              const d = new Date(v);
+                              if (isNaN(d)) return v; // already a string like dd/MM/yyyy
+                              const dd = String(d.getDate()).padStart(2, "0");
+                              const mm = String(d.getMonth() + 1).padStart(2, "0");
+                              const yyyy = d.getFullYear();
+                              return `${dd}/${mm}/${yyyy}`;
+                            },
+                            editor: "date",
+                            editable: true
+                        });
+                        columns.push({ title: "Planner Date in PC Week", field: "PCWeekDate", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: false });
                         columns.push({ title: "Planner Qty", field: "Comit_Planner_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
                         columns.push({ title: "Planner Remark", field: "Comit_Planner_Remark", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "center", editor: "input", editable: isEditable });
                         columns.push({ title: "Vendor Date", field: "Comit_Vendor_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
@@ -773,6 +909,17 @@
                     // if (columnField !== "Action" && columnField !== "Delivery_Date") {
                     //     saveEditedRow(cell.getRow().getData());
                     // }
+                    const field = cell.getColumn().getField();
+
+                        if (field === "Comit_Planner_date") {
+                        const row = cell.getRow();
+                        const val = cell.getValue(); // may be "dd/mm/yyyy" or "yyyy-mm-dd"
+
+                        // Normalize to dd/mm/yyyy for your existing getPCWeekCodeForDate()
+                        const code = getPCWeekCodeForDate(normalizeToEnGb(val));
+                        row.update({ PCWeekDate: code });  // ← immediate UI update
+                    }
+
                     saveEditedRow(cell.getRow().getData());
                 });
 
@@ -852,6 +999,25 @@
 
         function loadDeliveryScheduleTable(response) {
 
+            function toISODate(d) {
+                if (!d) return "";
+                const dt = new Date(d);
+                dt.setHours(0,0,0,0);
+                const y = dt.getFullYear();
+                const m = String(dt.getMonth()+1).padStart(2,"0");
+                const dd = String(dt.getDate()).padStart(2,"0");
+                return `${y}-${m}-${dd}`;                
+            }
+
+            function todayISO(){
+                const t = new Date();
+                t.setHours(0,0,0,0);
+                const y = t.getFullYear();
+                const m = String(t.getMonth()+1).padStart(2,'0');
+                const d = String(t.getDate()).padStart(2,'0');
+                return `${y}-${m}-${d}`;
+            }
+
             let tabledata = [];
 
             if (response.length > 0) {
@@ -863,7 +1029,7 @@
 
                     tabledata.push({
                         SrNo: index + 1,
-                        Delivery_Date: formatDate(item.delivery_Date),  // Assuming delivery_Date comes as raw datetime
+                        Delivery_Date: toISODate(item.delivery_Date),  // Assuming delivery_Date comes as raw datetime
                         Delivery_Qty: item.delivery_Qty,
                         Delivery_Remark: item.delivery_Remark
                     });
@@ -875,7 +1041,50 @@
                 layout: "fitColumns",
                 columns: [
                     { title: "Sr No.", field: "SrNo", width: 90 ,hozAlign: "center", headerHozAlign: "center"},
-                    { title: "Date", field: "Delivery_Date", editor: "date", width: 115,hozAlign: "center", headerHozAlign: "center" },
+                    {
+                        title: "Date",
+                        field: "Delivery_Date",
+                        width: 115,
+                        hozAlign: "center",
+                        headerHozAlign: "center",
+
+                        // custom editor: <input type="date">
+                        editor: function(cell, onRendered, success, cancel){
+                          const value = cell.getValue() || "";
+                          const input = document.createElement("input");
+                          input.type = "date";
+                          input.value = value;
+                          input.min = todayISO(); // blocks past dates
+                          input.style.width = "100%";
+
+                            onRendered(function(){
+                                input.focus();
+                                input.addEventListener("blur", () => success(input.value));
+                                input.addEventListener("keydown", (e) => {
+                                  if(e.key === "Enter") success(input.value);
+                                  if(e.key === "Escape") cancel();
+                                });
+                            });
+
+                          return input;
+                        },
+
+                        // custom formatter for DD/MM/YYYY
+                        formatter: function(cell){
+                          const v = cell.getValue();
+                          if(!v) return "";
+                          const [y,m,d] = v.split("-");
+                          return `${d}/${m}/${y}`;
+                        },
+
+                        // guard when user types via keyboard
+                        validator: function(cell, value){
+                          if(!value) return true;
+                          const picked = new Date(value);
+                          const t = new Date(); t.setHours(0,0,0,0);
+                          return picked >= t;
+                        }
+                    },
                     { title: "Qty", field: "Delivery_Qty", editor: "number", width: 95 ,hozAlign: "center", headerHozAlign: "center"},
                     { title: "Remark", field: "Delivery_Remark", editor: "input", width: 455,hozAlign: "left", headerHozAlign: "left" },
                     {
@@ -888,7 +1097,8 @@
                             renumberSrNo();
                         }
                     }
-                ]
+                ],
+
             });
         }
 
@@ -925,50 +1135,102 @@
             });
         }
 
+
         function saveDeliverySchedule() {
             Blockloadershow();
-            let data = deliveryScheduleTable.getData();
 
-            for (let row of data) {
-                if (!row.Delivery_Date && (!row.Delivery_Remarks || row.Delivery_Remarks.trim() === "")) {
+            const data = deliveryScheduleTable.getData() || [];
+            const headerData = poRowDataCache[selectedPoId] || {};
+            const poQty = parseFloat(headerData.PO_Qty) || 0;
+            const balanceQty = parseFloat(headerData.Balance_Qty) || 0;
+
+            // --- Basic validations ---
+            for (let i = 0; i < data.length; i++) {
+                const row = data[i];
+
+                // Remarks mandatory if Delivery_Date is blank
+                if (!row.Delivery_Date && (!row.Delivery_Remarks || String(row.Delivery_Remarks).trim() === "")) {
                     Blockloaderhide();
-                    showDangerAlert("Remarks mandatory if Delivery Date is blank.");
+                    showDangerAlert(`Row ${i + 1}: Remarks are mandatory if Delivery Date is blank.`);
+                    return;
+                }
+
+                // Qty must be numeric and >= 0 (allow 0 for remark-only/date-only rows)
+                if (row.Delivery_Qty !== undefined && row.Delivery_Qty !== null && String(row.Delivery_Qty).trim() !== "") {
+                    const qty = parseFloat(row.Delivery_Qty);
+                    if (isNaN(qty) || qty < 0) {
+                        Blockloaderhide();
+                        showDangerAlert(`Row ${i + 1}: Delivery Quantity must be a number ≥ 0.`);
+                        return;
+                    }
+                }
+            }
+
+            // --- Collect non-zero qty rows & totals ---
+            const nonZeroRows = [];
+            let totalQty = 0;
+
+            for (let i = 0; i < data.length; i++) {
+                const q = parseFloat(data[i].Delivery_Qty);
+                if (!isNaN(q) && q > 0) {
+                    nonZeroRows.push({ index: i + 1, qty: q });
+                    totalQty += q;
+                }
+            }
+
+            // Rule 1: Single-entry case must equal balance
+            if (nonZeroRows.length === 1) {
+                const only = nonZeroRows[0];
+                if (only.qty !== balanceQty) {
+                    Blockloaderhide();
+                    showDangerAlert(
+
+                        // Delivery Qty 150 must be equal to PO Bal.Qty 250. Add more Delivery Qty to save the schedule.
+                        // `Row ${only.index}: Since only one delivery is entered, its quantity must equal Balance Quantity ` +
+                        // `(${balanceQty.toFixed(2)}). You entered ${only.qty.toFixed(2)}.`
+                        `Delivery Qty ${(+only.qty).toFixed(0)} must be equal to PO Bal.Qty ${(+balanceQty).toFixed(0)}. Add more Delivery Qty to save the schedule.`
+                    );
                     return;
                 }
             }
 
-            let totalQty = 0;
-            for (let row of data) {
-                let qty = parseFloat(row.Delivery_Qty);
-                if (!isNaN(qty)) {
-                    totalQty += qty;
-                }
-            }
-
-            let headerData = poRowDataCache[selectedPoId];
-            let poQty = parseFloat(headerData.PO_Qty);
-
+            // (Optional guard: total should not exceed PO Qty)
             if (totalQty > poQty) {
                 Blockloaderhide();
-                showDangerAlert(`Total Delivery Quantity (${totalQty}) cannot be greater than PO Quantity (${poQty}).`);
+                showDangerAlert(`Total Delivery Quantity (${totalQty.toFixed(2)}) cannot be greater than PO Bal. Quantity (${poQty.toFixed(2)}).`);
                 return;
             }
 
-            let mappedData = data.map(row => ({
+            // Rule 2: Final total must equal balance to save
+            if (totalQty !== balanceQty) {
+                Blockloaderhide();
+                const diff = (balanceQty - totalQty).toFixed(2);
+                const status = (balanceQty - totalQty) > 0 ? "short" : "excess";
+                showDangerAlert(
+                    `Total Delivery Quantity (${totalQty.toFixed(2)}) must equal Balance Quantity (${balanceQty.toFixed(2)}). ` +
+                    `You are ${status} by ${Math.abs(diff)}.`
+                );
+                return;
+            }
+
+            // --- Map payload ---
+            const mappedData = data.map(row => ({
                 SrNo: row.SrNo,
                 Delivery_Date: row.Delivery_Date ? new Date(row.Delivery_Date) : null,
-                Delivery_Qty: row.Delivery_Qty || null,  // if you have Delivery_Qty
-                Delivery_Remark: row.Delivery_Remark || null
+                Delivery_Qty: (row.Delivery_Qty !== undefined && row.Delivery_Qty !== null && String(row.Delivery_Qty).trim() !== "")
+                    ? parseFloat(row.Delivery_Qty)
+                    : null,
+                Delivery_Remarks: row.Delivery_Remarks ? String(row.Delivery_Remarks).trim() : null
             }));
 
-            let request = {
+            const request = {
                 Id: headerData.Id || 0,
                 Ven_PoId: headerData.Id || 0,
                 Vendor: headerData.Vendor || '',
                 PO_No: headerData.PO_No || '',
                 PO_Date: headerData.PO_Date ? new Date(headerData.PO_Date) : null,
-                PO_Qty: headerData.PO_Qty || 0,
-                Balance_Qty: headerData.Balance_Qty || 0,
+                PO_Qty: poQty,
+                Balance_Qty: balanceQty,
                 DeliveryScheduleList: mappedData
             };
 
@@ -977,23 +1239,92 @@
                 url: '@Url.Action("SaveDeliverySchedule", "OpenPo")',
                 data: JSON.stringify(request),
                 contentType: "application/json",
-                success: function (response) {
+                success: function () {
                     Blockloaderhide();
                     showSuccessAlert("Schedule saved successfully!");
-
-                     $("#deliveryScheduleModal").modal('hide');
-
-                     if(userType == "Vendor")
-                     {
-                         loadVendorData()
-                     }
-                     else
-                     {
+                    $("#deliveryScheduleModal").modal('hide');
+                    if (userType == "Vendor") {
+                        loadVendorData();
+                    } else {
                         loadData();
-                     }
+                    }
+                },
+                error: function () {
+                    Blockloaderhide();
+                    showDangerAlert("Failed to save schedule. Please try again.");
                 }
             });
         }
+
+        // function saveDeliverySchedule() {
+        //     Blockloadershow();
+        //     let data = deliveryScheduleTable.getData();
+
+        //     for (let row of data) {
+        //         if (!row.Delivery_Date && (!row.Delivery_Remarks || row.Delivery_Remarks.trim() === "")) {
+        //             Blockloaderhide();
+        //             showDangerAlert("Remarks mandatory if Delivery Date is blank.");
+        //             return;
+        //         }
+        //     }
+
+        //     let totalQty = 0;
+        //     for (let row of data) {
+        //         let qty = parseFloat(row.Delivery_Qty);
+        //         if (!isNaN(qty)) {
+        //             totalQty += qty;
+        //         }
+        //     }
+
+        //     let headerData = poRowDataCache[selectedPoId];
+        //     let poQty = parseFloat(headerData.PO_Qty);
+
+        //     if (totalQty > poQty) {
+        //         Blockloaderhide();
+        //         showDangerAlert(`Total Delivery Quantity (${totalQty}) cannot be greater than PO Quantity (${poQty}).`);
+        //         return;
+        //     }
+
+        //     let mappedData = data.map(row => ({
+        //         SrNo: row.SrNo,
+        //         Delivery_Date: row.Delivery_Date ? new Date(row.Delivery_Date) : null,
+        //         Delivery_Qty: row.Delivery_Qty || null,  // if you have Delivery_Qty
+        //         Delivery_Remark: row.Delivery_Remark || null
+        //     }));
+
+        //     let request = {
+        //         Id: headerData.Id || 0,
+        //         Ven_PoId: headerData.Id || 0,
+        //         Vendor: headerData.Vendor || '',
+        //         PO_No: headerData.PO_No || '',
+        //         PO_Date: headerData.PO_Date ? new Date(headerData.PO_Date) : null,
+        //         PO_Qty: headerData.PO_Qty || 0,
+        //         Balance_Qty: headerData.Balance_Qty || 0,
+        //         DeliveryScheduleList: mappedData
+        //     };
+
+        //     $.ajax({
+        //         type: "POST",
+        //         url: '@Url.Action("SaveDeliverySchedule", "OpenPo")',
+        //         data: JSON.stringify(request),
+        //         contentType: "application/json",
+        //         success: function (response) {
+        //             Blockloaderhide();
+        //             showSuccessAlert("Schedule saved successfully!");
+
+        //              $("#deliveryScheduleModal").modal('hide');
+
+        //              if(userType == "Vendor")
+        //              {
+        //                  loadVendorData()
+        //              }
+        //              else
+        //              {
+        //                 loadData();
+        //              }
+        //         }
+        //     });
+        // }
 
         function saveEditedRow(rowData) {
             debugger
@@ -1038,7 +1369,8 @@
                 Comit_Date1: toIsoDate(rowData.Comit_Date1),
                 Comit_Qty1: toIsoDate(rowData.Comit_Qty1),
                 Comit_Final_Date: toIsoDate(rowData.Comit_Final_Date),
-                Comit_Final_Qty: rowData.Comit_Final_Qty || 0
+                Comit_Final_Qty: rowData.Comit_Final_Qty || 0,
+                PCWeekDate: rowData.PCWeekDate || null
             };
 
             $.ajax({
@@ -1049,7 +1381,7 @@
                 success: function (response) {
                     Blockloaderhide();
                     if (response.success) {
-                        showSuccessAlert('<i class="fa fa-check-circle" style="color:green; font-size:24px;"></i>');
+                        showSuccessPoAlert('<i class="fa fa-check-circle" style="color:green; font-size:24px;"></i>');
                     }
                     else {
                         let errorMessg = "";
@@ -1068,6 +1400,15 @@
                     showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
                 }
             });
+        }
+
+        function showSuccessPoAlert(Texts) {
+           new Noty({
+               theme: ' alert alert-success alert-styled-left p-0 ',
+               text: Texts,
+               progressBar: true,
+               closeWith: ['button']
+           }).show();
         }
     </script>
 }

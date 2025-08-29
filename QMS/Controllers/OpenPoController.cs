@@ -4,6 +4,7 @@ using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.OpenPoRepository;
 using QMS.Core.Services.SystemLogs;
+using System.Globalization;
 
 namespace QMS.Controllers
 {
@@ -409,6 +410,213 @@ namespace QMS.Controllers
             }
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             return Json(new { Success = false, Errors = errors });
+        }
+
+        public IActionResult PCCalendar()
+        {
+            return View();
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetPCCalendar()
+        {
+            var openPoDeatilsList = await _openPoReposiotry.GetPCListAsync();
+            return Json(openPoDeatilsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadPCCalendarDataExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        {
+            var rowsToInsert = new List<PCCalendarViewModel>();
+            var parseErrors = new List<(int Row, string From, string To, string Reason)>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                using var ms = new MemoryStream();
+                await file.CopyToAsync(ms);
+                ms.Position = 0;
+
+                using var wb = new XLWorkbook(ms);
+                var ws = wb.Worksheet(1);
+
+                // 1) Find header row (“PC”, “Week”, “FROM”, “TO”)
+                int headerRow = 0;
+                var lastUsed = ws.LastRowUsed()?.RowNumber() ?? 0;
+                for (int r = 1; r <= Math.Min(lastUsed, 50); r++)
+                {
+                    string c1 = ws.Cell(r, 1).GetValue<string>().Trim();
+                    string c2 = ws.Cell(r, 2).GetValue<string>().Trim();
+                    string c3 = ws.Cell(r, 3).GetValue<string>().Trim().ToUpperInvariant();
+                    string c4 = ws.Cell(r, 4).GetValue<string>().Trim().ToUpperInvariant();
+
+                    if (string.Equals(c1, "PC", StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(c2, "Week", StringComparison.OrdinalIgnoreCase) &&
+                        c3.Contains("FROM") && c4.Contains("TO"))
+                    {
+                        headerRow = r;
+                        break;
+                    }
+                }
+                if (headerRow == 0)
+                    return Json(new { success = false, message = "Header row not found. Expected columns: PC | Week | FROM | TO | DAYS" });
+
+                // helpers
+                static int? ParseIntOrNull(string s)
+                    => int.TryParse(s, NumberStyles.Integer, CultureInfo.InvariantCulture, out var v) ? v : (int?)null;
+
+                static DateTime? GetCellDate(IXLCell cell)
+                {
+                    // numeric Excel date
+                    if (cell.DataType == XLDataType.DateTime)
+                        return cell.GetDateTime().Date;
+
+                    var raw = cell.GetValue<string>()?.Trim();
+                    if (string.IsNullOrWhiteSpace(raw)) return null;
+
+                    // sometimes Excel shows overflow "#####"
+                    if (raw.All(ch => ch == '#')) return null;
+
+                    // try a few formats (handles “Tuesday, April 1, 2025” etc.)
+                    string[] fmts = {
+                "dddd, MMMM d, yyyy", "dddd, MMMM dd, yyyy",
+                "MMMM d, yyyy", "MMMM dd, yyyy",
+                "M/d/yyyy", "MM/dd/yyyy", "d/M/yyyy", "dd/MM/yyyy",
+                "yyyy-MM-dd"
+            };
+                    if (DateTime.TryParseExact(raw, fmts, CultureInfo.InvariantCulture,
+                                               DateTimeStyles.AllowWhiteSpaces, out var dt))
+                        return dt.Date;
+
+                    // final fallback
+                    if (DateTime.TryParse(raw, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out dt))
+                        return dt.Date;
+
+                    return null;
+                }
+
+                int? lastPc = null;
+
+                // 2) Iterate data rows
+                for (int r = headerRow + 1; r <= lastUsed; r++)
+                {
+                    try
+                    {
+                        string pcStr = ws.Cell(r, 1).GetValue<string>()?.Trim();
+                        string weekStr = ws.Cell(r, 2).GetValue<string>()?.Trim();
+
+                        // potential total/footer lines – ignore
+                        string fromRaw = ws.Cell(r, 3).GetValue<string>()?.Trim();
+                        string toRaw = ws.Cell(r, 4).GetValue<string>()?.Trim();
+                        string daysStr = ws.Cell(r, 5).GetValue<string>()?.Trim();
+
+                        bool looksLikeGrandTotal = (daysStr == "365");
+                        bool looksLikeQuarterTotal =
+                            daysStr is "90" or "91" or "92" or "26" or "27" or "28" or "36" or "37" or "38" // your sheet shows these as quarter/month block sums
+                            && string.IsNullOrEmpty(fromRaw) && string.IsNullOrEmpty(toRaw);
+
+                        // also ignore completely blank lines
+                        bool blankLine = string.IsNullOrEmpty(pcStr) && string.IsNullOrEmpty(weekStr)
+                                         && string.IsNullOrEmpty(fromRaw) && string.IsNullOrEmpty(toRaw) && string.IsNullOrEmpty(daysStr);
+
+                        if (looksLikeGrandTotal || looksLikeQuarterTotal || blankLine)
+                            continue;
+
+                        // carry forward PC when merged/blank in sheet
+                        int? pc = ParseIntOrNull(pcStr);
+                        if (pc.HasValue) lastPc = pc;
+                        else pc = lastPc; // carry
+
+                        int? week = ParseIntOrNull(weekStr);
+
+                        DateTime? from = GetCellDate(ws.Cell(r, 3));
+                        DateTime? to = GetCellDate(ws.Cell(r, 4));
+
+                        // if nothing meaningful, skip
+                        if (!pc.HasValue && !week.HasValue && !from.HasValue && !to.HasValue)
+                            continue;
+
+                        // compute Days only for valid date rows
+                        int? days = null;
+                        if (from.HasValue && to.HasValue && to.Value >= from.Value)
+                        {
+                            days = (int)(to.Value - from.Value).TotalDays + 1;
+                        }
+
+                        var model = new PCCalendarViewModel
+                        {
+                            PC = pc,
+                            Week = week,
+                            From = from,
+                            To = to,
+                            Days = days, // ignore quarter/total numbers
+                            CreatedBy = uploadedBy,
+                            CreatedDate = DateTime.Now
+                        };
+
+                        rowsToInsert.Add(model);
+                    }
+                    catch (Exception exRow)
+                    {
+                        parseErrors.Add((r, ws.Cell(r, 3).GetValue<string>(), ws.Cell(r, 4).GetValue<string>(), "Row parse error: " + exRow.Message));
+                    }
+                }
+
+                // Send to repository
+                var importResult = await _openPoReposiotry.BulkPCCreateAsync(rowsToInsert, fileName, uploadedBy);
+
+                // If repo returned failures or we had parse errors, build a Fail workbook
+                if (importResult.FailedRecords.Any() || parseErrors.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var sheet = failWb.Worksheets.Add("Failed Records");
+
+                    sheet.Cell(1, 1).Value = "Row";
+                    sheet.Cell(1, 2).Value = "PC";
+                    sheet.Cell(1, 3).Value = "Week";
+                    sheet.Cell(1, 4).Value = "From";
+                    sheet.Cell(1, 5).Value = "To";
+                    sheet.Cell(1, 6).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var f in importResult.FailedRecords)
+                    {
+                        sheet.Cell(i, 1).Value = i - 1;
+                        sheet.Cell(i, 2).Value = f.Record.PC;
+                        sheet.Cell(i, 3).Value = f.Record.Week;
+                        sheet.Cell(i, 4).Value = f.Record.From;
+                        sheet.Cell(i, 5).Value = f.Record.To;
+                        sheet.Cell(i, 6).Value = f.Reason;
+                        i++;
+                    }
+                    foreach (var e in parseErrors)
+                    {
+                        sheet.Cell(i, 1).Value = e.Row;
+                        sheet.Cell(i, 4).Value = e.From;
+                        sheet.Cell(i, 5).Value = e.To;
+                        sheet.Cell(i, 6).Value = e.Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+                    var failedFileName = $"FailedPCCalendar_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = importResult.Result?.Message ?? $"Import completed. Parsed {rowsToInsert.Count} rows."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Import failed: " + ex.Message });
+            }
         }
     }
 }

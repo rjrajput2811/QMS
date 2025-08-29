@@ -28,5 +28,9 @@ namespace QMS.Core.Repositories.OpenPoRepository
         Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type);
 
         Task<OperationResult> UpdateAsync(Open_Po updatedRecord, bool returnUpdatedRecord = false);
+
+        Task<List<PCCalendarViewModel>> GetPCListAsync();
+
+        Task<BulkPCCreateLogResult> BulkPCCreateAsync(List<PCCalendarViewModel> listOfData, string fileName, string uploadedBy);
     }
 }

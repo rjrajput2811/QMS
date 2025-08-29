@@ -35,6 +35,7 @@ namespace QMS.Core.Models
         public int? Comit_Qty { get; set; }
         public int? Comit_Planner_Qty { get; set; }
         public DateTime? Comit_Planner_date { get; set; }
+        public string? PCWeekDate { get; set; }
         public DateTime? Comit_Vendor_Date { get; set; }
         public int? Comit_Vendor_Qty { get; set; }
         public string? Comit_Planner_Remark { get; set; }

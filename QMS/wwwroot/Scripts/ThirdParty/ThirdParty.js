@@ -577,30 +577,36 @@ function saveEditedRow(rowData) {
 
     // Converts "dd/MM/yyyy" to "yyyy-MM-dd"
     function toIsoDate(value) {
-        if (!value) return null;
-        const parts = value.split('/');
-        if (parts.length === 3) {
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        if (!value || value === "" || value === "Invalid Date") return null;
+
+        if (typeof value === "string" && value.includes("/")) {
+            const parts = value.split("/");
+            if (parts.length === 3) {
+                const [day, month, year] = parts;
+                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+            }
         }
-        return null;
+
+        const parsed = new Date(value);
+        return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
     }
 
     const cleanedData = {
         Id: rowData.Id || 0,
-        InspectionDate: toIsoDate(item.InspectionDate),
-        ProjectName: item.ProjectName || "",
-        InspName: item.InspName || "",
-        ProductCode: item.ProductCode || "",
-        ProdDesc: item.ProdDesc || "",
-        LOTQty: item.LOTQty || 0,
-        ProjectValue: item.ProjectValue || "",
-        Tpi_Duration: item.Tpi_Duration || "",
-        Location: item.Location || "",
-        Mode: item.Mode || "",
-        FirstAttempt: item.FirstAttempt || "",
-        Remark: item.Remark || "",
-        ActionPlan: item.ActionPlan || "",
-        MOMDate: toIsoDate(item.MOMDate),
+        InspectionDate: toIsoDate(rowData.InspectionDate),
+        ProjectName: rowData.ProjectName || "",
+        InspName: rowData.InspName || "",
+        ProductCode: rowData.ProductCode || "",
+        ProdDesc: rowData.ProdDesc || "",
+        LOTQty: rowData.LOTQty || 0,
+        ProjectValue: rowData.ProjectValue || "",
+        Tpi_Duration: rowData.Tpi_Duration || "",
+        Location: rowData.Location || "",
+        Mode: rowData.Mode || "",
+        FirstAttempt: rowData.FirstAttempt || "",
+        Remark: rowData.Remark || "",
+        ActionPlan: rowData.ActionPlan || "",
+        MOMDate: toIsoDate(rowData.MOMDate),
         Attahcment: rowData.Attahcment || null,
         Document_No: rowData.Document_No || "",
         Revision_No: rowData.Revision_No || "",

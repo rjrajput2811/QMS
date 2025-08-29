@@ -4,7 +4,7 @@ Noty.overrideDefaults({
     theme: 'limitless',
     layout: 'topRight',
     type: 'alert',
-    timeout: 2500
+    timeout: 1000
 });
 
 

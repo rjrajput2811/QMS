@@ -73,12 +73,42 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Comit_Qty1 = data.Comit_Qty1,
                     Comit_Final_Date = data.Comit_Final_Date,
                     Comit_Final_Qty = data.Comit_Final_Qty,
+                    Buffer_Day = data.Buffer_Day,
 
                     CreatedDate = data.CreatedDate,
                     CreatedBy = data.CreatedBy,
 
                     UpdatedDate = data.UpdatedDate,
                     UpdatedBy = data.UpdatedBy
+                }).ToList();
+
+                return viewModelList;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<Open_Po_LogViewModel>> GetPoLogListAsync()
+        {
+            try
+            {
+
+                var result = await _dbContext.OpenPo_Log.FromSqlRaw("EXEC sp_Get_PO_Log_Details").ToListAsync();
+
+                // Map results to ViewModel
+                var viewModelList = result.Select(data => new Open_Po_LogViewModel
+                {
+                    Id = data.Id,
+                    FileName = data.FileName,
+                    TotalRecords = data.TotalRecords,
+                    ImportedRecords = data.ImportedRecords,
+                    FailedRecords = data.FailedRecords,
+                    UploadedAt = data.UploadedAt,
+                    UploadedBy = data.UploadedBy
                 }).ToList();
 
                 return viewModelList;
@@ -143,6 +173,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Comit_Qty1 = data.Comit_Qty1,
                     Comit_Final_Date = data.Comit_Final_Date,
                     Comit_Final_Qty = data.Comit_Final_Qty,
+                    Buffer_Day = data.Buffer_Day,
 
                     CreatedDate = data.CreatedDate,
                     CreatedBy = data.CreatedBy,
@@ -397,7 +428,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 {
                     Delivery_Date = d.Delivery_Date,
                     Delivery_Qty = d.Delivery_Qty,
-                    Delivery_Remark = d.Delivery_Remark
+                    Delivery_Remark = d.Delivery_Remark,
+                    Date_PC_Week = d.Date_PC_Week
                 }).ToList()
             };
 
@@ -424,6 +456,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Delivery_Date = item.Delivery_Date,
                     Delivery_Qty = item.Delivery_Qty,
                     Delivery_Remark = item.Delivery_Remark,
+                    Date_PC_Week = item.Date_PC_Week,
                     CreatedBy = updatedBy,
                     CreatedDate = DateTime.Now
                 };
@@ -453,7 +486,37 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
+        public async Task<OperationResult> SaveBuffScheduleAsync(int id, int buff, string updatedBy, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var parameters = new[]
+                {
+                    new SqlParameter("@DeliverySchu_Id", id),
+                    new SqlParameter("@Ven_PoId", ""),
+                    new SqlParameter("@Buffer_Day", buff),
+                };
 
+                var sql = @"EXEC sp_Update_OpenPo_Buffer @DeliverySchu_Id,@Ven_PoId,@Buffer_Day";
+
+                await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
+
+                if (returnUpdatedRecord)
+                {
+                    return new OperationResult
+                    {
+                        Success = true,
+                    };
+                }
+
+                return new OperationResult { Success = true };
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
 
         public async Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type)
         {
@@ -978,11 +1041,12 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     new SqlParameter("@Comit_Vendor_Date", updatedRecord.Comit_Vendor_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Comit_Vendor_Qty", updatedRecord.Comit_Vendor_Qty ?? (object)DBNull.Value),
                     new SqlParameter("@PCWeekDate", updatedRecord.PCWeekDate ?? (object)DBNull.Value),
+                    new SqlParameter("@Buffer_Day ", updatedRecord.Buffer_Day ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 var sql = @"EXEC sp_Update_Open_PO @Ven_PoId,@Comit_Date,@Comit_Qty,@Comit_Date1,@Comit_Qty1,@Comit_Final_Date,@Comit_Final_Qty,@Comit_Planner_Qty,@Comit_Planner_Date,@Comit_Planner_Remark,
-                        @Comit_Vendor_Date,@Comit_Vendor_Qty,@PCWeekDate,@UpdatedBy";
+                        @Comit_Vendor_Date,@Comit_Vendor_Qty,@PCWeekDate,@Buffer_Day, @UpdatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 

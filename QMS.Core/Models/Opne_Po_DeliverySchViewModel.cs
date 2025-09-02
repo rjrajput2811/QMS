@@ -32,5 +32,6 @@ namespace QMS.Core.Models
         public DateTime? Delivery_Date { get; set; }
         public int? Delivery_Qty { get; set; }
         public string? Delivery_Remark { get; set; }
+        public string? Date_PC_Week { get; set; }
     }
 }

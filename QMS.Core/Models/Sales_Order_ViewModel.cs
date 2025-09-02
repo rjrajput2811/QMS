@@ -151,6 +151,8 @@ namespace QMS.Core.Models
         public DateTime? Schedule_Line_Date2 { get; set; }
         public int? Schedule_Line_Qty3 { get; set; }
         public DateTime? Schedule_Line_Date3 { get; set; }
+        public int? Total_Scheduled_Qty { get; set; }
+        public DateTime? Last_Schedule_Updated { get; set; }
     }
 
     public class MatchSummaryViewModel

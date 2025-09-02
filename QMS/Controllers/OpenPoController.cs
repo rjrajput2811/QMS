@@ -24,11 +24,28 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult UploadOpenPO()
+        {
+            return View();
+        }
+
+        public IActionResult Vendor()
+        {
+            return View();
+        }
+
         [HttpGet]
         public async Task<JsonResult> GetAll()
         {
             var openPoDeatilsList = await _openPoReposiotry.GetListAsync();
             return Json(openPoDeatilsList);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetAllPOLog()
+        {
+            var openPoLogDeatilsList = await _openPoReposiotry.GetPoLogListAsync();
+            return Json(openPoLogDeatilsList);
         }
 
         [HttpGet]
@@ -175,7 +192,23 @@ namespace QMS.Controllers
             return Json(response);
         }
 
-        
+        [HttpPost]
+        public async Task<JsonResult> UpdateBuffScheduleAsync(int id,int buff)
+        {
+            if (ModelState.IsValid)
+            {
+                //model.UpdatedDate = DateTime.Now;
+                //model.UpdatedBy = HttpContext.Session.GetString("FullName");
+
+                var operationResult = await _openPoReposiotry.SaveBuffScheduleAsync(id, buff,"");
+
+                return Json(operationResult);
+            }
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+
 
         public IActionResult SalesOrder()
         {

@@ -1,5 +1,8 @@
-﻿using System;
+﻿using QMS.Core.DatabaseContext.Shared;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -44,10 +47,24 @@ namespace QMS.Core.Models
         public DateTime? Comit_Final_Date { get; set; }
         public int? Comit_Final_Qty { get; set; }
 
+        public int? Buffer_Day { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
 
         public DateTime? UpdatedDate { get; set; }
         public string? UpdatedBy { get; set; }
     }
+
+    public class Open_Po_LogViewModel
+    {
+        public  int Id { get; set; }
+        public  bool Deleted { get; set; }
+        public string? FileName { get; set; }
+        public int? TotalRecords { get; set; }
+        public int? ImportedRecords { get; set; }
+        public int? FailedRecords { get; set; }
+        public string? UploadedBy { get; set; }
+        public DateTime? UploadedAt { get; set; }
+    }
+
 }

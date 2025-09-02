@@ -28,6 +28,11 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult SCMMenu()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

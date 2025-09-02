@@ -538,9 +538,11 @@
                                 Schedule_Line_Qty2: item.schedule_Line_Qty2,
                                 Schedule_Line_Date2: formatDate(item.schedule_Line_Date2),
                                 Schedule_Line_Qty3: item.schedule_Line_Qty3,
-                                Schedule_Line_Date3: formatDate(item.schedule_Line_Date3)
+                                Schedule_Line_Date3: formatDate(item.schedule_Line_Date3),
+                                Total_Scheduled_Qty: item.total_Scheduled_Qty,
+                                Last_Schedule_Updated: formatDate(item.last_Schedule_Updated),
                             });
-                        });
+                        });                 
                     }
 
                     new Tabulator("#summary_Table", {
@@ -593,11 +595,13 @@
                             { title: "Delivery Schedule", field: "Delivery_Schedule", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "Delivery Date", field: "Delivert_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "Readiness Schedule Vendor Released", field: "Readiness_Schedule_Vendor_Released", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
-                            { title: "PO No", field: "PO_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
-                            { title: "PO Date", field: "PO_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
-                            { title: "PO Qty", field: "PO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
-                            { title: "Delivery Date", field: "Delivery_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
-                            { title: "PO Material", field: "PO_Material",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" }
+                            { title: "Total Scheduled Qty", field: "Total_Scheduled_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Last Schedule Date", field: "Last_Schedule_Updated", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "PO No", field: "PO_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left",visible: false },
+                            { title: "PO Date", field: "PO_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
+                            { title: "PO Qty", field: "PO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
+                            { title: "Delivery Date", field: "Delivery_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
+                            { title: "PO Material", field: "PO_Material",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left",visible: false }
                         ]
                     });
                 }

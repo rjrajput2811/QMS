@@ -2,8 +2,8 @@
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
 @{
-    ViewData["Title"] = "Open Po Details";
-    var userType = HttpContextAccessor.HttpContext.Session.GetString("User_Type") ?? "";
+    ViewData["Title"] = "Vendor";
+    var userType = "Vendor";
     var vendor_Name = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
 }
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
@@ -128,10 +128,10 @@
     }
 
     /* .tabulator-row.tabulator-tree-level-0 {
-                font-size: large;
-                color: #4682B4 !important;
-                font-weight: 600;
-            } */
+            font-size: large;
+            color: #4682B4 !important;
+            font-weight: 600;
+        } */
 
     .tabulator-row.tabulator-tree-level-1 {
         font-size: medium;
@@ -347,18 +347,10 @@
                     var url = '@Url.Action("UploadOpenPoDataExcel", "OpenPo")';
                     handleImportExcelFile(url, expectedColumns);
              });
-
-
-             if(userType == "Vendor")
-             {
-                 loadVendorData()
-             }
-             else
-             {
-                 loadPCCalendar().always(function () {
-                    loadData();
-                 });
-             }
+             
+             loadPCCalendar().always(function () {
+                loadData();
+             });
          });
 
         function clearForm() {
@@ -685,13 +677,11 @@
 
                 // Add child rows from Table2 (allTS)
                 $.each(allTS, function () {
-                    var parentRow = tabledata.find(row =>
-                        row.Id === this.ven_PoId && row.Vendor === this.vendor
-                    );
+                    var parentRow = tabledata.find(row => row.Id === this.ven_PoId && row.Vendor === this.vendor );
 
                     if (parentRow) {
 
-                         if (!parentRow._childrenHeaderAdded) {
+                        if (!parentRow._childrenHeaderAdded) {
                            parentRow._children.unshift({
                              _isChildHeader: true,
                              Delivery_Date: "Delivery Date",
@@ -703,8 +693,6 @@
                         }
 
                         parentRow._children.push({
-                            DeliverySchu_Id: this.id, // pick what your API returns
-                            Ven_PoId: this.ven_PoId,
                             Sr_No: "",
                             Reference_No:"",
                             PO_No: "",
@@ -715,7 +703,6 @@
                             Material: this.date_PC_Week,
                             Hold_Date: this.delivery_Qty,
                             Cleared_Date: this.delivery_Remark,
-                            Buffer_Day : this.buffer_Day,
                             Comit_Planner_date: formatDate(this.planner_Date),
                             PCWeekDate: this.planner_PC_Date,
                             CreatedBy: "",    // empty in child if not used
@@ -773,10 +760,10 @@
                         columns.push({ title: "Tracking No", field: "Tracking_No"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "PR No", field: "PR_No"/* , width: 130 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "Batch No", field: "Batch_No"/* , width: 100 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
-                        columns.push({ title: "Reference No", field: "Reference_No"/* , width: 280 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "Vendor", field: "Vendor"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                     }
 
+                    columns.push({ title: "Reference No", field: "Reference_No"/* , width: 280 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "left", headerHozAlign: "left" });
                     columns.push({ title: "PO No", field: "PO_No"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "PO Date", field: "PO_Date"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "PO Qty", field: "PO_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
@@ -859,17 +846,17 @@
                         }
                     });
 
+                    if (userType != "Vendor")
+                    {
+                        columns.push({ title: "Buffer Day", field: "Buffer_Day"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center",editor: "number",editable: true });
+                    }
+
                     columns.push({ title: "Material", field: "Material", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "Hold Date", field: "Hold_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"});
                     columns.push({ title: "Cleared Date", field: "Cleared_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
 
                     if (userType != "Vendor")
                     {
-                        columns.push({ title: "Buffer Day", field: "Buffer_Day"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center",
-                            editor: "number",                                // <- built-in editor (string)
-                            editable: cell => !!cell.getRow().getTreeParent()   // child only
-                        });
-
                         columns.push({
                             title: "Planner Date",
                             field: "Comit_Planner_date",
@@ -900,19 +887,19 @@
                         columns.push({ title: "3rd Commitment Date", field: "Comit_Final_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "3rd Commitment Qty", field: "Comit_Final_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         // columns.push({ title: "Planner Date", field: "Comit_Planner_date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: true });
-
+                        
                         columns.push({ title: "Vendor Date", field: "Comit_Vendor_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
                         columns.push({ title: "Vendor Qty", field: "Comit_Vendor_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
-                        columns.push({ title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     }
+                    columns.push({ title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
 
                     columns.push({ title: "ID", field: "Id", visible: false });
 
-                     if (table) {
+                    if (table) {
                        table.replaceData(window.PendTSTableData)
                          .then(() => Blockloaderhide())
                          .catch(() => Blockloaderhide());
-                       return;
+                       return; 
                     }
 
                 // // Initialize Tabulator
@@ -934,7 +921,7 @@
                     index: "Id", // This tells Tabulator to use `Id` as the unique row key
                     columns: columns,
 
-                     rowFormatter: function(row){
+                    rowFormatter: function(row){
                        const d = row.getData();
                        if (d._isChildHeader) {
                          const el = row.getElement();
@@ -955,25 +942,18 @@
                     // if (columnField !== "Action" && columnField !== "Delivery_Date") {
                     //     saveEditedRow(cell.getRow().getData());
                     // }
+                    // const field = cell.getColumn().getField();
 
-                    const field = cell.getColumn().getField();
-                    const row = cell.getRow();
-                    const data = row.getData();
-                    const isChild = !!row.getTreeParent();
+                    //     if (field === "Comit_Planner_date") {
+                    //     const row = cell.getRow();
+                    //     const val = cell.getValue(); // may be "dd/mm/yyyy" or "yyyy-mm-dd"
 
-                    if (isChild && field === "Buffer_Day") {
-                        debugger;
-                        const deliveryId = data.DeliverySchu_Id;
-                        const buf = parseInt(data.Buffer_Day, 10) || 0;
-                        if (deliveryId == null) return;
-                        saveBuffForPO(deliveryId, buf, row);
-                       
-                    }
-                    else{
-                        if(!isChild){
-                            saveEditedRow(cell.getRow().getData());
-                        }
-                    }
+                    //     // Normalize to dd/mm/yyyy for your existing getPCWeekCodeForDate()
+                    //     const code = getPCWeekCodeForDate(normalizeToEnGb(val));
+                    //     row.update({ PCWeekDate: code });  // ← immediate UI update
+                    // }
+
+                    saveEditedRow(cell.getRow().getData());
                 });
 
                 // table.on("cellClick", function (e, cell) {
@@ -1075,7 +1055,8 @@
             }
         }
 
-         function loadDeliveryScheduleTable(response) {
+
+        function loadDeliveryScheduleTable(response) {
 
             function toISODate(d) {
                 if (!d) return "";
@@ -1382,7 +1363,6 @@
                 contentType: "application/json",
                 success: function () {
                     Blockloaderhide();
-                    $(".alert-success").remove();
                     showSuccessAlert("Schedule saved successfully!");
                     $("#deliveryScheduleModal").modal('hide');
                     // if (userType == "Vendor") {
@@ -1523,19 +1503,8 @@
                 contentType: 'application/json',
                 success: function (response) {
                     Blockloaderhide();
-                    $(".alert-success").remove();
                     if (response.success) {
-                        showSuccessPoAlert('Saved successfully!');
-                        if(userType == "Vendor")
-                        {
-                            loadVendorData()
-                        }
-                        else
-                        {
-                            loadPCCalendar().always(function () {
-                               loadData();
-                            });
-                        }
+                        showSuccessPoAlert('<i class="fa fa-check-circle" style="color:green; font-size:24px;"></i>');
                     }
                     else {
                         let errorMessg = "";
@@ -1556,64 +1525,14 @@
             });
         }
 
-
-        function saveBuffForPO(deliveryId,buff) {
-            debugger
-            if (deliveryId == null || Number.isNaN(buff)) {
-              showDangerAlert("Invalid data provided (id/buffer).");
-              return;
-            }
-
-            Blockloadershow();
-            var errorMsg = "";
-
-            if (errorMsg !== "") {
-                Blockloaderhide();
-                showDangerAlert(errorMsg);
-                return false;
-            }
-
-
-            $.ajax({
-                url: '@Url.Action("UpdateBuffSchedule", "OpenPo")', // method name without "Async" in route
-                type: "POST",
-                dataType: "json",
-                data: { id: deliveryId, buff: buff },
-                success: function (response) {
-                    Blockloaderhide();
-                    $(".alert-success").remove();
-                    if (response.success) {
-                        showSuccessPoAlert('Saved successfully!');
-                        if(userType == "Vendor")
-                        {
-                            loadVendorData()
-                        }
-                        else
-                        {
-                            loadPCCalendar().always(function () {
-                               loadData();
-                            });
-                        }
-                    }
-                    else {
-                        let errorMessg = "";
-                        if (response.errors) {
-                            for (var error in response.errors) {
-                                if (response.errors.hasOwnProperty(error)) {
-                                    errorMessg += `${response.errors[error]}\n`;
-                                }
-                            }
-                        }
-                        showDangerAlert(errorMessg || response.message || "An error occurred while updating.");
-                    }
-                },
-                error: function (xhr, status, error) {
-                    Blockloaderhide();
-                    showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
-                }
-            });
+        function showSuccessPoAlert(Texts) {
+           new Noty({
+               theme: ' alert alert-success alert-styled-left p-0 ',
+               text: Texts,
+               progressBar: true,
+               closeWith: ['button']
+           }).show();
         }
-       
     </script>
 }
 @section HideSidebar { }

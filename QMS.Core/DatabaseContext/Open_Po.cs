@@ -57,6 +57,8 @@ namespace QMS.Core.DatabaseContext
         public DateTime? Comit_Final_Date { get; set; }
         public int? Comit_Final_Qty { get; set; }
 
+        public int? Buffer_Day { get; set; }
+
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }

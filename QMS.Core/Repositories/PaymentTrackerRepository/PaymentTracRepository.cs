@@ -34,9 +34,9 @@ namespace QMS.Core.Repositories.PaymentTrackerRepository
                 if (startDate.HasValue && endDate.HasValue)
                 {
                     result = result
-                        .Where(x => x.CreatedDate.HasValue &&
-                                    x.CreatedDate.Value.Date >= startDate.Value.Date &&
-                                    x.CreatedDate.Value.Date <= endDate.Value.Date)
+                        .Where(x => x.Invoice_Date.HasValue &&
+                                    x.Invoice_Date.Value.Date >= startDate.Value.Date &&
+                                    x.Invoice_Date.Value.Date <= endDate.Value.Date)
                         .ToList();
                 }
 
@@ -56,6 +56,7 @@ namespace QMS.Core.Repositories.PaymentTrackerRepository
                     Testing_Fee = data.Testing_Fee,
                     Approval_By = data.Approval_By,
                     Remark = data.Remark,
+                    Attachment = data.Attachment,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -100,6 +101,7 @@ namespace QMS.Core.Repositories.PaymentTrackerRepository
                     Testing_Fee = data.Testing_Fee,
                     Approval_By = data.Approval_By,
                     Remark = data.Remark,
+                    Attachment = data.Attachment,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,

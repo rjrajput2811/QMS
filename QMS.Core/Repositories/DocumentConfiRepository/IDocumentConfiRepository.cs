@@ -12,6 +12,7 @@ namespace QMS.Core.Repositories.DocumentConfiRepository
     {
         Task<List<DocumentDetViewModel>> GetDocDetailAsync();
         Task<DocumentDetail?> GetDocDetailByIdAsync(int Id);
+        Task<DocumentDetail?> GetDocDetailByTypeAsync(string type);
         Task<OperationResult> CreateDocDetailAsync(DocumentDetViewModel newDocDetailRecord, bool returnCreatedRecord = false);
         Task<OperationResult> UpdateDocDetailAsync(DocumentDetViewModel updateDocDetailRecord, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteDocDetailAsync(int Id);

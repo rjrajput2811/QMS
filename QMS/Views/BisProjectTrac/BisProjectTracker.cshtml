@@ -15,7 +15,7 @@
 <script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
-<script src="~/js/xlsx.min.js"></script>
+@* <script src="~/js/xlsx.min.js"></script> *@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
@@ -134,10 +134,10 @@
                 <button id="addBISButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 95px;font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel()" style="width: 183px;font-size:15px">
+                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel('BIS')" style="width: 183px;font-size:15px">
                     <i class="fas fa-regular fa-book mr-2 fa-1x"></i>Add Doc. Detail
                 </button>
-                <button id="exportButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                <button id="exportBisButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
                 </button>
                 <button id="backButton" class="btn btn-outline-primary">
@@ -193,6 +193,13 @@
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
 
     <script src="~/scripts/bisprojecttracker/bisproject.js" asp-append-version="true"></script>
 }

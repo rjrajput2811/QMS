@@ -15,31 +15,32 @@
                 <div class="col-12 pt-2">
                     <div class="form-group">
                         <input type="hidden" id="hdnId" name="Id" />
+                        <input type="hidden" id="docType" name="Type" />
                         <div class="row form-group align-items-center">
                             <label class="col-3">Document No</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
                             <div class="col-8">
-                                <input name="doc_No" id="doc_No" class="form-control" />
+                                <input name="Document_No" id="doc_No" class="form-control" />
                             </div>
                         </div>
 
                         <div class="row form-group align-items-center">
                             <label class="col-3">Revision No</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
                             <div class="col-4">
-                                <input name="rev_No" id="rev_No" class="form-control" />
+                                <input name="Revision_No" id="rev_No" class="form-control" />
                             </div>
                         </div>
 
                         <div class="row form-group align-items-center">
                             <label class="col-3">Effective Date</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
                             <div class="col-4">
-                                <input type="date" name="effect_Date" id="effect_Date" class="form-control" />
+                                <input type="date" name="Effective_Date" id="effect_Date" class="form-control" />
                             </div>
                         </div>
 
                         <div class="row form-group align-items-center">
                             <label class="col-3">Revision Date</label><div class="font-weight-bold" style="padding-top: 10px;">:</div>
                             <div class="col-4">
-                                <input type="date" name="rev_Date" id="rev_Date" class="form-control"  />
+                                <input type="date" name="Revision_Date" id="rev_Date" class="form-control" />
                             </div>
                         </div>
 
@@ -52,6 +53,55 @@
 
 <script>
 
+    function openDocModel(tracType, id = 0) {
+        clearForm();
+
+        // If modal not already in DOM, inject partial view
+        if (!$('#docDetModal').length) {
+            $('body').append(partialView);  // partialView contains the modal HTML
+        }
+
+        $('#docType').val(tracType);
+        var today = new Date().toISOString().split('T')[0];
+        $('#effect_Date').val(today);
+        $('#rev_Date').val(today);
+        
+         $.ajax({
+            url: '@Url.Action("GetDocDetailByType", "DocumentDet")',
+            type: 'GET',
+            data: { type : tracType },
+            success: function (res) {
+                Blockloaderhide();
+                 if (res) {
+                    $('#hdnId').val(res.id);
+                    $('#doc_No').val(res.document_No);
+                    $('#rev_No').val(res.revision_No);
+                    $('#effect_Date').val(res.effective_Date?.split('T')[0]);
+                    $('#rev_Date').val(res.revision_Date?.split('T')[0]);
+                    $('#docType').val(res.type);
+                }
+
+               $('#docDetModal').modal('show');
+            },
+            error: function () {
+                Blockloaderhide();
+                showDangerAlert("Error while saving.");
+            }
+        });
+    }
+
+
+    function clearForm() {
+       $('#hdnId').val(0);
+       $('#docType').val('');
+       $('#doc_No').val('');
+       $('#rev_No').val('');
+
+       var today = new Date().toISOString().split('T')[0];
+       $('#effect_Date').val(today);
+       $('#rev_Date').val(today);
+    }
+
     $('#close-button').on('click', function () {
         $('#docDetModal').modal('hide');
     });
@@ -59,6 +109,42 @@
     $('#modalClose').on('click', function () {
         $('#docDetModal').modal('hide');
     });
+
+    // Save or Update
+    $('#submitBtn').on('click', function () {
+        debugger
+         Blockloadershow();
+        var formData = {
+            Id: $('#hdnId').val(),
+            Document_No: $('#doc_No').val(),
+            Revision_No: $('#rev_No').val(),
+            Effective_Date: $('#effect_Date').val(),
+            Revision_Date: $('#rev_Date').val(),
+            Type: $('#docType').val()
+        };
+
+        var ajaxUrl = formData.Id == 0 ? '/DocumentDet/CreateDocDetail' : '/DocumentDet/UpdateDocDetail';
+
+        $.ajax({
+            url: ajaxUrl,
+            type: 'POST',
+            data: formData,
+            success: function (res) {
+                Blockloaderhide();
+                 const msg = formData.Id != 0
+                    ? "Document Details updated successfully!"
+                    : "Document Details saved successfully!";
+                showSuccessAlert(msg);
+                $('#docDetModal').modal('hide');
+                // AutoReload(); 
+            },
+            error: function () {
+                Blockloaderhide();
+                showDangerAlert("Error while saving.");
+            }
+        });
+    });
+
 
     function AutoReload() {
         setTimeout(function () { window.location.reload(); }, 1500);

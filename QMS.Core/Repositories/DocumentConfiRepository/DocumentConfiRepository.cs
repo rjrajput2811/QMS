@@ -64,6 +64,34 @@ namespace QMS.Core.Repositories.DocumentConfiRepository
                 throw;
             }
         }
+        
+        public async Task<DocumentDetail?> GetDocDetailByTypeAsync(string type)
+        {
+            try
+            {
+                var result = await (from pr in _dbContext.Doc_Detail
+                                    where pr.Deleted == false && pr.Type == type 
+                                    select new DocumentDetail
+                                    {
+                                        Id = pr.Id,
+                                        Document_No = pr.Document_No,
+                                        Revision_No = pr.Revision_No,
+                                        Effective_Date = pr.Effective_Date,
+                                        Revision_Date = pr.Revision_Date,
+                                        CreatedBy = pr.CreatedBy,
+                                        CreatedDate = pr.CreatedDate,
+                                        Type = pr.Type,
+                                        UpdatedBy = pr.UpdatedBy,
+                                        UpdatedDate = pr.UpdatedDate
+                                    }).FirstOrDefaultAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
 
         public async Task<OperationResult> CreateDocDetailAsync(DocumentDetViewModel newDocDetailRecord, bool returnCreatedRecord = false)
         {
@@ -74,6 +102,7 @@ namespace QMS.Core.Repositories.DocumentConfiRepository
                 docDetToCreate.Revision_No = newDocDetailRecord.Revision_No;
                 docDetToCreate.Effective_Date = newDocDetailRecord.Effective_Date;
                 docDetToCreate.Revision_Date = newDocDetailRecord.Revision_Date;
+                docDetToCreate.Type = newDocDetailRecord.Type;
                 docDetToCreate.CreatedBy = newDocDetailRecord.CreatedBy;
                 docDetToCreate.CreatedDate = DateTime.Now;
                 return await base.CreateAsync<DocumentDetail>(docDetToCreate, returnCreatedRecord);
@@ -94,6 +123,7 @@ namespace QMS.Core.Repositories.DocumentConfiRepository
                 docDetToCreate.Revision_No = updateDocDetailRecord.Revision_No;
                 docDetToCreate.Effective_Date = updateDocDetailRecord.Effective_Date;
                 docDetToCreate.Revision_Date = updateDocDetailRecord.Revision_Date;
+                docDetToCreate.Type = updateDocDetailRecord.Type;
                 docDetToCreate.UpdatedBy = updateDocDetailRecord.UpdatedBy;
                 docDetToCreate.UpdatedDate = DateTime.Now;
                 return await base.UpdateAsync<DocumentDetail>(docDetToCreate, returnUpdatedRecord);

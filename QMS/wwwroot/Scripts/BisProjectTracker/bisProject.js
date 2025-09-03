@@ -402,7 +402,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="/BISTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="~/BISTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
@@ -499,10 +499,1180 @@ function OnTabGridLoad(response) {
         table.addRow(newRow, false);
     });
 
-    // Export to Excel on button click
-    // document.getElementById("exportExcel").addEventListener("click", function () {
-    //     table.download("xlsx", "ProductCode_Data.xlsx", { sheetName: "Product Code Data" });
-    // });
+    // ===== ExcelJS Export: BIS PROJECT TRACKER
+    //document.getElementById("exportBisButton").addEventListener("click", async function () {
+    //    // ============= 1) GRID COLUMNS (no 'header' here to avoid auto-header) =============
+    //    const excelCols = [
+    //        { label: "S.NO", key: "Sr_No", width: 6 },
+    //        { label: "Financial Year", key: "Financial_Year", width: 14 },
+    //        { label: "Month", key: "Mon_PC", width: 12 },
+    //        { label: "Nature of Project", key: "Nat_Project", width: 22 },
+    //        { label: "Lead Model Number", key: "Lea_Model_No", width: 18 },
+    //        { label: "No of Series Added", key: "No_Seri_Add", width: 18 },
+    //        { label: "Cat Reference of Lead Model", key: "Cat_Ref_Lea_Model", width: 26 },
+    //        { label: "Section", key: "Section", width: 12 },
+    //        { label: "Manufacturing Location", key: "Manuf_Location", width: 22 },
+    //        { label: "BIS Project ID", key: "BIS_Project_Id", width: 16 },
+    //        { label: "Lab", key: "Lab", width: 10 },
+    //        { label: "Report Owner", key: "Report_Owner", width: 18 },
+    //        { label: "Vendor Sample Submission Date", key: "Ven_Sample_Sub_Date", width: 24 },
+    //        { label: "Test Start Date", key: "Start_Date", width: 16 },
+    //        { label: "Test Completed Date", key: "Comp_Date", width: 20 },
+    //        { label: "Test Duration", key: "Test_Duration", width: 12 },
+    //        { label: "BIS submitted date", key: "Submitted_Date", width: 18 },
+    //        { label: "BIS Received Date", key: "Received_Date", width: 18 },
+    //        { label: "BIS duration", key: "Bis_Duration", width: 12 },
+    //        { label: "Current Status", key: "Current_Status", width: 18 },
+    //        { label: "BIS Certificate", key: "BIS_Attachment", width: 22 }
+    //    ];
+
+    //    // ============= 2) DOCUMENT DETAILS RIGHT TABLE =============
+    //    const docDetails = [
+    //        ["Document No", "WCIB/LS/QA/R/005"],
+    //        ["Effective Date", "01/10/2022"],
+    //        ["Revision No", "0"],
+    //        ["Revision Date", "01/10/2022"],
+    //        ["Page No", "1 of 1"]
+    //    ];
+
+    //    // ============= 3) LAYOUT CONSTANTS =============
+    //    const TOTAL_COLS = excelCols.length;     // 21
+    //    const HEADER_TOP = 2;                    // band start
+    //    const HEADER_BOTTOM = 6;                 // band end
+    //    const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // table header row (7)
+    //    const TITLE_TEXT = "BIS PROJECT TRACKER";
+
+    //    const LOGO_COL_START = 1;   // A
+    //    const LOGO_COL_END = 4;   // D
+
+    //    const TITLE_COL_START = LOGO_COL_END + 1;  // E
+    //    const TITLE_COL_END = TOTAL_COLS - 6;    // leave space for details
+
+    //    const DETAILS_TABLE_COL_START = TOTAL_COLS - 3; // last 4 columns
+    //    const DETAILS_TABLE_COL_END = TOTAL_COLS;
+
+    //    // ============= 4) HELPERS =============
+    //    async function fetchAsBase64(url) {
+    //        const res = await fetch(url);
+    //        const blob = await res.blob();
+    //        return new Promise((resolve) => {
+    //            const reader = new FileReader();
+    //            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    //            reader.readAsDataURL(blob);
+    //        });
+    //    }
+    //    function setBorder(cell, style = "thin") {
+    //        cell.border = {
+    //            top: { style }, bottom: { style },
+    //            left: { style }, right: { style }
+    //        };
+    //    }
+
+    //    // ============= 5) WORKBOOK / SHEET =============
+    //    const wb = new ExcelJS.Workbook();
+    //    const ws = wb.addWorksheet("BIS Project Tracker", {
+    //        properties: { defaultRowHeight: 18 },
+    //        // TRUE sticky header: ySplit equals header row index.
+    //        // Set xSplit:1 if you want first column frozen too.
+    //        views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }]
+    //    });
+
+    //    // IMPORTANT: no 'header' in columns => ExcelJS will NOT create an auto-header row.
+    //    ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+    //    ws.pageSetup = {
+    //        orientation: "landscape",
+    //        fitToPage: true,
+    //        fitToWidth: 1,
+    //        fitToHeight: 0,
+    //        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+    //        printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}` // title band + table header
+    //    };
+
+    //    // ============= 6) HEADER BAND BACKDROP =============
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        for (let c = 1; c <= TOTAL_COLS; c++) {
+    //            ws.getCell(r, c).fill = {
+    //                type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+    //            };
+    //        }
+    //    }
+
+    //    // ============= 7) LOGO (A2:D6) =============
+    //    const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+    //    if (logoUrl) {
+    //        try {
+    //            const base64 = await fetchAsBase64(logoUrl);
+    //            const imgId = wb.addImage({ base64, extension: "png" });
+    //            ws.addImage(imgId, {
+    //                // ExcelJS image anchor uses 0-based coords; add small padding
+    //                tl: { col: LOGO_COL_START - 1 + 0.10, row: HEADER_TOP - 1 + 0.1 },
+    //                br: { col: LOGO_COL_END - 0.10, row: HEADER_BOTTOM - 0.1 }
+    //            });
+    //        } catch (e) {
+    //            console.warn("Logo load failed:", e);
+    //        }
+    //    }
+
+    //    // ============= 8) TITLE (merge E2:O4 approx) =============
+    //    ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+    //    const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+    //    titleCell.value = TITLE_TEXT;
+    //    titleCell.font = { bold: true, size: 18 };
+    //    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    //    // subtle bottom rule under header band
+    //    for (let c = 1; c <= TOTAL_COLS; c++) {
+    //        const cell = ws.getCell(HEADER_BOTTOM, c);
+    //        cell.border = { ...cell.border, bottom: { style: "thin" } };
+    //    }
+
+    //    // ============= 9) DOCUMENT DETAILS (last 4 columns) =============
+    //    docDetails.forEach((pair, i) => {
+    //        const r = HEADER_TOP + i; // rows 2..6
+    //        // Merge left two cells for label and right two for value
+    //        ws.mergeCells(r, DETAILS_TABLE_COL_START, r, DETAILS_TABLE_COL_START + 1);
+    //        ws.mergeCells(r, DETAILS_TABLE_COL_START + 2, r, DETAILS_TABLE_COL_END);
+
+    //        const labelCell = ws.getCell(r, DETAILS_TABLE_COL_START);
+    //        const valueCell = ws.getCell(r, DETAILS_TABLE_COL_START + 2);
+
+    //        labelCell.value = pair[0];
+    //        valueCell.value = pair[1];
+
+    //        labelCell.font = { bold: true };
+    //        [labelCell, valueCell].forEach(cell => {
+    //            cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //        });
+
+    //        for (let c = DETAILS_TABLE_COL_START; c <= DETAILS_TABLE_COL_END; c++) {
+    //            setBorder(ws.getCell(r, c));
+    //        }
+    //    });
+
+    //    // ============= 10) MANUAL TABLE HEADER (ROW 7) =============
+    //    while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // push to row 6
+
+    //    const headerTitles = excelCols.map(c => c.label);
+    //    const headerRow = ws.addRow(headerTitles);
+    //    headerRow.height = 22;
+    //    headerRow.eachCell((cell) => {
+    //        cell.font = { bold: true };
+    //        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    //        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+    //        setBorder(cell);
+    //    });
+
+    //    // ============= 11) DATA ROWS =============
+    //    // Replace with your Tabulator/table datasource
+    //    const rows = (window.table && table.getData) ? table.getData() : [];
+
+    //    rows.forEach((r) => {
+    //        const rowVals = {};
+    //        excelCols.forEach(c => { rowVals[c.key] = r[c.key] ?? ""; });
+    //        const dataRow = ws.addRow(rowVals);
+
+    //        dataRow.eachCell((cell, colNumber) => {
+    //            cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //            setBorder(cell);
+
+    //            // Center S.NO
+    //            if (colNumber === 1) {
+    //                cell.alignment = { vertical: "middle", horizontal: "center" };
+    //            }
+
+    //            // Hyperlink for BIS_Attachment
+    //            const key = excelCols[colNumber - 1].key;
+    //            if (key === "BIS_Attachment" && typeof cell.value === "string" && /^https?:\/\//i.test(cell.value)) {
+    //                cell.value = { text: "Open Certificate", hyperlink: r.BIS_Attachment };
+    //                cell.font = { color: { argb: "FF0563C1" }, underline: true };
+    //            }
+
+    //            // Date formatting
+    //            const dateKeys = new Set(["Ven_Sample_Sub_Date", "Start_Date", "Comp_Date", "Submitted_Date", "Received_Date"]);
+    //            if (dateKeys.has(key) && cell.value) {
+    //                const d = new Date(cell.value);
+    //                if (!isNaN(d)) {
+    //                    cell.value = d;
+    //                    cell.numFmt = "dd-MM-yyyy";
+    //                }
+    //            }
+    //        });
+    //    });
+
+    //    // ============= 12) DOWNLOAD =============
+    //    const buffer = await wb.xlsx.writeBuffer();
+    //    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    //    const link = document.createElement("a");
+    //    link.href = URL.createObjectURL(blob);
+    //    link.download = "BIS Project Tracker.xlsx";
+    //    document.body.appendChild(link);
+    //    link.click();
+    //    link.remove();
+    //});
+
+
+    //document.getElementById("exportBisButton").addEventListener("click", async function () {
+    //    // =======================
+    //    // 0) EXPORT OPTIONS
+    //    // =======================
+    //    const EXPORT_SCOPE = "active";     // "active" (visible + filtered + sorted), "all", or "selected"
+    //    const EXPORT_RAW = false;        // false = export formatted text exactly as shown; true = raw data
+
+    //    // =======================
+    //    // 1) BUILD COLUMNS FROM TABULATOR (EXACT ORDER/VISIBILITY)
+    //    // =======================
+    //    if (!window.table) {
+    //        console.error("Tabulator 'table' not found.");
+    //        return;
+    //    }
+
+    //    // Get Tabulator columns in their current order (true = include columns from groups)
+    //    const tabCols = table.getColumns(true)
+    //        .filter(col => col.getField())                 // must have a data field
+    //        .filter(col => col.isVisible());               // only visible columns
+
+    //    // Map to Excel columns: label, key, width
+    //    const excelCols = tabCols.map(col => {
+    //        const def = col.getDefinition();
+    //        const label = def.title || def.field;
+    //        // rough width: convert Tabulator px width to Excel char width (heuristic)
+    //        const px = (def.width || col.getWidth() || 120);
+    //        const width = Math.max(8, Math.min(40, Math.round(px / 7))); // clamp 8..40
+    //        return { label, key: def.field, width };
+    //    });
+
+    //    // Safety: if your grid has no visible columns, stop
+    //    if (excelCols.length === 0) {
+    //        alert("No visible columns to export.");
+    //        return;
+    //    }
+
+    //    // =======================
+    //    // 2) DOCUMENT DETAILS (unchanged)
+    //    // =======================
+    //    const docDetails = [
+    //        ["Document No", "WCIB/LS/QA/R/005"],
+    //        ["Effective Date", "01/10/2022"],
+    //        ["Revision No", "0"],
+    //        ["Revision Date", "01/10/2022"],
+    //        ["Page No", "1 of 1"]
+    //    ];
+
+    //    // =======================
+    //    // 3) LAYOUT CONSTANTS
+    //    // =======================
+    //    const TOTAL_COLS = excelCols.length;
+    //    const HEADER_TOP = 2;
+    //    const HEADER_BOTTOM = 6;
+    //    const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 7
+    //    const TITLE_TEXT = "BIS PROJECT TRACKER";
+
+    //    const LOGO_COL_START = 1;
+    //    const LOGO_COL_END = Math.min(4, TOTAL_COLS); // keep safe if few cols
+
+    //    const TITLE_COL_START = LOGO_COL_END + 1;
+    //    const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 6); // leave right space
+
+    //    const DETAILS_TABLE_COL_START = Math.max(TITLE_COL_END + 1, TOTAL_COLS - 3);
+    //    const DETAILS_TABLE_COL_END = TOTAL_COLS;
+
+    //    // =======================
+    //    // 4) HELPERS
+    //    // =======================
+    //    async function fetchAsBase64(url) {
+    //        const res = await fetch(url);
+    //        const blob = await res.blob();
+    //        return new Promise((resolve) => {
+    //            const reader = new FileReader();
+    //            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    //            reader.readAsDataURL(blob);
+    //        });
+    //    }
+    //    function setBorder(cell, style = "thin") {
+    //        cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+    //    }
+    //    function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+    //        for (let c = c1; c <= c2; c++) {
+    //            const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+    //            top.border = { ...top.border, top: { style } };
+    //            bottom.border = { ...bottom.border, bottom: { style } };
+    //        }
+    //        for (let r = r1; r <= r2; r++) {
+    //            const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+    //            left.border = { ...left.border, left: { style } };
+    //            right.border = { ...right.border, right: { style } };
+    //        }
+    //    }
+
+    //    // =======================
+    //    // 5) WORKBOOK / SHEET
+    //    // =======================
+    //    const wb = new ExcelJS.Workbook();
+    //    const ws = wb.addWorksheet("BIS Project Tracker", {
+    //        properties: { defaultRowHeight: 18 },
+    //        views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+    //    });
+
+    //    // No auto header — we set only key & width
+    //    ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+    //    ws.pageSetup = {
+    //        orientation: "landscape",
+    //        fitToPage: true,
+    //        fitToWidth: 1,
+    //        fitToHeight: 0,
+    //        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+    //        printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
+    //    };
+
+    //    // =======================
+    //    // 6) HEADER BAND (fill)
+    //    // =======================
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        for (let c = 1; c <= TOTAL_COLS; c++) {
+    //            ws.getCell(r, c).fill = {
+    //                type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+    //            };
+    //        }
+    //    }
+
+    //    // =======================
+    //    // 7) LOGO + OUTLINE
+    //    // =======================
+    //    const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+    //    if (logoUrl) {
+    //        try {
+    //            const base64 = await fetchAsBase64(logoUrl);
+    //            const imgId = wb.addImage({ base64, extension: "png" });
+    //            ws.addImage(imgId, {
+    //                tl: { col: LOGO_COL_START - 1 + 0.15, row: HEADER_TOP - 1 + 0.1 },
+    //                br: { col: LOGO_COL_END - 0.15, row: HEADER_BOTTOM - 0.1 }
+    //            });
+    //        } catch (e) {
+    //            console.warn("Logo load failed:", e);
+    //        }
+    //    }
+    //    outlineRange(ws, HEADER_TOP, LOGO_COL_START, HEADER_BOTTOM, LOGO_COL_END, "thin");
+
+    //    // =======================
+    //    // 8) TITLE + OUTLINE
+    //    // =======================
+    //    ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+    //    const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+    //    titleCell.value = TITLE_TEXT;
+    //    titleCell.font = { bold: true, size: 18 };
+    //    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+    //    outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+
+    //    // =======================
+    //    // 9) DOCUMENT DETAILS (right)
+    //    // =======================
+    //    if (DETAILS_TABLE_COL_START <= DETAILS_TABLE_COL_END) {
+    //        docDetails.forEach((pair, i) => {
+    //            const r = HEADER_TOP + i; // rows 2..6
+    //            ws.mergeCells(r, DETAILS_TABLE_COL_START, r, DETAILS_TABLE_COL_START + 1);
+    //            ws.mergeCells(r, DETAILS_TABLE_COL_START + 2, r, DETAILS_TABLE_COL_END);
+
+    //            const labelCell = ws.getCell(r, DETAILS_TABLE_COL_START);
+    //            const valueCell = ws.getCell(r, DETAILS_TABLE_COL_START + 2);
+
+    //            labelCell.value = pair[0];
+    //            valueCell.value = pair[1];
+
+    //            labelCell.font = { bold: true };
+    //            [labelCell, valueCell].forEach(cell => {
+    //                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //            });
+
+    //            for (let c = DETAILS_TABLE_COL_START; c <= DETAILS_TABLE_COL_END; c++) {
+    //                setBorder(ws.getCell(r, c), "thin");
+    //            }
+    //        });
+    //    }
+
+    //    // =======================
+    //    // 10) MANUAL TABLE HEADER (ROW 7)
+    //    // =======================
+    //    while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
+    //    const headerTitles = excelCols.map(c => c.label);
+    //    const headerRow = ws.addRow(headerTitles);
+    //    headerRow.height = 22;
+    //    headerRow.eachCell((cell) => {
+    //        cell.font = { bold: true };
+    //        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    //        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+    //        setBorder(cell);
+    //    });
+
+    //    // =======================
+    //    // 11) DATA ROWS: EXACTLY WHAT TABULATOR SHOWS
+    //    // =======================
+    //    let tabRows;
+    //    switch (EXPORT_SCOPE) {
+    //        case "selected":
+    //            tabRows = table.getSelectedRows();
+    //            break;
+    //        case "all":
+    //            tabRows = table.getRows();
+    //            break;
+    //        case "active":
+    //        default:
+    //            tabRows = table.getRows("active"); // respects sort + filter + pagination view
+    //            break;
+    //    }
+
+    //    // For exact display values, use row.getCells() + cell.getValue()
+    //    // For raw data, use row.getData()[field]
+    //    tabRows.forEach(row => {
+    //        const dataRow = [];
+    //        if (EXPORT_RAW) {
+    //            const raw = row.getData();
+    //            excelCols.forEach(c => dataRow.push(raw[c.key] ?? ""));
+    //        } else {
+    //            const cells = row.getCells(); // cells match current visible columns order
+    //            // Build a map field -> displayed value to remain robust if columns mismatch
+    //            const valueByField = {};
+    //            cells.forEach(cell => {
+    //                const field = cell.getField();
+    //                if (field) valueByField[field] = cell.getValue(); // formatted (as shown)
+    //            });
+    //            excelCols.forEach(c => dataRow.push(valueByField[c.key] ?? ""));
+    //        }
+
+    //        const xRow = ws.addRow(dataRow);
+    //        xRow.eachCell((cell, colNumber) => {
+    //            cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
+    //            setBorder(cell);
+    //        });
+    //    });
+
+    //    // =======================
+    //    // 12) DOWNLOAD
+    //    // =======================
+    //    const buffer = await wb.xlsx.writeBuffer();
+    //    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    //    const link = document.createElement("a");
+    //    link.href = URL.createObjectURL(blob);
+    //    link.download = "BIS Project Tracker.xlsx";
+    //    document.body.appendChild(link);
+    //    link.click();
+    //    link.remove();
+    //});
+
+
+    //document.getElementById("exportBisButton").addEventListener("click", async function () {
+    //    // ===== 0) EXPORT SCOPE =====
+    //    const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
+    //    const EXPORT_RAW = false;      // false = formatted as shown in Tabulator
+
+    //    // ===== 1) COLUMNS from Tabulator (exact order/visibility) =====
+    //    const tabCols = table.getColumns(true)
+    //        .filter(c => c.getField())
+    //        .filter(c => c.isVisible());
+
+    //    const excelCols = tabCols.map(col => {
+    //        const def = col.getDefinition();
+    //        const label = def.title || def.field;
+    //        const px = (def.width || col.getWidth() || 120);
+    //        const width = Math.max(8, Math.min(40, Math.round(px / 7)));
+    //        return { label, key: def.field, width };
+    //    });
+    //    if (!excelCols.length) { alert("No visible columns to export."); return; }
+
+    //    // ===== 2) Document details =====
+    //    const docDetails = [
+    //        ["Document No", "WCIB/LS/QA/R/005"],
+    //        ["Effective Date", "01/10/2022"],
+    //        ["Revision No", "0"],
+    //        ["Revision Date", "01/10/2022"],
+    //        ["Page No", "1 of 1"]
+    //    ];
+
+    //    // ===== 3) Layout constants =====
+    //    const TOTAL_COLS = excelCols.length;
+
+    //    const HEADER_TOP = 2;             // header band start
+    //    const HEADER_BOTTOM = 6;          // header band end (gives us height for logo)
+    //    const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 7
+    //    const TITLE_TEXT = "BIS PROJECT TRACKER";
+
+    //    // Logo zone (we’ll place by pixels, not cell range)
+    //    const LOGO_COL_START = 1; // A (for placement reference)
+    //    const LOGO_ROW_START = HEADER_TOP;
+
+    //    // Keep 6 columns on the right for details, so title won’t clash
+    //    const RIGHT_DETAILS_COLS = 6;
+
+    //    const TITLE_COL_START = 5;                                     // E
+    //    const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - RIGHT_DETAILS_COLS); // leaves space
+    //    const DETAILS_TABLE_COL_START = Math.min(TOTAL_COLS - RIGHT_DETAILS_COLS + 1, TOTAL_COLS);
+    //    const DETAILS_TABLE_COL_END = TOTAL_COLS;
+
+    //    // ===== 4) Helpers =====
+    //    async function fetchAsBase64(url) {
+    //        const res = await fetch(url);
+    //        const blob = await res.blob();
+    //        return new Promise((resolve) => {
+    //            const reader = new FileReader();
+    //            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    //            reader.readAsDataURL(blob);
+    //        });
+    //    }
+    //    function setBorder(cell, style = "thin") {
+    //        cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+    //    }
+    //    function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+    //        for (let c = c1; c <= c2; c++) {
+    //            const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+    //            top.border = { ...top.border, top: { style } };
+    //            bottom.border = { ...bottom.border, bottom: { style } };
+    //        }
+    //        for (let r = r1; r <= r2; r++) {
+    //            const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+    //            left.border = { ...left.border, left: { style } };
+    //            right.border = { ...right.border, right: { style } };
+    //        }
+    //    }
+
+    //    // ===== 5) Workbook / Sheet =====
+    //    const wb = new ExcelJS.Workbook();
+    //    const ws = wb.addWorksheet("BIS Project Tracker", {
+    //        properties: { defaultRowHeight: 18 },
+    //        views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }]
+    //    });
+
+    //    // set column widths (no headers here to avoid duplicate)
+    //    ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+    //    // give header band some vertical room so logo fits well
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        ws.getRow(r).height = 26; // ~26pt ≈ 34px; adjust if you want taller
+    //    }
+
+    //    ws.pageSetup = {
+    //        orientation: "landscape",
+    //        fitToPage: true,
+    //        fitToWidth: 1,
+    //        fitToHeight: 0,
+    //        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+    //        printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
+    //    };
+
+    //    // ===== 6) Header band fill =====
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        for (let c = 1; c <= TOTAL_COLS; c++) {
+    //            ws.getCell(r, c).fill = {
+    //                type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+    //            };
+    //        }
+    //    }
+
+    //    // ===== 7) Logo: FIXED PIXEL SIZE (no stretching) + outline =====
+    //    const LOGO_WIDTH_PX = 130; // tweak
+    //    const LOGO_HEIGHT_PX = 130; // tweak
+    //    const LOGO_PAD_COL = 0.25; // small left padding inside cell
+    //    const LOGO_PAD_ROW = 0.12; // small top padding
+
+    //    const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+    //    if (logoUrl) {
+    //        try {
+    //            const base64 = await fetchAsBase64(logoUrl);
+    //            const imgId = wb.addImage({ base64, extension: "png" });
+    //            ws.addImage(imgId, {
+    //                // anchor by top-left cell + pixel extents — Excel keeps aspect, no stretching
+    //                tl: { col: LOGO_COL_START - 1 + LOGO_PAD_COL, row: LOGO_ROW_START - 1 + LOGO_PAD_ROW },
+    //                ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
+    //                editAs: "oneCell"
+    //            });
+    //        } catch (e) {
+    //            console.warn("Logo load failed:", e);
+    //        }
+    //    }
+    //    // Draw a clean outline around the visual logo block (A2:D6)
+    //    outlineRange(ws, HEADER_TOP, 1, HEADER_BOTTOM, 4, "thin");
+
+    //    // ===== 8) Title (merge) + exact outline =====
+    //    // Merge exactly E2 .. (TITLE_COL_END) over 3 rows high
+    //    ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+    //    const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+    //    titleCell.value = TITLE_TEXT;
+    //    titleCell.font = { bold: true, size: 18 };
+    //    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    //    // Outline precisely the merged title area (does not touch details area)
+    //    outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+
+    //    // ===== 9) Document details table (last 6 columns) =====
+    //    if (DETAILS_TABLE_COL_START <= DETAILS_TABLE_COL_END) {
+    //        docDetails.forEach((pair, i) => {
+    //            const r = HEADER_TOP + i;
+    //            // Merge label across 3 cols and value across 3 cols for breathing space
+    //            const mid = Math.floor((DETAILS_TABLE_COL_START + DETAILS_TABLE_COL_END) / 2);
+    //            ws.mergeCells(r, DETAILS_TABLE_COL_START, r, mid);
+    //            ws.mergeCells(r, mid + 1, r, DETAILS_TABLE_COL_END);
+
+    //            const labelCell = ws.getCell(r, DETAILS_TABLE_COL_START);
+    //            const valueCell = ws.getCell(r, mid + 1);
+
+    //            labelCell.value = pair[0];
+    //            valueCell.value = pair[1];
+    //            labelCell.font = { bold: true };
+    //            [labelCell, valueCell].forEach(cell => {
+    //                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //            });
+
+    //            for (let c = DETAILS_TABLE_COL_START; c <= DETAILS_TABLE_COL_END; c++) {
+    //                setBorder(ws.getCell(r, c));
+    //            }
+    //        });
+    //    }
+
+    //    // ===== 10) Manual table header (row 7) =====
+    //    while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
+    //    const headerTitles = excelCols.map(c => c.label);
+    //    const headerRow = ws.addRow(headerTitles);
+    //    headerRow.height = 22;
+    //    headerRow.eachCell((cell) => {
+    //        cell.font = { bold: true };
+    //        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    //        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+    //        setBorder(cell);
+    //    });
+
+    //    // ===== 11) Data rows (exact Tabulator view) =====
+    //    let tabRows;
+    //    switch (EXPORT_SCOPE) {
+    //        case "selected": tabRows = table.getSelectedRows(); break;
+    //        case "all": tabRows = table.getRows(); break;
+    //        case "active":
+    //        default: tabRows = table.getRows("active"); break;
+    //    }
+
+    //    tabRows.forEach(row => {
+    //        const cells = row.getCells();
+    //        const byField = {};
+    //        cells.forEach(cell => { const f = cell.getField(); if (f) byField[f] = EXPORT_RAW ? row.getData()[f] : cell.getValue(); });
+
+    //        const values = excelCols.map(c => byField[c.key] ?? "");
+    //        const xRow = ws.addRow(values);
+
+    //        xRow.eachCell((cell, colNumber) => {
+    //            cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
+    //            setBorder(cell);
+    //        });
+    //    });
+
+    //    // ===== 12) Download =====
+    //    const buffer = await wb.xlsx.writeBuffer();
+    //    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    //    const link = document.createElement("a");
+    //    link.href = URL.createObjectURL(blob);
+    //    link.download = "BIS Project Tracker.xlsx";
+    //    document.body.appendChild(link);
+    //    link.click();
+    //    link.remove();
+    //});
+
+    //document.getElementById("exportBisButton").addEventListener("click", async function () {
+    //    // ========= 0) EXPORT OPTIONS =========
+    //    const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
+    //    const EXPORT_RAW = false;      // false = formatted (as shown in Tabulator), true = raw data
+
+    //    // ========= 1) COLUMNS from Tabulator (exact view) with EXCLUDES =========
+    //    if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+
+    //    const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions"]);
+    //    const EXCLUDE_TITLES = new Set(["Action", "Actions"]);
+
+    //    const tabCols = table.getColumns(true)
+    //        .filter(c => c.getField())
+    //        .filter(c => c.isVisible())
+    //        .filter(c => {
+    //            const def = c.getDefinition();
+    //            const field = def.field || "";
+    //            const title = (def.title || "").trim();
+    //            return !EXCLUDE_FIELDS.has(field) && !EXCLUDE_TITLES.has(title);
+    //        });
+
+    //    const excelCols = tabCols.map(col => {
+    //        const def = col.getDefinition();
+    //        const label = def.title || def.field;
+    //        const px = (def.width || col.getWidth() || 120);
+    //        const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
+    //        return { label, key: def.field, width };
+    //    });
+
+    //    if (!excelCols.length) { alert("No visible columns to export."); return; }
+
+    //    // ========= 2) DOC DETAILS =========
+    //    const docDetails = [
+    //        ["Document No", "WCIB/LS/QA/R/005"],
+    //        ["Effective Date", "01/10/2022"],
+    //        ["Revision No", "0"],
+    //        ["Revision Date", "01/10/2022"],
+    //        ["Page No", "1 of 1"]
+    //    ];
+
+    //    // ========= 3) LAYOUT =========
+    //    const TOTAL_COLS = excelCols.length;
+
+    //    const HEADER_TOP = 2;                 // header band start
+    //    const HEADER_BOTTOM = 6;              // header band end (gives room for logo)
+    //    const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 7
+    //    const TITLE_TEXT = "BIS PROJECT TRACKER";
+
+    //    // Logo block target (A2:D6)
+    //    const LOGO_COL_START = 1; // A
+    //    const LOGO_COL_END = 4; // D
+    //    const LOGO_ROW_START = HEADER_TOP;
+    //    const LOGO_ROW_END = HEADER_BOTTOM;
+
+    //    // Reserve last 6 columns for details on right
+    //    const RIGHT_DETAILS_COLS = Math.min(6, Math.max(0, TOTAL_COLS >= 10 ? 6 : Math.floor(TOTAL_COLS / 3)));
+
+    //    const TITLE_COL_START = Math.min(5, TOTAL_COLS); // E (if cols < 5, clamp)
+    //    const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - RIGHT_DETAILS_COLS);
+
+    //    const DETAILS_TABLE_COL_START = (RIGHT_DETAILS_COLS > 0) ? TITLE_COL_END + 1 : TOTAL_COLS + 1;
+    //    const DETAILS_TABLE_COL_END = TOTAL_COLS;
+
+    //    // ========= 4) HELPERS =========
+    //    async function fetchAsBase64(url) {
+    //        const res = await fetch(url);
+    //        const blob = await res.blob();
+    //        return new Promise((resolve) => {
+    //            const reader = new FileReader();
+    //            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    //            reader.readAsDataURL(blob);
+    //        });
+    //    }
+    //    function setBorder(cell, style = "thin") {
+    //        cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+    //    }
+    //    function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+    //        for (let c = c1; c <= c2; c++) {
+    //            const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+    //            top.border = { ...top.border, top: { style } };
+    //            bottom.border = { ...bottom.border, bottom: { style } };
+    //        }
+    //        for (let r = r1; r <= r2; r++) {
+    //            const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+    //            left.border = { ...left.border, left: { style } };
+    //            right.border = { ...right.border, right: { style } };
+    //        }
+    //    }
+
+    //    // ========= 5) WORKBOOK / SHEET =========
+    //    const wb = new ExcelJS.Workbook();
+    //    const ws = wb.addWorksheet("BIS Project Tracker", {
+    //        properties: { defaultRowHeight: 18 },
+    //        views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+    //    });
+
+    //    // Column widths (no headers here to avoid duplicates)
+    //    ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+    //    // Give header band extra height for logo
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        ws.getRow(r).height = 26; // ~34px
+    //    }
+
+    //    ws.pageSetup = {
+    //        orientation: "landscape",
+    //        fitToPage: true,
+    //        fitToWidth: 1,
+    //        fitToHeight: 0,
+    //        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+    //        printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
+    //    };
+
+    //    // ========= 6) HEADER BAND FILL =========
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        for (let c = 1; c <= TOTAL_COLS; c++) {
+    //            ws.getCell(r, c).fill = {
+    //                type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+    //            };
+    //        }
+    //    }
+
+    //    // ========= 7) LOGO — centered in A2:D6 (no stretch) + outline =========
+    //    // Desired logo size (px). Adjust to taste.
+    //    const LOGO_WIDTH_PX = 120;
+    //    const LOGO_HEIGHT_PX = 120;
+
+    //    // Approx column/row pixel helpers
+    //    const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);       // ~7px per char
+    //    const ROW_PX = (r) => ((ws.getRow(r).height || 18) * (96 / 72));  // pt -> px
+
+    //    // Size of the A2:D6 rectangle in px
+    //    let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+    //    let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
+
+    //    // Average px per column/row in that rectangle
+    //    const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
+    //    const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
+
+    //    // Convert desired pixel size → fractional col/row units
+    //    const logoCols = LOGO_WIDTH_PX / avgColPx;
+    //    const logoRows = LOGO_HEIGHT_PX / avgRowPx;
+
+    //    // Centered top-left anchor (fractional col/row)
+    //    const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+    //    const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+
+    //    const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+    //    if (logoUrl) {
+    //        try {
+    //            const base64 = await fetchAsBase64(logoUrl);
+    //            const imgId = wb.addImage({ base64, extension: "png" });
+    //            ws.addImage(imgId, {
+    //                tl: { col: tlCol, row: tlRow },
+    //                ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
+    //                editAs: "oneCell"
+    //            });
+    //        } catch (e) { console.warn("Logo load failed:", e); }
+    //    }
+    //    // Outline the logo block A2:D6
+    //    outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
+
+    //    // ========= 8) TITLE (merge) + outline (no overlap with details) =========
+    //    ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+    //    const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+    //    titleCell.value = TITLE_TEXT;
+    //    titleCell.font = { bold: true, size: 18 };
+    //    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    //    outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+
+    //    // ========= 9) DOCUMENT DETAILS (right block) =========
+    //    if (DETAILS_TABLE_COL_START <= DETAILS_TABLE_COL_END) {
+    //        docDetails.forEach((pair, i) => {
+    //            const r = HEADER_TOP + i;
+
+    //            // Split right block into label|value halves
+    //            const mid = Math.floor((DETAILS_TABLE_COL_START + DETAILS_TABLE_COL_END) / 2);
+    //            ws.mergeCells(r, DETAILS_TABLE_COL_START, r, mid);
+    //            ws.mergeCells(r, mid + 1, r, DETAILS_TABLE_COL_END);
+
+    //            const labelCell = ws.getCell(r, DETAILS_TABLE_COL_START);
+    //            const valueCell = ws.getCell(r, mid + 1);
+
+    //            labelCell.value = pair[0];
+    //            valueCell.value = pair[1];
+    //            labelCell.font = { bold: true };
+    //            [labelCell, valueCell].forEach(cell => {
+    //                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //            });
+
+    //            for (let c = DETAILS_TABLE_COL_START; c <= DETAILS_TABLE_COL_END; c++) {
+    //                setBorder(ws.getCell(r, c));
+    //            }
+    //        });
+    //    }
+
+    //    // ========= 10) MANUAL TABLE HEADER (row 7) =========
+    //    while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
+
+    //    const headerTitles = excelCols.map(c => c.label);
+    //    const headerRow = ws.addRow(headerTitles);
+    //    headerRow.height = 22;
+    //    headerRow.eachCell((cell) => {
+    //        cell.font = { bold: true };
+    //        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    //        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+    //        setBorder(cell);
+    //    });
+
+    //    // ========= 11) DATA ROWS (exact Tabulator view, minus Action) =========
+    //    let tabRows;
+    //    switch (EXPORT_SCOPE) {
+    //        case "selected": tabRows = table.getSelectedRows(); break;
+    //        case "all": tabRows = table.getRows(); break;
+    //        case "active":
+    //        default: tabRows = table.getRows("active"); break;
+    //    }
+
+    //    tabRows.forEach(row => {
+    //        const cells = row.getCells();
+    //        const byField = {};
+    //        cells.forEach(cell => {
+    //            const f = cell.getField();
+    //            if (!f) return;
+    //            // skip excluded
+    //            if (EXCLUDE_FIELDS.has(f)) return;
+    //            const def = cell.getColumn().getDefinition();
+    //            const title = (def.title || "").trim();
+    //            if (EXCLUDE_TITLES.has(title)) return;
+
+    //            byField[f] = EXPORT_RAW ? row.getData()[f] : cell.getValue();
+    //        });
+
+    //        const values = excelCols.map(c => byField[c.key] ?? "");
+    //        const xRow = ws.addRow(values);
+
+    //        xRow.eachCell((cell, colNumber) => {
+    //            cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
+    //            setBorder(cell);
+    //        });
+    //    });
+
+    //    // ========= 12) DOWNLOAD =========
+    //    const buffer = await wb.xlsx.writeBuffer();
+    //    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    //    const link = document.createElement("a");
+    //    link.href = URL.createObjectURL(blob);
+    //    link.download = "BIS Project Tracker.xlsx";
+    //    document.body.appendChild(link);
+    //    link.click();
+    //    link.remove();
+    //});
+
+    document.getElementById("exportBisButton").addEventListener("click", async function () {
+        // ===== 0) OPTIONS =====
+        const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
+        const EXPORT_RAW = false;      // false = formatted values exactly as shown in Tabulator
+
+        // ===== 1) COLUMNS from Tabulator (exact view) with EXCLUDES =====
+        if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+
+        const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions","CreatedBy"]);
+        const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
+
+        const tabCols = table.getColumns(true)
+            .filter(c => c.getField())
+            .filter(c => c.isVisible())
+            .filter(c => {
+                const def = c.getDefinition();
+                const field = def.field || "";
+                const title = (def.title || "").trim();
+                return !EXCLUDE_FIELDS.has(field) && !EXCLUDE_TITLES.has(title);
+            });
+
+        const excelCols = tabCols.map(col => {
+            const def = col.getDefinition();
+            const label = def.title || def.field;
+            const px = (def.width || col.getWidth() || 120);
+            const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
+            return { label, key: def.field, width };
+        });
+
+        if (!excelCols.length) { alert("No visible columns to export."); return; }
+
+        // ===== 2) DOC DETAILS (will be placed in second-last + last column) =====
+        const docDetails = [
+            ["Document No", "WCIB/LS/QA/R/005"],
+            ["Effective Date", "01/10/2022"],
+            ["Revision No", "0"],
+            ["Revision Date", "01/10/2022"],
+            ["Page No", "1 of 1"]
+        ];
+
+        // ===== 3) LAYOUT =====
+        const TOTAL_COLS = excelCols.length;
+
+        const HEADER_TOP = 1;                      // header band start
+        const HEADER_BOTTOM = 5;                   // header band end
+        const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 7
+        const TITLE_TEXT = "BIS PROJECT TRACKER";
+
+        // Logo block (A2:B6 exactly)
+        const LOGO_COL_START = 1; // A
+        const LOGO_COL_END = 2; // B
+        const LOGO_ROW_START = HEADER_TOP;
+        const LOGO_ROW_END = HEADER_BOTTOM;
+
+        // Title must not overlap the final 2 columns (reserved for details)
+        const TITLE_COL_START = Math.min(3, TOTAL_COLS);            // start from column C (or clamp if few cols)
+        const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
+
+        // Document details strictly in second-last & last column
+        const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
+        const DETAILS_VALUE_COL = TOTAL_COLS;
+
+        // ===== 4) HELPERS =====
+        async function fetchAsBase64(url) {
+            const res = await fetch(url);
+            const blob = await res.blob();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                reader.readAsDataURL(blob);
+            });
+        }
+        function setBorder(cell, style = "thin") {
+            cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+        }
+        function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+            for (let c = c1; c <= c2; c++) {
+                const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+                top.border = { ...top.border, top: { style } };
+                bottom.border = { ...bottom.border, bottom: { style } };
+            }
+            for (let r = r1; r <= r2; r++) {
+                const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+                left.border = { ...left.border, left: { style } };
+                right.border = { ...right.border, right: { style } };
+            }
+        }
+
+        // ===== 5) WORKBOOK / SHEET =====
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet("BIS Project Tracker", {
+            properties: { defaultRowHeight: 15 },
+            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+        });
+
+        // Set column widths (no header to avoid duplicates)
+        ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+        // Give header band height so logo fits
+        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+            ws.getRow(r).height = 18; // ~34px
+        }
+
+        ws.pageSetup = {
+            orientation: "landscape",
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 0,
+            margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+            printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
+        };
+
+        // ===== 6) HEADER BAND FILL =====
+        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+            for (let c = 1; c <= TOTAL_COLS; c++) {
+                ws.getCell(r, c).fill = {
+                    type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+                };
+            }
+        }
+
+        // ===== 7) LOGO — centered in A2:B6 (no stretch) + outline =====
+        // Desired logo size (px)
+        const LOGO_WIDTH_PX = 100;  // adjust as you like
+        const LOGO_HEIGHT_PX = 100;
+
+        // Approx column/row pixel helpers
+        const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);       // ~7px per char width
+        const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));  // pt -> px
+
+        // Size of A2:B6 rect in px
+        let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+        let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
+
+        // Average px per column/row in that rectangle
+        const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
+        const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
+
+        // Convert desired pixel size → fractional col/row units
+        const logoCols = LOGO_WIDTH_PX / avgColPx;
+        const logoRows = LOGO_HEIGHT_PX / avgRowPx;
+
+        // Centered TL anchor (fractional col/row)
+        const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+        const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+
+        const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+        if (logoUrl) {
+            try {
+                const base64 = await fetchAsBase64(logoUrl);
+                const imgId = wb.addImage({ base64, extension: "png" });
+                ws.addImage(imgId, {
+                    tl: { col: tlCol, row: tlRow },
+                    ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
+                    editAs: "oneCell"
+                });
+            } catch (e) { console.warn("Logo load failed:", e); }
+        }
+        outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
+
+        // ===== 8) TITLE (merge) + outline (from column C to third-last col) =====
+        ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+        const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+        titleCell.value = TITLE_TEXT;
+        titleCell.font = { bold: true, size: 18 };
+        titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+        outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+
+        // ===== 9) DOCUMENT DETAILS in (second-last, last) columns =====
+        // Rows: HEADER_TOP..(HEADER_TOP + docDetails.length - 1)
+        const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
+        docDetails.forEach((pair, i) => {
+            const r = HEADER_TOP + i;
+
+            const labelCell = ws.getCell(r, DETAILS_LABEL_COL);
+            const valueCell = ws.getCell(r, DETAILS_VALUE_COL);
+
+            labelCell.value = pair[0];
+            valueCell.value = pair[1];
+
+            labelCell.font = { bold: true };
+            [labelCell, valueCell].forEach(cell => {
+                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+                setBorder(cell, "thin");
+            });
+        });
+        // Optional: outline the whole two-column details block
+        outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
+
+        // ===== 10) MANUAL TABLE HEADER (row 7) =====
+        while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
+
+        const headerTitles = excelCols.map(c => c.label);
+        const headerRow = ws.addRow(headerTitles);
+        headerRow.height = 22;
+        headerRow.eachCell((cell) => {
+            cell.font = { bold: true };
+            cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+            setBorder(cell);
+        });
+
+        // ===== 11) DATA ROWS (exact Tabulator view, minus Action) =====
+        let tabRows;
+        switch (EXPORT_SCOPE) {
+            case "selected": tabRows = table.getSelectedRows(); break;
+            case "all": tabRows = table.getRows(); break;
+            case "active":
+            default: tabRows = table.getRows("active"); break;
+        }
+
+        tabRows.forEach(row => {
+            const cells = row.getCells();
+            const byField = {};
+            cells.forEach(cell => {
+                const f = cell.getField();
+                if (!f) return;
+                // Skip excluded
+                const def = cell.getColumn().getDefinition();
+                const title = (def.title || "").trim();
+                if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
+
+                byField[f] = EXPORT_RAW ? row.getData()[f] : cell.getValue(); // exact display value by default
+            });
+
+            const values = excelCols.map(c => byField[c.key] ?? "");
+            const xRow = ws.addRow(values);
+
+            xRow.eachCell((cell, colNumber) => {
+                cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
+                setBorder(cell);
+            });
+        });
+
+        // ===== 12) DOWNLOAD =====
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "BIS Project Tracker.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    });
 
 
     Blockloaderhide();
@@ -980,6 +2150,7 @@ function OnNatProjectTabGridLoad(response) {
         tableNatProject.addRow(newRow1, false);
     });
 
+    
 
     Blockloaderhide();
 }
@@ -1124,15 +2295,15 @@ function clearForm() {
 }
 
 
-function openDocModel() {
-    clearForm();
-    if (!$('#docDetModal').length) {
-        $('body').append(partialView);
-    }
-    $('#docDetModal').modal('show');
+//function openDocModel() {
+//    clearForm();
+//    if (!$('#docDetModal').length) {
+//        $('body').append(partialView);
+//    }
+//    $('#docDetModal').modal('show');
 
-    var today = new Date().toISOString().split('T')[0];
-    $('#effect_Date').val(today);
-    $('#rev_Date').val(today);
-}
+//    var today = new Date().toISOString().split('T')[0];
+//    $('#effect_Date').val(today);
+//    $('#rev_Date').val(today);
+//}
 

@@ -29,6 +29,13 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
+        public async Task<JsonResult> GetDocDetailByTypeAsync(string type)
+        {
+            var instId = await _docDetRepository.GetDocDetailByTypeAsync(type);
+            return Json(instId);
+        }
+
+        [HttpGet]
         public async Task<JsonResult> GetDocDetailAsync()
         {
             var instList = await _docDetRepository.GetDocDetailAsync();
@@ -36,7 +43,7 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> CreateDocDetailAsync([FromBody] DocumentDetViewModel model)
+        public async Task<JsonResult> CreateDocDetailAsync(DocumentDetViewModel model)
         {
             try
             {
@@ -68,7 +75,7 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> UpdateDocDetailAsync([FromBody] DocumentDetViewModel model)
+        public async Task<JsonResult> UpdateDocDetailAsync(DocumentDetViewModel model)
         {
             try
             {

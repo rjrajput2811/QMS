@@ -90,7 +90,7 @@
         .calendar-container span {
             color: #4682B4;
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
         }
 
     .container__predefined-ranges {
@@ -114,6 +114,25 @@
         font-weight: bold;
     } */
 
+
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+        /* light warning */
+        100% {
+            background-color: transparent;
+        }
+    }
+
+    .row-flash {
+        animation: flash-bg 2s ease-out forwards;
+    }
+
+    /* if your table has zebra or hover styles, ensure the flash wins */
+    .tabulator-row.row-flash {
+        transition: background-color 2s ease-out;
+    }
 </style>
 
 

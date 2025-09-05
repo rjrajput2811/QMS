@@ -4,6 +4,7 @@ Noty.overrideDefaults({
     theme: 'limitless',
     layout: 'topRight',
     type: 'alert',
+    timeout: 2500
 });
 
 
@@ -25,6 +26,16 @@ function showSuccessPoAlert(Texts) {
         progressBar: true,
         closeWith: ['button'],
         timeout: 1000  
+    }).show();
+}
+
+function showSuccessNewAlert(Texts) {
+    new Noty({
+        theme: ' alert alert-success alert-styled-left p-0 ',
+        text: Texts,
+        progressBar: true,
+        closeWith: ['button'],
+        timeout: 1000
     }).show();
 }
 

@@ -30,6 +30,15 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
             {
                 var result = await _dbContext.ThirdPartyInspections.FromSqlRaw("EXEC sp_Get_ThirdPartyInspections").ToListAsync();
 
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    result = result
+                        .Where(x => x.InspectionDate.HasValue &&
+                                    x.InspectionDate.Value.Date >= startDate.Value.Date &&
+                                    x.InspectionDate.Value.Date <= endDate.Value.Date)
+                        .ToList();
+                }
                 // Map results to ViewModel
                 var viewModelList = result.Select(data => new ThirdPartyInspectionViewModel
                 {
@@ -54,15 +63,6 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                     UpdatedBy = data.UpdatedBy,
                     UpdatedDate = data.UpdatedDate,
                 }).ToList();
-
-                if (startDate.HasValue && endDate.HasValue)
-                {
-                    viewModelList = viewModelList
-                        .Where(x => x.InspectionDate.HasValue &&
-                                    x.InspectionDate.Value.Date >= startDate.Value.Date &&
-                                    x.InspectionDate.Value.Date <= endDate.Value.Date)
-                        .ToList();
-                }
 
                 return viewModelList;
             }

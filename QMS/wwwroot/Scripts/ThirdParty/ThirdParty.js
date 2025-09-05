@@ -256,7 +256,7 @@ function OnTabThirdInsGridLoad(response) {
         $.each(response, function (index, item) {
             tabledata.push({
                 Sr_No: index + 1,
-                Id: item.id,
+                InspectionID: item.inspectionID,
                 InspectionDate: formatDate(item.inspectionDate),
                 ProjectName: item.projectName || "",
                 InspName: item.inspName || "",
@@ -396,7 +396,7 @@ function OnTabThirdInsGridLoad(response) {
 
     $("#addTPIButton").on("click", function () {
         const newRow = {
-            Id: 0,
+            InspectionID: 0,
             Sr_No: table.getDataCount() + 1,
             InspectionDate: "",
             ProjectName: "",
@@ -592,7 +592,7 @@ function saveEditedRow(rowData) {
     }
 
     const cleanedData = {
-        Id: rowData.Id || 0,
+        Id: rowData.InspectionID || 0,
         InspectionDate: toIsoDate(rowData.InspectionDate),
         ProjectName: rowData.ProjectName || "",
         InspName: rowData.InspName || "",

@@ -25,7 +25,7 @@ namespace QMS.Core.DatabaseContext
         public string? InspName { get; set; }
         public string? ProductCode { get; set; }
         public string? ProdDesc { get; set; }
-        public int? LOTQty { get; set; }
+        public string? LOTQty { get; set; }
         public string? ProjectValue { get; set; }
         public string? Location { get; set; }
         public string? Mode { get; set; }

@@ -160,87 +160,465 @@ function loadThirdInsData() {
 }
 
 
-Tabulator.extendModule("edit", "editors", {
-    autocomplete_ajax: function (cell, onRendered, success, cancel, editorParams) {
-        const input = document.createElement("input");
-        input.setAttribute("type", "text");
-        input.style.width = "100%";
-        input.value = cell.getValue() || "";
+//Tabulator.extendModule("edit", "editors", {
+//    autocomplete_ajax: function (cell, onRendered, success, cancel, editorParams) {
+//        const input = document.createElement("input");
+//        input.setAttribute("type", "text");
+//        input.style.width = "100%";
+//        input.value = cell.getValue() || "";
 
-        let dropdown = null;
+//        let dropdown = null;
 
-        function removeDropdown() {
-            if (dropdown && dropdown.parentNode && document.body.contains(dropdown)) {
-                dropdown.parentNode.removeChild(dropdown);
+//        function removeDropdown() {
+//            if (dropdown && dropdown.parentNode && document.body.contains(dropdown)) {
+//                dropdown.parentNode.removeChild(dropdown);
+//            }
+//            dropdown = null;
+//        }
+
+//        function fetchSuggestions(query) {
+//            $.ajax({
+//                url: '/PDITracker/GetCodeSearch',
+//                type: 'GET',
+//                data: { search: query },
+//                success: function (data) {
+//                    removeDropdown(); // clear old
+
+//                    dropdown = document.createElement("div");
+//                    dropdown.className = "autocomplete-dropdown";
+
+//                    data.forEach(item => {
+//                        const option = document.createElement("div");
+//                        option.textContent = item.oldPart_No;
+//                        option.className = "autocomplete-option";
+
+//                        option.addEventListener("mousedown", function (e) {
+//                            e.stopPropagation();
+//                            success(item.oldPart_No);
+
+//                            const row = cell.getRow();
+//                            const data = row.getData();
+//                            //row.update({ ProductDescription: item.description });
+//                            row.update({ ProductDescription: item.description }).then(() => {
+//                                // Save full row (with updated description)
+//                                saveEditedRow({ ...data, ProductCode: item.oldPart_No, ProductDescription: item.description });
+//                            });
+
+//                            removeDropdown();
+//                        });
+
+//                        dropdown.appendChild(option);
+//                    });
+
+//                    document.body.appendChild(dropdown);
+//                    const rect = input.getBoundingClientRect();
+//                    dropdown.style.top = (window.scrollY + rect.bottom) + "px";
+//                    dropdown.style.left = (window.scrollX + rect.left) + "px";
+//                    dropdown.style.width = rect.width + "px";
+//                },
+//                error: function () {
+//                    console.error("Failed to fetch suggestions.");
+//                }
+//            });
+//        }
+
+//        input.addEventListener("input", function () {
+//            const val = input.value;
+//            if (val.length >= 4) {
+//                fetchSuggestions(val);
+//            } else {
+//                removeDropdown();
+//            }
+//        });
+
+//        input.addEventListener("blur", function () {
+//            setTimeout(() => {
+//                removeDropdown();
+//                success(input.value);
+//            }, 150); // delay to allow click
+//        });
+
+//        return input;
+//    }
+//});
+
+
+//<style>
+///* minimal styles for tags & dropdown */
+//.tab-multi-ac { display:flex; flex-wrap:wrap; gap:.35rem; align-items:center; min-height:30px; padding:4px; }
+//.tab-multi-ac input { border:none; outline:none; flex:1 0 120px; min-width:100px; }
+//.tab-tag { display:inline-flex; align-items:center; gap:.35rem; padding:2px 8px; border-radius:12px; background:#eef1f6; font-size:12px; }
+//.tab-tag .tab-x { cursor:pointer; font-weight:700; }
+//.autocomplete-dropdown { position:absolute; z-index:99999; max-height:240px; overflow:auto; border:1px solid #ddd; background:#fff; box-shadow:0 6px 18px rgba(0,0,0,.08); }
+//.autocomplete-option { padding:6px 10px; cursor:pointer; white-space:nowrap; }
+//.autocomplete-option:hover, .autocomplete-option.active { background:#f2f6ff; }
+//</style>
+
+
+// Utility
+
+
+// make sure this runs before OnTabThirdInsGridLoad
+// --- Put this near the top of your JS (before OnTabThirdInsGridLoad) ---
+(function (global) {
+    function escapeHTML(s) {
+        return String(s ?? "").replace(/[&<>"']/g, m => (
+            { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]
+        ));
+    }
+
+    // Parse "CODE — DESC | CODE — DESC" into Map(code -> desc)
+    function parsePairs(text, pairSep, itemSep) {
+        const map = new Map();
+        const raw = String(text || "").trim();
+        if (!raw) return map;
+        raw.split(itemSep).map(s => s.trim()).filter(Boolean).forEach(part => {
+            const i = part.indexOf(pairSep);
+            if (i > -1) {
+                const code = part.slice(0, i).trim();
+                const desc = part.slice(i + pairSep.length).trim();
+                if (code) map.set(code, desc);
             }
-            dropdown = null;
+        });
+        return map;
+    }
+
+    // NEW: formatter that shows CODE — DESC chips in the ProductCode cell
+    global.tagsFormatterPairs = function (cell, params) {
+        const joinWith = params?.joinWith ?? ", ";
+        const pairSeparator = params?.pairSeparator ?? " — "; // change to " - " if you prefer hyphen
+        const pairJoinWith = params?.pairJoinWith ?? " | ";
+        const descFieldParam = params?.descField; // string or array of possible fields
+
+        // get codes from cell
+        const raw = cell.getValue();
+        const codes = Array.isArray(raw)
+            ? raw
+            : String(raw || "").split(joinWith).map(s => s.trim()).filter(Boolean);
+
+        // find the description text in the row (e.g. ProductDescription / ProdDesc)
+        const row = cell.getRow().getData();
+        let descText = "";
+        if (Array.isArray(descFieldParam)) {
+            descText = descFieldParam.map(f => row?.[f]).find(Boolean) || "";
+        } else if (typeof descFieldParam === "string") {
+            descText = row?.[descFieldParam] || "";
+        } else {
+            descText = row?.ProductDescription || row?.ProdDesc || "";
         }
 
-        function fetchSuggestions(query) {
-            $.ajax({
-                url: '/PDITracker/GetCodeSearch',
-                type: 'GET',
-                data: { search: query },
-                success: function (data) {
-                    removeDropdown(); // clear old
+        const map = parsePairs(descText, pairSeparator, pairJoinWith);
 
-                    dropdown = document.createElement("div");
-                    dropdown.className = "autocomplete-dropdown";
+        // build labels: CODE — DESC (fallback to CODE if desc not found yet)
+        const labels = codes.map(code => {
+            const d = map.get(String(code));
+            return d ? `${code}${pairSeparator}${d}` : String(code);
+        });
 
-                    data.forEach(item => {
-                        const option = document.createElement("div");
-                        option.textContent = item.oldPart_No;
-                        option.className = "autocomplete-option";
+        // render chips
+        return labels.map(lbl => `<span class="tab-tag">${escapeHTML(lbl)}</span>`).join(" ");
+    };
+})(window);
 
-                        option.addEventListener("mousedown", function (e) {
-                            e.stopPropagation();
-                            success(item.oldPart_No);
+// Optional minimal chip styling
+/* .tab-tag{display:inline-block;padding:2px 8px;margin:2px 4px 0 0;border:1px solid #ddd;border-radius:9999px;font-size:12px;background:#f7f7f7;line-height:20px;} */
 
-                            const row = cell.getRow();
-                            const data = row.getData();
-                            //row.update({ ProductDescription: item.description });
-                            row.update({ ProductDescription: item.description }).then(() => {
-                                // Save full row (with updated description)
-                                saveEditedRow({ ...data, ProductCode: item.oldPart_No, ProductDescription: item.description });
-                            });
 
-                            removeDropdown();
-                        });
 
-                        dropdown.appendChild(option);
-                    });
+Tabulator.extendModule("edit", "editors", {
+    autocomplete_ajax_multi: function (cell, onRendered, success, cancel, editorParams) {
+        // ---------- utilities ----------
+        const _escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,
+            m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
-                    document.body.appendChild(dropdown);
-                    const rect = input.getBoundingClientRect();
-                    dropdown.style.top = (window.scrollY + rect.bottom) + "px";
-                    dropdown.style.left = (window.scrollX + rect.left) + "px";
-                    dropdown.style.width = rect.width + "px";
-                },
-                error: function () {
-                    console.error("Failed to fetch suggestions.");
+        function _firstField(obj, candidates) {
+            for (const k of candidates) { if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) return obj[k]; }
+            return undefined;
+        }
+        function _parseCodeDesc(label) {
+            if (!label) return { code: undefined, desc: undefined };
+            const s = String(label);
+            const m = s.match(/^\s*([^—\-|]+?)\s*[—\-|]\s*(.+)\s*$/); // em dash OR hyphen OR pipe
+            if (m) return { code: m[1].trim(), desc: m[2].trim() };
+            return { code: s.trim(), desc: undefined };
+        }
+
+        // Parse "CODE — DESC | CODE — DESC" or "DESC | DESC" into Map(code->desc).
+        function parsePairsFromText(text, pairSep, itemSep) {
+            const map = new Map();
+            const raw = String(text || "").trim();
+            if (!raw) return map;
+
+            const items = raw.split(itemSep).map(s => s.trim()).filter(Boolean);
+            for (const part of items) {
+                const m = part.split(pairSep);
+                if (m.length >= 2) {
+                    const code = m[0].trim();
+                    const desc = m.slice(1).join(pairSep).trim();
+                    if (code) map.set(code, desc);
+                } else {
+                    // If only desc present (legacy), we can't map to code reliably
+                    // we'll keep it for later display but not code-map
                 }
+            }
+            return map;
+        }
+
+        // chips formatter for read mode (re-used here)
+        function tagsFormatterInline(arr, joinWith) {
+            return arr.map(x => `<span class="tab-tag">${_escapeHtml(x)}</span>`).join(' ');
+        }
+
+        // ---------- config ----------
+        const cfg = Object.assign({
+            url: '/PDITracker/GetCodeSearch',
+            queryParam: 'search',
+            minChars: 3,
+            debounce: 250,
+
+            valueField: 'oldPart_No',
+            valueFieldCandidates: ['oldPart_No', 'code', 'Code', 'productCode', 'ProductCode'],
+            labelField: 'oldPart_No',
+            labelFieldCandidates: ['label', 'name', 'text', 'oldPart_No', 'productCode', 'ProductCode'],
+            descItemField: 'description',
+            descItemFieldCandidates: ['description', 'desc', 'productDescription', 'ProductDescription', 'prodDesc', 'ProdDesc'],
+
+            // Linked row description field(s) to update
+            descField: ['ProdDesc', 'ProductDescription'], // can be string or array
+            descAsArray: false,              // store descs as array or as joined string
+            descJoinWith: ' | ',             // joiner for desc-only format
+
+            // NEW: actually used now
+            descFormat: 'pair',              // 'pair' -> "CODE — DESC" ; 'desc' -> "DESC"
+            descPairSeparator: ' — ',
+            descPairJoinWith: ' | ',
+
+            updateRowOnPick: true,
+
+            asArray: true,                   // store codes as array in the cell
+            joinWith: ', ',
+            maxSelect: 0,
+            allowFreeText: false
+        }, editorParams || {});
+
+        const descFields = Array.isArray(cfg.descField) ? cfg.descField : (cfg.descField ? [cfg.descField] : []);
+
+        // ---------- UI ----------
+        const wrap = document.createElement('div');
+        wrap.className = 'tab-multi-ac'; wrap.style.width = "100%";
+        const input = document.createElement('input');
+        input.type = 'text'; input.autocomplete = 'off';
+        wrap.appendChild(input);
+
+        let dropdown = null, activeIndex = -1, pendingXHR = null, lastQuery = '';
+        let selected = []; const selectedSet = new Set();
+
+        function removeDropdown() { if (dropdown && dropdown.parentNode) dropdown.parentNode.removeChild(dropdown); dropdown = null; activeIndex = -1; }
+        function positionDropdown() {
+            if (!dropdown) return;
+            const r = wrap.getBoundingClientRect();
+            dropdown.style.top = (r.bottom) + "px";
+            dropdown.style.left = (r.left) + "px";
+            dropdown.style.minWidth = r.width + "px";
+        }
+        function cancelPending() { if (pendingXHR && pendingXHR.readyState !== 4) { try { pendingXHR.abort(); } catch (e) { } } pendingXHR = null; }
+
+        const debouncedFetch = (() => { let t = null; return (q) => { clearTimeout(t); t = setTimeout(() => fetchSuggestions(q), cfg.debounce); }; })();
+
+        function normalizeItem(raw) {
+            let code = _firstField(raw, [cfg.valueField, ...cfg.valueFieldCandidates]);
+            let desc = _firstField(raw, [cfg.descItemField, ...cfg.descItemFieldCandidates]);
+            let label = _firstField(raw, [cfg.labelField, ...cfg.labelFieldCandidates]);
+            if (!desc && label) { const parsed = _parseCodeDesc(label); if (!code && parsed.code) code = parsed.code; if (parsed.desc) desc = parsed.desc; }
+            if (!label) label = desc ? `${code} ${cfg.descPairSeparator}${desc}` : (code ?? '');
+            return { code: String(code || '').trim(), desc: desc ? String(desc).trim() : undefined, label: String(label || '').trim() };
+        }
+
+        function fetchSuggestions(q) {
+            if (q === lastQuery) return;
+            lastQuery = q;
+            cancelPending();
+            if (q.length < cfg.minChars) { removeDropdown(); return; }
+
+            pendingXHR = $.ajax({
+                url: cfg.url, type: 'GET', data: { [cfg.queryParam]: q }
+            }).done(function (data) {
+                renderDropdown(Array.isArray(data) ? data : []);
+            }).always(function () { pendingXHR = null; });
+        }
+
+        function renderDropdown(items) {
+            removeDropdown();
+            dropdown = document.createElement('div');
+            dropdown.className = 'autocomplete-dropdown';
+
+            const normalized = items.map(normalizeItem).filter(it => it.code);
+            const filtered = normalized.filter(it => !selectedSet.has(it.code));
+            if (filtered.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'autocomplete-option'; empty.style.opacity = .6;
+                empty.textContent = 'No matches'; dropdown.appendChild(empty);
+            } else {
+                filtered.forEach((it) => {
+                    const opt = document.createElement('div');
+                    opt.className = 'autocomplete-option';
+                    opt.innerHTML = _escapeHtml(it.label);
+                    opt.addEventListener('mousedown', function (e) {
+                        e.preventDefault(); e.stopPropagation();
+                        addTag(it); flushTags();
+                        input.focus(); debouncedFetch(input.value.trim());
+                    });
+                    dropdown.appendChild(opt);
+                });
+            }
+
+            document.body.appendChild(dropdown);
+            dropdown.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
+            dropdown.addEventListener('click', (e) => e.stopPropagation());
+            dropdown.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
+            dropdown.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+            positionDropdown();
+        }
+
+        function flushTags() {
+            [...wrap.querySelectorAll('.tab-tag')].forEach(e => e.remove());
+            const labels = selected.map(it => it.desc ? `${it.code} ${cfg.descPairSeparator}${it.desc}` : (it.label || it.code));
+            labels.forEach((label, i) => {
+                const tag = document.createElement('span'); tag.className = 'tab-tag';
+                tag.innerHTML = _escapeHtml(label) + ' <span class="tab-x" title="Remove">×</span>';
+                tag.querySelector('.tab-x').addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); removeItem(selected[i].code); });
+                wrap.insertBefore(tag, input);
             });
         }
 
-        input.addEventListener("input", function () {
-            const val = input.value;
-            if (val.length >= 4) {
-                fetchSuggestions(val);
-            } else {
-                removeDropdown();
+        function addTag(item, repaint = true) {
+            const code = (item.code ?? '').trim();
+            if (!code || selectedSet.has(code)) return;
+            if (cfg.maxSelect && selected.length >= cfg.maxSelect) return;
+
+            selected.push({ code, desc: item.desc ?? undefined, label: item.label ?? code });
+            selectedSet.add(code);
+            if (repaint) flushTags();
+            if (cfg.updateRowOnPick) syncLinkedDesc(); // will join ALL, not overwrite
+            input.value = '';
+        }
+
+        function removeItem(code) {
+            selected = selected.filter(it => it.code !== code);
+            selectedSet.delete(code);
+            flushTags();
+            if (cfg.updateRowOnPick) syncLinkedDesc();
+        }
+
+        function codesArray() { return selected.map(it => it.code); }
+
+        function buildDescOutput() {
+            if (cfg.descFormat === 'pair') {
+                const parts = selected.map(it => {
+                    if (it.desc) return `${it.code}${cfg.descPairSeparator}${it.desc}`;
+                    // if desc is unknown, still keep the code so user knows it exists
+                    return it.code;
+                });
+                return parts.join(cfg.descPairJoinWith);
+            } else { // 'desc'
+                const descs = selected.map(it => it.desc).filter(Boolean);
+                return cfg.descAsArray ? descs : descs.join(cfg.descJoinWith);
+            }
+        }
+
+        function syncLinkedDesc() {
+            if (!descFields.length) return;
+            const row = cell.getRow();
+            const val = buildDescOutput();
+            const patch = {};
+            descFields.forEach(f => patch[f] = val);
+            row.update(patch); // reflect combined descriptions
+        }
+
+        function commit() {
+            removeDropdown();
+            const val = cfg.asArray ? codesArray() : codesArray().join(cfg.joinWith);
+            if (descFields.length) syncLinkedDesc();
+            success(val);
+        }
+
+        // ---------- init from current cell value + hydrate descs from row ----------
+        (function initFromValue() {
+            const raw = cell.getValue();
+            const initialCodes = Array.isArray(raw) ? raw :
+                (raw ? String(raw).split(cfg.joinWith).map(s => s.trim()).filter(Boolean) : []);
+
+            // Try to read existing description text from row and map code→desc
+            const rowData = cell.getRow().getData();
+            const firstDescText = descFields.map(f => rowData && rowData[f]).find(Boolean);
+            const knownMap = parsePairsFromText(firstDescText, cfg.descPairSeparator, cfg.descPairJoinWith);
+
+            initialCodes.forEach(code => {
+                const desc = knownMap.get(code);         // hydrate if we can
+                addTag({ code, desc, label: desc ? `${code} ${cfg.descPairSeparator}${desc}` : code }, false);
+            });
+
+            flushTags();
+            if (cfg.updateRowOnPick) syncLinkedDesc();
+        })();
+
+        // ---------- event handlers ----------
+        input.addEventListener('keydown', function (e) {
+            e.stopPropagation();
+
+            const opts = dropdown ? dropdown.querySelectorAll('.autocomplete-option') : [];
+            const max = opts.length - 1;
+
+            if (e.key === 'ArrowDown') { e.preventDefault(); if (!dropdown) { debouncedFetch(input.value.trim()); return; } activeIndex = Math.min(max, activeIndex + 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(0, activeIndex - 1); }
+            else if (e.key === 'PageDown') { e.preventDefault(); activeIndex = Math.min(max, (activeIndex < 0 ? 0 : activeIndex) + 10); }
+            else if (e.key === 'PageUp') { e.preventDefault(); activeIndex = Math.max(0, (activeIndex < 0 ? 0 : activeIndex) - 10); }
+            else if (e.key === 'Home') { e.preventDefault(); activeIndex = 0; }
+            else if (e.key === 'End') { e.preventDefault(); activeIndex = max; }
+            else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (dropdown && activeIndex >= 0 && opts[activeIndex]) {
+                    opts[activeIndex].dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                } else if (cfg.allowFreeText && input.value.trim() !== '') {
+                    const v = input.value.trim();
+                    addTag({ code: v, desc: v, label: v }); flushTags();
+                } else {
+                    commit();
+                }
+            } else if (e.key === 'Backspace' && input.value === '') {
+                const last = selected[selected.length - 1];
+                if (last) removeItem(last.code);
+            } else if (e.key === 'Escape') {
+                e.preventDefault(); removeDropdown(); return;
+            }
+
+            if (dropdown) {
+                opts.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+                if (activeIndex >= 0 && opts[activeIndex]) opts[activeIndex].scrollIntoView({ block: 'nearest' });
             }
         });
 
-        input.addEventListener("blur", function () {
-            setTimeout(() => {
-                removeDropdown();
-                success(input.value);
-            }, 150); // delay to allow click
-        });
+        input.addEventListener('input', () => debouncedFetch(input.value.trim()));
 
-        return input;
+        const onDocClick = (e) => { if (!wrap.contains(e.target) && !(dropdown && dropdown.contains(e.target))) commit(); };
+        document.addEventListener('mousedown', onDocClick, true);
+        window.addEventListener('resize', positionDropdown, true);
+        onRendered(() => { input.focus({ preventScroll: true }); positionDropdown(); });
+
+        function destroy() {
+            if (pendingXHR && pendingXHR.readyState !== 4) { try { pendingXHR.abort(); } catch (e) { } }
+            removeDropdown();
+            document.removeEventListener('mousedown', onDocClick, true);
+            window.removeEventListener('resize', positionDropdown, true);
+        }
+        const _success = success, _cancel = cancel;
+        success = (v) => { destroy(); _success(v); };
+        cancel = () => { destroy(); _cancel(); };
+
+        return wrap;
     }
 });
+
 
 function OnTabThirdInsGridLoad(response) {
     Blockloadershow();
@@ -288,7 +666,7 @@ function OnTabThirdInsGridLoad(response) {
             headerMenu: headerMenu,
             formatter: function (cell) {
                 const rowData = cell.getRow().getData();
-                return `<i onclick="delConfirm(${rowData.Id},this)" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
+                return `<i onclick="delConfirm(${rowData.InspectionID},this)" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
             }
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
@@ -296,14 +674,47 @@ function OnTabThirdInsGridLoad(response) {
         editableColumn("Inspection Date", "InspectionDate", "date", "center", "input", {}, {}, 120),
         editableColumn("Customer/Project Name", "ProjectName", "input", "left", "input", {}, {} ),
         editableColumn("Inspector Name", "InspName", "input", "left", "input", {}, {} ),
-        editableColumn("Product Code", "ProductCode", "autocomplete_ajax"),
-        editableColumn("Product Description", "ProdDesc", "input"),
-        editableColumn("LOT QTY(No's)", "LOTQty", "number", "center", "input", {
-            min: 0,        // optional - no negative numbers
-            step: 1
-        }, {
-            validator: "integer"  
-        }, 110),
+        //editableColumn("Product Code", "ProductCode", "autocomplete_ajax"),
+        {
+            title: "Product Codes",
+            field: "ProductCode",
+            editor: "autocomplete_ajax_multi",
+            headerSort: false,
+            headerMenu: headerMenu,
+            headerFilter: "input",
+            // use the PAIR-AWARE formatter instead of tagsFormatter
+            formatter: tagsFormatterPairs,
+            formatterParams: {
+                joinWith: ", ",
+                // where to read the combined desc text from (tries in order)
+                descField: ["ProductDescription", "ProdDesc"],
+                // how your description field is stored:
+                pairSeparator: " — ",   // use " - " if you want a hyphen
+                pairJoinWith: " | "
+            },
+            editorParams: {
+                url: "/PDITracker/GetCodeSearch",
+                queryParam: "search",
+                minChars: 4,
+                valueField: "oldPart_No",
+                descItemField: "description",
+                labelField: "oldPart_No",
+
+                // keep these to ensure the row description is maintained as pairs:
+                descField: ["ProdDesc", "ProductDescription"],
+                descFormat: "pair",
+                descPairSeparator: " — ",
+                descPairJoinWith: " | ",
+
+                asArray: true,
+                joinWith: ", ",
+                maxSelect: 0
+            },
+            widthGrow: 2
+        },
+        /*editableColumn("Product Description", "ProdDesc", "input"),*/
+        { title: "Product Description", field: "ProdDesc", widthGrow: 3, headerSort: false, headerMenu: headerMenu , headerFilter: "input" },
+        editableColumn("LOT QTY(No's)", "LOTQty", "input", "center", "input", {}, 110),
         editableColumn("Project Value(Mn).", "ProjectValue", "input", "left", "input", {}, {}),
         editableColumn("TPI Duration(DAYS)", "Tpi_Duration", "input", "center", "input", {}, {}),
         editableColumn("Location(Waluj Lab/Vendor Location)", "Location", "input", "left", "input", {}, {}),
@@ -315,7 +726,7 @@ function OnTabThirdInsGridLoad(response) {
         editableColumn("Remark", "Remark", "input", "center", null, {}, {}, 180),
         {
             title: "Attachment",
-            field: "Attahcment",
+            field: "Attachment",
             hozAlign: "center",
             headerHozAlign: "center",
             headerMenu: headerMenu,
@@ -323,12 +734,12 @@ function OnTabThirdInsGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="/PDITrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="/ThirdPartyTrac_Atta/${rowData.InspectionID}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
             ${fileDisplay}
-            <input type="file" accept=".pdf,image/*" class="form-control-file pdi-upload" data-id="${cell.getRow().getData().Id}" style="width:160px;" />
+            <input type="file" accept=".pdf,image/*" class="form-control-file pdi-upload" data-id="${cell.getRow().getData().InspectionID}" style="width:160px;" />
         `;
             },
             cellClick: function (e, cell) {
@@ -394,35 +805,344 @@ function OnTabThirdInsGridLoad(response) {
         });
     }
 
-    $("#addTPIButton").on("click", function () {
-        const newRow = {
-            InspectionID: 0,
-            Sr_No: table.getDataCount() + 1,
-            InspectionDate: "",
-            ProjectName: "",
-            InspName: "",
-            ProductCode: "",
-            ProdDesc: "",
-            LOTQty: "",
-            ProjectValue: "",
-            Tpi_Duration: "",
-            Location: "",
-            Mode: "",
-            FirstAttempt: "",
-            Remark: "",
-            ActionPlan: "",
-            MOMDate: "",
-            Attachment: "",
-            Document_No: "",
-            Revision_No: "",
-            Effective_Date: "",
-            Revision_Date: "",
+    //$("#addTPIButton").on("click", function () {
+    //    const newRow = {
+    //        InspectionID: 0,
+    //        Sr_No: table.getDataCount() + 1,
+    //        InspectionDate: "",
+    //        ProjectName: "",
+    //        InspName: "",
+    //        ProductCode: "",
+    //        ProdDesc: "",
+    //        LOTQty: "",
+    //        ProjectValue: "",
+    //        Tpi_Duration: "",
+    //        Location: "",
+    //        Mode: "",
+    //        FirstAttempt: "",
+    //        Remark: "",
+    //        ActionPlan: "",
+    //        MOMDate: "",
+    //        Attachment: "",
+    //        Document_No: "",
+    //        Revision_No: "",
+    //        Effective_Date: "",
+    //        Revision_Date: "",
+    //    };
+    //    table.addRow(newRow, false); // false = add to bottom
+    //});
+
+    (function bindAddButtonOnce() {
+        var $btn = $("#addTPIButton");
+        $btn.attr("type", "button");                       // avoid form submit duplicates
+        $btn.off("click.addrow").on("click.addrow", function (e) {
+            e.preventDefault(); e.stopPropagation();
+            if ($btn.data("busy")) return;                 // guard double-clicks
+            $btn.data("busy", true).prop("disabled", true);
+
+            try {
+                const newRow = {
+                    InspectionID: 0,
+                    Sr_No: table.getDataCount() + 1,
+                    InspectionDate: "",
+                    ProjectName: "",
+                    InspName: "",
+                    ProductCode: "",
+                    ProdDesc: "",
+                    LOTQty: "",
+                    ProjectValue: "",
+                    Tpi_Duration: "",
+                    Location: "",
+                    Mode: "",
+                    FirstAttempt: "",
+                    Remark: "",
+                    ActionPlan: "",
+                    MOMDate: "",
+                    Attachment: "",
+                    Document_No: "",
+                    Revision_No: "",
+                    Effective_Date: "",
+                    Revision_Date: "",
+                };
+
+                table.addRow(newRow, true).then(function (row) {
+                    table.scrollToRow(row, "top", false);
+                    if (row.select) row.select();
+
+                    const el = row.getElement();
+                    el.classList.add("row-flash");
+                    setTimeout(() => el.classList.remove("row-flash"), 1200);
+
+                    renumberSrNo(); // keep S.No sequence
+                }).catch(console.error).finally(function () {
+                    $btn.data("busy", false).prop("disabled", false);
+                });
+
+            } catch (err) {
+                console.error(err);
+                $btn.data("busy", false).prop("disabled", false);
+            }
+        });
+    })();
+
+
+    // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
+    document.getElementById("exportThirdPartyInsButton").addEventListener("click", async function () {
+        // ===== 0) OPTIONS =====
+        const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
+        const EXPORT_RAW = false;      // false = formatted values exactly as shown in Tabulator
+
+        // ===== 1) COLUMNS from Tabulator (exact view) with EXCLUDES =====
+        if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+
+        const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
+        const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
+
+        const tabCols = table.getColumns(true)
+            .filter(c => c.getField())
+            .filter(c => c.isVisible())
+            .filter(c => {
+                const def = c.getDefinition();
+                const field = def.field || "";
+                const title = (def.title || "").trim();
+                return !EXCLUDE_FIELDS.has(field) && !EXCLUDE_TITLES.has(title);
+            });
+
+        const excelCols = tabCols.map(col => {
+            const def = col.getDefinition();
+            const label = def.title || def.field;
+            const px = (def.width || col.getWidth() || 120);
+            const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
+            return { label, key: def.field, width };
+        });
+
+        if (!excelCols.length) { alert("No visible columns to export."); return; }
+
+        // ===== 2) DOC DETAILS (will be placed in second-last + last column) =====
+        const docDetails = [
+            ["Document No", "WCIB/LS/QA/R/005"],
+            ["Effective Date", "01/10/2022"],
+            ["Revision No", "0"],
+            ["Revision Date", "01/10/2022"],
+            ["Page No", "1 of 1"]
+        ];
+
+        // ===== 3) LAYOUT =====
+        const TOTAL_COLS = excelCols.length;
+
+        const HEADER_TOP = 1;
+        const HEADER_BOTTOM = 5;
+        const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
+        const TITLE_TEXT = "Third Party Inspection Tracker";
+
+        const LOGO_COL_START = 1;
+        const LOGO_COL_END = 2;
+        const LOGO_ROW_START = HEADER_TOP;
+        const LOGO_ROW_END = HEADER_BOTTOM;
+
+        // Title must not overlap the final 2 columns (reserved for details)
+        const TITLE_COL_START = Math.min(3, TOTAL_COLS);
+        const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
+
+        // Document details strictly in second-last & last column
+        const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
+        const DETAILS_VALUE_COL = TOTAL_COLS;
+
+        // ===== 4) HELPERS =====
+        async function fetchAsBase64(url) {
+            const res = await fetch(url);
+            const blob = await res.blob();
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                reader.readAsDataURL(blob);
+            });
+        }
+        function setBorder(cell, style = "thin") {
+            cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+        }
+        function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+            for (let c = c1; c <= c2; c++) {
+                const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+                top.border = { ...top.border, top: { style } };
+                bottom.border = { ...bottom.border, bottom: { style } };
+            }
+            for (let r = r1; r <= r2; r++) {
+                const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+                left.border = { ...left.border, left: { style } };
+                right.border = { ...right.border, right: { style } };
+            }
+        }
+
+        // ===== 5) WORKBOOK / SHEET =====
+        const wb = new ExcelJS.Workbook();
+        const ws = wb.addWorksheet("Third Party Inspection Tracker", {
+            properties: { defaultRowHeight: 15 },
+            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+        });
+
+        // Set column widths (no header to avoid duplicates)
+        ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+        // Give header band height so logo fits
+        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+            ws.getRow(r).height = 18; // ~34px
+        }
+
+        ws.pageSetup = {
+            orientation: "landscape",
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: 0,
+            margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+            printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
         };
-        table.addRow(newRow, false); // false = add to bottom
+
+        // ===== 6) HEADER BAND FILL =====
+        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+            for (let c = 1; c <= TOTAL_COLS; c++) {
+                ws.getCell(r, c).fill = {
+                    type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+                };
+            }
+        }
+
+        // ===== 7) LOGO — centered in A2:B6 (no stretch) + outline =====
+        // Desired logo size (px)
+        const LOGO_WIDTH_PX = 100;  // adjust as you like
+        const LOGO_HEIGHT_PX = 100;
+
+        // Approx column/row pixel helpers
+        const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);       // ~7px per char width
+        const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));  // pt -> px
+
+        // Size of A2:B6 rect in px
+        let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+        let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
+
+        // Average px per column/row in that rectangle
+        const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
+        const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
+
+        // Convert desired pixel size → fractional col/row units
+        const logoCols = LOGO_WIDTH_PX / avgColPx;
+        const logoRows = LOGO_HEIGHT_PX / avgRowPx;
+
+        // Centered TL anchor (fractional col/row)
+        const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+        const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+
+        const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+        if (logoUrl) {
+            try {
+                const base64 = await fetchAsBase64(logoUrl);
+                const imgId = wb.addImage({ base64, extension: "png" });
+                ws.addImage(imgId, {
+                    tl: { col: tlCol, row: tlRow },
+                    ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
+                    editAs: "oneCell"
+                });
+            } catch (e) { console.warn("Logo load failed:", e); }
+        }
+        outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
+
+        // ===== 8) TITLE (merge) + outline (from column C to third-last col) =====
+        ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+        const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+        titleCell.value = TITLE_TEXT;
+        titleCell.font = { bold: true, size: 18 };
+        titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+        outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+
+        // ===== 9) DOCUMENT DETAILS in (second-last, last) columns =====
+        // Rows: HEADER_TOP..(HEADER_TOP + docDetails.length - 1)
+        const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
+        docDetails.forEach((pair, i) => {
+            const r = HEADER_TOP + i;
+
+            const labelCell = ws.getCell(r, DETAILS_LABEL_COL);
+            const valueCell = ws.getCell(r, DETAILS_VALUE_COL);
+
+            labelCell.value = pair[0];
+            valueCell.value = pair[1];
+
+            labelCell.font = { bold: true };
+            [labelCell, valueCell].forEach(cell => {
+                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+                setBorder(cell, "thin");
+            });
+        });
+        // Optional: outline the whole two-column details block
+        outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
+
+        // ===== 10) MANUAL TABLE HEADER (row 7) =====
+        while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
+
+        const headerTitles = excelCols.map(c => c.label);
+        const headerRow = ws.addRow(headerTitles);
+        headerRow.height = 22;
+        headerRow.eachCell((cell) => {
+            cell.font = { bold: true };
+            cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+            setBorder(cell);
+        });
+
+        // ===== 11) DATA ROWS (exact Tabulator view, minus Action) =====
+        let tabRows;
+        switch (EXPORT_SCOPE) {
+            case "selected": tabRows = table.getSelectedRows(); break;
+            case "all": tabRows = table.getRows(); break;
+            case "active":
+            default: tabRows = table.getRows("active"); break;
+        }
+
+        tabRows.forEach(row => {
+            const cells = row.getCells();
+            const byField = {};
+            cells.forEach(cell => {
+                const f = cell.getField();
+                if (!f) return;
+                // Skip excluded
+                const def = cell.getColumn().getDefinition();
+                const title = (def.title || "").trim();
+                if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
+
+                byField[f] = EXPORT_RAW ? row.getData()[f] : cell.getValue(); // exact display value by default
+            });
+
+            const values = excelCols.map(c => byField[c.key] ?? "");
+            const xRow = ws.addRow(values);
+
+            xRow.eachCell((cell, colNumber) => {
+                cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
+                setBorder(cell);
+            });
+        });
+
+        // ===== 12) DOWNLOAD =====
+        const buffer = await wb.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "Third Party Inspection Tracker.xlsx";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
     });
 
     Blockloaderhide();
 }
+
+function renumberSrNo() {
+    const rows = table.getRows("active");
+    $.each(rows, function (i, r) {
+        const d = r.getData();
+        if (d.Sr_No !== i + 1) { r.update({ Sr_No: i + 1 }); }
+    });
+}
+
 
 $('#thirdInspection_Table').on('change', '.pdi-upload', function () {
     const input = this;
@@ -459,7 +1179,7 @@ $('#thirdInspection_Table').on('change', '.pdi-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
-            showSuccessAlert("File uploaded successfully.");
+            showSuccessNewAlert("File uploaded successfully.");
             table.updateData([{ Id: response.id, Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
@@ -502,43 +1222,129 @@ function editableColumn(title, field, editorType = true, align = "center", heade
     return columnDef;
 }
 
-function delConfirm(recid, element) {
+//function delConfirm(recid, element) {
 
+//    if (!recid || recid <= 0) {
+//        const rowEl = $(element).closest(".tabulator-row")[0];
+//        const row = table.getRow(rowEl);
+//        if (row) {
+//            row.delete();
+//        }
+//        return;
+//    }
+
+//    PNotify.prototype.options.styling = "bootstrap3";
+//    (new PNotify({
+//        title: 'Confirm Deletion',
+//        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+//        icon: 'fa fa-question-circle',
+//        hide: false,
+//        confirm: { confirm: true },
+//        buttons: { closer: false, sticker: false },
+//        history: { history: false }
+//    })).get().on('pnotify.confirm', function () {
+//        $.ajax({
+//            url: '/ThirdPartyInspection/Delete',
+//            type: 'POST',
+//            data: { id: recid },
+//            success: function (data) {
+//                if (data.success) {
+//                    showSuccessNewAlert("Deleted successfully.");
+//                    setTimeout(() => window.location.reload(), 1500);
+//                } else {
+//                    showDangerAlert(data.message || "Deletion failed.");
+//                }
+//            },
+//            error: function () {
+//                showDangerAlert('Error occurred during deletion.');
+//            }
+//        });
+//    });
+//}
+
+function delConfirm(recid, element) {
     if (!recid || recid <= 0) {
+        // Unsaved row: just remove from UI
         const rowEl = $(element).closest(".tabulator-row")[0];
         const row = table.getRow(rowEl);
-        if (row) {
-            row.delete();
-        }
+        if (row) row.delete();
         return;
     }
 
     PNotify.prototype.options.styling = "bootstrap3";
-    (new PNotify({
-        title: 'Confirm Deletion',
-        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
-        icon: 'fa fa-question-circle',
+
+    const notice = new PNotify({
+        title: false,
+        text: 'Are you sure you want to delete?',
+        icon: 'glyphicon glyphicon-question-sign',
         hide: false,
-        confirm: { confirm: true },
-        buttons: { closer: false, sticker: false },
-        history: { history: false }
-    })).get().on('pnotify.confirm', function () {
-        $.ajax({
-            url: '/ThirdPartyInspection/Delete',
-            type: 'POST',
-            data: { id: recid },
-            success: function (data) {
-                if (data.success) {
-                    showSuccessAlert("Deleted successfully.");
-                    setTimeout(() => window.location.reload(), 1500);
-                } else {
-                    showDangerAlert(data.message || "Deletion failed.");
+        width: '360px',
+        confirm: {
+            confirm: true,
+            buttons: [
+                {
+                    text: 'Yes',
+                    addClass: 'btn btn-sm btn-danger',
+                    click: function (notice, value) {
+                        // lock buttons while deleting
+                        notice.get().find('.btn').prop('disabled', true);
+                        $.ajax({
+                            url: '/ThirdPartyInspection/Delete',
+                            type: 'POST',
+                            data: { id: recid }
+                        }).done(function (data) {
+                            if (data && data.success === true) {
+                                showSuccessNewAlert("ThirdParty Inspection Detail deleted successfully.");
+                                // remove row immediately
+                                const rowEl = $(element).closest(".tabulator-row")[0];
+                                const row = table.getRow(rowEl);
+                                if (row) row.delete();
+                                // reload using SAME filter (globals preserved)
+                                loadThirdInsData();
+                            } else if (data && data.success === false && data.message === "Not_Deleted") {
+                                showDangerAlert("Record is used in QMS Log transactions.");
+                            } else {
+                                showDangerAlert((data && data.message) || "Delete failed.");
+                            }
+                        }).fail(function () {
+                            showDangerAlert('Server error during delete.');
+                        }).always(function () {
+                            notice.remove(); // close the confirm
+                        });
+                    }
+                },
+                {
+                    text: 'No',
+                    addClass: 'btn btn-sm btn-default',
+                    click: function (notice) {
+                        notice.remove();      // just close
+                        // no reload; your current date filter stays as-is
+                    }
                 }
-            },
-            error: function () {
-                showDangerAlert('Error occurred during deletion.');
-            }
-        });
+            ]
+        },
+        buttons: {
+            closer: false,
+            sticker: false
+        },
+        history: { history: false },
+        // Accessibility/keyboard
+        animate_speed: 'fast',
+        destroy: true
+    });
+
+    // Focus the "Yes" button by default
+    notice.get().one('shown.bs.modal pnotify.afterOpen', function () {
+        notice.get().find('.btn.btn-danger').focus();
+    });
+
+    // Also handle Enter/Esc
+    notice.get().on('keydown', function (e) {
+        if (e.key === 'Enter') {
+            notice.get().find('.btn.btn-danger').click();
+        } else if (e.key === 'Escape') {
+            notice.remove();
+        }
     });
 }
 
@@ -570,46 +1376,161 @@ Tabulator.extendModule("edit", "editors", {
     }
 });
 
-function saveEditedRow(rowData) {
-    function emptyToNull(value) {
-        return value === "" ? null : value;
-    }
+//function saveEditedRow(rowData) {
+//    function emptyToNull(value) {
+//        return value === "" ? null : value;
+//    }
 
-    // Converts "dd/MM/yyyy" to "yyyy-MM-dd"
+//    // Converts "dd/MM/yyyy" to "yyyy-MM-dd"
+//    function toIsoDate(value) {
+//        if (!value || value === "" || value === "Invalid Date") return null;
+
+//        if (typeof value === "string" && value.includes("/")) {
+//            const parts = value.split("/");
+//            if (parts.length === 3) {
+//                const [day, month, year] = parts;
+//                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+//            }
+//        }
+
+//        const parsed = new Date(value);
+//        return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
+//    }
+
+//    const cleanedData = {
+//        Id: rowData.InspectionID || 0,
+//        InspectionDate: toIsoDate(rowData.InspectionDate),
+//        ProjectName: rowData.ProjectName || "",
+//        InspName: rowData.InspName || "",
+//        ProductCode: rowData.ProductCode || "",
+//        ProdDesc: rowData.ProdDesc || "",
+//        LOTQty: rowData.LOTQty || null,
+//        ProjectValue: rowData.ProjectValue || "",
+//        Tpi_Duration: rowData.Tpi_Duration || "",
+//        Location: rowData.Location || "",
+//        Mode: rowData.Mode || "",
+//        FirstAttempt: rowData.FirstAttempt || "",
+//        Remark: rowData.Remark || "",
+//        ActionPlan: rowData.ActionPlan || "",
+//        MOMDate: toIsoDate(rowData.MOMDate),
+//        Attahcment: rowData.Attahcment || null,
+//        Document_No: rowData.Document_No || "",
+//        Revision_No: rowData.Revision_No || "",
+//        Effective_Date: toIsoDate(rowData.Effective_Date),
+//        Revision_Date: toIsoDate(rowData.Revision_Date),
+//    };
+
+//    console.log("Cleaned data:", cleanedData);
+
+//    const isNew = cleanedData.Id === 0;
+//    const url = isNew ? '/ThirdPartyInspection/Create' : '/ThirdPartyInspection/Update';
+
+//    $.ajax({
+//        url: url,
+//        type: 'POST',
+//        data: JSON.stringify(cleanedData),
+//        contentType: 'application/json',
+//        success: function (data) {
+//            if (data.success) {
+//                if (isNew) {
+//                    loadThirdInsData();
+//                }
+//                if (isNew && data.id) {
+//                    rowData.Id = data.id;
+//                }
+//            } else {
+//                var errorMessg = "";
+//                if (data.errors) {
+//                    for (var error in data.errors) {
+//                        if (data.errors.hasOwnProperty(error)) {
+//                            errorMessg += `${data.errors[error]}\n`;
+//                        }
+//                    }
+//                }
+//                showDangerAlert(errorMessg || data.message || "An error occurred while saving.");
+//            }
+//        },
+//        error: function (xhr, status, error) {
+//            showDangerAlert(xhr.responseText || "Error saving record.");
+//        }
+//    });
+//}
+
+function saveEditedRow(rowData) {
+    debugger
+    // ----- helpers -----
+    const toStrOrNull = (v) => {
+        if (v === undefined || v === null) return null;
+        const s = String(v).trim();
+        return s === "" ? null : s;
+    };
+
+    // Accepts Date, "dd/MM/yyyy", "yyyy-MM-dd", etc. -> "yyyy-MM-dd" or null
     function toIsoDate(value) {
         if (!value || value === "" || value === "Invalid Date") return null;
 
-        if (typeof value === "string" && value.includes("/")) {
-            const parts = value.split("/");
-            if (parts.length === 3) {
-                const [day, month, year] = parts;
-                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        if (typeof value === "string") {
+            const s = value.trim();
+            // dd/MM/yyyy
+            if (s.includes("/")) {
+                const parts = s.split("/");
+                if (parts.length === 3) {
+                    const [day, month, year] = parts;
+                    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+                }
             }
+            // yyyy-MM-dd (already)
+            if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
         }
 
-        const parsed = new Date(value);
-        return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
+        const d = new Date(value);
+        return isNaN(d.getTime()) ? null : d.toISOString().substring(0, 10);
     }
 
+    // Join array -> string, or pass through string, trimming empties.
+    function normalizeMultiToString(val, joinWith) {
+        if (val == null) return "";
+        if (Array.isArray(val)) {
+            return val
+                .map(v => String(v ?? "").trim())
+                .filter(v => v !== "")
+                .join(joinWith);
+        }
+        return String(val).trim();
+    }
+
+    // ----- map to your model's property names & types -----
+    // NOTE: Your model key is Id (mapped to column "InspectionID" in DB). Send "Id" in JSON.
     const cleanedData = {
-        Id: rowData.InspectionID || 0,
+        Id: Number(rowData.Id ?? rowData.InspectionID ?? 0) || 0,
+
         InspectionDate: toIsoDate(rowData.InspectionDate),
-        ProjectName: rowData.ProjectName || "",
-        InspName: rowData.InspName || "",
-        ProductCode: rowData.ProductCode || "",
-        ProdDesc: rowData.ProdDesc || "",
-        LOTQty: rowData.LOTQty || 0,
-        ProjectValue: rowData.ProjectValue || "",
-        Tpi_Duration: rowData.Tpi_Duration || "",
-        Location: rowData.Location || "",
-        Mode: rowData.Mode || "",
-        FirstAttempt: rowData.FirstAttempt || "",
-        Remark: rowData.Remark || "",
-        ActionPlan: rowData.ActionPlan || "",
+        ProjectName: toStrOrNull(rowData.ProjectName),
+        InspName: toStrOrNull(rowData.InspName),
+
+        // Multi-select → comma-separated string for your string fields
+        ProductCode: normalizeMultiToString(rowData.ProductCode, ", "),
+        // Read desc from either ProdDesc or ProductDescription (editor updates both)
+        ProdDesc: normalizeMultiToString(rowData.ProdDesc ?? rowData.ProductDescription, " | "),
+
+        // These are strings in your model, so don't coerce to numbers
+        LOTQty: toStrOrNull(rowData.LOTQty),
+        ProjectValue: toStrOrNull(rowData.ProjectValue),
+
+        Location: toStrOrNull(rowData.Location),
+        Mode: toStrOrNull(rowData.Mode),
+        FirstAttempt: toStrOrNull(rowData.FirstAttempt),
+        Remark: toStrOrNull(rowData.Remark),
+        ActionPlan: toStrOrNull(rowData.ActionPlan),
+
         MOMDate: toIsoDate(rowData.MOMDate),
-        Attahcment: rowData.Attahcment || null,
-        Document_No: rowData.Document_No || "",
-        Revision_No: rowData.Revision_No || "",
+
+        // Correct property name per model: Attachment
+        Attachment: toStrOrNull(rowData.Attachment ?? rowData.Attahcment),
+
+        Tpi_Duration: toStrOrNull(rowData.Tpi_Duration),
+        Document_No: toStrOrNull(rowData.Document_No),
+        Revision_No: toStrOrNull(rowData.Revision_No),
         Effective_Date: toIsoDate(rowData.Effective_Date),
         Revision_Date: toIsoDate(rowData.Revision_Date),
     };
@@ -617,36 +1538,36 @@ function saveEditedRow(rowData) {
     console.log("Cleaned data:", cleanedData);
 
     const isNew = cleanedData.Id === 0;
-    const url = isNew ? '/ThirdPartyInspection/Create' : '/ThirdPartyInspection/Update';
+    const url = isNew ? "/ThirdPartyInspection/Create" : "/ThirdPartyInspection/Update";
 
     $.ajax({
-        url: url,
-        type: 'POST',
+        url,
+        type: "POST",
         data: JSON.stringify(cleanedData),
-        contentType: 'application/json',
+        contentType: "application/json",
         success: function (data) {
-            if (data.success) {
+            if (data && data.success) {
                 if (isNew) {
-                    loadThirdInsData();
+                    loadThirdInsData?.();
                 }
-                if (isNew && data.id) {
-                    rowData.Id = data.id;
+                if (isNew && (data.id || data.Id)) {
+                    rowData.Id = data.id ?? data.Id;
                 }
             } else {
-                var errorMessg = "";
-                if (data.errors) {
-                    for (var error in data.errors) {
-                        if (data.errors.hasOwnProperty(error)) {
-                            errorMessg += `${data.errors[error]}\n`;
+                let errorMessg = "";
+                if (data && data.errors) {
+                    for (const k in data.errors) {
+                        if (Object.prototype.hasOwnProperty.call(data.errors, k)) {
+                            errorMessg += `${data.errors[k]}\n`;
                         }
                     }
                 }
-                showDangerAlert(errorMessg || data.message || "An error occurred while saving.");
+                showDangerAlert(errorMessg || (data && data.message) || "An error occurred while saving.");
             }
         },
-        error: function (xhr, status, error) {
+        error: function (xhr) {
             showDangerAlert(xhr.responseText || "Error saving record.");
-        }
+        },
     });
 }
 

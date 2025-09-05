@@ -159,7 +159,7 @@ namespace QMS.Controllers
                         InspName = worksheet.Cell(row, 3).GetString().Trim(),
                         ProductCode = worksheet.Cell(row, 4).GetString().Trim(),
                         ProdDesc = worksheet.Cell(row, 5).GetString().Trim(),
-                        LOTQty = worksheet.Cell(row, 6).GetValue<int>(),
+                        LOTQty = worksheet.Cell(row, 6).GetString().Trim(),
                         ProjectValue = worksheet.Cell(row, 7).GetString().Trim(),
                         Tpi_Duration = worksheet.Cell(row, 8).GetString().Trim(),
                         Location = worksheet.Cell(row, 9).GetString().Trim(),

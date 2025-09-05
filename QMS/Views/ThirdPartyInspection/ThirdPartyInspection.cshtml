@@ -1,15 +1,23 @@
 ﻿@{
     ViewData["Title"] = "Third Party Inspection Tracker";
 }
+
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
-<link href="~/css/pnotify.css" rel="stylesheet" />
-
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+@* <script src="~/js/xlsx.min.js"></script> *@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
-<script src="~/js/xlsx.min.js"></script>
 
 <style>
 
@@ -139,7 +147,7 @@
         .calendar-container span {
             color: #4682B4;
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
         }
 
     .container__predefined-ranges {
@@ -149,7 +157,72 @@
     .month-item {
         font-size: 14px;
     }
-    
+
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+        /* light warning */
+        100% {
+            background-color: #e6e6e6 !important;
+        }
+    }
+
+    .row-flash {
+        animation: flash-bg 2s ease-out forwards;
+    }
+
+    .tab-multi-ac {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        align-items: center;
+        min-height: 30px;
+        padding: 4px;
+        cursor: text;
+    }
+
+        .tab-multi-ac input {
+            border: none;
+            outline: none;
+            flex: 1 0 120px;
+            min-width: 100px;
+        }
+
+    .tab-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: #eef1f6;
+        font-size: 12px;
+    }
+
+        .tab-tag .tab-x {
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+    .autocomplete-dropdown {
+        position: fixed; /* stays put while page scrolls */
+        z-index: 99999;
+        max-height: 240px;
+        overflow: auto;
+        border: 1px solid #ddd;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+
+    .autocomplete-option {
+        padding: 6px 10px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .autocomplete-option:hover, .autocomplete-option.active {
+            background: #f2f6ff;
+        }
 </style>
 
 
@@ -157,8 +230,8 @@
 <div class="content">
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
-            <div>
-                <b style="font-size: large;color: #4682B4;">Third Party Inspection Tracker</b>
+            <div style="font:medium;color: #4682B4;">
+                Third Party Inspection Tracker
             </div>
 
             <div class="col-md-3" >
@@ -169,17 +242,23 @@
             </div>
 
             <div>
-                <button id="addTPIButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px;font-size:15px">
+                <button id="addTPIButton" type="button" class="btn btn-outline-success legitRipple" style="width: 95px;font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
+                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 136px;font-size:14px">
                     <i class="fas fa-upload mr-2"></i>Upload Xl
                 </button>
-                <button type="button" id="download-template" class="btn btn-outline-info">
-                    <i class="fas fa-download"></i> Download Blank Xl
+                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple" onclick="openDocModel('ThirdPartyInspe')" style="width: 183px;font-size:15px">
+                    <i class="fas fa-regular fa-book mr-2 fa-1x"></i>Add Doc. Detail
                 </button>
-                <button id="backButton" class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-arrow-left"></i> Back
+                <button type="button" id="download-template" class="btn btn-outline-secondary">
+                    <i class="fas fa-download mr-2"></i> Blank Xl
+                </button>
+                <button id="exportThirdPartyInsButton" type="button" class="btn btn-outline-danger legitRipple" style="width: 140px;font-size:15px">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i> Export XL
+                </button>
+                <button id="backButton" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left mr-2"></i> Back
                 </button>
 
             </div>
@@ -191,7 +270,6 @@
             <div class="card">
                 <div class="card-body">
                     <div class="chart-container">
-                        
                         <div class="form-group row">
                             <div id="thirdInspection_Table" class="col-12"></div>
                         </div>
@@ -205,29 +283,25 @@
 
 @section Scripts {
 
-
-    <script src="~/js/jquery.min.js"></script>
-
-    <!-- jQuery UI (if you use sortable, draggable, etc.) -->
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
-    <!-- jQuery BlockUI (for popupalert.js) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
-
     <!-- Select2 -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <!-- Tabulator -->
-    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
     <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
 
-    <!-- Popup Alert -->
-    <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
     <script src="~/scripts/thirdparty/thirdparty.js" asp-append-version="true"></script>
 }
+
+@await Html.PartialAsync("_DocumentDetModelpartial")
 @await Html.PartialAsync("_UploadModalpartial")

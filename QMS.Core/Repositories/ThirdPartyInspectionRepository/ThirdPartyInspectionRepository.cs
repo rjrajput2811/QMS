@@ -181,7 +181,7 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                     new SqlParameter("@InspName", updatedRecord.InspName ?? (object)DBNull.Value),
                     new SqlParameter("@ProductCode", updatedRecord.ProductCode ?? (object)DBNull.Value),
                     new SqlParameter("@ProdDesc", updatedRecord.ProdDesc ?? (object)DBNull.Value),
-                    new SqlParameter("@LOTQty", updatedRecord.LOTQty),
+                    new SqlParameter("@LOTQty", updatedRecord.LOTQty ?? (object)DBNull.Value),
                     new SqlParameter("@ProjectValue", updatedRecord.ProjectValue ?? (object)DBNull.Value),
                     new SqlParameter("@Location", updatedRecord.Location ?? (object)DBNull.Value),
                     new SqlParameter("@Mode", updatedRecord.Mode ?? (object)DBNull.Value),

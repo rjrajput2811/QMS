@@ -26,7 +26,7 @@ namespace QMS.Core.Models
         public string? ProdDesc { get; set; }
 
         [Display(Name = "LOT Quantity")]
-        public int? LOTQty { get; set; }
+        public string? LOTQty { get; set; }
 
         [Display(Name = "Project Value")]
         public string? ProjectValue { get; set; }

@@ -755,6 +755,14 @@ function OnTabGridLoad(response) {
     Blockloaderhide();
 }
 
+function renumberSrNo() {
+    const rows = table.getRows("active");
+    $.each(rows, function (i, r) {
+        const d = r.getData();
+        if (d.Sr_No !== i + 1) { r.update({ Sr_No: i + 1 }); }
+    });
+}
+
 $('#payment_Table').on('change', '.payment-upload', function () {
     const input = this;
     const file = input.files[0];

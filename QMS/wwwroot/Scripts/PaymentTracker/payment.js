@@ -313,7 +313,7 @@ function OnTabGridLoad(response) {
         {
             title: "Action",
             field: "Action",
-            // width: 130,
+            width: 40,
             headerMenu: headerMenu,
             hozAlign: "center",
             headerHozAlign: "center",
@@ -327,7 +327,7 @@ function OnTabGridLoad(response) {
             }
         },
         {
-            title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
+            title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left", width: 60
         },
         editableColumn("Invoice Date", "Invoice_Date", "date", "center"),
         editableColumn("Invoice No.", "Invoice_No", true),
@@ -438,33 +438,87 @@ function OnTabGridLoad(response) {
         InsertUpdatePayment(cell.getRow().getData());
     });
 
-    $("#addPaymentButton").on("click", function () {
-        const fyOptions = getFinancialYears(); // returns object
-        const currentFY = Object.keys(fyOptions)[0]; // take the first key (e.g. "2025-26")
-        const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+    (function bindAddButtonOnce() {
+        var $btn = $("#addPaymentButton");
+        $btn.attr("type", "button");                       // avoid form submit duplicates
+        $btn.off("click.addrow").on("click.addrow", function (e) {
+            e.preventDefault(); e.stopPropagation();
+            if ($btn.data("busy")) return;                 // guard double-clicks
+            $btn.data("busy", true).prop("disabled", true);
 
-        const newRow = {
-            Sr_No: table.getDataCount() + 1,
-            Id: 0,
-            CreatedDate: "",
-            Fin_Year: currentFY,
-            Month: currentMonth,
-            Lab: "",
-            Vendor: "",
-            Type_Test: "",
-            Description: "",
-            Bis_Id: "",
-            Invoice_No: "",
-            Invoice_Date: "",
-            Testing_Fee: "",
-            Approval_By: "",
-            Remark: "",
-            CreatedBy: "",
-            UpdatedBy: "",
-            UpdatedDate: ""
-        };
-        table.addRow(newRow, false);
-    });
+            try {
+                const fyOptions = getFinancialYears(); // returns object
+                const currentFY = Object.keys(fyOptions)[0]; // take the first key (e.g. "2025-26")
+                const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+
+                const newRow = {
+                    Sr_No: table.getDataCount() + 1,
+                    Id: 0,
+                    CreatedDate: "",
+                    Fin_Year: currentFY,
+                    Month: currentMonth,
+                    Lab: "",
+                    Vendor: "",
+                    Type_Test: "",
+                    Description: "",
+                    Bis_Id: "",
+                    Invoice_No: "",
+                    Invoice_Date: "",
+                    Testing_Fee: "",
+                    Approval_By: "",
+                    Remark: "",
+                    CreatedBy: "",
+                    UpdatedBy: "",
+                    UpdatedDate: ""
+                };
+
+                table.addRow(newRow, true).then(function (row) {
+                    table.scrollToRow(row, "top", false);
+                    if (row.select) row.select();
+
+                    const el = row.getElement();
+                    el.classList.add("row-flash");
+                    setTimeout(() => el.classList.remove("row-flash"), 1200);
+
+                    renumberSrNo(); // keep S.No sequence
+                }).catch(console.error).finally(function () {
+                    $btn.data("busy", false).prop("disabled", false);
+                });
+
+            } catch (err) {
+                console.error(err);
+                $btn.data("busy", false).prop("disabled", false);
+            }
+        });
+    })();
+
+    //$("#addPaymentButton").on("click", function () {
+    //    const fyOptions = getFinancialYears(); // returns object
+    //    const currentFY = Object.keys(fyOptions)[0]; // take the first key (e.g. "2025-26")
+    //    const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+
+    //    const newRow = {
+    //        Sr_No: table.getDataCount() + 1,
+    //        Id: 0,
+    //        CreatedDate: "",
+    //        Fin_Year: currentFY,
+    //        Month: currentMonth,
+    //        Lab: "",
+    //        Vendor: "",
+    //        Type_Test: "",
+    //        Description: "",
+    //        Bis_Id: "",
+    //        Invoice_No: "",
+    //        Invoice_Date: "",
+    //        Testing_Fee: "",
+    //        Approval_By: "",
+    //        Remark: "",
+    //        CreatedBy: "",
+    //        UpdatedBy: "",
+    //        UpdatedDate: ""
+    //    };
+    //    table.addRow(newRow, false);
+    //});
 
     // Export to Excel on button click
     document.getElementById("exportPayButton").addEventListener("click", async function () {
@@ -863,61 +917,147 @@ Tabulator.extendModule("edit", "editors", {
 
 
 function delConfirm(recid, element) {
-    debugger;
-
     if (!recid || recid <= 0) {
+        // Unsaved row: just remove from UI
         const rowEl = $(element).closest(".tabulator-row")[0];
         const row = table.getRow(rowEl);
-        if (row) {
-            row.delete();
-        }
+        if (row) row.delete();
         return;
     }
 
     PNotify.prototype.options.styling = "bootstrap3";
-    (new PNotify({
-        title: 'Confirmation Needed',
-        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+
+    const notice = new PNotify({
+        title: false,
+        text: 'Are you sure you want to delete?',
         icon: 'glyphicon glyphicon-question-sign',
         hide: false,
+        width: '360px',
         confirm: {
-            confirm: true
+            confirm: true,
+            buttons: [
+                {
+                    text: 'Yes',
+                    addClass: 'btn btn-sm btn-danger',
+                    click: function (notice, value) {
+                        // lock buttons while deleting
+                        notice.get().find('.btn').prop('disabled', true);
+                        $.ajax({
+                            url: '/PaymentTracker/Delete',
+                            type: 'POST',
+                            data: { id: recid }
+                        }).done(function (data) {
+                            if (data && data.success === true) {
+                                showSuccessNewAlert("Payment Detail deleted successfully.");
+                                // remove row immediately
+                                const rowEl = $(element).closest(".tabulator-row")[0];
+                                const row = table.getRow(rowEl);
+                                if (row) row.delete();
+                                // reload using SAME filter (globals preserved)
+                                loadData();
+                            } else if (data && data.success === false && data.message === "Not_Deleted") {
+                                showDangerAlert("Record is used in QMS Log transactions.");
+                            } else {
+                                showDangerAlert((data && data.message) || "Delete failed.");
+                            }
+                        }).fail(function () {
+                            showDangerAlert('Server error during delete.');
+                        }).always(function () {
+                            notice.remove(); // close the confirm
+                        });
+                    }
+                },
+                {
+                    text: 'No',
+                    addClass: 'btn btn-sm btn-default',
+                    click: function (notice) {
+                        notice.remove();      // just close
+                        // no reload; your current date filter stays as-is
+                    }
+                }
+            ]
         },
         buttons: {
             closer: false,
             sticker: false
         },
-        history: {
-            history: false
-        },
-    })).get().on('pnotify.confirm', function () {
+        history: { history: false },
+        // Accessibility/keyboard
+        animate_speed: 'fast',
+        destroy: true
+    });
 
-        $.ajax({
-            url: '/PaymentTracker/Delete',
-            type: 'POST',
-            data: { id: recid },
-            success: function (data) {
-                if (data.success == true) {
-                    showSuccessAlert("Payment Detail Deleted successfully.");
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 2500);
-                }
-                else if (data.success == false && data.message == "Not_Deleted") {
-                    showDangerAlert("Record is used in QMS Log transactions.");
-                }
-                else {
-                    showDangerAlert(data.message);
-                }
-            },
-            error: function () {
-                showDangerAlert('Error retrieving data.');
-            }
-        });
-    }).on('pnotify.cancel', function () {
-        loadData();
+    // Focus the "Yes" button by default
+    notice.get().one('shown.bs.modal pnotify.afterOpen', function () {
+        notice.get().find('.btn.btn-danger').focus();
+    });
+
+    // Also handle Enter/Esc
+    notice.get().on('keydown', function (e) {
+        if (e.key === 'Enter') {
+            notice.get().find('.btn.btn-danger').click();
+        } else if (e.key === 'Escape') {
+            notice.remove();
+        }
     });
 }
+
+//function delConfirm(recid, element) {
+//    debugger;
+
+//    if (!recid || recid <= 0) {
+//        const rowEl = $(element).closest(".tabulator-row")[0];
+//        const row = table.getRow(rowEl);
+//        if (row) {
+//            row.delete();
+//        }
+//        return;
+//    }
+
+//    PNotify.prototype.options.styling = "bootstrap3";
+//    (new PNotify({
+//        title: 'Confirmation Needed',
+//        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+//        icon: 'glyphicon glyphicon-question-sign',
+//        hide: false,
+//        confirm: {
+//            confirm: true
+//        },
+//        buttons: {
+//            closer: false,
+//            sticker: false
+//        },
+//        history: {
+//            history: false
+//        },
+//    })).get().on('pnotify.confirm', function () {
+
+//        $.ajax({
+//            url: '/PaymentTracker/Delete',
+//            type: 'POST',
+//            data: { id: recid },
+//            success: function (data) {
+//                if (data.success == true) {
+//                    showSuccessAlert("Payment Detail Deleted successfully.");
+//                    setTimeout(function () {
+//                        window.location.reload();
+//                    }, 2500);
+//                }
+//                else if (data.success == false && data.message == "Not_Deleted") {
+//                    showDangerAlert("Record is used in QMS Log transactions.");
+//                }
+//                else {
+//                    showDangerAlert(data.message);
+//                }
+//            },
+//            error: function () {
+//                showDangerAlert('Error retrieving data.');
+//            }
+//        });
+//    }).on('pnotify.cancel', function () {
+//        loadData();
+//    });
+//}
 
 
 
@@ -1186,6 +1326,7 @@ function InsertUpdateLab(rowData) {
 $('#labPaymentModel').on('hidden.bs.modal', function () {
     loadLabData(); // uncomment if you want full reload
 });
+
 
 function delLabConfirm(recid, element) {
     debugger;

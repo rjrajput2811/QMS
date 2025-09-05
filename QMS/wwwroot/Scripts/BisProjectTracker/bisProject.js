@@ -282,7 +282,7 @@ function OnTabGridLoad(response) {
         {
             title: "Action",
             field: "Action",
-            // width: 130,
+            width: 40,
             headerMenu: headerMenu,
             hozAlign: "center",
             headerHozAlign: "center",
@@ -296,11 +296,11 @@ function OnTabGridLoad(response) {
             }
         },
         {
-            title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
+            title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left",width: 60
         },
 
         {
-            title: "Financial Year",
+            title: "FY",
             field: "Financial_Year",
             editor: "list",
             editorParams: {
@@ -315,7 +315,7 @@ function OnTabGridLoad(response) {
         },
 
         {
-            title: "Month/PCr",
+            title: "Month/PC",
             field: "Mon_PC",
             editor: "list",
             editorParams: {
@@ -331,7 +331,7 @@ function OnTabGridLoad(response) {
     
         //editableColumn("Month/PC", "Mon_PC", true),
         //editableColumn("Nature of Project", "Nat_Project", true),
-        editableColumn("Nature of Project", "Nat_Project", "select2", "center", "input", {}, {
+        editableColumn("Nat. of Project", "Nat_Project", "select2", "center", "input", {}, {
             values: natProjectOptions
         }, function (cell) {
             const val = cell.getValue();
@@ -621,9 +621,6 @@ function OnTabGridLoad(response) {
     })();
 
     // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
-    
-
-
     document.getElementById("exportBisButton").addEventListener("click", async function () {
         // ===== 0) OPTIONS =====
         const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
@@ -667,19 +664,18 @@ function OnTabGridLoad(response) {
         // ===== 3) LAYOUT =====
         const TOTAL_COLS = excelCols.length;
 
-        const HEADER_TOP = 1;                      // header band start
-        const HEADER_BOTTOM = 5;                   // header band end
-        const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 7
+        const HEADER_TOP = 1;                      
+        const HEADER_BOTTOM = 5;                   
+        const GRID_HEADER_ROW = HEADER_BOTTOM + 1; 
         const TITLE_TEXT = "BIS PROJECT TRACKER";
 
-        // Logo block (A2:B6 exactly)
-        const LOGO_COL_START = 1; // A
-        const LOGO_COL_END = 2; // B
+        const LOGO_COL_START = 1; 
+        const LOGO_COL_END = 2; 
         const LOGO_ROW_START = HEADER_TOP;
         const LOGO_ROW_END = HEADER_BOTTOM;
 
         // Title must not overlap the final 2 columns (reserved for details)
-        const TITLE_COL_START = Math.min(3, TOTAL_COLS);            // start from column C (or clamp if few cols)
+        const TITLE_COL_START = Math.min(3, TOTAL_COLS);            
         const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
 
         // Document details strictly in second-last & last column

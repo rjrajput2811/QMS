@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Bis Project Tracker";
+    ViewData["Title"] = "Third Party Test Tracker";
 }
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
@@ -102,17 +102,17 @@
     }
 
     /* .tabulator .tabulator-header .tabulator-col {
-        font-size: 14px;
-        color: #D6E4F0 !important;
-        font-weight: 600;
-        border-right: 1px solid #ccc;
-    }
+            font-size: 14px;
+            color: #D6E4F0 !important;
+            font-weight: 600;
+            border-right: 1px solid #ccc;
+        }
 
-    .tabulator-cell:hover {
-        color: #4682B4 !important;
-        cursor: pointer !important;
-        font-weight: bold;
-    } */
+        .tabulator-cell:hover {
+            color: #4682B4 !important;
+            cursor: pointer !important;
+            font-weight: bold;
+        } */
 
 
     @@keyframes flash-bg {
@@ -141,22 +141,22 @@
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <b style="font-size: large;color: #4682B4;">Bis Project Tracker</b>
+                <b style="font-size: large;color: #4682B4;">Third Party Test Tracker</b>
             </div>
             <div class="col-md-3">
-                <div id="customDateTriggerBIS" class="calendar-container">
+                <div id="customDateTriggerTPT" class="calendar-container">
                     <i class="fa fa-calendar"></i>
-                    <span id="dateRangeBIS">Select Date Range</span>
+                    <span id="dateRangeTPT">Select Date Range</span>
                 </div>
             </div>
             <div>
                 <button id="addBISButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 95px;font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel('BIS')" style="width: 183px;font-size:15px">
+                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel('ThirdPartyTest')" style="width: 183px;font-size:15px">
                     <i class="fas fa-regular fa-book mr-2 fa-1x"></i>Add Doc. Detail
                 </button>
-                <button id="exportBisButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                <button id="exportTPTButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
                 </button>
                 <button id="backButton" class="btn btn-outline-primary">
@@ -172,9 +172,9 @@
             <div class="card">
                 <div class="card-body">
                     <div class="chart-container">
-                       
+
                         <div class="form-group row">
-                            <div id="bisProject_Table" class="col-12"></div>
+                            <div id="thirdPartyTest_Table" class="col-12"></div>
                         </div>
                     </div>
                 </div>
@@ -188,7 +188,7 @@
         <div class="modal-content">
             <div class="modal-header d-flex justify-content-between align-items-center">
                 <h5 class="modal-title">Add New Nature of Project</h5>
-                
+
                 <div class="ml-auto">
                     <button type="button" class="btn btn-primary" id="addNatProjectBtn">Add Row</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Cancel</button>
@@ -202,7 +202,7 @@
 </div>
 
 @section Scripts {
-  
+
 
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>

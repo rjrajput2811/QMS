@@ -25,54 +25,78 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-        var currentUrl = window.location.href.toLowerCase();
+            var currentUrl = window.location.href.toLowerCase();
 
-        // Highlight direct (non-submenu) links
-        $('ul.nav-sidebar a.nav-link').filter(function () {
-        return this.href && this.href.toLowerCase() === currentUrl;
-        }).addClass('active');
+            // Highlight direct (non-submenu) links
+            $('ul.nav-sidebar a.nav-link').filter(function () {
+            return this.href && this.href.toLowerCase() === currentUrl;
+            }).addClass('active');
 
-        // Highlight and open submenu items
-        $('ul.nav-group-sub a.nav-link').filter(function () {
-        return this.href && this.href.toLowerCase() === currentUrl;
-        }).addClass('active') // highlight link
-        .closest('.nav-item-submenu') // find parent submenu
-        .addClass('nav-item-expanded nav-item-open'); // open submenu
+            // Highlight and open submenu items
+            $('ul.nav-group-sub a.nav-link').filter(function () {
+            return this.href && this.href.toLowerCase() === currentUrl;
+            }).addClass('active') // highlight link
+            .closest('.nav-item-submenu') // find parent submenu
+            .addClass('nav-item-expanded nav-item-open'); // open submenu
+            });
+            document.addEventListener("DOMContentLoaded", function () {
+            const hash = window.location.hash.replace('#', '');
+
+            // Define mapping for valid top-level menu IDs
+            const allowedMenus = ["Supply_Chain", "Service", "Trackers"];
+
+            if (allowedMenus.includes(hash)) {
+            // Hide all top-level menu items
+            document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
+            item.style.display = "none";
+            });
+
+            // Show only the matched one
+            const menuLink = document.getElementById(hash);
+            const menuItem = menuLink?.closest("li.nav-item");
+            const submenu = menuLink?.nextElementSibling;
+
+            if (menuItem) {
+            menuItem.style.display = "block";
+            menuItem.classList.add("nav-item-open");
+
+            if (submenu && submenu.classList.contains("nav-group-sub")) {
+            submenu.classList.add("d-block");
+            }
+            }
+            } else {
+            // Show all menus if no hash or unknown hash
+            document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
+            item.style.display = "block";
+            });
+            }
+
+
         });
-        document.addEventListener("DOMContentLoaded", function () {
-        const hash = window.location.hash.replace('#', '');
 
-        // Define mapping for valid top-level menu IDs
-        const allowedMenus = ["Supply_Chain", "Service", "Trackers"];
+            
+        (function () {
+          // Get last non-empty segment from path, case-insensitive
+          var path = (window.location.pathname || "").replace(/\/+$/, "");
+          var lastSegment = path.substring(path.lastIndexOf("/") + 1).toLowerCase();
 
-        if (allowedMenus.includes(hash)) {
-        // Hide all top-level menu items
-        document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
-        item.style.display = "none";
-        });
+          // Pages where the Back button should be visible
+          // Add more segments here if needed
+          var showOn = new Set([
+            "WiproMenu" // <-- show Back on /Home/WiproMenu
+            // ,"thirdpartyinspection", "pditracker", ...
+          ]);
 
-        // Show only the matched one
-        const menuLink = document.getElementById(hash);
-        const menuItem = menuLink?.closest("li.nav-item");
-        const submenu = menuLink?.nextElementSibling;
+          var $btn = $("#wiproBackButton");
 
-        if (menuItem) {
-        menuItem.style.display = "block";
-        menuItem.classList.add("nav-item-open");
-
-        if (submenu && submenu.classList.contains("nav-group-sub")) {
-        submenu.classList.add("d-block");
-        }
-        }
-        } else {
-        // Show all menus if no hash or unknown hash
-        document.querySelectorAll(".nav-sidebar > .nav-item").forEach(item => {
-        item.style.display = "block";
-        });
-        }
-
-
-        });
+          if (showOn.has(lastSegment)) 
+          {
+                $btn.show();
+              } else {
+                $btn.hide();
+              }
+          });
+        })();
     </script>
 
     <style type="text/css">
@@ -133,7 +157,7 @@
                 </li>
 
                 <div class="navbar-brand">
-                    <span class="h5"><strong>Quality Management System(QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.1.0 21/08/2025</span>
+                    <span class="h5"><strong>Quality Management System (QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.1.0 21/08/2025</span>
                     @* <i id="verbtn" class="fas fa-info" onclick=""></i> *@
                 </div>
 
@@ -156,6 +180,17 @@
                     </button>
                 }
             </div>
+
+            <div class="ml-auto">
+                
+                    <button id="wiproBackButton" type="button" class="btn btn-warning legitRipple" onclick="/* location.href='@Url.Action("OptionSelection", "Home")' */" style="margin: 5px 3px;width: 107px; font-size:15px">
+                        <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Back
+                    </button>
+                
+            </div>
+
+
+
             @if (@HttpContextAccessor.HttpContext.Session.GetInt32("UserId") > 0)
             {
                 <ul class="navbar-nav">
@@ -264,9 +299,6 @@
                                             </li>
 
 
-
-
-
                                         </ul>
 
                                     </li>
@@ -358,7 +390,7 @@
                                     </li>
 
 
-                                    <li class="nav-item nav-item-submenu">
+                                    @* <li class="nav-item nav-item-submenu">
                                         <a href="#" class="nav-link" title="Customer Feedback" id="Cust_Feed"><i class="fas fa-regular fa-message"></i> <span>Customer Feedback</span></a>
                                         <ul class="nav nav-group-sub" data-submenu-title="Customer Feedback">
 
@@ -385,11 +417,11 @@
 
                                         </ul>
 
-                                    </li> 
+                                    </li>  *@
 
 
 
-                                    <li class="nav-item nav-item-submenu">
+                                    @* <li class="nav-item nav-item-submenu">
                                         <a href="#" class="nav-link" title="Reports & Analytics" id="Rep_Analy"><i class="fas fa-regular fa-laptop-file"></i> <span>Reports & Analytics</span></a>
                                         <ul class="nav nav-group-sub" data-submenu-title="Reports & Analytics">
 
@@ -423,7 +455,7 @@
 
                                         </ul>
 
-                                    </li>
+                                    </li> *@
                                 }
 
                                 @if (Convert.ToInt32(HttpContextAccessor.HttpContext.Session.GetInt32("UserRole")) == ((int)UserRoles.Admin))
@@ -436,16 +468,16 @@
                                     </li>
                                 }
 
-                                <li class="nav-item nav-item-submenu">
+                                @* <li class="nav-item nav-item-submenu">
                                     <a href="#" class="nav-link" title="Masters" id="Masters"><i class="icon-gear"></i> <span>Masters</span></a>
                                     <ul class="nav nav-group-sub" data-submenu-title="Master">
 
 
                                     </ul>
 
-                                </li>
+                                </li> *@
 
-                                <li class="nav-item nav-item-submenu">
+                                @* <li class="nav-item nav-item-submenu">
                                     <a href="#" class="nav-link" title="Services" id="Service"><i class="fas fa-regular fa-users-between-lines"></i> <span>Services</span></a>
                                     <ul class="nav nav-group-sub" data-submenu-title="Services">
                                         <li class="nav-item">
@@ -480,7 +512,7 @@
 
                                     </ul>
 
-                                </li>
+                                </li> *@
                                 @* <li class="nav-item nav-item-submenu">
                                 <a href="#" class="nav-link" title="Supply Chain" id="Supply_Chain"><i class="fas fa-regular fa-manat-sign"></i> <span>Supply Chain</span></a>
                                 <ul class="nav nav-group-sub" data-submenu-title="Supply Chain">

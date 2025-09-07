@@ -33,6 +33,16 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult WiproMenu()
+        {
+            return View();
+        }
+
+        public IActionResult TrackerMenu()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

@@ -99,11 +99,12 @@ namespace QMS.Core.Repositories.ThirdPartyTestRepository
                     new SqlParameter("@Testing_Charge_offer", newRecord.Testing_Charge_offer ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Testing_Charge", newRecord.Final_Testing_Charge ?? (object)DBNull.Value),
                     new SqlParameter("@Report", newRecord.Report ?? (object)DBNull.Value),
-                    new SqlParameter("CreatedBy", newRecord.CreatedBy ?? (object)DBNull.Value)
+                    new SqlParameter("@CreatedBy", newRecord.CreatedBy ?? (object)DBNull.Value),
+                    new SqlParameter("@IsDeleted", newRecord.Deleted)
                 };
 
                 var sql = @"EXEC sp_Insert_ThirdPartyTest @Purpose,@Project_Det,@Product_Det,@Wipro_Product_Code,@Sample_Qty ,@Test_Detail ,@Project_Initiator,
-                                @Vendor,@Lab ,@Sample_Status ,@Testing_Status,@Lab_Contact_Person ,@Contact_Number ,@Email_Id ,@Testing_Charge_offer ,@Final_Testing_Charge ,@Report ,@CreatedBy            ";
+                                @Vendor,@Lab ,@Sample_Status ,@Testing_Status,@Lab_Contact_Person ,@Contact_Number ,@Email_Id ,@Testing_Charge_offer ,@Final_Testing_Charge ,@Report ,@CreatedBy ,@IsDeleted";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -479,7 +480,7 @@ namespace QMS.Core.Repositories.ThirdPartyTestRepository
             }
         }
 
-        public async Task<OperationResult> CreateTestDetTPTAsync(TestDetTPTViewModel newTestDetTPTRecord, bool returnCreatedRecord = false
+        public async Task<OperationResult> CreateTestDetTPTAsync(TestDetTPTViewModel newTestDetTPTRecord, bool returnCreatedRecord = false)
         {
             try
             {

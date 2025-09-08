@@ -610,7 +610,7 @@
 }
 
 .tabulator-row.tabulator-selected {
-    background-color: #9abcea
+    background-color: #e6e6e6
 }
 
 @media (hover:hover) and (pointer:fine) {
@@ -764,7 +764,7 @@
             }
 
     .tabulator-row .tabulator-cell.tabulator-range-selected:not(.tabulator-range-only-cell-selected):not(.tabulator-range-row-header) {
-        background-color: #9abcea
+        background-color: #e6e6e6
     }
 
     .tabulator-row .tabulator-cell .tabulator-data-tree-branch-empty {

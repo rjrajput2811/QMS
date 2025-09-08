@@ -605,7 +605,7 @@
 }
 
 .tabulator-row.tabulator-selected {
-    background-color: #9abcea
+    background-color: #e6e6e6
 }
 
 @media (hover:hover) and (pointer:fine) {
@@ -757,7 +757,7 @@
             }
 
     .tabulator-row .tabulator-cell.tabulator-range-selected:not(.tabulator-range-only-cell-selected):not(.tabulator-range-row-header) {
-        background-color: #9abcea
+        background-color: #e6e6e6
     }
 
     .tabulator-row .tabulator-cell .tabulator-data-tree-branch-empty {
@@ -1479,7 +1479,7 @@ body.tabulator-print-fullscreen-hide > :not(.tabulator-print-fullscreen) {
 }
 
 .tabulator.table-dark .tabulator-row.tabulator-selected {
-    background-color: #9abcea
+    background-color: #e6e6e6
 }
 
 .tabulator.table-dark .tabulator-footer {
@@ -1502,17 +1502,17 @@ body.tabulator-print-fullscreen-hide > :not(.tabulator-print-fullscreen) {
 }
 
     .tabulator.table-striped:not(.table-dark) .tabulator-row.tabulator-row-even.tabulator-selected {
-        background-color: #9abcea
+        background-color: #e6e6e6
     }
 
 @media (hover:hover) and (pointer:fine) {
     .tabulator.table-striped:not(.table-dark) .tabulator-row.tabulator-row-even.tabulator-selectable:hover {
-        background-color: #f5f5f5;
+        background-color: #e6e6e6;
         cursor: pointer
     }
 
     .tabulator.table-striped:not(.table-dark) .tabulator-row.tabulator-row-even.tabulator-selected:hover {
-        background-color: #769bcc;
+        background-color: #e6e6e6;
         cursor: pointer
     }
 }

@@ -1099,21 +1099,6 @@ function InsertUpdateThirdParTest(rowData) {
         return false;
     }
 
-    function toIsoDate(value) {
-        if (!value || value === "" || value === "Invalid Date") return null;
-
-        if (typeof value === "string" && value.includes("/")) {
-            const parts = value.split("/");
-            if (parts.length === 3) {
-                const [day, month, year] = parts;
-                return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-            }
-        }
-
-        const parsed = new Date(value);
-        return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
-    }
-
     var Model = {
         Id: rowData.Id || 0,
         Purpose: rowData.Purpose || null,

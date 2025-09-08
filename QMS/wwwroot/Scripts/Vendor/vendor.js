@@ -123,7 +123,7 @@ function OnTabGridLoad(response) {
             {
                 title: "Action",
                 field: "Action",
-                // width: 130,
+                width: 40,
                 headerMenu: headerMenu,
                 hozAlign: "center",
                 headerHozAlign: "center",
@@ -137,7 +137,7 @@ function OnTabGridLoad(response) {
                 }
             },
             {
-                title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
+                title: "SNo", field: "Sr_No", sorter: "number", width: 35, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
             },
             { title: "Name", field: "Name", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "center" },
             { title: "Email", field: "Email", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
@@ -145,9 +145,9 @@ function OnTabGridLoad(response) {
             { title: "Gst No", field: "GstNo", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
             { title: "User Name", field: "User_Name", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
             { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-            { title: "Create Date", field: "CreatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-            { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-            { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
+            { title: "Create Date", field: "CreatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         );
 
         // // Initialize Tabulator

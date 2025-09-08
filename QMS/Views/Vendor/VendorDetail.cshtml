@@ -85,11 +85,11 @@
     }
 
     /*  .form-control {
-            padding: 0 10px !important;
-            border: 0;
-            border-bottom: 1px solid #cccccc;
-            border-radius: 0px;
-        } */
+                padding: 0 10px !important;
+                border: 0;
+                border-bottom: 1px solid #cccccc;
+                border-radius: 0px;
+            } */
 
     label {
         margin-bottom: 0;
@@ -169,7 +169,7 @@
                 {
                     <a class="nav-link disabled" id="v-tab2" href="#" role="tab" tabindex="-1" aria-disabled="true">Certificates</a>
                     <a class="nav-link disabled" id="v-tab3" href="#" role="tab" tabindex="-1" aria-disabled="true">Products</a>
-                  @*   <a class="nav-link disabled" id="v-tab4" href="#" role="tab" tabindex="-1" aria-disabled="true">Third Party Testing Report</a> *@
+                    @*   <a class="nav-link disabled" id="v-tab4" href="#" role="tab" tabindex="-1" aria-disabled="true">Third Party Testing Report</a> *@
                     <a class="nav-link disabled" id="v-tab5" href="#" role="tab" tabindex="-1" aria-disabled="true">BIS Certification<br>(Product Wise)</a>
                     @*  <a class="nav-link disabled" id="v-tab6" href="#" role="tab" tabindex="-1" aria-disabled="true">Products</a> 
                             <a class="nav-link disabled" id="v-tab7" href="#" role="tab" tabindex="-1" aria-disabled="true">Validation Reports of Products</a>
@@ -188,7 +188,7 @@
                 {
                     <a class="nav-link" id="v-tab2" data-bs-toggle="pill" href="#tab2" role="tab">Certificates</a>
                     <a class="nav-link" id="v-tab3" data-bs-toggle="pill" href="#tab3" role="tab">Products</a>
-              @*       <a class="nav-link" id="v-tab4" data-bs-toggle="pill" href="#tab4" role="tab">Third Party Testing Report</a> *@
+                    @*       <a class="nav-link" id="v-tab4" data-bs-toggle="pill" href="#tab4" role="tab">Third Party Testing Report</a> *@
                     <a class="nav-link" id="v-tab5" data-bs-toggle="pill" href="#tab5" role="tab">BIS Certification<br>(Product Wise)</a>
                     @*  <a class="nav-link" id="v-tab6"  data-bs-toggle="pill" href="#tab6" role="tab">Products</a> 
                             <a class="nav-link" id="v-tab7"  data-bs-toggle="pill" href="#tab7" role="tab">Validation Reports of Products</a>
@@ -207,8 +207,8 @@
             </div>
         </div>
 
-        <div class="col-10">
-            <div class="tab-content" id="v-tabContent">
+        <div>
+            <div class="tab-content col-12" id="v-tabContent">
                 <div class="tab-pane fade show active" id="tab1" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center" style="padding: 0.7rem;">
                         <div style="font-size:large;color:#4682B4">
@@ -278,9 +278,20 @@
 
                                     <div class="row form-group align-items-center mb-2">
                                         <label class="col-1"><b>GST No.</b></label>
-                                        <div class="col-5">
+                                        <div class="col-3">
                                             <input name="GstNo" id="GstNo" class="form-control" required value="@Model?.GstNo" />
                                             <span id="GstNo_Error" class="text-danger"></span>
+                                        </div>
+
+                                        <label class="col-1" style="color:#4682B4"><b>User Name</b></label>
+                                        <div class="col-3">
+                                            <input name="User_Name" id="User_Name" class="form-control" required value="@Model?.User_Name" />
+                                            <span id="User_Name_Error" class="text-danger"></span>
+                                        </div>
+
+                                        <label class="col-1" style="color:#4682B4"><b>Password</b></label>
+                                        <div class="col-2">
+                                            <input name="Password" id="Password" class="form-control" required value="@Model?.Password" />
                                         </div>
                                     </div>
                                 </div>
@@ -461,7 +472,7 @@
                             </div>
                         </div>
 
-                        <div class="col-4">
+                        @* <div class="col-4">
                             <div class="card" style="border-radius:10px;border:1px solid #4682B4;">
                                 <div class="card-header" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
                                     <h5 class="card-title" style="font-weight:640">Login Details</h5>
@@ -485,7 +496,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> *@
                     </div>
                 </div>
 
@@ -507,7 +518,11 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="CertificateTable"></div>
+                        <div class="chart-container">
+                            <div class="form-group row">
+                                <div id="CertificateTable" class="col-12"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -531,7 +546,11 @@
                                 </button>
                             </div>
                         </div>
-                        <div id="TPTReportTable"></div>
+                        <div class="chart-container">
+                            <div class="form-group row">
+                                <div id="TPTReportTable" class="col-12"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="tab-pane fade" id="tab5" role="tabpanel">

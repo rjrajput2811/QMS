@@ -45,6 +45,7 @@ namespace QMS.Core.Repositories.VendorRepository
                     Owner = data.Owner,
                     Plant_Head = data.Plant_Head,
                     Quality_Manager = data.Quality_Manager,
+                    GstNo = data.GstNo,
                     PDG_Manager = data.PDG_Manager,
                     SCM_Manager = data.SCM_Manager,
                     PRD_Manager = data.PRD_Manager,

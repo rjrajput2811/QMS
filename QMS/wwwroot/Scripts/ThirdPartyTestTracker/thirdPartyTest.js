@@ -1,11 +1,15 @@
 ﻿var tabledata = [];
 var table = null;
-var tabledataNatProject = [];
-var tableNatProject = '';
 const searchTerms = {};
 let vendorOptions = {};
+var tabledataNatProject = [];
+var tableNatProject = '';
 let natProjectOptions = {};
 let selectedNatProjectCell = null;
+var tabledataLab = [];
+var tableLab = '';
+let labOptions = {};
+let selectedLabCell = null;
 let filterStartTPTDate = moment().startOf('month').format('YYYY-MM-DD');
 let filterEndTPTDate = moment().endOf('month').format('YYYY-MM-DD');
 
@@ -63,14 +67,16 @@ $(document).ready(function () {
     loadData();
 });
 
-
 function loadData() {
-
     Blockloadershow();
+
+    // Step 1: Load vendor data
     $.ajax({
         url: '/Service/GetVendor',
         type: 'GET'
     }).done(function (vendorData) {
+        //let vendorOptions = {};
+
         if (Array.isArray(vendorData)) {
             vendorOptions = vendorData.reduce((acc, v) => {
                 acc[v.value] = v.label;
@@ -78,36 +84,95 @@ function loadData() {
             }, {});
         }
 
-        // Nested AJAX call to get actual data after vendorOptions is populated
+        // Step 2: Load Nat Project data
         $.ajax({
-            url: '/ThirdPartyTest/GetAll',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                startDate: filterStartTPTDate,
-                endDate: filterEndTPTDate
-            },
-        })
-            .done(function (data) {
-                const safeData = Array.isArray(data) ? data : [];
-                if (safeData.length) {
-                    OnTabGridLoad(safeData);
-                } else {
-                    showDangerAlert('No data available to load.');
-                    OnTabGridLoad([]);
-                }
-            })
-            .fail(function (xhr, status, error) {
-                console.error('Error retrieving data:', status, error, xhr.responseText);
-                showDangerAlert('Error retrieving data: ' + (error || status));
-                OnTabGridLoad([]);
-            })
-            .always(function () {
-                Blockloaderhide();
-            });
+            url: '/PaymentTracker/GetLabDropdown',
+            type: 'GET'
+        }).done(function (lab) {
+            //let natProjectOptions = {};
 
+            if (Array.isArray(lab)) {
+                labOptions = lab.reduce((acc, v) => {
+                    acc[v.value] = v.label;
+                    return acc;
+                }, {});
+            }
+
+            $.ajax({
+                url: '/ThirdPartyTest/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartTPTDate,
+                    endDate: filterEndTPTDate
+                },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnTabGridLoad(data);
+                    } else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error retrieving data: ' + error);
+                }
+            });
+        }).fail(function () {
+            Blockloaderhide();
+            showDangerAlert('Failed to load Nat Project data.');
+        });
+
+    }).fail(function () {
+        Blockloaderhide();
+        showDangerAlert('Failed to load vendor data.');
     });
 }
+//function loadData() {
+
+//    Blockloadershow();
+//    $.ajax({
+//        url: '/Service/GetVendor',
+//        type: 'GET'
+//    }).done(function (vendorData) {
+//        if (Array.isArray(vendorData)) {
+//            vendorOptions = vendorData.reduce((acc, v) => {
+//                acc[v.value] = v.label;
+//                return acc;
+//            }, {});
+//        }
+
+//        // Nested AJAX call to get actual data after vendorOptions is populated
+//        $.ajax({
+//            url: '/ThirdPartyTest/GetAll',
+//            type: 'GET',
+//            dataType: 'json',
+//            data: {
+//                startDate: filterStartTPTDate,
+//                endDate: filterEndTPTDate
+//            },
+//        })
+//            .done(function (data) {
+//                const safeData = Array.isArray(data) ? data : [];
+//                if (safeData.length) {
+//                    OnTabGridLoad(safeData);
+//                } else {
+//                    showDangerAlert('No data available to load.');
+//                    OnTabGridLoad([]);
+//                }
+//            })
+//            .fail(function (xhr, status, error) {
+//                console.error('Error retrieving data:', status, error, xhr.responseText);
+//                showDangerAlert('Error retrieving data: ' + (error || status));
+//                OnTabGridLoad([]);
+//            })
+//            .always(function () {
+//                Blockloaderhide();
+//            });
+
+//    });
+//}
 
 
 //define column header menu as column visibility toggle
@@ -242,9 +307,30 @@ function OnTabGridLoad(response) {
             return vendorOptions[val] || val;
         }, 130),
 
-        editableColumn("Lab", "Lab", true),
-        editableColumn("Sample Status", "Sample_Status", true),
-        editableColumn("Testing Status", "Testing_Status", true),
+        //editableColumn("Lab", "Lab", true),
+        editableColumn("Lab", "Lab", "select2", "center", "input", {}, {
+            values: labOptions
+        }, function (cell) {
+            const val = cell.getValue();
+            return labOptions[val] || val;
+        }, 170),
+        //editableColumn("Sample Status", "Sample_Status", true),
+        editableColumn("Sample Status", "Sample_Status", "select2Test", "left", "input", {}, {
+            values: [
+                { label: "Not received in lab", value: "Not received in lab" },
+                { label: "Received in lab", value: "Received in lab" },
+                { label: "Under testing", value: "Under testing" },
+                { label: "Testing complete received back from lab", value: "Testing complete received back from lab" },
+                { label: "Testing complete not received back from lab", value: "Testing complete not received back from lab" }
+            ]
+        }),
+        //editableColumn("Testing Status", "Testing_Status", true),
+        editableColumn("Testing Status", "Testing_Status", "select2Test", "center", "input", {}, {
+            values: [
+                { label: "Completed", value: "Completed" },
+                { label: "Not Completed", value: "Not Completed" }
+            ]
+        }),
         editableColumn("Lab Contact Person", "Lab_Contact_Person", true),
         editableColumn("Contact Number", "Contact_Number", true),
         editableColumn("Email_Id", "Email_Id", true),
@@ -680,59 +766,105 @@ function editableColumn(title, field, editorType = true, align = "center", heade
     return columnDef;
 }
 
-//Tabulator.extendModule("edit", "editors", {
-//    select2: function (cell, onRendered, success, cancel, editorParams) {
-//        const fieldName = cell.getField(); // Get the column field name
-//        const values = editorParams.values || {};
-//        const select = document.createElement("select");
-//        select.style.width = "100%";
 
-//        // Append normal options
-//        for (let val in values) {
-//            let option = document.createElement("option");
-//            option.value = val;
-//            option.text = values[val];
-//            if (val === cell.getValue()) option.selected = true;
-//            select.appendChild(option);
-//        }
+Tabulator.extendModule("edit", "editors", {
+    select2Test: function (cell, onRendered, success, cancel, editorParams) {
+        const values = editorParams.values || {};
+        const select = document.createElement("select");
+        select.style.width = "100%";
 
-//        // 👉 Only add the "Add New" option for Nat_Project column
-//        if (fieldName === "Nat_Project") {
-//            let addOption = document.createElement("option");
-//            addOption.value = "__add_new__";
-//            addOption.text = "➕ Add New Project Type";
-//            select.appendChild(addOption);
-//        }
+        if (Array.isArray(values)) {
+            values.forEach(function (item) {
+                let option = document.createElement("option");
+                option.value = item.value;
+                option.text = item.label;
+                if (item.value === cell.getValue()) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+        else {
 
-//        onRendered(function () {
-//            $(select).select2({
-//                dropdownParent: document.body,
-//                width: 'resolve',
-//                placeholder: "Select value",
-//                templateResult: function (data) {
-//                    if (data.id === "__add_new__") {
-//                        return $('<span style="color: blue;"><i class="fas fa-plus-circle"></i> ' + data.text + '</span>');
-//                    }
-//                    return data.text;
-//                },
-//                templateSelection: function (data) {
-//                    return values[data.id] || data.text;
-//                }
-//            }).on("select2:select", function (e) {
-//                const selectedVal = select.value;
-//                if (selectedVal === "__add_new__") {
-//                    $(select).select2('close');
-//                    cancel(); // Cancel edit
-//                    $('#yourModalId').modal('show'); // Show modal
-//                } else {
-//                    success(selectedVal);
-//                }
-//            });
-//        });
+            for (let val in values) {
+                let option = document.createElement("option");
+                option.value = val;
+                option.text = values[val];
+                if (val === cell.getValue()) option.selected = true;
+                select.appendChild(option);
+            }
+        }
+        onRendered(function () {
+            $(select).select2({
+                dropdownParent: document.body,
+                width: 'resolve',
+                placeholder: "Select value"
+            }).on("change", function () {
+                success(select.value);
+            });
+        });
 
-//        return select;
-//    }
-//});
+        return select;
+    }
+});
+
+
+Tabulator.extendModule("edit", "editors", {
+    select2: function (cell, onRendered, success, cancel, editorParams) {
+        const fieldName = cell.getField(); // column field
+        const values = editorParams.values || {};
+        const select = document.createElement("select");
+        select.style.width = "100%";
+
+        // Add regular options
+        for (let val in values) {
+            let option = document.createElement("option");
+            option.value = val;
+            option.text = values[val];
+            if (val === cell.getValue()) option.selected = true;
+            select.appendChild(option);
+        }
+
+        // Add "Add New" option only for Nat_Project
+        if (fieldName === "Lab") {
+            let addOption = document.createElement("option");
+            addOption.value = "__add_new__";
+            addOption.text = "➕ Add New Lab";
+            select.appendChild(addOption);
+        }
+
+        onRendered(function () {
+            $(select).select2({
+                dropdownParent: document.body,
+                width: 'resolve',
+                placeholder: "Select value",
+                templateResult: function (data) {
+                    if (data.id === "__add_new__") {
+                        return $('<span style="color: blue;"><i class="fas fa-plus-circle"></i> ' + data.text + '</span>');
+                    }
+                    return data.text;
+                },
+                templateSelection: function (data) {
+                    return values[data.id] || data.text;
+                }
+            }).on("select2:select", function (e) {
+                const selectedVal = select.value;
+
+                if (selectedVal === "__add_new__") {
+                    $(select).select2('close');
+                    cancel(); // cancel cell edit
+                    selectedLabCell = cell; // store the cell
+                    $('#labPaymentModel').modal('show');
+                    loadLabData();
+                } else {
+                    success(selectedVal);
+                }
+            });
+        });
+
+        return select;
+    }
+});
+
+
 
 //// Working ////
 //Tabulator.extendModule("edit", "editors", {
@@ -791,6 +923,7 @@ function editableColumn(title, field, editorType = true, align = "center", heade
 //        return select;
 //    }
 //});
+
 
 
 
@@ -983,34 +1116,22 @@ function InsertUpdateThirdParTest(rowData) {
 
     var Model = {
         Id: rowData.Id || 0,
-        Financial_Year: rowData.Financial_Year || null,
-        Mon_Pc: rowData.Mon_PC || null,
-        Nat_Project: rowData.Nat_Project || null,
-        Lea_Model_No: rowData.Lea_Model_No || null,
-        No_Seri_Add: rowData.No_Seri_Add || null,
-        Cat_Ref_Lea_Model: rowData.Cat_Ref_Lea_Model || null,
-        Section: rowData.Section || null,
-        Manuf_Location: rowData.Manuf_Location || null,
-        BIS_Project_Id: rowData.BIS_Project_Id || null,
-        Lab: rowData.Lab || null,
-        Report_Owner: rowData.Report_Owner || null,
-        Ven_Sample_Sub_Date: toIsoDate(rowData.Ven_Sample_Sub_Date),
-        Start_Date: toIsoDate(rowData.Start_Date),
-        Comp_Date: toIsoDate(rowData.Comp_Date),
-        Test_Duration: rowData.Test_Duration.toString() || null,
-        Submitted_Date: toIsoDate(rowData.Submitted_Date),
-        Received_Date: toIsoDate(rowData.Received_Date),
-        Bis_Duration: rowData.Bis_Duration.toString() || null,
-        Current_Status: rowData.Current_Status || null,
-        BIS_Attachment: rowData.BIS_Attachment || null,
-        Effective_Date: toIsoDate(rowData.Effective_Date),
-        Document_No: rowData.Document_No || null,
-        Revision_No: rowData.Revision_No || null,
-        Revision_Date: toIsoDate(rowData.Revision_Date)
+        Purpose: rowData.Purpose || null,
+        Project_Det: rowData.Project_Det || null,
+        Product_Det: rowData.Product_Det || null,
+        Wipro_Product_Code: rowData.Wipro_Product_Code || null,
+        Sample_Qty: rowData.Sample_Qty || 0,
+        Test_Detail: rowData.Test_Detail || null,
+        Vendor: rowData.Vendor || null,
+        Lab_Contact_Person: rowData.Lab_Contact_Person || null,
+        Contact_Number: rowData.Contact_Number || null,
+        Email_Id: rowData.Email_Id || null,
+        Testing_Charge_offer: rowData.Testing_Charge_offer || null,
+        Final_Testing_Charge: rowData.Final_Testing_Charge || null
     };
 
     const isNew = Model.Id === 0;
-    var ajaxUrl = isNew ? '/BisProjectTrac/Create' : '/BisProjectTrac/Update';
+    var ajaxUrl = isNew ? '/ThirdPartyTest/Create' : '/ThirdPartyTest/Update';
 
     $.ajax({
         url: ajaxUrl,
@@ -1031,7 +1152,7 @@ function InsertUpdateThirdParTest(rowData) {
                 }
             }
             else if (response.message === "Exist") {
-                showDangerAlert("BIS Project Tracker Detail already exists.");
+                showDangerAlert("Third Part Test Tracker Detail already exists.");
             }
             else {
                 var errorMessg = "";
@@ -1049,6 +1170,239 @@ function InsertUpdateThirdParTest(rowData) {
             //Blockloaderhide();
             showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
         }
+    });
+}
+
+function loadLabData() {
+    Blockloadershow();
+    $.ajax({
+        url: '/PaymentTracker/GetLabPayment',
+        type: 'GET',
+        success: function (data) {
+            Blockloaderhide();
+            if (data && Array.isArray(data)) {
+                OnNatLabGridLoad(data);
+            } else {
+                showDangerAlert('No data available to load.');
+            }
+        },
+        error: function (xhr, status, error) {
+            Blockloaderhide();
+            showDangerAlert('Error retrieving data: ' + error);
+        }
+    });
+}
+
+function OnNatLabGridLoad(response) {
+    debugger;
+    Blockloadershow();
+
+    tabledataLab = [];
+    let columns = [];
+
+    // Map the response to the table format
+    if (response.length > 0) {
+        $.each(response, function (index, item) {
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+            }
+
+            tabledataLab.push({
+                Sr_No: index + 1,
+                Id: item.id,
+                Lab: item.lab,
+                CreatedBy: item.createdBy,
+                UpdatedBy: item.updatedBy,
+                UpdatedDate: formatDate(item.updatedDate),
+                CreatedDate: formatDate(item.createdDate),
+            });
+        });
+    }
+
+    if (tabledataLab.length === 0 && tableLab) {
+        tableLab.clearData();
+        Blockloaderhide();
+        return;
+    }
+
+    columns.push(
+        {
+            title: "Action",
+            field: "Action",
+            width: 46,
+            hozAlign: "center",
+            headerHozAlign: "center",
+            formatter: function (cell, formatterParams) {
+                const rowData = cell.getRow().getData();
+                let actionButtons = "";
+
+                actionButtons += `<i onclick="delLabConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+
+                return actionButtons;
+            }
+        },
+        {
+            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
+        },
+        editableColumn("Lab", "Lab", true),
+        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+    );
+
+    // // Initialize Tabulator
+    tableLab = new Tabulator("#lab_Table", {
+        data: tabledataLab,
+        renderHorizontal: "virtual",
+        movableColumns: true,
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+        paginationCounter: "rows",
+        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+        columns: columns
+    });
+
+    tableLab.on("cellEdited", function (cell) {
+        InsertUpdateLab(cell.getRow().getData());
+    });
+
+    $("#addLabBtn").on("click", function () {
+        const newRow1 = {
+            Sr_No: tableLab.getDataCount() + 1,
+            Id: 0,
+            Lab: "",
+            CreatedBy: "",
+            UpdatedBy: "",
+            UpdatedDate: "",
+            CreatedDate: ""
+        };
+        tableLab.addRow(newRow1, false);
+    });
+
+
+    Blockloaderhide();
+}
+
+function InsertUpdateLab(rowData) {
+    debugger
+    if (!rowData) {
+        showDangerAlert("Invalid data provided.");
+        return;
+    }
+
+    //Blockloadershow();
+    var errorMsg = "";
+
+    if (errorMsg !== "") {
+        Blockloaderhide();
+        showDangerAlert(errorMsg);
+        return false;
+    }
+
+    var Model = {
+        Id: rowData.Id || 0,
+        Lab: rowData.Lab || null,
+    };
+
+    var ajaxUrl = Model.Id === 0 ? '/PaymentTracker/CreateLabPayment' : '/PaymentTracker/UpdateLabPayment';
+
+    $.ajax({
+        url: ajaxUrl,
+        type: "POST",
+        data: JSON.stringify(Model),
+        contentType: 'application/json',
+        success: function (response) {
+            //Blockloaderhide();
+            if (response.success) {
+                const msg = Model.Id != 0
+                    ? "Lab updated successfully!"
+                    : "Lab saved successfully!";
+                showSuccessAlert(msg);
+                loadLabData();
+            }
+            else if (response.message === "Exist") {
+                showDangerAlert("Lab already exists.");
+            }
+            else {
+                var errorMessg = "";
+                if (response.errors) {
+                    for (var error in response.errors) {
+                        if (response.errors.hasOwnProperty(error)) {
+                            errorMessg += `${response.errors[error]}\n`;
+                        }
+                    }
+                }
+                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
+            }
+        },
+        error: function (xhr, status, error) {
+            //Blockloaderhide();
+            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
+        }
+    });
+}
+
+$('#labPaymentModel').on('hidden.bs.modal', function () {
+    loadLabData(); // uncomment if you want full reload
+});
+
+
+function delLabConfirm(recid, element) {
+    debugger;
+
+    if (!recid || recid <= 0) {
+        const rowEl = $(element).closest(".tabulator-row")[0];
+        const row = tableLab.getRow(rowEl);
+        if (row) {
+            row.delete();
+        }
+        return;
+    }
+
+    PNotify.prototype.options.styling = "bootstrap3";
+    (new PNotify({
+        title: 'Confirmation Needed',
+        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+        icon: 'glyphicon glyphicon-question-sign',
+        hide: false,
+        confirm: {
+            confirm: true
+        },
+        buttons: {
+            closer: false,
+            sticker: false
+        },
+        history: {
+            history: false
+        },
+    })).get().on('pnotify.confirm', function () {
+        $.ajax({
+            url: '/PaymentTracker/DeleteLabPayment',
+            type: 'POST',
+            data: { id: recid },
+            success: function (data) {
+                if (data.success == true) {
+                    showSuccessAlert("Nature of Project Deleted successfully.");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2500);
+                }
+                else if (data.success == false && data.message == "Not_Deleted") {
+                    showDangerAlert("Record is used in QMS Log transactions.");
+                }
+                else {
+                    showDangerAlert(data.message);
+                }
+            },
+            error: function () {
+                showDangerAlert('Error retrieving data.');
+            }
+        });
+    }).on('pnotify.cancel', function () {
+        loadLabData();
     });
 }
 

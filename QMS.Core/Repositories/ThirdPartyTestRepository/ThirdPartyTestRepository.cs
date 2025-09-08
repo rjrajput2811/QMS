@@ -300,5 +300,421 @@ namespace QMS.Core.Repositories.ThirdPartyTestRepository
                 throw;
             }
         }
+
+        public async Task<List<PurposeTPTViewModel>> GetPurposeTPTAsync()
+        {
+            try
+            {
+                var result = await (from pr in _dbContext.PurposeTPT
+                                    where pr.Deleted == false // Add this condition
+                                    select new PurposeTPTViewModel
+                                    {
+                                        Id = pr.Id,
+                                        Purpose = pr.Purpose,
+                                        CreatedBy = pr.CreatedBy,
+                                        CreatedDate = pr.CreatedDate,
+                                        UpdatedBy = pr.UpdatedBy,
+                                        UpdatedDate = pr.UpdatedDate
+                                    }).ToListAsync();
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<Purpose_TPT?> GetPurposeTPTByIdAsync(int Id)
+        {
+            try
+            {
+                var result = await base.GetByIdAsync<Purpose_TPT>(Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> CreatePurposeTPTAsync(PurposeTPTViewModel newPurposeTPTRecord, bool returnCreatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = new Purpose_TPT();
+                natToCreate.Purpose = newPurposeTPTRecord.Purpose;
+                natToCreate.CreatedBy = newPurposeTPTRecord.CreatedBy;
+                natToCreate.CreatedDate = DateTime.Now;
+                return await base.CreateAsync<Purpose_TPT>(natToCreate, returnCreatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> UpdatePurposeTPTAsync(PurposeTPTViewModel updatePurposeTPTRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = await base.GetByIdAsync<Purpose_TPT>(updatePurposeTPTRecord.Id);
+                natToCreate.Purpose = updatePurposeTPTRecord.Purpose;
+                natToCreate.UpdatedBy = updatePurposeTPTRecord.UpdatedBy;
+                natToCreate.UpdatedDate = DateTime.Now;
+                return await base.UpdateAsync<Purpose_TPT>(natToCreate, returnUpdatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> DeletePurposeTPTAsync(int Id)
+        {
+            try
+            {
+                return await base.DeleteAsync<Purpose_TPT>(Id);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckPurposeTPTDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.PurposeTPT
+                    .Where(x => x.Deleted == false && x.Purpose == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.PurposeTPT
+                        .Where(x => x.Deleted == false &&
+                               x.Purpose == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<DropdownOptionViewModel>> GetPurposeDropdownAsync()
+        {
+            return await _dbContext.PurposeTPT
+                .Where(v => !v.Deleted)
+                .Select(v => new DropdownOptionViewModel
+                {
+                    Label = v.Purpose,
+                    Value = v.Id.ToString()
+                })
+                .Distinct()
+                .ToListAsync();
+        }
+
+
+
+        public async Task<List<TestDetTPTViewModel>> GetTestDetTPTAsync()
+        {
+            try
+            {
+                var result = await (from pr in _dbContext.TestDetTPT
+                                    where pr.Deleted == false // Add this condition
+                                    select new TestDetTPTViewModel
+                                    {
+                                        Id = pr.Id,
+                                        Test_Det = pr.Test_Det,
+                                        CreatedBy = pr.CreatedBy,
+                                        CreatedDate = pr.CreatedDate,
+                                        UpdatedBy = pr.UpdatedBy,
+                                        UpdatedDate = pr.UpdatedDate
+                                    }).ToListAsync();
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<TestDet_TPT?> GetTestDetTPTByIdAsync(int Id)
+        {
+            try
+            {
+                var result = await base.GetByIdAsync<TestDet_TPT>(Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> CreateTestDetTPTAsync(TestDetTPTViewModel newTestDetTPTRecord, bool returnCreatedRecord = false
+        {
+            try
+            {
+                var natToCreate = new TestDet_TPT();
+                natToCreate.Test_Det = newTestDetTPTRecord.Test_Det;
+                natToCreate.CreatedBy = newTestDetTPTRecord.CreatedBy;
+                natToCreate.CreatedDate = DateTime.Now;
+                return await base.CreateAsync<TestDet_TPT>(natToCreate, returnCreatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> UpdateTestDetTPTAsync(TestDetTPTViewModel updateTestDetTPTRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = await base.GetByIdAsync<TestDet_TPT>(updateTestDetTPTRecord.Id);
+                natToCreate.Test_Det = updateTestDetTPTRecord.Test_Det;
+                natToCreate.UpdatedBy = updateTestDetTPTRecord.UpdatedBy;
+                natToCreate.UpdatedDate = DateTime.Now;
+                return await base.UpdateAsync<TestDet_TPT>(natToCreate, returnUpdatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> DeleteTestDetTPTAsync(int Id)
+        {
+            try
+            {
+                return await base.DeleteAsync<TestDet_TPT>(Id);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckTestDetTPTDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.TestDetTPT
+                    .Where(x => x.Deleted == false && x.Test_Det == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.TestDetTPT
+                        .Where(x => x.Deleted == false &&
+                               x.Test_Det == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<DropdownOptionViewModel>> GetTestDetDropdownAsync()
+        {
+            return await _dbContext.TestDetTPT
+                .Where(v => !v.Deleted)
+                .Select(v => new DropdownOptionViewModel
+                {
+                    Label = v.Test_Det,
+                    Value = v.Id.ToString()
+                })
+                .Distinct()
+                .ToListAsync();
+        }
+
+
+
+
+        public async Task<List<ProjectInitTPTViewModel>> GetProjectInitAsync()
+        {
+            try
+            {
+                var result = await (from pr in _dbContext.ProjectInitTPT
+                                    where pr.Deleted == false // Add this condition
+                                    select new ProjectInitTPTViewModel
+                                    {
+                                        Id = pr.Id,
+                                        Project_Init = pr.Project_Init,
+                                        CreatedBy = pr.CreatedBy,
+                                        CreatedDate = pr.CreatedDate,
+                                        UpdatedBy = pr.UpdatedBy,
+                                        UpdatedDate = pr.UpdatedDate
+                                    }).ToListAsync();
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<ProjectInit_TPT?> GetProjectInitByIdAsync(int Id)
+        {
+            try
+            {
+                var result = await base.GetByIdAsync<ProjectInit_TPT>(Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> CreateProjectInitAsync(ProjectInitTPTViewModel newProjectInitRecord, bool returnCreatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = new ProjectInit_TPT();
+                natToCreate.Project_Init = newProjectInitRecord.Project_Init;
+                natToCreate.CreatedBy = newProjectInitRecord.CreatedBy;
+                natToCreate.CreatedDate = DateTime.Now;
+                return await base.CreateAsync<ProjectInit_TPT>(natToCreate, returnCreatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> UpdateProjectInitAsync(ProjectInitTPTViewModel updateProjectInitRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = await base.GetByIdAsync<ProjectInit_TPT>(updateProjectInitRecord.Id);
+                natToCreate.Project_Init = updateProjectInitRecord.Project_Init;
+                natToCreate.UpdatedBy = updateProjectInitRecord.UpdatedBy;
+                natToCreate.UpdatedDate = DateTime.Now;
+                return await base.UpdateAsync<ProjectInit_TPT>(natToCreate, returnUpdatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> DeleteProjectInitAsync(int Id)
+        {
+            try
+            {
+                return await base.DeleteAsync<ProjectInit_TPT>(Id);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckProjectInitDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.ProjectInitTPT
+                    .Where(x => x.Deleted == false && x.Project_Init == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.ProjectInitTPT
+                        .Where(x => x.Deleted == false &&
+                               x.Project_Init == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<DropdownOptionViewModel>> GetProjectInitDropdownAsync()
+        {
+            return await _dbContext.ProjectInitTPT
+                .Where(v => !v.Deleted)
+                .Select(v => new DropdownOptionViewModel
+                {
+                    Label = v.Project_Init,
+                    Value = v.Id.ToString()
+                })
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }

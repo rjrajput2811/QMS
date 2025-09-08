@@ -35,6 +35,9 @@ namespace QMS.Core.DatabaseContext
         public DbSet<SPMReport> SPMReports { get; set; }
         public DbSet<RMTCDetails> RMTCDetails { get; set; }
         public DbSet<ThirdPartyTesting> ThirdPartyTesting { get; set; }
+        public DbSet<Purpose_TPT> PurposeTPT { get; set; }
+        public DbSet<ProjectInit_TPT> ProjectInitTPT { get; set; }
+        public DbSet<TestDet_TPT> TestDetTPT { get; set; }
 
         //// ------- Service -------- ////
         public DbSet<ComplaintDump_Service> COPQComplaintDump { get; set; }

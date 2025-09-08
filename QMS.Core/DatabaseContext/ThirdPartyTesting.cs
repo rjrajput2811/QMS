@@ -41,4 +41,67 @@ namespace QMS.Core.DatabaseContext
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
     }
+
+    [Table("tbl_Purpose_TPT")]
+    public class Purpose_TPT : SqlTable
+    {
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("Purp_Id")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+
+        public string? Purpose { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+
+    [Table("tbl_ProjectInit_TPT")]
+    public class ProjectInit_TPT : SqlTable
+    {
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("ProjeInt_Id")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+
+        public string? Project_Init { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+
+    [Table("tbl_TestDet_TPT")]
+    public class TestDet_TPT : SqlTable
+    {
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("TestDet_Id")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+
+        public string? Test_Det { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
 }

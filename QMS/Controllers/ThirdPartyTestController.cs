@@ -147,5 +147,336 @@ namespace QMS.Controllers
                 throw;
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetPurposeDropdown()
+        {
+            try
+            {
+                var purposeList = await _thirdPartyTestRepository.GetPurposeDropdownAsync();
+                return Json(purposeList);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return StatusCode(500, "Error retrieving Lab dropdown.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetPurposeTPTByIdAsync(int Id)
+        {
+            var instId = await _thirdPartyTestRepository.GetPurposeTPTByIdAsync(Id);
+            return Json(instId);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetPurposeTPTAsync()
+        {
+            var instList = await _thirdPartyTestRepository.GetPurposeTPTAsync();
+            return Json(instList);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreatePurposeTPTAsync([FromBody] PurposeTPTViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _thirdPartyTestRepository.CheckPurposeTPTDuplicate(model.Purpose.Trim(), 0);
+                    if (!existingResult)
+                    {
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        model.CreatedDate = DateTime.Now;
+                        operationResult = await _thirdPartyTestRepository.CreatePurposeTPTAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdatePurposeTPTAsync([FromBody] PurposeTPTViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _thirdPartyTestRepository.CheckPurposeTPTDuplicate(model.Purpose.Trim(), model.Id);
+                    if (!existingResult)
+                    {
+                        model.UpdatedDate = DateTime.Now;
+                        model.UpdatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _thirdPartyTestRepository.UpdatePurposeTPTAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeletePurposeTPTAsync(int id)
+        {
+            try
+            {
+                var operationResult = await _thirdPartyTestRepository.DeletePurposeTPTAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetProjectInitDropdown()
+        {
+            try
+            {
+                var purposeList = await _thirdPartyTestRepository.GetProjectInitDropdownAsync();
+                return Json(purposeList);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return StatusCode(500, "Error retrieving Lab dropdown.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetProjectInitByIdAsync(int Id)
+        {
+            var instId = await _thirdPartyTestRepository.GetProjectInitByIdAsync(Id);
+            return Json(instId);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetProjectInitAsync()
+        {
+            var instList = await _thirdPartyTestRepository.GetProjectInitAsync();
+            return Json(instList);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateProjectInitAsync([FromBody] ProjectInitTPTViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _thirdPartyTestRepository.CheckProjectInitDuplicate(model.Project_Init.Trim(), 0);
+                    if (!existingResult)
+                    {
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        model.CreatedDate = DateTime.Now;
+                        operationResult = await _thirdPartyTestRepository.CreateProjectInitAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateProjectInitAsync([FromBody] ProjectInitTPTViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _thirdPartyTestRepository.CheckProjectInitDuplicate(model.Project_Init.Trim(), model.Id);
+                    if (!existingResult)
+                    {
+                        model.UpdatedDate = DateTime.Now;
+                        model.UpdatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _thirdPartyTestRepository.UpdateProjectInitAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteProjectInitAsync(int id)
+        {
+            try
+            {
+                var operationResult = await _thirdPartyTestRepository.DeleteProjectInitAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+
+        }
+
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetTestDetDropdown()
+        {
+            try
+            {
+                var purposeList = await _thirdPartyTestRepository.GetTestDetDropdownAsync();
+                return Json(purposeList);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return StatusCode(500, "Error retrieving Lab dropdown.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetTestDetTPTByIdAsync(int Id)
+        {
+            var instId = await _thirdPartyTestRepository.GetTestDetTPTByIdAsync(Id);
+            return Json(instId);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetTestDetTPTAsync()
+        {
+            var instList = await _thirdPartyTestRepository.GetTestDetTPTAsync();
+            return Json(instList);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateTestDetTPTAsync([FromBody] TestDetTPTViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _thirdPartyTestRepository.CheckTestDetTPTDuplicate(model.Test_Det.Trim(), 0);
+                    if (!existingResult)
+                    {
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        model.CreatedDate = DateTime.Now;
+                        operationResult = await _thirdPartyTestRepository.CreateTestDetTPTAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateTestDetTPTAsync([FromBody] TestDetTPTViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _thirdPartyTestRepository.CheckTestDetTPTDuplicate(model.Test_Det.Trim(), model.Id);
+                    if (!existingResult)
+                    {
+                        model.UpdatedDate = DateTime.Now;
+                        model.UpdatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _thirdPartyTestRepository.UpdateTestDetTPTAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteTestDetTPTAsync(int id)
+        {
+            try
+            {
+                var operationResult = await _thirdPartyTestRepository.DeleteTestDetTPTAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+
+        }
     }
 }

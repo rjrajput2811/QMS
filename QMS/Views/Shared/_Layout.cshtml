@@ -75,28 +75,28 @@
         });
 
             
-        (function () {
-          // Get last non-empty segment from path, case-insensitive
-          var path = (window.location.pathname || "").replace(/\/+$/, "");
-          var lastSegment = path.substring(path.lastIndexOf("/") + 1).toLowerCase();
+        // (function () {
+        //   // Get last non-empty segment from path, case-insensitive
+        //   var path = (window.location.pathname || "").replace(/\/+$/, "");
+        //   var lastSegment = path.substring(path.lastIndexOf("/") + 1).toLowerCase();
 
-          // Pages where the Back button should be visible
-          // Add more segments here if needed
-          var showOn = new Set([
-            "WiproMenu" // <-- show Back on /Home/WiproMenu
-            // ,"thirdpartyinspection", "pditracker", ...
-          ]);
+        //   // Pages where the Back button should be visible
+        //   // Add more segments here if needed
+        //   var showOn = new Set([
+        //     "WiproMenu" // <-- show Back on /Home/WiproMenu
+        //     // ,"thirdpartyinspection", "pditracker", ...
+        //   ]);
 
-          var $btn = $("#wiproBackButton");
+        //   var $btn = $("#wiproBackButton");
 
-          if (showOn.has(lastSegment)) 
-          {
-                $btn.show();
-              } else {
-                $btn.hide();
-              }
-          });
-        })();
+        //   if (showOn.has(lastSegment)) 
+        //   {
+        //         $btn.show();
+        //       } else {
+        //         $btn.hide();
+        //       }
+        //   });
+        // })();
     </script>
 
     <style type="text/css">

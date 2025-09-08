@@ -208,7 +208,7 @@
                                             <button id="exluploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadComplaint()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                                 <i class="fas fa-upload mr-2"></i>Upload Exl
                                             </button>&nbsp;
-                                            <button id="backButton" class="btn btn-outline-info">
+                                            <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                                 <i class="fas fa-arrow-left"></i> Back
                                             </button>
                                         </div>
@@ -239,7 +239,7 @@
                                             <button id="exluploadIndentButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadIndent()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                                 <i class="fas fa-upload mr-2"></i>Upload Exl
                                             </button>&nbsp;
-                                            <button id="backIndentButton" class="btn btn-outline-info">
+                                            <button id="backIndentButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                                 <i class="fas fa-arrow-left"></i> Back
                                             </button>
                                         </div>
@@ -299,7 +299,7 @@
                                             <button id="exlPouploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadPo()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                                 <i class="fas fa-upload mr-2"></i>Upload Exl
                                             </button>&nbsp;
-                                            <button id="backButton" class="btn btn-outline-info">
+                                            <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                                 <i class="fas fa-arrow-left"></i> Back
                                             </button>
                                         </div>
@@ -351,7 +351,7 @@
                                             <button id="exlInvuploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadInvoice()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                                 <i class="fas fa-upload mr-2"></i>Upload Exl
                                             </button>&nbsp;
-                                            <button id="backButton" class="btn btn-outline-info">
+                                            <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                                 <i class="fas fa-arrow-left"></i> Back
                                             </button>
                                         </div>
@@ -381,7 +381,7 @@
                                             <button id="exlPcuploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadPCChart()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                                 <i class="fas fa-upload mr-2"></i>Upload Exl
                                             </button>&nbsp;
-                                            <button id="backButton" class="btn btn-outline-info">
+                                            <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                                 <i class="fas fa-arrow-left"></i> Back
                                             </button>
                                         </div>
@@ -412,7 +412,7 @@
                                             <button id="exlReguploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadRegion()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                                 <i class="fas fa-upload mr-2"></i>Upload Exl
                                             </button>&nbsp;
-                                            <button id="backButton" class="btn btn-outline-info">
+                                            <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                                 <i class="fas fa-arrow-left"></i> Back
                                             </button>
                                         </div>
@@ -441,7 +441,7 @@
                                 <button id="exlExtButton" type="button" class="btn btn-outline-primary legitRipple" onclick="" style="margin: 10px 3px;width: 150px; font-size:15px">
                                     <i class="fas fa-upload mr-2"></i>Export Exl
                                 </button>&nbsp;
-                                <button id="backButton" class="btn btn-outline-info">
+                                <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                     <i class="fas fa-arrow-left"></i>Back
                                 </button>
                             </div>
@@ -509,4 +509,5 @@
 
     }
 
+@section HideSidebar { }
 @await Html.PartialAsync("_UploadModalpartial")

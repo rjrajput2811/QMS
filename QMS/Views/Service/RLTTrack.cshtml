@@ -195,7 +195,7 @@
                                 <button id="exluploadButton" type="button" class="btn btn-outline-primary legitRipple" onclick="openUploadRLT()" style="margin: 10px 3px;width: 150px; font-size:15px">
                                     <i class="fas fa-upload mr-2"></i>Upload Exl
                                 </button>&nbsp;
-                                <button id="backButton" class="btn btn-outline-info">
+                                <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                                     <i class="fas fa-arrow-left"></i> Back
                                 </button>
                             </div>
@@ -213,7 +213,7 @@
                         <button id="exlExtButton" type="button" class="btn btn-outline-primary legitRipple" onclick="" style="margin: 10px 3px;width: 150px; font-size:15px">
                             <i class="fas fa-upload mr-2"></i>Export Exl
                         </button>&nbsp;
-                        <button id="backButton" class="btn btn-outline-info">
+                        <button id="backButton" class="btn btn-outline-info" onclick="location.href='@Url.Action("ServiceMenu","Home")'">
                             <i class="fas fa-arrow-left"></i>Back
                         </button>
                     </div>
@@ -272,4 +272,5 @@
     <script src="~/scripts/service/rlttrack.js" asp-append-version="true"></script>
     }
 
+@section HideSidebar { }
 @await Html.PartialAsync("_UploadModalpartial")

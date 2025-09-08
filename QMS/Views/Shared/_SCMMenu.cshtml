@@ -6,6 +6,7 @@
     var userRole = HttpContextAccessor.HttpContext.Session.GetInt32("UserRole") ?? 0;
     var vendor_Id = HttpContextAccessor.HttpContext.Session.GetInt32("Vendor_Id") ?? 0;
     var userName = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
+    var roleId = Context.Session.GetInt32("RoleId") ?? 0;
 }
 
 <!DOCTYPE html>
@@ -123,6 +124,23 @@
 
             </ul>
             <span class="badge ml-md-3 mr-md-auto"> </span>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    @if (roleId == (int)UserRoles.Admin || roleId == (int)UserRoles.Manager || roleId == (int)UserRoles.Staff)
+                    {
+                        <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
+                            <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
+                        </button>
+                    }
+                    else
+                    {
+                        <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("VendorOptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
+                            <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
+                        </button>
+                    }
+                </li>
+            </ul>
 
 
             <ul class="navbar-nav">

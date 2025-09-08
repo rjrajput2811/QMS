@@ -43,6 +43,11 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult ServiceMenu()
+        {
+            return View();
+        }
+
         public IActionResult Privacy()
         {
             return View();

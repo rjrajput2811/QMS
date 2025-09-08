@@ -65,15 +65,12 @@ $(document).ready(function () {
 
 
 function loadData() {
-    Blockloadershow();
 
-    // Step 1: Load vendor data
+    Blockloadershow();
     $.ajax({
         url: '/Service/GetVendor',
         type: 'GET'
     }).done(function (vendorData) {
-        //let vendorOptions = {};
-
         if (Array.isArray(vendorData)) {
             vendorOptions = vendorData.reduce((acc, v) => {
                 acc[v.value] = v.label;
@@ -81,7 +78,7 @@ function loadData() {
             }, {});
         }
 
-        // Step 3: Load grid data
+        // Nested AJAX call to get actual data after vendorOptions is populated
         $.ajax({
             url: '/ThirdPartyTest/GetAll',
             type: 'GET',
@@ -90,23 +87,25 @@ function loadData() {
                 startDate: filterStartTPTDate,
                 endDate: filterEndTPTDate
             },
-            success: function (data) {
-                Blockloaderhide();
-                if (data && Array.isArray(data)) {
-                    OnTabGridLoad(data);
+        })
+            .done(function (data) {
+                const safeData = Array.isArray(data) ? data : [];
+                if (safeData.length) {
+                    OnTabGridLoad(safeData);
                 } else {
                     showDangerAlert('No data available to load.');
+                    OnTabGridLoad([]);
                 }
-            },
-            error: function (xhr, status, error) {
+            })
+            .fail(function (xhr, status, error) {
+                console.error('Error retrieving data:', status, error, xhr.responseText);
+                showDangerAlert('Error retrieving data: ' + (error || status));
+                OnTabGridLoad([]);
+            })
+            .always(function () {
                 Blockloaderhide();
-                showDangerAlert('Error retrieving data: ' + error);
-            }
-        });
+            });
 
-    }).fail(function () {
-        Blockloaderhide();
-        showDangerAlert('Failed to load vendor data.');
     });
 }
 
@@ -228,7 +227,7 @@ function OnTabGridLoad(response) {
             title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left", width: 60
         },
 
-        
+
         editableColumn("Purpose", "Purpose", true),
         editableColumn("Project Det.", "Project_Det", true),
         editableColumn("Product Det", "Product_Det", true),
@@ -251,7 +250,7 @@ function OnTabGridLoad(response) {
         editableColumn("Email_Id", "Email_Id", true),
         editableColumn("Testing_Charge_offer", "Testing_Charge_offer", true),
         editableColumn("Testing_Charge_offer", "Final_Testing_Charge", true),
-       
+
         {
             title: "Report",
             field: "Report",
@@ -303,7 +302,7 @@ function OnTabGridLoad(response) {
 
 
     (function bindAddButtonOnce() {
-        var $btn = $("#addBISButton");
+        var $btn = $("#addTPTButton");
         $btn.attr("type", "button");                       // avoid form submit duplicates
         $btn.off("click.addrow").on("click.addrow", function (e) {
             e.preventDefault(); e.stopPropagation();
@@ -311,37 +310,27 @@ function OnTabGridLoad(response) {
             $btn.data("busy", true).prop("disabled", true);
 
             try {
-                const fyOptions = getFinancialYears() || {};
-                const currentFY = Object.keys(fyOptions)[0] || "";
-                const month = getMonthString() || "";
+                
 
                 const newRow = {
                     Sr_No: 1,               // will renumber after insert
                     Id: 0,
-                    Financial_Year: currentFY,
-                    Mon_PC: month,
-                    Nat_Project: "",
-                    Lea_Model_No: "",
-                    No_Seri_Add: "",
-                    Cat_Ref_Lea_Model: "",
-                    Section: "",
-                    Manuf_Location: "",
-                    BIS_Project_Id: "",
+                    Purpose: "",
+                    Project_Det: "",
+                    Product_Det: "",
+                    Wipro_Product_Code: "",
+                    Sample_Qty: "",
+                    Test_Detail: "",
+                    Vendor: "",
                     Lab: "",
-                    Report_Owner: "",
-                    Start_Date: "",
-                    Comp_Date: "",
-                    Test_Duration: "",
-                    Submitted_Date: "",
-                    Received_Date: "",
-                    Bis_Duration: "",
-                    Ven_Sample_Sub_Date: "",
-                    Current_Status: "",
-                    BIS_Attachment: "",
-                    Effective_Date: "",
-                    Document_No: "",
-                    Revision_No: "",
-                    Revision_Date: "",
+                    Sample_Status: "",
+                    Testing_Status: "",
+                    Lab_Contact_Person: "",
+                    Contact_Number: "",
+                    Email_Id: "",
+                    Testing_Charge_offer: "",
+                    Final_Testing_Charge: "",
+                    Report: "",
                     CreatedBy: "",
                     UpdatedBy: "",
                     UpdatedDate: "",
@@ -369,250 +358,250 @@ function OnTabGridLoad(response) {
     })();
 
     // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
-    document.getElementById("exportBisButton").addEventListener("click", async function () {
-        // ===== 0) OPTIONS =====
-        const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
-        const EXPORT_RAW = false;      // false = formatted values exactly as shown in Tabulator
+    //document.getElementById("exportBisButton").addEventListener("click", async function () {
+    //    // ===== 0) OPTIONS =====
+    //    const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
+    //    const EXPORT_RAW = false;      // false = formatted values exactly as shown in Tabulator
 
-        // ===== 1) COLUMNS from Tabulator (exact view) with EXCLUDES =====
-        if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+    //    // ===== 1) COLUMNS from Tabulator (exact view) with EXCLUDES =====
+    //    if (!window.table) { console.error("Tabulator 'table' not found."); return; }
 
-        const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
-        const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
+    //    const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
+    //    const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
 
-        const tabCols = table.getColumns(true)
-            .filter(c => c.getField())
-            .filter(c => c.isVisible())
-            .filter(c => {
-                const def = c.getDefinition();
-                const field = def.field || "";
-                const title = (def.title || "").trim();
-                return !EXCLUDE_FIELDS.has(field) && !EXCLUDE_TITLES.has(title);
-            });
+    //    const tabCols = table.getColumns(true)
+    //        .filter(c => c.getField())
+    //        .filter(c => c.isVisible())
+    //        .filter(c => {
+    //            const def = c.getDefinition();
+    //            const field = def.field || "";
+    //            const title = (def.title || "").trim();
+    //            return !EXCLUDE_FIELDS.has(field) && !EXCLUDE_TITLES.has(title);
+    //        });
 
-        const excelCols = tabCols.map(col => {
-            const def = col.getDefinition();
-            const label = def.title || def.field;
-            const px = (def.width || col.getWidth() || 120);
-            const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
-            return { label, key: def.field, width };
-        });
+    //    const excelCols = tabCols.map(col => {
+    //        const def = col.getDefinition();
+    //        const label = def.title || def.field;
+    //        const px = (def.width || col.getWidth() || 120);
+    //        const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
+    //        return { label, key: def.field, width };
+    //    });
 
-        if (!excelCols.length) { alert("No visible columns to export."); return; }
+    //    if (!excelCols.length) { alert("No visible columns to export."); return; }
 
-        // ===== 2) DOC DETAILS (will be placed in second-last + last column) =====
-        const docDetails = [
-            ["Document No", "WCIB/LS/QA/R/005"],
-            ["Effective Date", "01/10/2022"],
-            ["Revision No", "0"],
-            ["Revision Date", "01/10/2022"],
-            ["Page No", "1 of 1"]
-        ];
+    //    // ===== 2) DOC DETAILS (will be placed in second-last + last column) =====
+    //    const docDetails = [
+    //        ["Document No", "WCIB/LS/QA/R/005"],
+    //        ["Effective Date", "01/10/2022"],
+    //        ["Revision No", "0"],
+    //        ["Revision Date", "01/10/2022"],
+    //        ["Page No", "1 of 1"]
+    //    ];
 
-        // ===== 3) LAYOUT =====
-        const TOTAL_COLS = excelCols.length;
+    //    // ===== 3) LAYOUT =====
+    //    const TOTAL_COLS = excelCols.length;
 
-        const HEADER_TOP = 1;
-        const HEADER_BOTTOM = 5;
-        const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
-        const TITLE_TEXT = "BIS PROJECT TRACKER";
+    //    const HEADER_TOP = 1;
+    //    const HEADER_BOTTOM = 5;
+    //    const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
+    //    const TITLE_TEXT = "BIS PROJECT TRACKER";
 
-        const LOGO_COL_START = 1;
-        const LOGO_COL_END = 2;
-        const LOGO_ROW_START = HEADER_TOP;
-        const LOGO_ROW_END = HEADER_BOTTOM;
+    //    const LOGO_COL_START = 1;
+    //    const LOGO_COL_END = 2;
+    //    const LOGO_ROW_START = HEADER_TOP;
+    //    const LOGO_ROW_END = HEADER_BOTTOM;
 
-        // Title must not overlap the final 2 columns (reserved for details)
-        const TITLE_COL_START = Math.min(3, TOTAL_COLS);
-        const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
+    //    // Title must not overlap the final 2 columns (reserved for details)
+    //    const TITLE_COL_START = Math.min(3, TOTAL_COLS);
+    //    const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
 
-        // Document details strictly in second-last & last column
-        const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
-        const DETAILS_VALUE_COL = TOTAL_COLS;
+    //    // Document details strictly in second-last & last column
+    //    const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
+    //    const DETAILS_VALUE_COL = TOTAL_COLS;
 
-        // ===== 4) HELPERS =====
-        async function fetchAsBase64(url) {
-            const res = await fetch(url);
-            const blob = await res.blob();
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result.split(",")[1]);
-                reader.readAsDataURL(blob);
-            });
-        }
-        function setBorder(cell, style = "thin") {
-            cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
-        }
-        function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
-            for (let c = c1; c <= c2; c++) {
-                const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
-                top.border = { ...top.border, top: { style } };
-                bottom.border = { ...bottom.border, bottom: { style } };
-            }
-            for (let r = r1; r <= r2; r++) {
-                const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
-                left.border = { ...left.border, left: { style } };
-                right.border = { ...right.border, right: { style } };
-            }
-        }
+    //    // ===== 4) HELPERS =====
+    //    async function fetchAsBase64(url) {
+    //        const res = await fetch(url);
+    //        const blob = await res.blob();
+    //        return new Promise((resolve) => {
+    //            const reader = new FileReader();
+    //            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    //            reader.readAsDataURL(blob);
+    //        });
+    //    }
+    //    function setBorder(cell, style = "thin") {
+    //        cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+    //    }
+    //    function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+    //        for (let c = c1; c <= c2; c++) {
+    //            const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+    //            top.border = { ...top.border, top: { style } };
+    //            bottom.border = { ...bottom.border, bottom: { style } };
+    //        }
+    //        for (let r = r1; r <= r2; r++) {
+    //            const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+    //            left.border = { ...left.border, left: { style } };
+    //            right.border = { ...right.border, right: { style } };
+    //        }
+    //    }
 
-        // ===== 5) WORKBOOK / SHEET =====
-        const wb = new ExcelJS.Workbook();
-        const ws = wb.addWorksheet("BIS Project Tracker", {
-            properties: { defaultRowHeight: 15 },
-            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
-        });
+    //    // ===== 5) WORKBOOK / SHEET =====
+    //    const wb = new ExcelJS.Workbook();
+    //    const ws = wb.addWorksheet("BIS Project Tracker", {
+    //        properties: { defaultRowHeight: 15 },
+    //        views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+    //    });
 
-        // Set column widths (no header to avoid duplicates)
-        ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+    //    // Set column widths (no header to avoid duplicates)
+    //    ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
 
-        // Give header band height so logo fits
-        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
-            ws.getRow(r).height = 18; // ~34px
-        }
+    //    // Give header band height so logo fits
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        ws.getRow(r).height = 18; // ~34px
+    //    }
 
-        ws.pageSetup = {
-            orientation: "landscape",
-            fitToPage: true,
-            fitToWidth: 1,
-            fitToHeight: 0,
-            margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
-            printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
-        };
+    //    ws.pageSetup = {
+    //        orientation: "landscape",
+    //        fitToPage: true,
+    //        fitToWidth: 1,
+    //        fitToHeight: 0,
+    //        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+    //        printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
+    //    };
 
-        // ===== 6) HEADER BAND FILL =====
-        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
-            for (let c = 1; c <= TOTAL_COLS; c++) {
-                ws.getCell(r, c).fill = {
-                    type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
-                };
-            }
-        }
+    //    // ===== 6) HEADER BAND FILL =====
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        for (let c = 1; c <= TOTAL_COLS; c++) {
+    //            ws.getCell(r, c).fill = {
+    //                type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+    //            };
+    //        }
+    //    }
 
-        // ===== 7) LOGO — centered in A2:B6 (no stretch) + outline =====
-        // Desired logo size (px)
-        const LOGO_WIDTH_PX = 100;  // adjust as you like
-        const LOGO_HEIGHT_PX = 100;
+    //    // ===== 7) LOGO — centered in A2:B6 (no stretch) + outline =====
+    //    // Desired logo size (px)
+    //    const LOGO_WIDTH_PX = 100;  // adjust as you like
+    //    const LOGO_HEIGHT_PX = 100;
 
-        // Approx column/row pixel helpers
-        const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);       // ~7px per char width
-        const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));  // pt -> px
+    //    // Approx column/row pixel helpers
+    //    const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);       // ~7px per char width
+    //    const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));  // pt -> px
 
-        // Size of A2:B6 rect in px
-        let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
-        let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
+    //    // Size of A2:B6 rect in px
+    //    let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+    //    let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
 
-        // Average px per column/row in that rectangle
-        const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
-        const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
+    //    // Average px per column/row in that rectangle
+    //    const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
+    //    const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
 
-        // Convert desired pixel size → fractional col/row units
-        const logoCols = LOGO_WIDTH_PX / avgColPx;
-        const logoRows = LOGO_HEIGHT_PX / avgRowPx;
+    //    // Convert desired pixel size → fractional col/row units
+    //    const logoCols = LOGO_WIDTH_PX / avgColPx;
+    //    const logoRows = LOGO_HEIGHT_PX / avgRowPx;
 
-        // Centered TL anchor (fractional col/row)
-        const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
-        const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+    //    // Centered TL anchor (fractional col/row)
+    //    const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+    //    const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
 
-        const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
-        if (logoUrl) {
-            try {
-                const base64 = await fetchAsBase64(logoUrl);
-                const imgId = wb.addImage({ base64, extension: "png" });
-                ws.addImage(imgId, {
-                    tl: { col: tlCol, row: tlRow },
-                    ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
-                    editAs: "oneCell"
-                });
-            } catch (e) { console.warn("Logo load failed:", e); }
-        }
-        outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
+    //    const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+    //    if (logoUrl) {
+    //        try {
+    //            const base64 = await fetchAsBase64(logoUrl);
+    //            const imgId = wb.addImage({ base64, extension: "png" });
+    //            ws.addImage(imgId, {
+    //                tl: { col: tlCol, row: tlRow },
+    //                ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
+    //                editAs: "oneCell"
+    //            });
+    //        } catch (e) { console.warn("Logo load failed:", e); }
+    //    }
+    //    outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
 
-        // ===== 8) TITLE (merge) + outline (from column C to third-last col) =====
-        ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
-        const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
-        titleCell.value = TITLE_TEXT;
-        titleCell.font = { bold: true, size: 18 };
-        titleCell.alignment = { horizontal: "center", vertical: "middle" };
+    //    // ===== 8) TITLE (merge) + outline (from column C to third-last col) =====
+    //    ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+    //    const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+    //    titleCell.value = TITLE_TEXT;
+    //    titleCell.font = { bold: true, size: 18 };
+    //    titleCell.alignment = { horizontal: "center", vertical: "middle" };
 
-        outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+    //    outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
 
-        // ===== 9) DOCUMENT DETAILS in (second-last, last) columns =====
-        // Rows: HEADER_TOP..(HEADER_TOP + docDetails.length - 1)
-        const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
-        docDetails.forEach((pair, i) => {
-            const r = HEADER_TOP + i;
+    //    // ===== 9) DOCUMENT DETAILS in (second-last, last) columns =====
+    //    // Rows: HEADER_TOP..(HEADER_TOP + docDetails.length - 1)
+    //    const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
+    //    docDetails.forEach((pair, i) => {
+    //        const r = HEADER_TOP + i;
 
-            const labelCell = ws.getCell(r, DETAILS_LABEL_COL);
-            const valueCell = ws.getCell(r, DETAILS_VALUE_COL);
+    //        const labelCell = ws.getCell(r, DETAILS_LABEL_COL);
+    //        const valueCell = ws.getCell(r, DETAILS_VALUE_COL);
 
-            labelCell.value = pair[0];
-            valueCell.value = pair[1];
+    //        labelCell.value = pair[0];
+    //        valueCell.value = pair[1];
 
-            labelCell.font = { bold: true };
-            [labelCell, valueCell].forEach(cell => {
-                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
-                setBorder(cell, "thin");
-            });
-        });
-        // Optional: outline the whole two-column details block
-        outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
+    //        labelCell.font = { bold: true };
+    //        [labelCell, valueCell].forEach(cell => {
+    //            cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //            setBorder(cell, "thin");
+    //        });
+    //    });
+    //    // Optional: outline the whole two-column details block
+    //    outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
 
-        // ===== 10) MANUAL TABLE HEADER (row 7) =====
-        while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
+    //    // ===== 10) MANUAL TABLE HEADER (row 7) =====
+    //    while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
 
-        const headerTitles = excelCols.map(c => c.label);
-        const headerRow = ws.addRow(headerTitles);
-        headerRow.height = 22;
-        headerRow.eachCell((cell) => {
-            cell.font = { bold: true };
-            cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
-            setBorder(cell);
-        });
+    //    const headerTitles = excelCols.map(c => c.label);
+    //    const headerRow = ws.addRow(headerTitles);
+    //    headerRow.height = 22;
+    //    headerRow.eachCell((cell) => {
+    //        cell.font = { bold: true };
+    //        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    //        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+    //        setBorder(cell);
+    //    });
 
-        // ===== 11) DATA ROWS (exact Tabulator view, minus Action) =====
-        let tabRows;
-        switch (EXPORT_SCOPE) {
-            case "selected": tabRows = table.getSelectedRows(); break;
-            case "all": tabRows = table.getRows(); break;
-            case "active":
-            default: tabRows = table.getRows("active"); break;
-        }
+    //    // ===== 11) DATA ROWS (exact Tabulator view, minus Action) =====
+    //    let tabRows;
+    //    switch (EXPORT_SCOPE) {
+    //        case "selected": tabRows = table.getSelectedRows(); break;
+    //        case "all": tabRows = table.getRows(); break;
+    //        case "active":
+    //        default: tabRows = table.getRows("active"); break;
+    //    }
 
-        tabRows.forEach(row => {
-            const cells = row.getCells();
-            const byField = {};
-            cells.forEach(cell => {
-                const f = cell.getField();
-                if (!f) return;
-                // Skip excluded
-                const def = cell.getColumn().getDefinition();
-                const title = (def.title || "").trim();
-                if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
+    //    tabRows.forEach(row => {
+    //        const cells = row.getCells();
+    //        const byField = {};
+    //        cells.forEach(cell => {
+    //            const f = cell.getField();
+    //            if (!f) return;
+    //            // Skip excluded
+    //            const def = cell.getColumn().getDefinition();
+    //            const title = (def.title || "").trim();
+    //            if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
 
-                byField[f] = EXPORT_RAW ? row.getData()[f] : cell.getValue(); // exact display value by default
-            });
+    //            byField[f] = EXPORT_RAW ? row.getData()[f] : cell.getValue(); // exact display value by default
+    //        });
 
-            const values = excelCols.map(c => byField[c.key] ?? "");
-            const xRow = ws.addRow(values);
+    //        const values = excelCols.map(c => byField[c.key] ?? "");
+    //        const xRow = ws.addRow(values);
 
-            xRow.eachCell((cell, colNumber) => {
-                cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
-                setBorder(cell);
-            });
-        });
+    //        xRow.eachCell((cell, colNumber) => {
+    //            cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
+    //            setBorder(cell);
+    //        });
+    //    });
 
-        // ===== 12) DOWNLOAD =====
-        const buffer = await wb.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = "BIS Project Tracker.xlsx";
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-    });
+    //    // ===== 12) DOWNLOAD =====
+    //    const buffer = await wb.xlsx.writeBuffer();
+    //    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    //    const link = document.createElement("a");
+    //    link.href = URL.createObjectURL(blob);
+    //    link.download = "BIS Project Tracker.xlsx";
+    //    document.body.appendChild(link);
+    //    link.click();
+    //    link.remove();
+    //});
 
 
     Blockloaderhide();
@@ -745,62 +734,63 @@ function editableColumn(title, field, editorType = true, align = "center", heade
 //    }
 //});
 
-Tabulator.extendModule("edit", "editors", {
-    select2: function (cell, onRendered, success, cancel, editorParams) {
-        const fieldName = cell.getField(); // column field
-        const values = editorParams.values || {};
-        const select = document.createElement("select");
-        select.style.width = "100%";
+//// Working ////
+//Tabulator.extendModule("edit", "editors", {
+//    select2: function (cell, onRendered, success, cancel, editorParams) {
+//        const fieldName = cell.getField(); // column field
+//        const values = editorParams.values || {};
+//        const select = document.createElement("select");
+//        select.style.width = "100%";
 
-        // Add regular options
-        for (let val in values) {
-            let option = document.createElement("option");
-            option.value = val;
-            option.text = values[val];
-            if (val === cell.getValue()) option.selected = true;
-            select.appendChild(option);
-        }
+//        // Add regular options
+//        for (let val in values) {
+//            let option = document.createElement("option");
+//            option.value = val;
+//            option.text = values[val];
+//            if (val === cell.getValue()) option.selected = true;
+//            select.appendChild(option);
+//        }
 
-        // Add "Add New" option only for Nat_Project
-        if (fieldName === "Nat_Project") {
-            let addOption = document.createElement("option");
-            addOption.value = "__add_new__";
-            addOption.text = "➕ Add New Project Type";
-            select.appendChild(addOption);
-        }
+//        // Add "Add New" option only for Nat_Project
+//        if (fieldName === "Nat_Project") {
+//            let addOption = document.createElement("option");
+//            addOption.value = "__add_new__";
+//            addOption.text = "➕ Add New Project Type";
+//            select.appendChild(addOption);
+//        }
 
-        onRendered(function () {
-            $(select).select2({
-                dropdownParent: document.body,
-                width: 'resolve',
-                placeholder: "Select value",
-                templateResult: function (data) {
-                    if (data.id === "__add_new__") {
-                        return $('<span style="color: blue;"><i class="fas fa-plus-circle"></i> ' + data.text + '</span>');
-                    }
-                    return data.text;
-                },
-                templateSelection: function (data) {
-                    return values[data.id] || data.text;
-                }
-            }).on("select2:select", function (e) {
-                const selectedVal = select.value;
+//        onRendered(function () {
+//            $(select).select2({
+//                dropdownParent: document.body,
+//                width: 'resolve',
+//                placeholder: "Select value",
+//                templateResult: function (data) {
+//                    if (data.id === "__add_new__") {
+//                        return $('<span style="color: blue;"><i class="fas fa-plus-circle"></i> ' + data.text + '</span>');
+//                    }
+//                    return data.text;
+//                },
+//                templateSelection: function (data) {
+//                    return values[data.id] || data.text;
+//                }
+//            }).on("select2:select", function (e) {
+//                const selectedVal = select.value;
 
-                if (selectedVal === "__add_new__") {
-                    $(select).select2('close');
-                    cancel(); // cancel cell edit
-                    selectedNatProjectCell = cell; // store the cell
-                    $('#natProjectModel').modal('show');
-                    loadNatProjectData();
-                } else {
-                    success(selectedVal);
-                }
-            });
-        });
+//                if (selectedVal === "__add_new__") {
+//                    $(select).select2('close');
+//                    cancel(); // cancel cell edit
+//                    selectedNatProjectCell = cell; // store the cell
+//                    $('#natProjectModel').modal('show');
+//                    loadNatProjectData();
+//                } else {
+//                    success(selectedVal);
+//                }
+//            });
+//        });
 
-        return select;
-    }
-});
+//        return select;
+//    }
+//});
 
 
 
@@ -894,12 +884,12 @@ function delConfirm(recid, element) {
                         // lock buttons while deleting
                         notice.get().find('.btn').prop('disabled', true);
                         $.ajax({
-                            url: '/BisProjectTrac/Delete',
+                            url: '/ThirdPartyTest/Delete',
                             type: 'POST',
                             data: { id: recid }
                         }).done(function (data) {
                             if (data && data.success === true) {
-                                showSuccessNewAlert("BIS Project deleted successfully.");
+                                showSuccessNewAlert("Third Party Test detail deleted successfully.");
                                 // remove row immediately
                                 const rowEl = $(element).closest(".tabulator-row")[0];
                                 const row = table.getRow(rowEl);

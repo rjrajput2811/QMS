@@ -16,5 +16,7 @@ namespace QMS.Core.Repositories.ThirdPartyTestRepository
         Task<OperationResult> DeleteAsync(int Id);
         Task<ThirdPartyTestViewModel?> GetByIdAsync(int id);
         Task<bool> CheckDuplicate(string searchText, int id);
+
+        Task<bool> UpdateAttachmentAsync(int id, string fileName);
     }
 }

@@ -26,6 +26,7 @@ using System.Data;
 using Microsoft.AspNetCore.Http.Features;
 using QMS.Core.Repositories.PaymentTrackerRepository;
 using QMS.Core.Repositories.DocumentConfiRepository;
+using QMS.Core.Repositories.ThirdPartyTestRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -63,6 +64,7 @@ builder.Services.AddTransient<IContractorRepository, ContractorRepository>();
 builder.Services.AddTransient<IPaymentTracRepository, PaymentTracRepository>();
 builder.Services.AddTransient<IOpenPoReposiotry, OpenPoReposiotry>();
 builder.Services.AddTransient<IDocumentConfiRepository, DocumentConfiRepository>();
+builder.Services.AddTransient<IThirdPartyTestRepository, ThirdPartyTestRepository>();
 
 //
 

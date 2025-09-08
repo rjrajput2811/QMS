@@ -192,7 +192,7 @@ namespace QMS.Core.Repositories.ThirdPartyTestRepository
             {
                 var parameters = new[]
                 {
-                    new SqlParameter("@BisProj_Id", ven_Id),
+                    new SqlParameter("@ThirdPartyTest_ID", ven_Id),
                 };
 
                 var sql = @"EXEC sp_Get_ThirdPartyTest_ById @ThirdPartyTest_ID";
@@ -266,6 +266,33 @@ namespace QMS.Core.Repositories.ThirdPartyTestRepository
                 }
 
                 return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateAttachmentAsync(int id, string fileName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return false;
+
+                var record = await _dbContext.ThirdPartyTesting.FindAsync(id);
+                if (record == null)
+                    return false;
+
+                record.Report = fileName;
+
+                // Only update the BIS_Attachment property
+                _dbContext.Entry(record).Property(x => x.Report).IsModified = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
             }
             catch (Exception ex)
             {

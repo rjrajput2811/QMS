@@ -81,47 +81,27 @@ function loadData() {
             }, {});
         }
 
-        // Step 2: Load Nat Project data
+        // Step 3: Load grid data
         $.ajax({
-            url: '/BisProjectTrac/GetNatProjectDropdown',
-            type: 'GET'
-        }).done(function (natProject) {
-            //let natProjectOptions = {};
-
-            if (Array.isArray(natProject)) {
-                natProjectOptions = natProject.reduce((acc, v) => {
-                    acc[v.value] = v.label;
-                    return acc;
-                }, {});
-            }
-
-            // Add "Others" as special static option with style/icon
-
-            // Step 3: Load grid data
-            $.ajax({
-                url: '/BisProjectTrac/GetAll',
-                type: 'GET',
-                dataType: 'json',
-                data: {
-                    startDate: filterStartTPTDate,
-                    endDate: filterEndTPTDate
-                },
-                success: function (data) {
-                    Blockloaderhide();
-                    if (data && Array.isArray(data)) {
-                        OnTabGridLoad(data);
-                    } else {
-                        showDangerAlert('No data available to load.');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    Blockloaderhide();
-                    showDangerAlert('Error retrieving data: ' + error);
+            url: '/ThirdPartyTest/GetAll',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                startDate: filterStartTPTDate,
+                endDate: filterEndTPTDate
+            },
+            success: function (data) {
+                Blockloaderhide();
+                if (data && Array.isArray(data)) {
+                    OnTabGridLoad(data);
+                } else {
+                    showDangerAlert('No data available to load.');
                 }
-            });
-        }).fail(function () {
-            Blockloaderhide();
-            showDangerAlert('Failed to load Nat Project data.');
+            },
+            error: function (xhr, status, error) {
+                Blockloaderhide();
+                showDangerAlert('Error retrieving data: ' + error);
+            }
         });
 
     }).fail(function () {
@@ -177,53 +157,6 @@ var headerMenu = function () {
     return menu;
 };
 
-function getFinancialYears() {
-    let today = new Date();
-    let year = today.getFullYear();
-    let month = today.getMonth() + 1; // Jan=0, so +1
-
-    let startYear;
-    if (month < 4) {
-        // Before April → FY belongs to previous year
-        startYear = year - 1;
-    } else {
-        startYear = year;
-    }
-
-    // Build last 5 financial years
-    let years = {};
-    for (let i = 0; i < 5; i++) {
-        let sYear = startYear - i;
-        let eYear = sYear + 1;
-        let fy = sYear + "-" + eYear.toString().slice(-2);
-        years[fy] = fy;
-    }
-
-    return years;
-}
-
-var financialYears = getFinancialYears();
-
-function getMonthOptions() {
-    const months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    const yearSuffix = new Date().getFullYear().toString().slice(-2);
-    return months.map(m => `${m} - ${yearSuffix}`); // array of strings
-}
-
-function getMonthString() {
-    const months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    const today = new Date();
-    const monthName = months[today.getMonth()];
-    const yearSuffix = today.getFullYear().toString().slice(-2);
-    return monthName + " - " + yearSuffix;
-}
-
 
 function OnTabGridLoad(response) {
     debugger;
@@ -244,26 +177,22 @@ function OnTabGridLoad(response) {
             tabledata.push({
                 Sr_No: index + 1,
                 Id: item.id,
-                Financial_Year: item.financial_Year,
-                Mon_PC: item.mon_Pc,
-                Nat_Project: item.nat_Project,
-                Lea_Model_No: item.lea_Model_No,
-                No_Seri_Add: item.no_Seri_Add,
-                Cat_Ref_Lea_Model: item.cat_Ref_Lea_Model,
-                Section: item.section,
-                Manuf_Location: item.manuf_Location,
-                BIS_Project_Id: item.biS_Project_Id,
+                Purpose: item.purpose,
+                Project_Det: item.project_Det,
+                Product_Det: item.product_Det,
+                Wipro_Product_Code: item.wipro_Product_Code,
+                Sample_Qty: item.sample_Qty,
+                Test_Detail: item.test_Detail,
+                Vendor: item.vendor,
                 Lab: item.lab,
-                Report_Owner: item.report_Owner,
-                Start_Date: formatDate(item.start_Date),
-                Comp_Date: formatDate(item.comp_Date),
-                Test_Duration: item.test_Duration,
-                Submitted_Date: formatDate(item.submitted_Date),
-                Received_Date: formatDate(item.received_Date),
-                Bis_Duration: item.bis_Duration,
-                Ven_Sample_Sub_Date: formatDate(item.ven_Sample_Sub_Date),
-                Current_Status: item.current_Status,
-                BIS_Attachment: item.biS_Attachment,
+                Sample_Status: item.sample_Status,
+                Testing_Status: item.testing_Status,
+                Lab_Contact_Person: item.lab_Contact_Person,
+                Contact_Number: item.contact_Number,
+                Email_Id: item.email_Id,
+                Testing_Charge_offer: item.testing_Charge_offer,
+                Final_Testing_Charge: item.final_Testing_Charge,
+                Report: item.report,
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
                 UpdatedDate: formatDate(item.updatedDate),
@@ -299,102 +228,33 @@ function OnTabGridLoad(response) {
             title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left", width: 60
         },
 
-        {
-            title: "FY",
-            field: "Financial_Year",
-            editor: "list",
-            editorParams: {
-                values: financialYears,
-                clearable: true
-            },
-            headerFilter: "list",
-            headerFilterParams: { values: financialYears },
-            hozAlign: "center",
-            headerHozAlign: "center",
-            headerMenu: headerMenu
-        },
-
-        {
-            title: "Month/PC",
-            field: "Mon_PC",
-            editor: "list",
-            editorParams: {
-                values: getMonthOptions(),   // array or object
-                clearable: true
-            },
-            headerFilter: "list",
-            headerFilterParams: { values: getMonthOptions() },
-            hozAlign: "center",
-            headerHozAlign: "center",
-            headerMenu: headerMenu
-        },
-
-        //editableColumn("Month/PC", "Mon_PC", true),
-        //editableColumn("Nature of Project", "Nat_Project", true),
-        editableColumn("Nat. of Project", "Nat_Project", "select2", "center", "input", {}, {
-            values: natProjectOptions
-        }, function (cell) {
-            const val = cell.getValue();
-            return natProjectOptions[val] || val;
-        }, 170),
-
-        editableColumn("Lead Model Number", "Lea_Model_No", true),
-        editableColumn("No. of Series Added", "No_Seri_Add", true),
-        editableColumn("Cat Ref of Lead Model", "Cat_Ref_Lea_Model", true),
-        editableColumn("Section", "Section", true),
+        
+        editableColumn("Purpose", "Purpose", true),
+        editableColumn("Project Det.", "Project_Det", true),
+        editableColumn("Product Det", "Product_Det", true),
+        editableColumn("Wipro Product Code", "Wipro_Product_Code", true),
+        editableColumn("Sample Qty", "Sample_Qty", true),
+        editableColumn("Test Detail", "Test_Detail", true),
         //editableColumn("Manufacturing Location", "Manuf_Location", true),
-        editableColumn("Manufacturing Location", "Manuf_Location", "select2", "center", "input", {}, {
+        editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
             values: vendorOptions
         }, function (cell) {
             const val = cell.getValue();
             return vendorOptions[val] || val;
         }, 130),
 
-        editableColumn("BIS Project ID", "BIS_Project_Id", true),
         editableColumn("Lab", "Lab", true),
-        editableColumn("Report Owner", "Report_Owner", true),
-
-        editableColumn("Vendor Sample Submission Date", "Ven_Sample_Sub_Date", "date", "center"),
-        editableColumn("Test Start Date", "Start_Date", "date", "center"),
-        editableColumn("Test Complete Date", "Comp_Date", "date", "center"),
-        /*editableColumn("Test Duration", "Test_Duration", true),*/
+        editableColumn("Sample Status", "Sample_Status", true),
+        editableColumn("Testing Status", "Testing_Status", true),
+        editableColumn("Lab Contact Person", "Lab_Contact_Person", true),
+        editableColumn("Contact Number", "Contact_Number", true),
+        editableColumn("Email_Id", "Email_Id", true),
+        editableColumn("Testing_Charge_offer", "Testing_Charge_offer", true),
+        editableColumn("Testing_Charge_offer", "Final_Testing_Charge", true),
+       
         {
-            title: "Test Duration",
-            field: "Test_Duration",
-            mutator: function (value, data) {
-                const start = parseDate(data.Start_Date);
-                const end = parseDate(data.Comp_Date);
-                if (start && end) return Math.floor((end - start) / (1000 * 60 * 60 * 24));
-                return "";
-            },
-            hozAlign: "center",
-            headerFilter: "input",
-            headerHozAlign: "center",
-            headerMenu: headerMenu
-        },
-        editableColumn("BIS Submitted Date", "Submitted_Date", "date", "center"),
-        editableColumn("BIS Received Date", "Received_Date", "date", "center"),
-        //editableColumn("BIS Duration", "Bis_Duration", true),
-        {
-            title: "BIS Duration",
-            field: "Bis_Duration",
-            mutator: function (value, data) {
-                const sub = parseDate(data.Ven_Sample_Sub_Date);
-                const recv = parseDate(data.Received_Date);
-                if (sub && recv) return Math.floor((recv - sub) / (1000 * 60 * 60 * 24));
-                return "";
-            },
-            hozAlign: "center",
-            headerFilter: "input",
-            headerHozAlign: "center",
-            headerMenu: headerMenu
-        },
-
-        editableColumn("Current Status", "Current_Status", true),
-        //editableColumn("BIS Attachment", "BIS_Attachment", true),
-        {
-            title: "BIS Attachment",
-            field: "BIS_Attachment",
+            title: "Report",
+            field: "Report",
             hozAlign: "center",
             headerHozAlign: "center",
             headerMenu: headerMenu,
@@ -402,7 +262,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="~/BISTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="~/ThirdParTestTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
@@ -421,7 +281,7 @@ function OnTabGridLoad(response) {
     );
 
     // // Initialize Tabulator
-    table = new Tabulator("#bisProject_Table", {
+    table = new Tabulator("#thirdPartyTest_Table", {
         data: tabledata,
         renderHorizontal: "virtual",
         movableColumns: true,
@@ -438,121 +298,9 @@ function OnTabGridLoad(response) {
         const row = cell.getRow();
         const data = row.getData();
 
-        if (["Test_Duration", "Bis_Duration"].includes(field)) {
-            return;
-        }
-
-        if (["Start_Date", "Comp_Date"].includes(field)) {
-            const start = parseDate(data.Start_Date);
-            const end = parseDate(data.Comp_Date);
-            const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
-            row.update({ Test_Duration: diff.toString() });
-        }
-
-        if (["Ven_Sample_Sub_Date", "Received_Date"].includes(field)) {
-            const sub = parseDate(data.Ven_Sample_Sub_Date);
-            const rec = parseDate(data.Received_Date);
-            const diff = sub && rec ? Math.floor((rec - sub) / (1000 * 60 * 60 * 24)) : "";
-            row.update({ Bis_Duration: diff.toString() });
-        }
-
-        InsertUpdateBisProject(cell.getRow().getData());
+        InsertUpdateThirdParTest(cell.getRow().getData());
     });
 
-    //$("#addBISButton").on("click", function () {
-    //    const fyOptions = getFinancialYears(); // returns object
-    //    const currentFY = Object.keys(fyOptions)[0]; // take the first key (e.g. "2025-26")
-    //    var month = getMonthString();
-
-    //    const newRow = {
-    //        Sr_No: table.getDataCount() + 1,
-    //        Id: 0,
-    //        Financial_Year: currentFY,
-    //        Mon_PC: month,
-    //        Nat_Project: "",
-    //        Lea_Model_No: "",
-    //        No_Seri_Add: "",
-    //        Cat_Ref_Lea_Model: "",
-    //        Section: "",
-    //        Manuf_Location: "",
-    //        BIS_Project_Id: "",
-    //        Lab: "",
-    //        Report_Owner: "",
-    //        Start_Date: "",
-    //        Comp_Date: "",
-    //        Test_Duration: "",
-    //        Submitted_Date: "",
-    //        Received_Date: "",
-    //        Bis_Duration: "",
-    //        Ven_Sample_Sub_Date: "",
-    //        Current_Status: "",
-    //        BIS_Attachment: "",
-    //        Effective_Date: "",
-    //        Document_No: "",
-    //        Revision_No: "",
-    //        Revision_Date: "",
-    //        CreatedBy: "",
-    //        UpdatedBy: "",
-    //        UpdatedDate: "",
-    //        CreatedDate: ""
-    //    };
-    //    table.addRow(newRow, false);
-    //});
-
-    //$("#addBISButton").on("click", function () {
-    //    const fyOptions = getFinancialYears(); // returns object
-    //    const currentFY = Object.keys(fyOptions)[0]; // e.g. "2025-26"
-    //    const month = getMonthString();
-
-    //    const newRow = {
-    //        Sr_No: 1,                    // we'll renumber all rows after insert
-    //        Id: 0,
-    //        Financial_Year: currentFY,
-    //        Mon_PC: month,
-    //        Nat_Project: "",
-    //        Lea_Model_No: "",
-    //        No_Seri_Add: "",
-    //        Cat_Ref_Lea_Model: "",
-    //        Section: "",
-    //        Manuf_Location: "",
-    //        BIS_Project_Id: "",
-    //        Lab: "",
-    //        Report_Owner: "",
-    //        Start_Date: "",
-    //        Comp_Date: "",
-    //        Test_Duration: "",
-    //        Submitted_Date: "",
-    //        Received_Date: "",
-    //        Bis_Duration: "",
-    //        Ven_Sample_Sub_Date: "",
-    //        Current_Status: "",
-    //        BIS_Attachment: "",
-    //        Effective_Date: "",
-    //        Document_No: "",
-    //        Revision_No: "",
-    //        Revision_Date: "",
-    //        CreatedBy: "",
-    //        UpdatedBy: "",
-    //        UpdatedDate: "",
-    //        CreatedDate: ""
-    //    };
-
-    //    // add to TOP: pass true as 2nd arg in Tabulator v5+
-    //    table.addRow(newRow, true).then(function (row) {
-    //        // optional: scroll to the new row and select it
-    //        table.scrollToRow(row, "top", false);
-    //        row.select && row.select();
-
-    //        // add a temporary highlight class
-    //        const el = row.getElement();
-    //        el.classList.add("row-flash");
-    //        // remove the class after the animation ends (or after a timeout)
-    //        setTimeout(() => el.classList.remove("row-flash"), 2000);
-
-    //        // keep Sr_No sequential after inserting at the top
-    //        renumberSrNo();
-    //    }).catch(console.error);
-    //});
 
     (function bindAddButtonOnce() {
         var $btn = $("#addBISButton");
@@ -878,7 +626,7 @@ function renumberSrNo() {
     });
 }
 
-$('#bisProject_Table').on('change', '.bis-upload', function () {
+$('#thirdPartyTest_Table').on('change', '.bis-upload', function () {
     const input = this;
     const file = input.files[0];
 
@@ -906,7 +654,7 @@ $('#bisProject_Table').on('change', '.bis-upload', function () {
     Blockloadershow();
 
     $.ajax({
-        url: "/BisProjectTrac/UploadBISAttachment",
+        url: "/ThirdPartyTest/UploadTPTAttachment",
         type: "POST",
         data: formData,
         contentType: false,
@@ -925,18 +673,6 @@ $('#bisProject_Table').on('change', '.bis-upload', function () {
     });
 });
 
-function parseDate(value) {
-    if (!value) return null;
-    // If value is a string in "dd/mm/yyyy", convert to Date
-    if (typeof value === "string" && value.includes("/")) {
-        const parts = value.split("/");
-        if (parts.length === 3) {
-            const [day, month, year] = parts;
-            return new Date(`${year}-${month}-${day}`);
-        }
-    }
-    return new Date(value);
-}
 
 function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
     let columnDef = {
@@ -1224,7 +960,7 @@ function delConfirm(recid, element) {
 //    window.location.href = url;
 //}
 
-function InsertUpdateBisProject(rowData) {
+function InsertUpdateThirdParTest(rowData) {
     debugger
     if (!rowData) {
         showDangerAlert("Invalid data provided.");
@@ -1327,238 +1063,238 @@ function InsertUpdateBisProject(rowData) {
 }
 
 
-function loadNatProjectData() {
-    Blockloadershow();
-    $.ajax({
-        url: '/BisProjectTrac/GetNatProject',
-        type: 'GET',
-        success: function (data) {
-            Blockloaderhide();
-            if (data && Array.isArray(data)) {
-                OnNatProjectTabGridLoad(data);
-            } else {
-                showDangerAlert('No data available to load.');
-            }
-        },
-        error: function (xhr, status, error) {
-            Blockloaderhide();
-            showDangerAlert('Error retrieving data: ' + error);
-        }
-    });
-}
+//function loadNatProjectData() {
+//    Blockloadershow();
+//    $.ajax({
+//        url: '/BisProjectTrac/GetNatProject',
+//        type: 'GET',
+//        success: function (data) {
+//            Blockloaderhide();
+//            if (data && Array.isArray(data)) {
+//                OnNatProjectTabGridLoad(data);
+//            } else {
+//                showDangerAlert('No data available to load.');
+//            }
+//        },
+//        error: function (xhr, status, error) {
+//            Blockloaderhide();
+//            showDangerAlert('Error retrieving data: ' + error);
+//        }
+//    });
+//}
 
-function OnNatProjectTabGridLoad(response) {
-    debugger;
-    Blockloadershow();
+//function OnNatProjectTabGridLoad(response) {
+//    debugger;
+//    Blockloadershow();
 
-    tabledataNatProject = [];
-    let columns = [];
+//    tabledataNatProject = [];
+//    let columns = [];
 
-    // Map the response to the table format
-    if (response.length > 0) {
-        $.each(response, function (index, item) {
+//    // Map the response to the table format
+//    if (response.length > 0) {
+//        $.each(response, function (index, item) {
 
-            function formatDate(value) {
-                return value ? new Date(value).toLocaleDateString("en-GB") : "";
-            }
+//            function formatDate(value) {
+//                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+//            }
 
-            tabledataNatProject.push({
-                Sr_No: index + 1,
-                Id: item.id,
-                Nat_Project: item.nat_Project,
-                CreatedBy: item.createdBy,
-                UpdatedBy: item.updatedBy,
-                UpdatedDate: formatDate(item.updatedDate),
-                CreatedDate: formatDate(item.createdDate),
-            });
-        });
-    }
+//            tabledataNatProject.push({
+//                Sr_No: index + 1,
+//                Id: item.id,
+//                Nat_Project: item.nat_Project,
+//                CreatedBy: item.createdBy,
+//                UpdatedBy: item.updatedBy,
+//                UpdatedDate: formatDate(item.updatedDate),
+//                CreatedDate: formatDate(item.createdDate),
+//            });
+//        });
+//    }
 
-    if (tabledataNatProject.length === 0 && tableNatProject) {
-        tableNatProject.clearData();
-        Blockloaderhide();
-        return;
-    }
+//    if (tabledataNatProject.length === 0 && tableNatProject) {
+//        tableNatProject.clearData();
+//        Blockloaderhide();
+//        return;
+//    }
 
-    columns.push(
-        {
-            title: "Action",
-            field: "Action",
-            width: 46,
-            hozAlign: "center",
-            headerHozAlign: "center",
-            formatter: function (cell, formatterParams) {
-                const rowData = cell.getRow().getData();
-                let actionButtons = "";
+//    columns.push(
+//        {
+//            title: "Action",
+//            field: "Action",
+//            width: 46,
+//            hozAlign: "center",
+//            headerHozAlign: "center",
+//            formatter: function (cell, formatterParams) {
+//                const rowData = cell.getRow().getData();
+//                let actionButtons = "";
 
-                actionButtons += `<i onclick="delNatProjectConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+//                actionButtons += `<i onclick="delNatProjectConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
 
-                return actionButtons;
-            }
-        },
-        {
-            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
-        },
-        editableColumn("Nature of Project", "Nat_Project", true),
-        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-    );
+//                return actionButtons;
+//            }
+//        },
+//        {
+//            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
+//        },
+//        editableColumn("Nature of Project", "Nat_Project", true),
+//        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//    );
 
-    // // Initialize Tabulator
-    tableNatProject = new Tabulator("#natProject_Table", {
-        data: tabledataNatProject,
-        renderHorizontal: "virtual",
-        movableColumns: true,
-        pagination: "local",
-        paginationSize: 10,
-        paginationSizeSelector: [50, 100, 500, 1500, 2000],
-        paginationCounter: "rows",
-        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-        columns: columns
-    });
+//    // // Initialize Tabulator
+//    tableNatProject = new Tabulator("#natProject_Table", {
+//        data: tabledataNatProject,
+//        renderHorizontal: "virtual",
+//        movableColumns: true,
+//        pagination: "local",
+//        paginationSize: 10,
+//        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+//        paginationCounter: "rows",
+//        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+//        columns: columns
+//    });
 
-    tableNatProject.on("cellEdited", function (cell) {
-        InsertUpdateNatProject(cell.getRow().getData());
-    });
+//    tableNatProject.on("cellEdited", function (cell) {
+//        InsertUpdateNatProject(cell.getRow().getData());
+//    });
 
-    $("#addNatProjectBtn").on("click", function () {
-        const newRow1 = {
-            Sr_No: tableNatProject.getDataCount() + 1,
-            Id: 0,
-            Nat_Project: "",
-            CreatedBy: "",
-            UpdatedBy: "",
-            UpdatedDate: "",
-            CreatedDate: ""
-        };
-        tableNatProject.addRow(newRow1, false);
-    });
+//    $("#addNatProjectBtn").on("click", function () {
+//        const newRow1 = {
+//            Sr_No: tableNatProject.getDataCount() + 1,
+//            Id: 0,
+//            Nat_Project: "",
+//            CreatedBy: "",
+//            UpdatedBy: "",
+//            UpdatedDate: "",
+//            CreatedDate: ""
+//        };
+//        tableNatProject.addRow(newRow1, false);
+//    });
 
 
 
-    Blockloaderhide();
-}
+//    Blockloaderhide();
+//}
 
-function InsertUpdateNatProject(rowData) {
-    debugger
-    if (!rowData) {
-        showDangerAlert("Invalid data provided.");
-        return;
-    }
+//function InsertUpdateNatProject(rowData) {
+//    debugger
+//    if (!rowData) {
+//        showDangerAlert("Invalid data provided.");
+//        return;
+//    }
 
-    Blockloadershow();
-    var errorMsg = "";
+//    Blockloadershow();
+//    var errorMsg = "";
 
-    if (errorMsg !== "") {
-        Blockloaderhide();
-        showDangerAlert(errorMsg);
-        return false;
-    }
+//    if (errorMsg !== "") {
+//        Blockloaderhide();
+//        showDangerAlert(errorMsg);
+//        return false;
+//    }
 
-    var Model = {
-        Id: rowData.Id || 0,
-        Nat_Project: rowData.Nat_Project || null,
-    };
+//    var Model = {
+//        Id: rowData.Id || 0,
+//        Nat_Project: rowData.Nat_Project || null,
+//    };
 
-    var ajaxUrl = Model.Id === 0 ? '/BisProjectTrac/CreateNatProject' : '/BisProjectTrac/UpdateNatProject';
+//    var ajaxUrl = Model.Id === 0 ? '/BisProjectTrac/CreateNatProject' : '/BisProjectTrac/UpdateNatProject';
 
-    $.ajax({
-        url: ajaxUrl,
-        type: "POST",
-        data: JSON.stringify(Model),
-        contentType: 'application/json',
-        success: function (response) {
-            Blockloaderhide();
-            if (response.success) {
-                const msg = Model.Id != 0
-                    ? "Nature of Project updated successfully!"
-                    : "Nature of Project saved successfully!";
-                showSuccessAlert(msg);
-                loadNatProjectData();
-            }
-            else if (response.message === "Exist") {
-                showDangerAlert("Nature of Project already exists.");
-            }
-            else {
-                var errorMessg = "";
-                if (response.errors) {
-                    for (var error in response.errors) {
-                        if (response.errors.hasOwnProperty(error)) {
-                            errorMessg += `${response.errors[error]}\n`;
-                        }
-                    }
-                }
-                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
-            }
-        },
-        error: function (xhr, status, error) {
-            Blockloaderhide();
-            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
-        }
-    });
-}
+//    $.ajax({
+//        url: ajaxUrl,
+//        type: "POST",
+//        data: JSON.stringify(Model),
+//        contentType: 'application/json',
+//        success: function (response) {
+//            Blockloaderhide();
+//            if (response.success) {
+//                const msg = Model.Id != 0
+//                    ? "Nature of Project updated successfully!"
+//                    : "Nature of Project saved successfully!";
+//                showSuccessAlert(msg);
+//                loadNatProjectData();
+//            }
+//            else if (response.message === "Exist") {
+//                showDangerAlert("Nature of Project already exists.");
+//            }
+//            else {
+//                var errorMessg = "";
+//                if (response.errors) {
+//                    for (var error in response.errors) {
+//                        if (response.errors.hasOwnProperty(error)) {
+//                            errorMessg += `${response.errors[error]}\n`;
+//                        }
+//                    }
+//                }
+//                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
+//            }
+//        },
+//        error: function (xhr, status, error) {
+//            Blockloaderhide();
+//            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
+//        }
+//    });
+//}
 
-$('#natProjectModel').on('hidden.bs.modal', function () {
-    loadData(); // uncomment if you want full reload
-});
+//$('#natProjectModel').on('hidden.bs.modal', function () {
+//    loadData(); // uncomment if you want full reload
+//});
 
-function delNatProjectConfirm(recid, element) {
-    debugger;
+//function delNatProjectConfirm(recid, element) {
+//    debugger;
 
-    if (!recid || recid <= 0) {
-        const rowEl = $(element).closest(".tabulator-row")[0];
-        const row = tableNatProject.getRow(rowEl);
-        if (row) {
-            row.delete();
-        }
-        return;
-    }
+//    if (!recid || recid <= 0) {
+//        const rowEl = $(element).closest(".tabulator-row")[0];
+//        const row = tableNatProject.getRow(rowEl);
+//        if (row) {
+//            row.delete();
+//        }
+//        return;
+//    }
 
-    PNotify.prototype.options.styling = "bootstrap3";
-    (new PNotify({
-        title: 'Confirmation Needed',
-        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
-        icon: 'glyphicon glyphicon-question-sign',
-        hide: false,
-        confirm: {
-            confirm: true
-        },
-        buttons: {
-            closer: false,
-            sticker: false
-        },
-        history: {
-            history: false
-        },
-    })).get().on('pnotify.confirm', function () {
-        $.ajax({
-            url: '/BisProjectTrac/DeleteNatProjectAsync',
-            type: 'POST',
-            data: { id: recid },
-            success: function (data) {
-                if (data.success == true) {
-                    showSuccessNewAlert("Nature of Project Deleted successfully.");
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 2500);
-                }
-                else if (data.success == false && data.message == "Not_Deleted") {
-                    showDangerAlert("Record is used in QMS Log transactions.");
-                }
-                else {
-                    showDangerAlert(data.message);
-                }
-            },
-            error: function () {
-                showDangerAlert('Error retrieving data.');
-            }
-        });
-    }).on('pnotify.cancel', function () {
-        loadNatProjectData();
-    });
-}
+//    PNotify.prototype.options.styling = "bootstrap3";
+//    (new PNotify({
+//        title: 'Confirmation Needed',
+//        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+//        icon: 'glyphicon glyphicon-question-sign',
+//        hide: false,
+//        confirm: {
+//            confirm: true
+//        },
+//        buttons: {
+//            closer: false,
+//            sticker: false
+//        },
+//        history: {
+//            history: false
+//        },
+//    })).get().on('pnotify.confirm', function () {
+//        $.ajax({
+//            url: '/BisProjectTrac/DeleteNatProjectAsync',
+//            type: 'POST',
+//            data: { id: recid },
+//            success: function (data) {
+//                if (data.success == true) {
+//                    showSuccessNewAlert("Nature of Project Deleted successfully.");
+//                    setTimeout(function () {
+//                        window.location.reload();
+//                    }, 2500);
+//                }
+//                else if (data.success == false && data.message == "Not_Deleted") {
+//                    showDangerAlert("Record is used in QMS Log transactions.");
+//                }
+//                else {
+//                    showDangerAlert(data.message);
+//                }
+//            },
+//            error: function () {
+//                showDangerAlert('Error retrieving data.');
+//            }
+//        });
+//    }).on('pnotify.cancel', function () {
+//        loadNatProjectData();
+//    });
+//}
 
 function clearForm() {
     // Clear all input fields
@@ -1581,15 +1317,4 @@ function clearForm() {
 }
 
 
-//function openDocModel() {
-//    clearForm();
-//    if (!$('#docDetModal').length) {
-//        $('body').append(partialView);
-//    }
-//    $('#docDetModal').modal('show');
-
-//    var today = new Date().toISOString().split('T')[0];
-//    $('#effect_Date').val(today);
-//    $('#rev_Date').val(today);
-//}
 

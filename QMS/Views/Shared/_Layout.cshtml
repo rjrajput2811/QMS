@@ -181,14 +181,14 @@
                 }
             </div>
 
-            <div class="ml-auto">
+            @* <div class="ml-auto">
                 
                     <button id="wiproBackButton" type="button" class="btn btn-warning legitRipple" onclick="/* location.href='@Url.Action("OptionSelection", "Home")' */" style="margin: 5px 3px;width: 107px; font-size:15px">
                         <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Back
                     </button>
                 
             </div>
-
+ *@
 
 
             @if (@HttpContextAccessor.HttpContext.Session.GetInt32("UserId") > 0)

@@ -38,6 +38,9 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Purpose_TPT> PurposeTPT { get; set; }
         public DbSet<ProjectInit_TPT> ProjectInitTPT { get; set; }
         public DbSet<TestDet_TPT> TestDetTPT { get; set; }
+        public DbSet<FIFOTracker> FIFOTracker { get; set; }
+
+
 
         //// ------- Service -------- ////
         public DbSet<ComplaintDump_Service> COPQComplaintDump { get; set; }

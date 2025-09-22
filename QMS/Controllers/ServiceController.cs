@@ -6,6 +6,7 @@ using QMS.Core.Repositories.COPQComplaintDumpRepository;
 using QMS.Core.Services.SystemLogs;
 using System;
 using System.Globalization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace QMS.Controllers
@@ -143,50 +144,196 @@ namespace QMS.Controllers
         }
 
 
+        //[HttpPost]
+        //public async Task<IActionResult> UploadComplaintDumpExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        //{
+        //    var prRecordsToAdd = new List<ComplaintViewModel>();
+
+        //    try
+        //    {
+        //        var uploadedBy = HttpContext.Session.GetString("FullName");
+        //        using var stream = new MemoryStream();
+        //        await file.CopyToAsync(stream);
+        //        using var workbook = new XLWorkbook(stream);
+        //        var worksheet = workbook.Worksheet(1);
+        //        //var rowCount = worksheet.RowsUsed().Count();
+        //        var rowCount = worksheet.LastRowUsed().RowNumber();
+
+        //        for (int row = 2; row <= rowCount; row++)
+        //        {
+
+        //            DateTime? cccnDate = ParseExcelDate(worksheet.Cell(row, 2));
+        //            DateTime? completionDate = ParseExcelDate(worksheet.Cell(row, 9));
+
+        //            var model = new ComplaintViewModel
+        //            {
+        //                CCN_No = worksheet.Cell(row, 1).GetString().Trim(),
+        //                CCCNDate = cccnDate,
+        //                ReportedBy = worksheet.Cell(row, 3).GetString().Trim(),
+        //                CLocation = worksheet.Cell(row, 4).GetString().Trim(),
+        //                CustName = worksheet.Cell(row, 5).GetString().Trim(),
+        //                DealerName = worksheet.Cell(row, 6).GetString().Trim(),
+        //                CDescription = worksheet.Cell(row, 7).GetString().Trim(),
+        //                CStatus = worksheet.Cell(row, 8).GetString().Trim(),
+        //                Completion = completionDate,
+        //                Remarks = worksheet.Cell(row, 10).GetString().Trim(),
+        //                TotalDays_Close = worksheet.Cell(row, 11).GetValue<int?>(),
+        //                CreatedBy = uploadedBy,
+        //                CreatedDate = DateTime.Now,
+        //            };
+
+        //            prRecordsToAdd.Add(model);
+        //        }
+
+        //        var importResult = await _copqRepository.BulkCreateAsync(prRecordsToAdd, fileName, uploadedBy, "ComplaintDump");
+
+        //        // If there are failed records, return file
+        //        if (importResult.FailedRecords.Any())
+        //        {
+        //            using var failStream = new MemoryStream();
+        //            using var failWb = new XLWorkbook();
+        //            var failSheet = failWb.Worksheets.Add("Failed Records");
+
+        //            failSheet.Cell(1, 1).Value = "CCNNO";
+        //            failSheet.Cell(1, 2).Value = "CustName";
+        //            failSheet.Cell(1, 3).Value = "Reason";
+
+        //            int i = 2;
+        //            foreach (var fail in importResult.FailedRecords)
+        //            {
+        //                failSheet.Cell(i, 1).Value = fail.Record.CCN_No;
+        //                failSheet.Cell(i, 2).Value = fail.Record.CustName;
+        //                failSheet.Cell(i, 3).Value = fail.Reason;
+        //                i++;
+        //            }
+
+        //            failWb.SaveAs(failStream);
+        //            failStream.Position = 0;
+
+        //            var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+        //            Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+        //            return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        //            //string logFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        //            //return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", logFileName);
+        //        }
+
+        //        return Json(new
+        //        {
+        //            success = true,
+        //            message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new
+        //        {
+        //            success = false,
+        //            message = "Import failed: " + ex.Message
+        //        });
+        //    }
+        //}
+
         [HttpPost]
         public async Task<IActionResult> UploadComplaintDumpExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
         {
             var prRecordsToAdd = new List<ComplaintViewModel>();
+            var failed = new List<(ComplaintViewModel Record, string Reason)>();
 
             try
             {
-                var uploadedBy = HttpContext.Session.GetString("FullName");
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file received." });
+
+                var uploadedBy = HttpContext.Session.GetString("FullName") ?? "Unknown";
                 using var stream = new MemoryStream();
                 await file.CopyToAsync(stream);
+                stream.Position = 0; // CRITICAL: reset before reading
+
                 using var workbook = new XLWorkbook(stream);
                 var worksheet = workbook.Worksheet(1);
-                var rowCount = worksheet.RowsUsed().Count();
+                if (worksheet == null)
+                    return Json(new { success = false, message = "No worksheet found in the uploaded file." });
 
-                for (int row = 2; row <= rowCount; row++)
+                // Use RowsUsed() to avoid trailing blank rows confusion
+                var lastRow = worksheet.RowsUsed().Last().RowNumber();
+
+                for (int row = 2; row <= lastRow; row++)
                 {
+                    // Defensive: if the entire row is blank, skip
+                    if (worksheet.Row(row).CellsUsed().Count() == 0) continue;
 
-                    DateTime? cccnDate = ParseExcelDate(worksheet.Cell(row, 2));
-                    DateTime? completionDate = ParseExcelDate(worksheet.Cell(row, 9));
-
-                    var model = new ComplaintViewModel
+                    // Wrap per-row parsing so one bad row doesn’t kill the entire import
+                    try
                     {
-                        CCN_No = worksheet.Cell(row, 1).GetString().Trim(),
-                        CCCNDate = cccnDate,
-                        ReportedBy = worksheet.Cell(row, 3).GetString().Trim(),
-                        CLocation = worksheet.Cell(row, 4).GetString().Trim(),
-                        CustName = worksheet.Cell(row, 5).GetString().Trim(),
-                        DealerName = worksheet.Cell(row, 6).GetString().Trim(),
-                        CDescription = worksheet.Cell(row, 7).GetString().Trim(),
-                        CStatus = worksheet.Cell(row, 8).GetString().Trim(),
-                        Completion = completionDate,
-                        Remarks = worksheet.Cell(row, 10).GetString().Trim(),
-                        TotalDays_Close = worksheet.Cell(row, 11).GetValue<int?>(),
-                        CreatedBy = uploadedBy,
-                        CreatedDate = DateTime.Now,
-                    };
+                        DateTime? cccnDate = ParseExcelDate(worksheet.Cell(row, 2));
+                        DateTime? completionDate = ParseExcelDate(worksheet.Cell(row, 9));
 
-                    prRecordsToAdd.Add(model);
+                        // Strings: read as string then Trim
+                        string ccnNo = GetTrim(worksheet.Cell(row, 1));
+                        string reportedBy = GetTrim(worksheet.Cell(row, 3));
+                        string location = GetTrim(worksheet.Cell(row, 4));
+                        string custName = GetTrim(worksheet.Cell(row, 5));
+                        string dealerName = GetTrim(worksheet.Cell(row, 6));
+                        string description = GetTrim(worksheet.Cell(row, 7));
+                        string status = GetTrim(worksheet.Cell(row, 8));
+                        string remarks = GetTrim(worksheet.Cell(row, 10));
+
+                        // Nullable int: clean, then TryParse
+                        int? totalDaysClose = ParseNullableInt(worksheet.Cell(row, 11));
+
+                        // Basic required validations (same as repository, but caught early)
+                        if (string.IsNullOrWhiteSpace(ccnNo) || string.IsNullOrWhiteSpace(custName))
+                        {
+                            failed.Add((new ComplaintViewModel { CCN_No = ccnNo, CustName = custName }, "Missing CCNNo or CustName"));
+                            continue;
+                        }
+
+                        var model = new ComplaintViewModel
+                        {
+                            CCN_No = ccnNo,
+                            CCCNDate = cccnDate,
+                            ReportedBy = reportedBy,
+                            CLocation = location,
+                            CustName = custName,
+                            DealerName = dealerName,
+                            CDescription = description,
+                            CStatus = status,
+                            Completion = completionDate,
+                            Remarks = remarks,
+                            TotalDays_Close = totalDaysClose,
+                            CreatedBy = uploadedBy,
+                            CreatedDate = DateTime.Now,
+                        };
+
+                        prRecordsToAdd.Add(model);
+                    }
+                    catch (Exception rowEx)
+                    {
+                        // Capture a minimal row snapshot to include in Failed file
+                        var snap = new ComplaintViewModel
+                        {
+                            CCN_No = GetTrim(worksheet.Cell(row, 1)),
+                            CustName = GetTrim(worksheet.Cell(row, 5))
+                        };
+                        failed.Add((snap, $"Row {row}: {rowEx.Message}"));
+                    }
                 }
 
+                // Call repository
                 var importResult = await _copqRepository.BulkCreateAsync(prRecordsToAdd, fileName, uploadedBy, "ComplaintDump");
 
-                // If there are failed records, return file
-                if (importResult.FailedRecords.Any())
+                // Merge controller-level fails with repository fails
+                if (importResult?.FailedRecords?.Any() == true)
+                    failed.AddRange(importResult.FailedRecords);
+
+                var importedCount = (importResult?.Result?.Success == true)
+                    ? (prRecordsToAdd.Count - (importResult.FailedRecords?.Count ?? 0))
+                    : 0;
+
+                // If ANY failed rows exist -> return FailedRecords Excel
+                if (failed.Any())
                 {
                     using var failStream = new MemoryStream();
                     using var failWb = new XLWorkbook();
@@ -197,11 +344,11 @@ namespace QMS.Controllers
                     failSheet.Cell(1, 3).Value = "Reason";
 
                     int i = 2;
-                    foreach (var fail in importResult.FailedRecords)
+                    foreach (var f in failed)
                     {
-                        failSheet.Cell(i, 1).Value = fail.Record.CCN_No;
-                        failSheet.Cell(i, 2).Value = fail.Record.CustName;
-                        failSheet.Cell(i, 3).Value = fail.Reason;
+                        failSheet.Cell(i, 1).Value = f.Record?.CCN_No ?? "";
+                        failSheet.Cell(i, 2).Value = f.Record?.CustName ?? "";
+                        failSheet.Cell(i, 3).Value = f.Reason ?? "";
                         i++;
                     }
 
@@ -209,70 +356,132 @@ namespace QMS.Controllers
                     failStream.Position = 0;
 
                     var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-
                     Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
                     return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
-                    //string logFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-                    //return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", logFileName);
                 }
 
+                // No failed rows. Still, honor repository result.Success
+                if (importResult?.Result?.Success != true)
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = importResult?.Result?.Message ?? "Import failed due to an unknown repository error."
+                    });
+                }
+
+                // Success
                 return Json(new
                 {
                     success = true,
-                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                    message = $"Import completed. Total rows read: {prRecordsToAdd.Count}, Imported: {importedCount}, Failed: 0"
                 });
             }
             catch (Exception ex)
             {
-                return Json(new
-                {
-                    success = false,
-                    message = "Import failed: " + ex.Message
-                });
+                return Json(new { success = false, message = "Import failed: " + ex.Message });
             }
         }
 
-        // Helper function: Universal Excel date parser
+        // Helpers
+        private static string GetTrim(IXLCell cell)
+        {
+            var s = cell?.GetString() ?? string.Empty;
+            // remove weird non-breaking spaces, stray parens, etc. only trimming here
+            return s.Replace("\u00A0", " ").Trim();
+        }
+
+        private static int? ParseNullableInt(IXLCell cell)
+        {
+            if (cell == null || cell.IsEmpty()) return null;
+
+            // prefer numeric
+            if (cell.DataType == XLDataType.Number)
+            {
+                return Convert.ToInt32(cell.GetDouble());
+            }
+
+            var raw = (cell.GetString() ?? "").Replace("\u00A0", " ").Trim();
+            // strip non-digits (keep leading minus)
+            var cleaned = System.Text.RegularExpressions.Regex.Replace(raw, @"[^\d\-]", "");
+            if (int.TryParse(cleaned, out var v)) return v;
+
+            // as a last try, coerce numeric
+            if (double.TryParse(raw, out var dv)) return Convert.ToInt32(dv);
+
+            // Unable to parse -> let caller decide if this should be a failure; here return null
+            return null;
+        }
+
+        // Universal Excel date parser (same as yours, minor hardening)
         private DateTime? ParseExcelDate(IXLCell cell)
         {
             try
             {
-                if (cell == null || cell.IsEmpty())
-                    return null;
+                if (cell == null || cell.IsEmpty()) return null;
 
-                if (cell.DataType == XLDataType.DateTime)
-                {
-                    return cell.GetDateTime();
-                }
-                else if (cell.DataType == XLDataType.Number)
-                {
-                    return DateTime.FromOADate(cell.GetDouble());
-                }
-                else
-                {
-                    var strVal = cell.GetString().Trim();
+                if (cell.DataType == XLDataType.DateTime) return cell.GetDateTime();
+                if (cell.DataType == XLDataType.Number) return DateTime.FromOADate(cell.GetDouble());
 
-                    string[] formats = { "dd-MMM-yy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yyyy" };
+                var strVal = (cell.GetString() ?? "").Replace("\u00A0", " ").Trim();
+                if (string.IsNullOrEmpty(strVal)) return null;
 
-                    if (DateTime.TryParseExact(strVal, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+                string[] formats = { "dd-MMM-yy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yyyy", "d-MMM-yy", "d/M/yyyy" };
+                if (DateTime.TryParseExact(strVal, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+                {
+                    if (dt.Year < 100) // handle 2-digit years more generically
                     {
-                        if (dt.Year < 50) dt = dt.AddYears(2000 - dt.Year);  // handle 2-digit year case
-                        return dt;
+                        dt = new DateTime(dt.Year + 2000, dt.Month, dt.Day);
                     }
-                    else if (DateTime.TryParse(strVal, out dt))
-                    {
-                        return dt;
-                    }
+                    return dt;
                 }
+                if (DateTime.TryParse(strVal, out dt)) return dt;
             }
-            catch
-            {
-                return null;
-            }
-
+            catch { /* swallow and return null */ }
             return null;
         }
+
+
+        // Helper function: Universal Excel date parser
+        //private DateTime? ParseExcelDate(IXLCell cell)
+        //{
+        //    try
+        //    {
+        //        if (cell == null || cell.IsEmpty())
+        //            return null;
+
+        //        if (cell.DataType == XLDataType.DateTime)
+        //        {
+        //            return cell.GetDateTime();
+        //        }
+        //        else if (cell.DataType == XLDataType.Number)
+        //        {
+        //            return DateTime.FromOADate(cell.GetDouble());
+        //        }
+        //        else
+        //        {
+        //            var strVal = cell.GetString().Trim();
+
+        //            string[] formats = { "dd-MMM-yy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yyyy" };
+
+        //            if (DateTime.TryParseExact(strVal, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+        //            {
+        //                if (dt.Year < 50) dt = dt.AddYears(2000 - dt.Year);  // handle 2-digit year case
+        //                return dt;
+        //            }
+        //            else if (DateTime.TryParse(strVal, out dt))
+        //            {
+        //                return dt;
+        //            }
+        //        }
+        //    }
+        //    catch
+        //    {
+        //        return null;
+        //    }
+
+        //    return null;
+        //}
 
 
         //// ----------------- Complaint Dump ------------------- ////
@@ -1496,6 +1705,94 @@ namespace QMS.Controllers
             }
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> UploadRLTExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        //{
+        //    var prRecordsToAdd = new List<RLT_TracViewModel>();
+
+        //    try
+        //    {
+        //        var uploadedBy = HttpContext.Session.GetString("FullName");
+        //        using var stream = new MemoryStream();
+        //        await file.CopyToAsync(stream);
+        //        using var workbook = new XLWorkbook(stream);
+        //        var worksheet = workbook.Worksheet(1);
+        //        var rowCount = worksheet.RowsUsed().Count();
+
+        //        for (int row = 2; row <= rowCount; row++)
+        //        {
+        //            var model = new RLT_TracViewModel
+        //            {
+        //                Vendor = worksheet.Cell(row, 1).GetString().Trim(),
+        //                Material = worksheet.Cell(row, 2).GetString().Trim(),
+        //                Ref_No = worksheet.Cell(row, 3).GetString().Trim(),
+        //                Po_No = worksheet.Cell(row, 4).GetString().Trim(),
+        //                Po_Date = worksheet.Cell(row, 5).TryGetValue(out DateTime dcDate) ? dcDate : null,
+        //                PR_No = worksheet.Cell(row, 6).GetString().Trim(),
+        //                Batch_No = worksheet.Cell(row, 7).GetString().Trim(),
+        //                Po_Qty = worksheet.Cell(row, 8).GetValue<int>(),
+        //                Balance_Qty = worksheet.Cell(row, 9).GetValue<int>(),
+        //                Destination = worksheet.Cell(row, 10).GetString().Trim(),
+        //                Balance_Value = worksheet.Cell(row, 11).GetValue<double>(),
+        //                Lead_Time = worksheet.Cell(row, 12).GetValue<int>(),
+        //                Lead_Time_Range = worksheet.Cell(row, 13).GetString().Trim(),
+        //                Wipro_Remark = worksheet.Cell(row, 14).GetString().Trim(),
+        //                CreatedBy = uploadedBy,
+        //                CreatedDate = DateTime.Now,
+        //            };
+
+        //            prRecordsToAdd.Add(model);
+        //        }
+
+        //        var importResult = await _rLTTracRepository.BulkCreateRLTAsync(prRecordsToAdd, fileName, uploadedBy, "JobWorkTrac");
+
+        //        // If there are failed records, return file
+        //        if (importResult.FailedRecords.Any())
+        //        {
+        //            using var failStream = new MemoryStream();
+        //            using var failWb = new XLWorkbook();
+        //            var failSheet = failWb.Worksheets.Add("Failed Records");
+
+        //            failSheet.Cell(1, 1).Value = "Vendor";
+        //            failSheet.Cell(1, 2).Value = "Wipro Dc Date";
+        //            failSheet.Cell(1, 3).Value = "Reason";
+
+        //            int i = 2;
+        //            foreach (var fail in importResult.FailedRecords)
+        //            {
+        //                failSheet.Cell(i, 1).Value = fail.Record.Vendor;
+        //                failSheet.Cell(i, 2).Value = fail.Record.Ref_No;
+        //                failSheet.Cell(i, 3).Value = fail.Record.Po_No;
+        //                failSheet.Cell(i, 4).Value = fail.Reason;
+        //                i++;
+        //            }
+
+        //            failWb.SaveAs(failStream);
+        //            failStream.Position = 0;
+
+        //            var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+        //            Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+        //            return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+        //        }
+
+        //        return Json(new
+        //        {
+        //            success = true,
+        //            message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new
+        //        {
+        //            success = false,
+        //            message = "Import failed: " + ex.Message
+        //        });
+        //    }
+        //}
+
         [HttpPost]
         public async Task<IActionResult> UploadRLTExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
         {
@@ -1503,86 +1800,200 @@ namespace QMS.Controllers
 
             try
             {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file received." });
+
                 var uploadedBy = HttpContext.Session.GetString("FullName");
+
                 using var stream = new MemoryStream();
                 await file.CopyToAsync(stream);
+                stream.Position = 0;
+
                 using var workbook = new XLWorkbook(stream);
                 var worksheet = workbook.Worksheet(1);
-                var rowCount = worksheet.RowsUsed().Count();
 
-                for (int row = 2; row <= rowCount; row++)
+                var lastRow = worksheet.LastRowUsed()?.RowNumber() ?? 1;
+
+                // Determine "to" date once (overridden by per-row Dispatch_Date if available)
+                DateTime toDate = DateTime.Today;
+                if (!string.IsNullOrWhiteSpace(uploadDate) &&
+                    DateTime.TryParse(uploadDate, out var parsedUp))
                 {
+                    toDate = parsedUp.Date;
+                }
+
+                for (int row = 2; row <= lastRow; row++)
+                {
+                    // consider columns 1..6 to decide if row is empty (tune if needed)
+                    if (RowLooksEmpty(worksheet, row, 1, 6)) continue;
+
+                    var vendor = worksheet.Cell(row, 1).GetString().Trim();
+                    var material = worksheet.Cell(row, 2).GetString().Trim();
+                    var refNo = worksheet.Cell(row, 3).GetString().Trim();
+                    var poNo = worksheet.Cell(row, 4).GetString().Trim();
+                    var poDate = GetDate(worksheet.Cell(row, 5));     // E
+                    var prNo = worksheet.Cell(row, 6).GetString().Trim();
+                    var batchNo = worksheet.Cell(row, 7).GetString().Trim();
+                    var poQty = GetInt(worksheet.Cell(row, 8));
+                    var balQty = GetInt(worksheet.Cell(row, 9));
+                    var dest = worksheet.Cell(row, 10).GetString().Trim();
+                    var balValue = GetDouble(worksheet.Cell(row, 11));
+                    // IGNORE Excel column 12 for Lead_Time
+                    var leadRange = worksheet.Cell(row, 13).GetString().Trim();
+                    var wiproRemark = worksheet.Cell(row, 14).GetString().Trim();
+
+                    // Optional Dispatch/Received Date if present in your sheet (change column as per your layout)
+                    // If you don't have this column, just set dispatchDate = null;
+                    DateTime? dispatchDate = null;
+                    // Example: if Dispatch Date is at column 15
+                    if (worksheet.RangeUsed()?.RangeAddress.LastAddress.ColumnNumber >= 15)
+                        dispatchDate = GetDate(worksheet.Cell(row, 15));
+
+                    // Compute Lead_Time
+                    int? leadTimeDays = null;
+                    if (poDate.HasValue)
+                    {
+                        var end = dispatchDate ?? toDate;
+                        var diff = (end.Date - poDate.Value.Date).Days;
+                        leadTimeDays = Math.Max(0, diff); // clamp negatives to 0
+                    }
+
                     var model = new RLT_TracViewModel
                     {
-                        Vendor = worksheet.Cell(row, 1).GetString().Trim(),
-                        Material = worksheet.Cell(row, 2).GetString().Trim(),
-                        Ref_No = worksheet.Cell(row, 3).GetString().Trim(),
-                        Po_No = worksheet.Cell(row, 4).GetString().Trim(),
-                        Po_Date = worksheet.Cell(row, 5).TryGetValue(out DateTime dcDate) ? dcDate : null,
-                        PR_No = worksheet.Cell(row, 6).GetString().Trim(),
-                        Batch_No = worksheet.Cell(row, 7).GetString().Trim(),
-                        Po_Qty = worksheet.Cell(row, 8).GetValue<int>(),
-                        Balance_Qty = worksheet.Cell(row, 9).GetValue<int>(),
-                        Destination = worksheet.Cell(row, 10).GetString().Trim(),
-                        Balance_Value = worksheet.Cell(row, 11).GetValue<double>(),
-                        Lead_Time = worksheet.Cell(row, 12).GetValue<int>(),
-                        Lead_Time_Range = worksheet.Cell(row, 13).GetString().Trim(),
-                        Wipro_Remark = worksheet.Cell(row, 14).GetString().Trim(),
+                        Vendor = vendor,
+                        Material = material,
+                        Ref_No = refNo,
+                        Po_No = poNo,
+                        Po_Date = poDate,
+                        PR_No = prNo,
+                        Batch_No = batchNo,
+                        Po_Qty = poQty,
+                        Balance_Qty = balQty,
+                        Destination = dest,
+                        Balance_Value = balValue,
+                        Lead_Time = leadTimeDays ?? 0, // if your DB allows null: use leadTimeDays
+                        Lead_Time_Range = leadRange,
+                        Dispatch_Date = dispatchDate,      // keep if your VM/entity supports it
+                        Wipro_Remark = wiproRemark,
                         CreatedBy = uploadedBy,
-                        CreatedDate = DateTime.Now,
+                        CreatedDate = DateTime.Now
                     };
 
                     prRecordsToAdd.Add(model);
                 }
 
-                var importResult = await _rLTTracRepository.BulkCreateRLTAsync(prRecordsToAdd, fileName, uploadedBy, "JobWorkTrac");
+                var importResult =
+                    await _rLTTracRepository.BulkCreateRLTAsync(prRecordsToAdd, fileName, uploadedBy, "JobWorkTrac");
 
-                // If there are failed records, return file
                 if (importResult.FailedRecords.Any())
                 {
                     using var failStream = new MemoryStream();
                     using var failWb = new XLWorkbook();
                     var failSheet = failWb.Worksheets.Add("Failed Records");
 
+                    // headers aligned with data
                     failSheet.Cell(1, 1).Value = "Vendor";
-                    failSheet.Cell(1, 2).Value = "Wipro Dc Date";
-                    failSheet.Cell(1, 3).Value = "Reason";
+                    failSheet.Cell(1, 2).Value = "Ref No";
+                    failSheet.Cell(1, 3).Value = "PO No";
+                    failSheet.Cell(1, 4).Value = "Reason";
 
-                    int i = 2;
+                    int r = 2;
                     foreach (var fail in importResult.FailedRecords)
                     {
-                        failSheet.Cell(i, 1).Value = fail.Record.Vendor;
-                        failSheet.Cell(i, 2).Value = fail.Record.Ref_No;
-                        failSheet.Cell(i, 3).Value = fail.Record.Po_No;
-                        failSheet.Cell(i, 4).Value = fail.Reason;
-                        i++;
+                        failSheet.Cell(r, 1).Value = fail.Record?.Vendor ?? "";
+                        failSheet.Cell(r, 2).Value = fail.Record?.Ref_No ?? "";
+                        failSheet.Cell(r, 3).Value = fail.Record?.Po_No ?? "";
+                        failSheet.Cell(r, 4).Value = fail.Reason ?? "";
+                        r++;
                     }
+
+                    failSheet.Columns().AdjustToContents();
 
                     failWb.SaveAs(failStream);
                     failStream.Position = 0;
 
                     var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-
                     Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
-                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-
+                    return File(
+                        failStream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    );
                 }
 
+                var saved = Math.Max(0, recordCount - importResult.FailedRecords.Count);
                 return Json(new
                 {
                     success = true,
-                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                    message = $"Import completed. Total: {recordCount}, Saved: {saved}, Duplicates/Failed: {importResult.FailedRecords.Count}"
                 });
             }
             catch (Exception ex)
             {
-                return Json(new
-                {
-                    success = false,
-                    message = "Import failed: " + ex.Message
-                });
+                return Json(new { success = false, message = "Import failed: " + ex.Message });
             }
         }
+
+        /* ====================== Safe helpers ====================== */
+
+        private static bool RowLooksEmpty(IXLWorksheet ws, int row, int fromCol, int toCol)
+        {
+            for (int c = fromCol; c <= toCol; c++)
+            {
+                var cell = ws.Cell(row, c);
+                if (!cell.IsEmpty() && !string.IsNullOrWhiteSpace(cell.GetString()))
+                    return false;
+            }
+            return true;
+        }
+
+        private static DateTime? GetDate(IXLCell cell)
+        {
+            if (cell.TryGetValue(out DateTime dt)) return dt;
+
+            if (cell.TryGetValue(out double serial))
+            {
+                try { return DateTime.FromOADate(serial); } catch { /* ignore */ }
+            }
+
+            var s = cell.GetString()?.Trim();
+            if (!string.IsNullOrEmpty(s) && DateTime.TryParse(s, out var parsed))
+                return parsed;
+
+            return null;
+        }
+
+        private static int GetInt(IXLCell cell, int fallback = 0)
+        {
+            if (cell.TryGetValue(out int iv)) return iv;
+            if (cell.TryGetValue(out double dv)) return Convert.ToInt32(Math.Round(dv));
+
+            var s = cell.GetString()?.Trim();
+            if (!string.IsNullOrEmpty(s))
+            {
+                var m = Regex.Match(s, @"-?\d+(\.\d+)?");
+                if (m.Success && double.TryParse(m.Value,
+                        System.Globalization.NumberStyles.Any,
+                        System.Globalization.CultureInfo.InvariantCulture, out var d))
+                {
+                    return Convert.ToInt32(Math.Round(d));
+                }
+            }
+            return fallback;
+        }
+
+        private static double GetDouble(IXLCell cell, double fallback = 0d)
+        {
+            if (cell.TryGetValue(out double dv)) return dv;
+
+            var s = cell.GetString()?.Trim();
+            if (!string.IsNullOrEmpty(s) &&
+                double.TryParse(s, System.Globalization.NumberStyles.Any,
+                    System.Globalization.CultureInfo.InvariantCulture, out var parsed))
+                return parsed;
+
+            return fallback;
+        }
+
 
         [HttpGet]
         public async Task<JsonResult> GetFinalRLT()

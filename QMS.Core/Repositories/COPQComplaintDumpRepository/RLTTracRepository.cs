@@ -217,82 +217,253 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
 
 
-        public async Task<BulkCreateRLTResult> BulkCreateRLTAsync(List<RLT_TracViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+        //public async Task<BulkCreateRLTResult> BulkCreateRLTAsync(List<RLT_TracViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+        //{
+        //    var result = new BulkCreateRLTResult();
+        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var seenKeys = new HashSet<string>();
+
+        //        foreach (var item in listOfData)
+        //        {
+        //            item.Vendor = item.Vendor;
+        //            item.Ref_No = item.Ref_No?.Trim();
+        //            item.Po_No = item.Po_No?.Trim();
+
+        //            var compositeKey = $"{item.Vendor}|{item.Ref_No}|{item.Po_No}";
+
+        //            if (string.IsNullOrWhiteSpace(item.Vendor) || string.IsNullOrWhiteSpace(item.Ref_No) || string.IsNullOrWhiteSpace(item.Po_No))
+        //            {
+        //                result.FailedRecords.Add((item, "Missing Vendor or Ref. No or Po No."));
+        //                continue;
+        //            }
+
+        //            // Check if this key combination has already been seen in the batch
+        //            if (seenKeys.Contains(compositeKey))
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+        //                continue;
+        //            }
+
+        //            seenKeys.Add(compositeKey); // Mark this combination as seen
+
+        //            // Now check against database
+        //            bool existsInDb = await _dbContext.RLTTrac
+        //                .AnyAsync(x => x.Vendor == item.Vendor && x.Ref_No == item.Ref_No && x.Po_No == item.Po_No);
+
+        //            if (existsInDb)
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in database"));
+        //                continue;
+        //            }
+
+        //            // Passed all checks — add to DB
+        //            var entity = new RLT_Tracking_Service
+        //            {
+        //                Vendor = item.Vendor,
+        //                Material = item.Material,
+        //                Ref_No = item.Ref_No,
+        //                Po_No = item.Po_No,
+        //                Po_Date = item.Po_Date,
+        //                PR_No = item.PR_No,
+        //                Batch_No = item.Batch_No,
+        //                Po_Qty = item.Po_Qty,
+        //                Balance_Qty = item.Balance_Qty,
+        //                Destination = item.Destination,
+        //                Balance_Value = item.Balance_Value,
+        //                Lead_Time = item.Lead_Time,
+        //                Lead_Time_Range = item.Lead_Time_Range,
+        //                Dispatch_Date = item.Dispatch_Date,
+        //                Remark = item.Remark,
+        //                Wipro_Remark = item.Wipro_Remark,
+        //                CreatedBy = item.CreatedBy,
+        //                CreatedDate = item.CreatedDate
+        //            };
+
+        //            _dbContext.RLTTrac.Add(entity);
+        //        }
+
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Log the upload
+        //        var importLog = new FailedRecord_Log
+        //        {
+        //            FileName = fileName,
+        //            TotalRecords = listOfData.Count,
+        //            ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+        //            FailedRecords = result.FailedRecords.Count,
+        //            RecordType = recordType,
+        //            UploadedBy = uploadedBy,
+        //            UploadedAt = DateTime.Now
+        //        };
+
+        //        _dbContext.FailedRecord_Log.Add(importLog);
+        //        await _dbContext.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = true,
+        //            Message = result.FailedRecords.Any()
+        //                ? "Import completed with some skipped records."
+        //                : "All records imported successfully."
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = false,
+        //            Message = "Error during import: " + ex.Message
+        //        };
+        //    }
+
+        //    return result;
+        //}
+
+        public async Task<BulkCreateRLTResult> BulkCreateRLTAsync(List<RLT_TracViewModel> listOfData,string fileName,string uploadedBy,string recordType)
         {
             var result = new BulkCreateRLTResult();
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            listOfData ??= new List<RLT_TracViewModel>();
 
+            // ---- Helper functions (unique names; no overloading for locals) ----
+            static string MakeKeyFromParts(string? v, string? r, string? p)
+                => $"{(v ?? "").Trim()}|{(r ?? "").Trim()}|{(p ?? "").Trim()}";
+
+            static string MakeKeyFromModel(RLT_TracViewModel m)
+                => MakeKeyFromParts(m.Vendor, m.Ref_No, m.Po_No);
+
+            static string MakeKeyFromEntity(RLT_Tracking_Service e)
+                => MakeKeyFromParts(e.Vendor, e.Ref_No, e.Po_No);
+
+            // ---- 1) Normalize + dedupe uploaded rows (last wins) ----
+            var deduped = new Dictionary<string, RLT_TracViewModel>(StringComparer.OrdinalIgnoreCase);
+            var inFileDuplicateCount = 0;
+
+            foreach (var item in listOfData)
+            {
+                item.Vendor = item.Vendor?.Trim();
+                item.Ref_No = item.Ref_No?.Trim();
+                item.Po_No = item.Po_No?.Trim();
+
+                if (string.IsNullOrWhiteSpace(item?.Vendor) ||
+                    string.IsNullOrWhiteSpace(item?.Ref_No) ||
+                    string.IsNullOrWhiteSpace(item?.Po_No))
+                {
+                    result.FailedRecords.Add((item, "Missing Vendor or Ref_No or Po_No."));
+                    continue;
+                }
+
+                var k = MakeKeyFromModel(item);
+                if (deduped.ContainsKey(k)) inFileDuplicateCount++;
+                deduped[k] = item;  // last one wins
+            }
+
+            if (deduped.Count == 0 && result.FailedRecords.Count > 0)
+            {
+                result.Result = new OperationResult
+                {
+                    Success = false,
+                    Message = "No valid records to import. All rows had missing keys."
+                };
+                return result;
+            }
+
+            using var tx = await _dbContext.Database.BeginTransactionAsync();
             try
             {
-                var seenKeys = new HashSet<string>();
+                // ---- 2) Fetch existing rows using IN (...) over scalar keys, in batches ----
+                var keyList = deduped.Keys.ToList();
+                var existing = new List<RLT_Tracking_Service>();
 
-                foreach (var item in listOfData)
+                // Keep WELL below SQL Server 2100 parameter limit
+                const int BatchSize = 900;
+
+                for (int i = 0; i < keyList.Count; i += BatchSize)
                 {
-                    item.Vendor = item.Vendor;
-                    item.Ref_No = item.Ref_No?.Trim();
-                    item.Po_No = item.Po_No?.Trim();
+                    var slice = keyList.Skip(i).Take(BatchSize).ToList();
 
-                    var compositeKey = $"{item.Vendor}|{item.Ref_No}|{item.Po_No}";
+                    var batch = await _dbContext.RLTTrac
+                        .Where(e =>
+                            slice.Contains(
+                                (e.Vendor ?? "") + "|" + (e.Ref_No ?? "") + "|" + (e.Po_No ?? "")))
+                        .ToListAsync();
 
-                    if (string.IsNullOrWhiteSpace(item.Vendor) || string.IsNullOrWhiteSpace(item.Ref_No) || string.IsNullOrWhiteSpace(item.Po_No))
+                    existing.AddRange(batch);
+                }
+
+                // ---- 3) Index existing by composite key ----
+                var existingByKey = existing.ToDictionary(MakeKeyFromEntity, StringComparer.OrdinalIgnoreCase);
+
+                // ---- 4) Upsert loop ----
+                int inserted = 0, updated = 0;
+
+                foreach (var (key, item) in deduped)
+                {
+                    if (existingByKey.TryGetValue(key, out var entity))
                     {
-                        result.FailedRecords.Add((item, "Missing Vendor or Ref. No or Po No."));
-                        continue;
+                        // UPDATE existing — override fields from the upload
+                        entity.Material = item.Material;
+                        entity.Po_Date = item.Po_Date;
+                        entity.PR_No = item.PR_No;
+                        entity.Batch_No = item.Batch_No;
+                        entity.Po_Qty = item.Po_Qty;
+                        entity.Balance_Qty = item.Balance_Qty;
+                        entity.Destination = item.Destination;
+                        entity.Balance_Value = item.Balance_Value;
+                        entity.Lead_Time = item.Lead_Time;
+                        entity.Lead_Time_Range = item.Lead_Time_Range;
+                        entity.Dispatch_Date = item.Dispatch_Date;
+                        entity.Remark = item.Remark;
+                        entity.Wipro_Remark = item.Wipro_Remark;
+
+                        // If you track modifications, uncomment:
+                        // entity.ModifiedBy   = uploadedBy;
+                        // entity.ModifiedDate = DateTime.Now;
+
+                        updated++;
                     }
-
-                    // Check if this key combination has already been seen in the batch
-                    if (seenKeys.Contains(compositeKey))
+                    else
                     {
-                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
-                        continue;
+                        // INSERT new
+                        var newEntity = new RLT_Tracking_Service
+                        {
+                            Vendor = item.Vendor,
+                            Material = item.Material,
+                            Ref_No = item.Ref_No,
+                            Po_No = item.Po_No,
+                            Po_Date = item.Po_Date,
+                            PR_No = item.PR_No,
+                            Batch_No = item.Batch_No,
+                            Po_Qty = item.Po_Qty,
+                            Balance_Qty = item.Balance_Qty,
+                            Destination = item.Destination,
+                            Balance_Value = item.Balance_Value,
+                            Lead_Time = item.Lead_Time,
+                            Lead_Time_Range = item.Lead_Time_Range,
+                            Dispatch_Date = item.Dispatch_Date,
+                            Remark = item.Remark,
+                            Wipro_Remark = item.Wipro_Remark,
+                            CreatedBy = item.CreatedBy ?? uploadedBy,
+                            CreatedDate = item.CreatedDate == default ? DateTime.Now : item.CreatedDate
+                        };
+
+                        _dbContext.RLTTrac.Add(newEntity);
+                        inserted++;
                     }
-
-                    seenKeys.Add(compositeKey); // Mark this combination as seen
-
-                    // Now check against database
-                    bool existsInDb = await _dbContext.RLTTrac
-                        .AnyAsync(x => x.Vendor == item.Vendor && x.Ref_No == item.Ref_No && x.Po_No == item.Po_No);
-
-                    if (existsInDb)
-                    {
-                        result.FailedRecords.Add((item, "Duplicate in database"));
-                        continue;
-                    }
-
-                    // Passed all checks — add to DB
-                    var entity = new RLT_Tracking_Service
-                    {
-                        Vendor = item.Vendor,
-                        Material = item.Material,
-                        Ref_No = item.Ref_No,
-                        Po_No = item.Po_No,
-                        Po_Date = item.Po_Date,
-                        PR_No = item.PR_No,
-                        Batch_No = item.Batch_No,
-                        Po_Qty = item.Po_Qty,
-                        Balance_Qty = item.Balance_Qty,
-                        Destination = item.Destination,
-                        Balance_Value = item.Balance_Value,
-                        Lead_Time = item.Lead_Time,
-                        Lead_Time_Range = item.Lead_Time_Range,
-                        Dispatch_Date = item.Dispatch_Date,
-                        Remark = item.Remark,
-                        Wipro_Remark = item.Wipro_Remark,
-                        CreatedBy = item.CreatedBy,
-                        CreatedDate = item.CreatedDate
-                    };
-
-                    _dbContext.RLTTrac.Add(entity);
                 }
 
                 await _dbContext.SaveChangesAsync();
 
-                // Log the upload
+                // ---- 5) Log the import ----
                 var importLog = new FailedRecord_Log
                 {
                     FileName = fileName,
                     TotalRecords = listOfData.Count,
-                    ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+                    ImportedRecords = inserted + updated,
                     FailedRecords = result.FailedRecords.Count,
                     RecordType = recordType,
                     UploadedBy = uploadedBy,
@@ -301,27 +472,30 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 _dbContext.FailedRecord_Log.Add(importLog);
                 await _dbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
 
+                await tx.CommitAsync();
+
+                // ---- 6) Compose result ----
                 result.Result = new OperationResult
                 {
                     Success = true,
-                    Message = result.FailedRecords.Any()
-                        ? "Import completed with some skipped records."
-                        : "All records imported successfully."
+                    Message = $"Upsert complete. Inserted: {inserted}, Updated: {updated}, " +
+                              $"In-file duplicates collapsed: {inFileDuplicateCount}, " +
+                              $"Failed: {result.FailedRecords.Count}."
                 };
+
+                return result;
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                await tx.RollbackAsync();
                 result.Result = new OperationResult
                 {
                     Success = false,
                     Message = "Error during import: " + ex.Message
                 };
+                return result;
             }
-
-            return result;
         }
 
         public async Task<List<FinalRLTOutput>> GetFinalRLTListAsync()

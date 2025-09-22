@@ -191,6 +191,107 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
             }
         }
 
+        //public async Task<BulkCreateResult> BulkCreateAsync(List<ComplaintViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+        //{
+        //    var result = new BulkCreateResult();
+        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+
+        //        foreach (var item in listOfData)
+        //        {
+        //            item.CCN_No = item.CCN_No;
+        //            item.CustName = item.CustName?.Trim();
+
+        //            var compositeKey = $"{item.CCN_No}|{item.CustName}";
+
+        //            if (string.IsNullOrWhiteSpace(item.CCN_No) || string.IsNullOrWhiteSpace(item.CustName))
+        //            {
+        //                result.FailedRecords.Add((item, "Missing CCNNo or Custname"));
+        //                continue;
+        //            }
+
+        //            // Check if this key combination has already been seen in the batch
+        //            if (seenKeys.Contains(compositeKey))
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+        //                continue;
+        //            }
+
+        //            seenKeys.Add(compositeKey); // Mark this combination as seen
+
+        //            // Now check against database
+        //            bool existsInDb = await _dbContext.COPQComplaintDump
+        //                .AnyAsync(x => x.CCN_No == item.CCN_No && x.CustName == item.CustName);
+
+        //            if (existsInDb)
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in database"));
+        //                continue;
+        //            }
+
+        //            // Passed all checks — add to DB
+        //            var entity = new ComplaintDump_Service
+        //            {
+        //                CCN_No = item.CCN_No,
+        //                CCCNDate = item.CCCNDate,
+        //                ReportedBy = item.ReportedBy,
+        //                CLocation = item.CLocation,
+        //                CustName = item.CustName,
+        //                DealerName = item.DealerName,
+        //                CDescription = item.CDescription,
+        //                CStatus = item.CStatus,
+        //                Completion = item.Completion,
+        //                Remarks = item.Remarks,
+        //                TotalDays_Close = item.TotalDays_Close,
+        //                CreatedBy = item.CreatedBy,
+        //                CreatedDate = item.CreatedDate
+        //            };
+
+        //            _dbContext.COPQComplaintDump.Add(entity);
+        //        }
+
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Log the upload
+        //        var importLog = new FailedRecord_Log
+        //        {
+        //            FileName = fileName,
+        //            TotalRecords = listOfData.Count,
+        //            ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+        //            FailedRecords = result.FailedRecords.Count,
+        //            RecordType = recordType,
+        //            UploadedBy = uploadedBy,
+        //            UploadedAt = DateTime.Now
+        //        };
+
+        //        _dbContext.FailedRecord_Log.Add(importLog);
+        //        await _dbContext.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = true,
+        //            Message = result.FailedRecords.Any()
+        //                ? "Import completed with some skipped records."
+        //                : "All records imported successfully."
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = false,
+        //            Message = "Error during import: " + ex.Message
+        //        };
+        //    }
+
+        //    return result;
+        //}
+
         public async Task<BulkCreateResult> BulkCreateAsync(List<ComplaintViewModel> listOfData, string fileName, string uploadedBy, string recordType)
         {
             var result = new BulkCreateResult();
@@ -198,70 +299,100 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
             try
             {
-                var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+                var seenKeys = new HashSet<string>();
+                var toAdd = new List<ComplaintDump_Service>();
+                var failed = new List<(ComplaintViewModel Record, string Reason)>();
 
                 foreach (var item in listOfData)
                 {
-                    item.CCN_No = item.CCN_No;
-                    item.CustName = item.CustName?.Trim();
-
-                    var compositeKey = $"{item.CCN_No}|{item.CustName}";
+                    var compositeKey = $"{item.CCN_No?.Trim()}|{item.CustName?.Trim()}";
 
                     if (string.IsNullOrWhiteSpace(item.CCN_No) || string.IsNullOrWhiteSpace(item.CustName))
                     {
-                        result.FailedRecords.Add((item, "Missing CCNNo or Custname"));
+                        failed.Add((item, "Missing CCNNo or CustName"));
                         continue;
                     }
 
-                    // Check if this key combination has already been seen in the batch
-                    if (seenKeys.Contains(compositeKey))
+                    if (!seenKeys.Add(compositeKey))
                     {
-                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+                        failed.Add((item, "Duplicate in uploaded file"));
                         continue;
                     }
 
-                    seenKeys.Add(compositeKey); // Mark this combination as seen
-
-                    // Now check against database
                     bool existsInDb = await _dbContext.COPQComplaintDump
                         .AnyAsync(x => x.CCN_No == item.CCN_No && x.CustName == item.CustName);
 
                     if (existsInDb)
                     {
-                        result.FailedRecords.Add((item, "Duplicate in database"));
+                        failed.Add((item, "Duplicate in database"));
                         continue;
                     }
 
-                    // Passed all checks — add to DB
-                    var entity = new ComplaintDump_Service
+                    // Optional: pre-validate target column lengths here to avoid DB exception
+                    // e.g., if (item.CDescription?.Length > 1000) { ... failed.Add(...); continue; }
+
+                    toAdd.Add(new ComplaintDump_Service
                     {
-                        CCN_No = item.CCN_No,
+                        CCN_No = item.CCN_No?.Trim(),
                         CCCNDate = item.CCCNDate,
-                        ReportedBy = item.ReportedBy,
-                        CLocation = item.CLocation,
-                        CustName = item.CustName,
-                        DealerName = item.DealerName,
-                        CDescription = item.CDescription,
-                        CStatus = item.CStatus,
+                        ReportedBy = item.ReportedBy?.Trim(),
+                        CLocation = item.CLocation?.Trim(),
+                        CustName = item.CustName?.Trim(),
+                        DealerName = item.DealerName?.Trim(),
+                        CDescription = item.CDescription?.Trim(),
+                        CStatus = item.CStatus?.Trim(),
                         Completion = item.Completion,
-                        Remarks = item.Remarks,
+                        Remarks = item.Remarks?.Trim(),
                         TotalDays_Close = item.TotalDays_Close,
                         CreatedBy = item.CreatedBy,
                         CreatedDate = item.CreatedDate
-                    };
-
-                    _dbContext.COPQComplaintDump.Add(entity);
+                    });
                 }
 
-                await _dbContext.SaveChangesAsync();
+                // Save in chunks so one bad entity doesn’t nuke all
+                const int CHUNK = 200;
+                for (int i = 0; i < toAdd.Count; i += CHUNK)
+                {
+                    var chunk = toAdd.Skip(i).Take(CHUNK).ToList();
+                    _dbContext.COPQComplaintDump.AddRange(chunk);
+
+                    try
+                    {
+                        await _dbContext.SaveChangesAsync();
+                    }
+                    catch (Exception exChunk)
+                    {
+                        // Fallback: try each entity individually to isolate the bad ones
+                        _dbContext.ChangeTracker.Clear();
+                        foreach (var entity in chunk)
+                        {
+                            try
+                            {
+                                _dbContext.COPQComplaintDump.Add(entity);
+                                await _dbContext.SaveChangesAsync();
+                            }
+                            catch (Exception exOne)
+                            {
+                                // Reconstruct a minimal ComplaintViewModel for logging
+                                var vm = new ComplaintViewModel
+                                {
+                                    CCN_No = entity.CCN_No,
+                                    CustName = entity.CustName
+                                };
+                                failed.Add((vm, "DB insert error: " + exOne.Message));
+                                _dbContext.ChangeTracker.Clear();
+                            }
+                        }
+                    }
+                }
 
                 // Log the upload
                 var importLog = new FailedRecord_Log
                 {
                     FileName = fileName,
                     TotalRecords = listOfData.Count,
-                    ImportedRecords = listOfData.Count - result.FailedRecords.Count,
-                    FailedRecords = result.FailedRecords.Count,
+                    ImportedRecords = toAdd.Count - failed.Count(fr => fr.Reason.StartsWith("DB insert", StringComparison.OrdinalIgnoreCase)),
+                    FailedRecords = failed.Count,
                     RecordType = recordType,
                     UploadedBy = uploadedBy,
                     UploadedAt = DateTime.Now
@@ -271,25 +402,22 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
 
+                result.FailedRecords = failed;
                 result.Result = new OperationResult
                 {
                     Success = true,
-                    Message = result.FailedRecords.Any()
+                    Message = failed.Any()
                         ? "Import completed with some skipped records."
                         : "All records imported successfully."
                 };
+                return result;
             }
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                result.Result = new OperationResult
-                {
-                    Success = false,
-                    Message = "Error during import: " + ex.Message
-                };
+                result.Result = new OperationResult { Success = false, Message = "Error during import: " + ex.Message };
+                return result;
             }
-
-            return result;
         }
 
 

@@ -36,6 +36,12 @@ namespace QMS.Core.DatabaseContext
         public DateTime? Planner_Date { get; set; }
         public string? Planner_PC_Date { get; set; }
         public int? Buffer_Day { get; set; }
+        public DateTime? Comit_Date { get; set; }
+        public int? Comit_Qty { get; set; }
+        public DateTime? Comit_Date1 { get; set; }
+        public int? Comit_Qty1 { get; set; }
+        public DateTime? Comit_Final_Date { get; set; }
+        public int? Comit_Final_Qty { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
     }

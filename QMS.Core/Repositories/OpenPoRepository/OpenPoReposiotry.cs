@@ -470,19 +470,27 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
         public async Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor)
         {
-            using (var connection = _dbContext.Database.GetDbConnection())
+            try
             {
-                if (connection.State != ConnectionState.Open)
-                    await connection.OpenAsync();
-
-                using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
-
+                using (var connection = _dbContext.Database.GetDbConnection())
                 {
-                    var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
-                    var deliverySchedules = (await multi.ReadAsync<Opne_Po_DeliverySchedule>()).ToList();
+                    if (connection.State != ConnectionState.Open)
+                        await connection.OpenAsync();
 
-                    return (poHeaders, deliverySchedules);
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule_Bak]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
+
+                    {
+                        var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
+                        var deliverySchedules = (await multi.ReadAsync<Opne_Po_DeliverySchedule>()).ToList();
+
+                        return (poHeaders, deliverySchedules);
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
             }
         }
 

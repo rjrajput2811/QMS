@@ -1,17 +1,17 @@
 ﻿var table = null;
 let vendorOptions = {};
-let filterStartKaizDate = moment().startOf('month').format('YYYY-MM-DD');
-let filterEndKaizDate = moment().endOf('month').format('YYYY-MM-DD');
+let filterStartPDIAuthDate = moment().startOf('month').format('YYYY-MM-DD');
+let filterEndPDIAuthDate = moment().endOf('month').format('YYYY-MM-DD');
 
 $(document).ready(function () {
 
-    $('#dateRangeKaiz').text(
-        moment(filterStartKaizDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndKaizDate).format('MMMM D, YYYY')
+    $('#dateRangeTextPDIAuth').text(
+        moment(filterStartPDIAuthDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndPDIAuthDate).format('MMMM D, YYYY')
     );
 
     // Initialize Litepicker
     const picker = new Litepicker({
-        element: document.getElementById('customDateTriggerKaiz'),
+        element: document.getElementById('customDateTriggerPDIAuth'),
         singleMode: false,
         format: 'DD-MM-YYYY',
         numberOfMonths: 2,
@@ -25,16 +25,16 @@ $(document).ready(function () {
         plugins: ['ranges'],
         setup: (picker) => {
             picker.on('selected', (start, end) => {
-                filterStartKaizDate = start.format('YYYY-MM-DD');
-                filterEndKaizDate = end.format('YYYY-MM-DD');
-                $('#dateRangeKaiz').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                filterStartPDIAuthDate = start.format('YYYY-MM-DD');
+                filterEndPDIAuthDate = end.format('YYYY-MM-DD');
+                $('#dateRangeTextPDIAuth').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
                 loadData();
             });
 
             picker.on('clear', () => {
-                filterStartKaizDate = "";
-                filterEndKaizDate = "";
-                $('#dateRangeKaiz').text("Select Date Range");
+                filterStartPDIAuthDate = "";
+                filterEndPDIAuthDate = "";
+                $('#dateRangeTextPDIAuth').text("Select Date Range");
                 loadData();
             });
         },
@@ -50,7 +50,7 @@ $(document).ready(function () {
         endDate: moment().endOf('month').format('DD-MM-YYYY')
     });
 
-    $('#customDateTriggerKaiz').on('click', function () {
+    $('#customDateTriggerPDIAuth').on('click', function () {
         picker.show();
     });
 
@@ -76,18 +76,18 @@ function loadData() {
         }
 
         $.ajax({
-            url: '/KaizenTracker/GetAll',
+            url: '/PDIAuthSign/GetAll',
             type: 'GET',
             dataType: 'json',
             data: {
-                startDate: filterStartKaizDate,
-                endDate: filterEndKaizDate
+                startDate: filterStartPDIAuthDate,
+                endDate: filterEndPDIAuthDate
             },
             success: function (data) {
                 if (Array.isArray(data)) {
                     OnTabGridLoad(data);
                 } else {
-                    showDangerAlert('No Kaizen data available.');
+                    showDangerAlert('No PDI Auth Signatory data available.');
                 }
                 Blockloaderhide();
             },
@@ -148,54 +148,6 @@ var headerMenu = function () {
 
     return menu;
 };
-
-function getFinancialYears() {
-    let today = new Date();
-    let year = today.getFullYear();
-    let month = today.getMonth() + 1; // Jan=0, so +1
-
-    let startYear;
-    if (month < 4) {
-        // Before April → FY belongs to previous year
-        startYear = year - 1;
-    } else {
-        startYear = year;
-    }
-
-    // Build last 5 financial years
-    let years = {};
-    for (let i = 0; i < 5; i++) {
-        let sYear = startYear - i;
-        let eYear = sYear + 1;
-        let fy = sYear + "-" + eYear.toString().slice(-2);
-        years[fy] = fy;
-    }
-
-    return years;
-}
-
-function getMonthOptions() {
-    const months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    const yearSuffix = new Date().getFullYear().toString().slice(-2);
-    return months.map(m => `${m} - ${yearSuffix}`); // array of strings
-}
-
-function getMonthString() {
-    const months = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
-    ];
-    const today = new Date();
-    const monthName = months[today.getMonth()];
-    const yearSuffix = today.getFullYear().toString().slice(-2);
-    return monthName + " - " + yearSuffix;
-}
-
-
-var financialYears = getFinancialYears();
 
 function _valuesToMap(values) {
     if (!values) return null;
@@ -259,13 +211,6 @@ function getDisplayValue(cell) {
     return (typeof v === "string") ? v.replace(/<[^>]*>/g, "").trim() : v;
 }
 
-const KAIZEN_BASE = '@Url.Content("~/KaizenTrac_Attach/")'; // -> "/KaizenTrac_Attach/"
-
-function buildAttachmentUrl(id, fileName) {
-    if (!fileName) return '';
-    return `${KAIZEN_BASE}${id}/${encodeURIComponent(fileName)}`;
-}
-
 function OnTabGridLoad(response) {
     Blockloadershow();
 
@@ -283,12 +228,12 @@ function OnTabGridLoad(response) {
                 Sr_No: index + 1,
                 Id: item.id,
                 Vendor: item.vendor || "",
-                Kaizen_Theme: item.kaizen_Theme || "",
-                Month: item.month || "",
-                Team: item.team || "",
-                Kaizen_Attch: item.kaizen_Attch || "",
+                Address: item.address || "",
+                Pdi_Inspector: item.pdi_Inspector || "",
+                Designation: item.designation || "",
+                Photo_Inspector: item.photo_Inspector || "",
+                Specimen_Sign: item.specimen_Sign || "",
                 Remark: item.remark || "",
-                FY: item.fy || "",
                 CreatedDate: formatDate(item.createdDate || ""),
                 UpdatedDate: formatDate(item.updatedDate || ""),
                 CreatedBy: item.createdBy || "",
@@ -309,7 +254,7 @@ function OnTabGridLoad(response) {
         {
             title: "Action",
             field: "Action",
-            width: 40,
+            width: 60,
             headerMenu: headerMenu,
             hozAlign: "center",
             headerHozAlign: "center",
@@ -326,50 +271,20 @@ function OnTabGridLoad(response) {
             title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left", width: 60
         },
 
-        {
-            title: "FY",
-            field: "FY",
-            editor: "list",
-            editorParams: {
-                values: financialYears,
-                clearable: true
-            },
-            headerFilter: "list",
-            headerFilterParams: { values: financialYears },
-            hozAlign: "center",
-            headerHozAlign: "center",
-            headerMenu: headerMenu
-        },
-
-        {
-            title: "Month",
-            field: "Month",
-            editor: "list",
-            editorParams: {
-                values: getMonthOptions(),   // array or object
-                clearable: true
-            },
-            headerFilter: "list",
-            headerFilterParams: { values: getMonthOptions() },
-            hozAlign: "center",
-            headerHozAlign: "center",
-            headerMenu: headerMenu
-        },
-
         editableColumn("Vendor", "Vendor", "select2Test", "center", "input", {}, {
             values: vendorOptions
         }, function (cell) {
             const val = cell.getValue();
             return vendorOptions[val] || val;
-        }, 130),
+        }, 241),
 
-        editableColumn("Kaizen Theme", "Kaizen_Theme", true),
-        editableColumn("Team", "Team", true),
-        editableColumn("Kaizen", "Kaizen_Attch", true),
+        editableColumn("Address", "Address", true),
+        editableColumn("Name of PDI Inspector", "Pdi_Inspector", true),
+        editableColumn("Designation", "Designation", true),
 
         {
-            title: "Remark",
-            field: "Remark",
+            title: "Photo of Inspector",
+            field: "Photo_Inspector",
             hozAlign: "center",
             headerHozAlign: "center",
             headerMenu: headerMenu,
@@ -377,12 +292,12 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="~/KaizenTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="~/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
             ${fileDisplay}
-            <input type="file" accept=".pdf,image/*" class="form-control-file bis-upload" data-id="${cell.getRow().getData().Id}" style="width:160px;" />`;
+            <input type="file" accept=".pdf,image/*" class="form-control-file bis-upload" data-id="${cell.getRow().getData().Id}" data-type="Photo" style="width:160px;" />`;
             },
             cellClick: function (e, cell) {
                 // prevent Tabulator from swallowing the file input click
@@ -390,13 +305,38 @@ function OnTabGridLoad(response) {
             }
         },
 
-        { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
+        {
+            title: "Specimen Signature",
+            field: "Specimen_Sign",
+            hozAlign: "center",
+            headerHozAlign: "center",
+            headerMenu: headerMenu,
+            formatter: function (cell, formatterParams) {
+                const rowData = cell.getRow().getData();
+                const fileName = cell.getValue();
+                const fileDisplay = fileName
+                    ? `<a href="~/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    : '';
+
+                return `
+            ${fileDisplay}
+            <input type="file" accept=".pdf,image/*" class="form-control-file bis-upload" data-id="${cell.getRow().getData().Id}" data-type="Sign" style="width:160px;" />`;
+            },
+            cellClick: function (e, cell) {
+                // prevent Tabulator from swallowing the file input click
+                e.stopPropagation();
+            }
+        },
+
+        editableColumn("Remark", "Remark", true),
+
+        { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
         { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false }
     );
 
     // // Initialize Tabulator
-    table = new Tabulator("#kaizen_table", {
+    table = new Tabulator("#pdiAuth_table", {
         data: tabledata,
         renderHorizontal: "virtual",
         movableColumns: true,
@@ -409,31 +349,28 @@ function OnTabGridLoad(response) {
     });
 
     table.on("cellEdited", function (cell) {
-        InsertUpdateKaizen(cell.getRow().getData());
+        InsertUpdatePDIAuth(cell.getRow().getData());
     });
 
     (function bindAddButtonOnce() {
-        var $btn = $("#addKaizenButton");
-        $btn.attr("type", "button");                       
+        var $btn = $("#addPDIAuthButton");
+        $btn.attr("type", "button");
         $btn.off("click.addrow").on("click.addrow", function (e) {
             e.preventDefault(); e.stopPropagation();
-            if ($btn.data("busy")) return;  
+            if ($btn.data("busy")) return;
             $btn.data("busy", true).prop("disabled", true);
 
             try {
-                const fyOptions = getFinancialYears() || {};
-                const currentFY = Object.keys(fyOptions)[0] || "";
-                const month = getMonthString() || "";
 
                 const newRow = {
                     Sr_No: 1,               // will renumber after insert
                     Id: 0,
-                    FY: currentFY,
-                    Month: month,
                     Vendor: "",
-                    Kaizen_Theme:  "",
-                    Team: "",
-                    Kaizen_Attch: "",
+                    Address: "",
+                    Pdi_Inspector: "",
+                    Designation: "",
+                    Photo_Inspector: "",
+                    Specimen_Sign: "",
                     Remark: "",
                     CreatedBy: "",
                     UpdatedBy: "",
@@ -462,7 +399,7 @@ function OnTabGridLoad(response) {
     })();
 
     // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
-    document.getElementById("exportKaizenButton").addEventListener("click", async function () {
+    document.getElementById("exportPDIAuthButton").addEventListener("click", async function () {
         const EXPORT_SCOPE = "active"; // "active" | "selected" | "all"
         const EXPORT_RAW = false;    // false = use display/labels
 
@@ -506,7 +443,7 @@ function OnTabGridLoad(response) {
         const HEADER_TOP = 1;
         const HEADER_BOTTOM = 5;
         const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
-        const TITLE_TEXT = "KAIZEN TRACKER";
+        const TITLE_TEXT = "PDI AUTHORISED SIGNATORY";
 
         // Logo block (A1:B5)
         const LOGO_COL_START = 1, LOGO_COL_END = 2;
@@ -546,7 +483,7 @@ function OnTabGridLoad(response) {
 
         // ===== 5) Workbook / Sheet =====
         const wb = new ExcelJS.Workbook();
-        const ws = wb.addWorksheet("Kaizen Tracker", {
+        const ws = wb.addWorksheet("PDI Authorised Signatory", {
             properties: { defaultRowHeight: 15 },
             views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
         });
@@ -686,7 +623,7 @@ function OnTabGridLoad(response) {
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "Kaizen Tracker.xlsx";
+        link.download = "PDI Authorised Signatory.xlsx";
         document.body.appendChild(link);
         link.click();
         link.remove();
@@ -703,7 +640,7 @@ function renumberSrNo() {
     });
 }
 
-$('#kaizen_table').on('change', '.bis-upload', function () {
+$('#pdiAuth_table').on('change', '.bis-upload', function () {
     const input = this;
     const file = input.files[0];
 
@@ -727,11 +664,12 @@ $('#kaizen_table').on('change', '.bis-upload', function () {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("id", $(this).data("id"));
+    formData.append("type", $(this).data("type")); // Pass Photo/Sign here
 
     Blockloadershow();
 
     $.ajax({
-        url: "/KaizenTracker/UploadKaizenAttachment",
+        url: "/PDIAuthSign/UploadKaizenAttachment",
         type: "POST",
         data: formData,
         contentType: false,
@@ -763,7 +701,7 @@ function parseDate(value) {
     return new Date(value);
 }
 
-function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
+function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null, width = null) {
     let columnDef = {
         title: title,
         field: field,
@@ -776,6 +714,10 @@ function editableColumn(title, field, editorType = true, align = "center", heade
         hozAlign: align,
         headerHozAlign: "left"
     };
+
+    if (width) {
+        columnDef.width = width; // apply width if given
+    }
 
     return columnDef;
 }
@@ -905,12 +847,12 @@ function delConfirm(recid, element) {
                         // lock buttons while deleting
                         notice.get().find('.btn').prop('disabled', true);
                         $.ajax({
-                            url: '/KaizenTracker/Delete',
+                            url: '/PDIAuthSign/Delete',
                             type: 'POST',
                             data: { id: recid }
                         }).done(function (data) {
                             if (data && data.success === true) {
-                                showSuccessNewAlert("Kaizen Detail deleted successfully.");
+                                showSuccessNewAlert("PDI Authorised Signatory Detail deleted successfully.");
                                 // remove row immediately
                                 const rowEl = $(element).closest(".tabulator-row")[0];
                                 const row = table.getRow(rowEl);
@@ -963,269 +905,8 @@ function delConfirm(recid, element) {
         }
     });
 }
-    //function fileFormatter(cell, formatterParams, onRendered) {
 
-    //    return `<button class="btn btn-sm btn-outline-primary">Upload</button>`;
-    //}
-
-
-    //function fileEditor(cell, onRendered, success, cancel, editorParams) {
-    //    const input = document.createElement("input");
-    //    input.setAttribute("type", "file");
-    //    input.style.width = "100%";
-    //    console.log(cell);
-    //    input.addEventListener("change", function (e) {
-    //        const file = e.target.files[0];
-    //        if (!file) {
-    //            cancel();
-    //            return;
-    //        }
-    //        const rowData = cell.getRow().getData();
-    //        const kId = rowData.Id;
-    //        console.log(kId);
-    //        if (!kId || kId === 0) {
-    //            showDangerAlert("Please save the record before uploading a file.");
-    //            cancel();
-    //            return;
-    //        }
-    //        uploadCAPAFile(kId, file);
-    //        cancel();  // Close editor immediately as upload is async
-    //    });
-
-    //    onRendered(() => {
-    //        input.focus();
-    //        input.style.height = "100%";
-    //    });
-
-    //    return input;
-    //}
-    //const columns = [
-    //    {
-    //        title: "Action",
-    //        field: "Action",
-    //        frozen: true,
-    //        hozAlign: "center", headerMenu: headerMenu,
-    //        width: 130,
-    //        formatter: function (cell) {
-    //            const rowData = cell.getRow().getData();
-    //            return `<i onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
-    //        }
-    //    },
-    //    { title: "ID", field: "Id", hozAlign: "center", frozen: true, visible: false },
-    //    { title: "SNo", field: "Sr_No", frozen: true, hozAlign: "center", headerMenu: headerMenu, width: 110 },
-
-    //    editableColumn("Vendor", "Vendor", "select2", "center", null, {}, { values: vendorOptions }, function (cell) {
-    //        const val = cell.getValue();
-    //        return vendorOptions[val] || val;
-    //    }, 150),
-
-    //    editableColumn("Kaizen Theme", "KaizenTheme", "input", "center", null, {}, {}, null, 200),
-
-    //    editableColumn("Kaizen Month", "KMonth", "input", "center", null, {}, {}, null, 170),
-
-    //    editableColumn("Team", "Team", "input", "center", null, {}, {}, null, 120),
-    //    editableColumn("Remarks", "Remarks", "input", "center", null, {}, {}, null, 150),
-    //    {
-    //        title: "Kaizen File",
-    //        field: "KaizenFile",
-    //        formatter: fileFormatter,
-    //        editor: fileEditor,
-    //        hozAlign: "center",
-    //        headerMenu: headerMenu,
-    //        width: 140
-    //    },
-    //    {
-    //        title: "Attachment",
-    //        field: "KaizenFile",
-    //        formatter: function (cell) {
-    //            const value = cell.getValue();
-    //            if (!value) return "";
-    //            const files = value.split(/[,;]+/).map(f => f.trim()).filter(Boolean);
-    //            return files.map(path =>
-    //                `<a href="/${path}" target="_blank" download title="Download">
-    //                <i class="fas fa-download text-primary"></i>
-    //            </a>`
-    //            ).join(" ");
-    //        },
-    //        // editor: fileEditor,
-    //        hozAlign: "center", headerMenu: headerMenu,
-
-    //        width: 140
-    //    },
-
-
-
-
-    //    // Optional metadata columns (hidden)
-    //    { title: "Created By", field: "CreatedBy", hozAlign: "center", visible: false },
-    //    { title: "Created Date", field: "CreatedDate", hozAlign: "center", visible: false },
-    //    { title: "Updated By", field: "UpdatedBy", hozAlign: "center", visible: false },
-    //    { title: "Updated Date", field: "UpdatedDate", hozAlign: "center", visible: false }
-
-    //];
-
-    //if (table) {
-    //    table.replaceData(tabledata);
-    //} else {
-    //    table = new Tabulator("#kaizen_table", {
-    //        data: tabledata,
-    //        layout: "fitDataFill",
-    //        movableColumns: true,
-    //        pagination: "local",
-    //        paginationSize: 10,
-    //        paginationSizeSelector: [10, 50, 100, 500],
-    //        paginationCounter: "rows",
-    //        placeholder: "No data available",
-    //        columns: columns
-    //    });
-
-    //    table.on("cellEdited", function (cell) {
-    //        const rowData = cell.getRow().getData();
-    //        saveKaizenTrackerRow(rowData);
-    //    });
-    //}
-
-    //$("#addButton").on("click", function () {
-    //    const newRow = {
-    //        Id: 0,
-    //        Sr_No: table.getDataCount() + 1,
-    //        Vendor: "",
-    //        KaizenTheme: "",
-    //        KMonth: "",
-    //        Team: "", Remarks: "",
-    //        KaizenFile: ""
-    //        /*CreatedBy: "", UpdatedBy: "", UpdatedDate: "", CreatedDate: ""*/
-    //    };
-    //    table.addRow(newRow, false);
-    //});
-
-//    Blockloaderhide();
-//}
-//function uploadCAPAFile(kId, file) {
- 
-//    var formData = new FormData();
-//    formData.append("file", file);
-//    formData.append("kId", kId);
-//    console.log(kId);
-//    $.ajax({
-//        url: '/KaizenTracker/UploadFile',
-//        type: 'POST',
-//        data: formData,
-//        processData: false,
-//        contentType: false,
-//        success: function (response) {
-//            if (response.success) {
-//                showSuccessAlert("File uploaded and record updated!");
-               
-//            }
-//            else { showDangerAlert(response.message) }
-           
-//            loadData(); 
-//        },
-//        error: function (xhr) {
-//            showDangerAlert("File upload failed: " + (xhr.responseJSON?.message || "Unknown error"));
-//        }
-//    });
-//}
-
-
-
-//function editableColumn(
-//    title,
-//    field,
-//    editorType = true,
-//    align = "center",
-//    headerFilterType = "input",
-//    headerFilterParams = {},
-//    editorParams = {},
-//    formatter = null,
-//    width = null
-//) {
-//    let columnDef = {
-//        title: title,
-//        field: field,
-//        editor: editorType,
-//        editorParams: editorParams,
-//        formatter: formatter,
-//        headerFilter: headerFilterType,
-//        headerFilterParams: headerFilterParams,
-//        headerMenu: headerMenu, 
-//        hozAlign: align,
-//        headerHozAlign: "left"
-//    };
-
-//    if (width) {
-//        columnDef.width = width;
-//    }
-
-//    return columnDef;
-//}
-
-
-//function delConfirm(id) {
-//    PNotify.prototype.options.styling = "bootstrap3";
-//    (new PNotify({
-//        title: 'Confirm Deletion',
-//        text: 'Are you sure you want to delete this Kaizen record?',
-//        icon: 'fa fa-question-circle',
-//        hide: false,
-//        confirm: { confirm: true },
-//        buttons: { closer: false, sticker: false },
-//        history: { history: false }
-//    })).get().on('pnotify.confirm', function () {
-//        $.ajax({
-//            url: '/KaizenTracker/Delete',
-//            type: 'POST',
-//            data: { id: id },
-//            success: function (data) {
-//                if (data.success) {
-//                    showSuccessAlert("Deleted successfully.");
-//                    setTimeout(() => loadData(), 1500);
-//                } else {
-//                    showDangerAlert(data.message || "Deletion failed.");
-//                }
-//            },
-//            error: function () {
-//                showDangerAlert('Error occurred during deletion.');
-//            }
-//        });
-//    });
-//}
-
-//Tabulator.extendModule("edit", "editors", {
-//    select2: function (cell, onRendered, success, cancel, editorParams) {
-//        const values = editorParams.values || {};
-//        const select = document.createElement("select");
-//        select.style.width = "100%";
-
-//        for (let val in values) {
-//            let option = document.createElement("option");
-//            option.value = val;
-//            option.text = values[val];
-//            select.appendChild(option);
-//        }
-
-//        select.value = cell.getValue();
-
-//        onRendered(function () {
-//            $(select).select2({
-//                dropdownParent: $('body')
-//            }).focus();
-
-//            $(select).on("change", function () {
-//                success(this.value);
-//            });
-
-//            $(select).on("blur", function () {
-//                cancel();
-//            });
-//        });
-
-//        return select;
-//    }
-//});
-
-function InsertUpdateKaizen(rowData) {
+function InsertUpdatePDIAuth(rowData) {
     if (!rowData) {
         showDangerAlert("Invalid data provided.");
         return;
@@ -1244,17 +925,17 @@ function InsertUpdateKaizen(rowData) {
     const cleanedData = {
         Id: rowData.Id || 0,
         Vendor: rowData.Vendor || null,
-        Kaizen_Theme: rowData.Kaizen_Theme || null,
-        Month: rowData.Month || null,
-        Team: rowData.Team || null,
-        Kaizen_Attch: rowData.Kaizen_Attch || null,
-        Remark: rowData.Remark || null,
-        FY : rowData.FY || null
+        Address: rowData.Address || null,
+        Pdi_Inspector: rowData.Pdi_Inspector || null,
+        Designation: rowData.Designation || null,
+        Photo_Inspector: rowData.Photo_Inspector || null,
+        Specimen_Sign: rowData.Specimen_Sign || null,
+        Remark: rowData.Remark || null
     };
 
     console.log(cleanedData);
     const isNew = cleanedData.Id === 0;
-    const url = isNew ? '/KaizenTracker/Create' : '/KaizenTracker/Update';
+    const url = isNew ? '/PDIAuthSign/Create' : '/PDIAuthSign/Update';
 
     $.ajax({
         url: url,
@@ -1269,7 +950,7 @@ function InsertUpdateKaizen(rowData) {
                 }
             }
             else if (response.message === "Exist") {
-                showDangerAlert("Kaizen Tracker Detail already exists.");
+                showDangerAlert("PDI Authorised Signatory Detail already exists.");
             }
             else {
                 var errorMessg = "";

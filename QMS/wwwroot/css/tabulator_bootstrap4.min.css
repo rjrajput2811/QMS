@@ -599,7 +599,7 @@
 
 @media (hover:hover) and (pointer:fine) {
     .tabulator-row.tabulator-selectable:hover {
-        background-color: #f5f5f5;
+        background-color: silver;
         cursor: pointer
     }
 }
@@ -1394,7 +1394,7 @@ body.tabulator-print-fullscreen-hide > :not(.tabulator-print-fullscreen) {
         }
 
             .tabulator .tabulator-footer .tabulator-spreadsheet-tabs .tabulator-spreadsheet-tab.tabulator-spreadsheet-tab-active {
-                background-color: #007bff;
+                background-color: #ccc;
                 color: #fff
             }
 

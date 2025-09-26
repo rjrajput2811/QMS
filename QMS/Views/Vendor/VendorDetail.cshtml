@@ -85,11 +85,11 @@
     }
 
     /*  .form-control {
-                padding: 0 10px !important;
-                border: 0;
-                border-bottom: 1px solid #cccccc;
-                border-radius: 0px;
-            } */
+                        padding: 0 10px !important;
+                        border: 0;
+                        border-bottom: 1px solid #cccccc;
+                        border-radius: 0px;
+                    } */
 
     label {
         margin-bottom: 0;
@@ -230,273 +230,263 @@
                                 <div class="card-header d-flex justify-content-between align-items-center" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
                                     <h5 class="card-title" style="font-weight:640;">Vendor Details</h5>
                                     <div>
-                                        <button type="button" id="saveButton" onclick="InsertUpdateVendorDetail()" class="btn btn-success">
+                                        <button type="button" id="saveButton" onclick="InsertUpdateVendorDetail()" class="btn btn-success legitRipple mr-2">
                                             <i class="fas fa-floppy-disk mr-2"></i>Save
                                         </button>
 
-                                        <button type="button" class="btn btn-warning" onclick="history.back()">
+                                        <button type="button" class="btn btn-outline-primary" onclick="history.back()">
                                             <i class="fas fa-arrow-left mr-2"></i>Back
                                         </button>
                                     </div>
                                 </div>
-                                <div class="card-body" style="margin-top: 15px;">
+                                <div class="col-md-12 row">
+                                    <div class="col-md-6">
+                                        <div class=" card card-body" style="margin-top: 15px;">
 
-                                    <div class="row form-group align-items-center mb-2">
-                                        <label class="col-1"><b>Name</b></label>
-                                        <div class="col-5 mr-4">
-                                            <input name="Name" id="Name" class="form-control" required value="@Model?.Name" />
-                                        </div>
-                                        <label class="col-1"><b>Code</b></label>
-                                        <div class="col-2">
-                                            <input name="Vendor_Code" id="Vendor_Code" class="form-control" required value="@Model?.Vendor_Code" />
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Name</b></label>
+                                                <div class="col-5 mr-4">
+                                                    <input name="Name" id="Name" class="form-control" required value="@Model?.Name" />
+                                                </div>
+                                                <label class="col-1"><b>Code</b></label>
+                                                <div class="col-3">
+                                                    <input name="Vendor_Code" id="Vendor_Code" class="form-control" required value="@Model?.Vendor_Code" />
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Address</b></label>
+                                                <div class="col-10 ">
+                                                    <input name="Address" id="Address" class="form-control" required value="@Model?.Address" rows="2" />
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-3"><b>Contact Person</b></label>
+                                                <div class="col-3">
+                                                    <input name="Contact_Persons" id="Contact_Persons" class="form-control" required value="@Model?.Contact_Persons" />
+                                                </div>
+
+                                                <label class="col-2"><b>Mobile</b></label>
+                                                <div class="col-3">
+                                                    <input name="MobileNo" id="MobileNo" class="form-control" required value="@Model?.MobileNo" />
+                                                </div>
+
+
+                                            </div>
+
                                         </div>
                                     </div>
 
-                                    <div class="row form-group align-items-center mb-2">
-                                        <label class="col-1"><b>Address</b></label>
-                                        <div class="col-10">
-                                            <input name="Address" id="Address" class="form-control" required value="@Model?.Address" />
+                                    <div class="col-md-6">
+                                        <div class=" card card-body" style="margin-top: 15px;">
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>GST No.</b></label>
+                                                <div class="col-4">
+                                                    <input name="GstNo" id="GstNo" class="form-control" required value="@Model?.GstNo" />
+                                                    <span id="GstNo_Error" class="text-danger"></span>
+                                                </div>
+                                                <label class="col-2"><b>Email</b></label>
+                                                <div class="col-4">
+                                                    <input name="Email" id="Email" class="form-control" required value="@Model?.Email" />
+                                                </div>
+                                            </div>
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2" style="color:#4682B4"><b>User Name</b></label>
+                                                <div class="col-6">
+                                                    <input name="User_Name" id="User_Name" class="form-control" required value="@Model?.User_Name" />
+                                                    <span id="User_Name_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2" style="color:#4682B4"><b>Password</b></label>
+                                                <div class="col-6">
+                                                    <input name="Password" id="Password" class="form-control" required value="@Model?.Password" />
+                                                </div>
+                                            </div>
                                         </div>
+
                                     </div>
+                                </div>
+                            </div>
 
-                                    <div class="row form-group align-items-center mb-2">
-                                        <label class="col-2"><b>Contact Person</b></label>
-                                        <div class="col-3">
-                                            <input name="Contact_Persons" id="Contact_Persons" class="form-control" required value="@Model?.Contact_Persons" />
-                                        </div>
-
-                                        <label class="col-1"><b>Mobile</b></label>
-                                        <div class="col-2">
-                                            <input name="MobileNo" id="MobileNo" class="form-control" required value="@Model?.MobileNo" />
-                                        </div>
-
-                                        <label class="col-1"><b>Email</b></label>
-                                        <div class="col-3">
-                                            <input name="Email" id="Email" class="form-control" required value="@Model?.Email" />
-                                        </div>
+                            <div class="col-12">
+                                <div class="card" style="border-radius:10px;border:1px solid #4682B4;">
+                                    <div class="card-header" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
+                                        <h5 class="card-title" style="font-weight:640">Vendor Contact Master</h5>
                                     </div>
+                                    <div class="card-body">
+                                        <div class="form-group">
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Owner</b></label>
+                                                <div class="col-4">
+                                                    <input name="Owner" id="Owner" class="form-control" required value="@Model?.Owner" placeholder="Owner Name" />
+                                                    <span id="Owner_Error" class="text-danger"></span>
+                                                </div>
 
-                                    <div class="row form-group align-items-center mb-2">
-                                        <label class="col-1"><b>GST No.</b></label>
-                                        <div class="col-3">
-                                            <input name="GstNo" id="GstNo" class="form-control" required value="@Model?.GstNo" />
-                                            <span id="GstNo_Error" class="text-danger"></span>
-                                        </div>
+                                                <div class="col-3 mr-1">
+                                                    <input name="Owner_Email" id="Owner_Email" class="form-control" required value="@Model?.Owner_Email" placeholder="Owner Email" />
+                                                    <span id="Owner_Email_Error" class="text-danger"></span>
+                                                </div>
 
-                                        <label class="col-1" style="color:#4682B4"><b>User Name</b></label>
-                                        <div class="col-3">
-                                            <input name="User_Name" id="User_Name" class="form-control" required value="@Model?.User_Name" />
-                                            <span id="User_Name_Error" class="text-danger"></span>
-                                        </div>
+                                                <div class="col-2 mr-1">
+                                                    <input name="Owner_Mobile" id="Owner_Mobile" class="form-control" required value="@Model?.Owner_Mobile" placeholder="Owner Mobile No." />
+                                                    <span id="Owner_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
 
-                                        <label class="col-1" style="color:#4682B4"><b>Password</b></label>
-                                        <div class="col-2">
-                                            <input name="Password" id="Password" class="form-control" required value="@Model?.Password" />
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Plant Head</b></label>
+                                                <div class="col-4">
+                                                    <input name="Plant_Head" id="Plant_Head" class="form-control" required value="@Model?.Plant_Head" placeholder="Plant Head Name" />
+                                                    <span id="Plant_Head_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3 mr-1">
+                                                    <input name="Plant_Email" id="Plant_Email" class="form-control" required value="@Model?.Plant_Email" placeholder="Plant Head Email" />
+                                                    <span id="Plant_Email_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2 mr-1">
+                                                    <input name="Plant_Mobile" id="Plant_Mobile" class="form-control" required value="@Model?.Plant_Mobile" placeholder="Plant Head Mobile No." />
+                                                    <span id="Plant_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Quality Manager</b></label>
+                                                <div class="col-4">
+                                                    <input name="Quality_Manger" id="Quality_Manger" class="form-control" value="@Model?.Quality_Manager" placeholder="Quality Manager Name" />
+                                                    <span id="Quality_Manger_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3 mr-1">
+                                                    <input name="Quality_Email" id="Quality_Email" class="form-control" value="@Model?.Quality_Email" placeholder="Quality Manager Email" />
+                                                    <span id="Quality_Email_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2 mr-1">
+                                                    <input name="Quality_Mobile" id="Quality_Mobile" class="form-control" value="@Model?.Quality_Mobile" placeholder="Quality Manager Mobile No." />
+                                                    <span id="Quality_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>PDG Manager</b></label>
+                                                <div class="col-4">
+                                                    <input name="PDG_Manager" id="PDG_Manager" class="form-control" required value="@Model?.PDG_Manager" placeholder="PDG Manager Name" />
+                                                    <span id="PDG_Manager_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3">
+                                                    <input name="PDG_Email" id="PDG_Email" class="form-control" required value="@Model?.PDG_Email" placeholder="PDG Manager Email" />
+                                                    <span id="PDG_Manager_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2">
+                                                    <input name="PDG_Mobile" id="PDG_Mobile" class="form-control" required value="@Model?.PDG_Mobile" placeholder="PDG Manager Mobile No." />
+                                                    <span id="PDG_Manager_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>SCM Manager</b></label>
+                                                <div class="col-4">
+                                                    <input name="SCM_Manager" id="SCM_Manager" class="form-control" required value="@Model?.SCM_Manager" placeholder="SCM Manager Name" />
+                                                    <span id="SCM_Manager_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3">
+                                                    <input name="SCM_Email" id="SCM_Email" class="form-control" required value="@Model?.SCM_Email" placeholder="SCM Manager Email" />
+                                                    <span id="SCM_Email_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2">
+                                                    <input name="SCM_Mobile" id="SCM_Mobile" class="form-control" required value="@Model?.SCM_Mobile" placeholder="SCM Manager Mobile No." />
+                                                    <span id="SCM_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>PRD Manager</b></label>
+                                                <div class="col-4">
+                                                    <input name="PRD_Manager" id="PRD_Manager" class="form-control" required value="@Model?.PRD_Manager" placeholder="PRD Manager Name" />
+                                                    <span id="PRD_Manager_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3">
+                                                    <input name="PRD_Email" id="PRD_Email" class="form-control" required value="@Model?.PRD_Email" placeholder="PRD Manager Email" />
+                                                    <span id="PRD_Email_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2">
+                                                    <input name="PRD_Mobile" id="PRD_Mobile" class="form-control" required value="@Model?.PRD_Mobile" placeholder="PRD Manager Mobile No." />
+                                                    <span id="PRD_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Service Manager</b></label>
+                                                <div class="col-4">
+                                                    <input name="Service_Manager" id="Service_Manager" class="form-control" required value="@Model?.Service_Manager" placeholder="Service Manager Name" />
+                                                    <span id="Service_Manager_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3">
+                                                    <input name="Service_Email" id="Service_Email" class="form-control" required value="@Model?.Service_Email" placeholder="Service Manager Email" />
+                                                    <span id="Service_Email_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2">
+                                                    <input name="Service_Mobile" id="Service_Mobile" class="form-control" required value="@Model?.Service_Mobile" placeholder="Service Manager Mobile No." />
+                                                    <span id="Service_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Other Contact 1</b></label>
+                                                <div class="col-4">
+                                                    <input name="Other_Cont_One" id="Other_Cont_One" class="form-control" required value="@Model?.Other_Cont_One" placeholder="Contact One Name" />
+                                                    <span id="Other_Cont_One_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3">
+                                                    <input name="Other_Cont_OneEmail" id="Other_Cont_OneEmail" class="form-control" required value="@Model?.Other_Cont_OneEmail" placeholder="Contact One Email" />
+                                                    <span id="Other_Cont_One_Email_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2">
+                                                    <input name="Other_Cont_OneMobile" id="Other_Cont_OneMobile" class="form-control" required value="@Model?.Other_Cont_OneMobile" placeholder="Contact One Mobile No." />
+                                                    <span id="Other_Cont_One_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="row form-group align-items-center mb-2">
+                                                <label class="col-2"><b>Other Contact 2</b></label>
+                                                <div class="col-4">
+                                                    <input name="Other_Cont_Two" id="Other_Cont_Two" class="form-control" required value="@Model?.Other_Cont_Two" placeholder="Contact Two Name" />
+                                                    <span id="Other_Cont_Two_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-3">
+                                                    <input name="Other_Cont_TwoEmail" id="Other_Cont_TwoEmail" class="form-control" required value="@Model?.Other_Cont_TwoEmail" placeholder="Contact Two Email" />
+                                                    <span id="Other_Cont_Two_Email_Error" class="text-danger"></span>
+                                                </div>
+
+                                                <div class="col-2">
+                                                    <input name="Other_Cont_TwoMobile" id="Other_Cont_TwoMobile" class="form-control" required value="@Model?.Other_Cont_TwoMobile" placeholder="Contact Two Mobile No." />
+                                                    <span id="Other_Cont_Two_Mobile_Error" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
+
+
                         </div>
-
-                        <div class="col-12">
-                            <div class="card" style="border-radius:10px;border:1px solid #4682B4;">
-                                <div class="card-header" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
-                                    <h5 class="card-title" style="font-weight:640">Vendor Contact Master</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="form-group">
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>Owner</b></label>
-                                            <div class="col-4">
-                                                <input name="Owner" id="Owner" class="form-control" required value="@Model?.Owner" placeholder="Owner Name" />
-                                                <span id="Owner_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3 mr-1">
-                                                <input name="Owner_Email" id="Owner_Email" class="form-control" required value="@Model?.Owner_Email" placeholder="Owner Email" />
-                                                <span id="Owner_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2 mr-1">
-                                                <input name="Owner_Mobile" id="Owner_Mobile" class="form-control" required value="@Model?.Owner_Mobile" placeholder="Owner Mobile No." />
-                                                <span id="Owner_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>Plant Head</b></label>
-                                            <div class="col-4">
-                                                <input name="Plant_Head" id="Plant_Head" class="form-control" required value="@Model?.Plant_Head" placeholder="Plant Head Name" />
-                                                <span id="Plant_Head_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3 mr-1">
-                                                <input name="Plant_Email" id="Plant_Email" class="form-control" required value="@Model?.Plant_Email" placeholder="Plant Head Email" />
-                                                <span id="Plant_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2 mr-1">
-                                                <input name="Plant_Mobile" id="Plant_Mobile" class="form-control" required value="@Model?.Plant_Mobile" placeholder="Plant Head Mobile No." />
-                                                <span id="Plant_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>Quality Manager</b></label>
-                                            <div class="col-4">
-                                                <input name="Quality_Manger" id="Quality_Manger" class="form-control" value="@Model?.Quality_Manager" placeholder="Quality Manager Name" />
-                                                <span id="Quality_Manger_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3 mr-1">
-                                                <input name="Quality_Email" id="Quality_Email" class="form-control" value="@Model?.Quality_Email" placeholder="Quality Manager Email" />
-                                                <span id="Quality_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2 mr-1">
-                                                <input name="Quality_Mobile" id="Quality_Mobile" class="form-control" value="@Model?.Quality_Mobile" placeholder="Quality Manager Mobile No." />
-                                                <span id="Quality_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>PDG Manager</b></label>
-                                            <div class="col-4">
-                                                <input name="PDG_Manager" id="PDG_Manager" class="form-control" required value="@Model?.PDG_Manager" placeholder="PDG Manager Name" />
-                                                <span id="PDG_Manager_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3">
-                                                <input name="PDG_Email" id="PDG_Email" class="form-control" required value="@Model?.PDG_Email" placeholder="PDG Manager Email" />
-                                                <span id="PDG_Manager_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2">
-                                                <input name="PDG_Mobile" id="PDG_Mobile" class="form-control" required value="@Model?.PDG_Mobile" placeholder="PDG Manager Mobile No." />
-                                                <span id="PDG_Manager_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>SCM Manager</b></label>
-                                            <div class="col-4">
-                                                <input name="SCM_Manager" id="SCM_Manager" class="form-control" required value="@Model?.SCM_Manager" placeholder="SCM Manager Name" />
-                                                <span id="SCM_Manager_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3">
-                                                <input name="SCM_Email" id="SCM_Email" class="form-control" required value="@Model?.SCM_Email" placeholder="SCM Manager Email" />
-                                                <span id="SCM_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2">
-                                                <input name="SCM_Mobile" id="SCM_Mobile" class="form-control" required value="@Model?.SCM_Mobile" placeholder="SCM Manager Mobile No." />
-                                                <span id="SCM_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>PRD Manager</b></label>
-                                            <div class="col-4">
-                                                <input name="PRD_Manager" id="PRD_Manager" class="form-control" required value="@Model?.PRD_Manager" placeholder="PRD Manager Name" />
-                                                <span id="PRD_Manager_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3">
-                                                <input name="PRD_Email" id="PRD_Email" class="form-control" required value="@Model?.PRD_Email" placeholder="PRD Manager Email" />
-                                                <span id="PRD_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2">
-                                                <input name="PRD_Mobile" id="PRD_Mobile" class="form-control" required value="@Model?.PRD_Mobile" placeholder="PRD Manager Mobile No." />
-                                                <span id="PRD_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>Service Manager</b></label>
-                                            <div class="col-4">
-                                                <input name="Service_Manager" id="Service_Manager" class="form-control" required value="@Model?.Service_Manager" placeholder="Service Manager Name" />
-                                                <span id="Service_Manager_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3">
-                                                <input name="Service_Email" id="Service_Email" class="form-control" required value="@Model?.Service_Email" placeholder="Service Manager Email" />
-                                                <span id="Service_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2">
-                                                <input name="Service_Mobile" id="Service_Mobile" class="form-control" required value="@Model?.Service_Mobile" placeholder="Service Manager Mobile No." />
-                                                <span id="Service_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>Other Contact 1</b></label>
-                                            <div class="col-4">
-                                                <input name="Other_Cont_One" id="Other_Cont_One" class="form-control" required value="@Model?.Other_Cont_One" placeholder="Contact One Name" />
-                                                <span id="Other_Cont_One_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3">
-                                                <input name="Other_Cont_OneEmail" id="Other_Cont_OneEmail" class="form-control" required value="@Model?.Other_Cont_OneEmail" placeholder="Contact One Email" />
-                                                <span id="Other_Cont_One_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2">
-                                                <input name="Other_Cont_OneMobile" id="Other_Cont_OneMobile" class="form-control" required value="@Model?.Other_Cont_OneMobile" placeholder="Contact One Mobile No." />
-                                                <span id="Other_Cont_One_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-2"><b>Other Contact 2</b></label>
-                                            <div class="col-4">
-                                                <input name="Other_Cont_Two" id="Other_Cont_Two" class="form-control" required value="@Model?.Other_Cont_Two" placeholder="Contact Two Name" />
-                                                <span id="Other_Cont_Two_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-3">
-                                                <input name="Other_Cont_TwoEmail" id="Other_Cont_TwoEmail" class="form-control" required value="@Model?.Other_Cont_TwoEmail" placeholder="Contact Two Email" />
-                                                <span id="Other_Cont_Two_Email_Error" class="text-danger"></span>
-                                            </div>
-
-                                            <div class="col-2">
-                                                <input name="Other_Cont_TwoMobile" id="Other_Cont_TwoMobile" class="form-control" required value="@Model?.Other_Cont_TwoMobile" placeholder="Contact Two Mobile No." />
-                                                <span id="Other_Cont_Two_Mobile_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        @* <div class="col-4">
-                            <div class="card" style="border-radius:10px;border:1px solid #4682B4;">
-                                <div class="card-header" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
-                                    <h5 class="card-title" style="font-weight:640">Login Details</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="form-group">
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-4"><b>User Name</b></label>
-                                            <div class="col-8">
-                                                <input name="User_Name" id="User_Name" class="form-control" required value="@Model?.User_Name" />
-                                                <span id="User_Name_Error" class="text-danger"></span>
-                                            </div>
-                                        </div>
-
-                                        <div class="row form-group align-items-center mb-2">
-                                            <label class="col-4"><b>Password</b></label>
-                                            <div class="col-8">
-                                                <input name="Password" id="Password" class="form-control" required value="@Model?.Password" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div> *@
                     </div>
                 </div>
 
@@ -576,7 +566,7 @@
 
             </div>
             @* <div class="tab-pane fade" id="tab6" role="tabpanel">Customer Complaints content</div> *@
-            <div class="tab-pane fade" id="tab7" role="tabpanel">Validation Reports of Products content</div>
+            @* <div class="tab-pane fade" id="tab7" role="tabpanel">Validation Reports of Products content</div>
             <div class="tab-pane fade" id="tab8" role="tabpanel">NPI Tracker content</div>
             <div class="tab-pane fade" id="tab9" role="tabpanel">CSO Tracker content</div>
             <div class="tab-pane fade" id="tab10" role="tabpanel">Supplier Performance Management (SPM) content</div>
@@ -586,10 +576,12 @@
             <div class="tab-pane fade" id="tab14" role="tabpanel">Audit Score content</div>
             <div class="tab-pane fade" id="tab15" role="tabpanel">PDI content</div>
             <div class="tab-pane fade" id="tab16" role="tabpanel">RM TC content</div>
-            <div class="tab-pane fade" id="tab17" role="tabpanel">Service Spare tracker content</div>
+            <div class="tab-pane fade" id="tab17" role="tabpanel">Service Spare tracker content</div> *@
         </div>
     </div>
 </div>
+
+
 
 <!-- Add Certificate Modal -->
 <div id="certificateModal" class="modal fade" tabindex="-1">
@@ -985,6 +977,7 @@
             </form>
         </div>
     </div>
+</div>
 </div>
 
 @section Scripts {

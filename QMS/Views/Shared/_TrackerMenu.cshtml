@@ -161,8 +161,8 @@
     </div>
 
     <div class="ml-auto">
-        <button id="tarcBackButton" type="button" class="btn btn-success legitRipple" onclick="location.href='@Url.Action("WiproMenu", "Home")'" style="margin: 5px 3px;width: 175px; font-size:15px;margin-bottom:-50px;margin-right:15px;">
-            <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Back To Wipro
+        <button id="tarcBackButton" type="button" class="btn btn-outline-primary" onclick="location.href='@Url.Action("WiproMenu", "Home")'" style="margin: 5px 3px;width: 175px; font-size:15px;margin-bottom:-50px;margin-right:15px;">
+            <i class="fas fa-arrow-left"></i>Back To Wipro
         </button>
     </div>
 
@@ -236,7 +236,32 @@
                     </div>
                 </div>
 
-               
+                <div class="col-4">
+                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("PDIAuthSignatory","PDIAuthSign")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkkhaki"></i>
+                            <h5 class="mb-0">PDI Authorised Signatory </h5>
+                        </div>
+                    </div>
+                </div>
+
+                @* <div class="col-3">
+                    <div class="card qms-card p-2" onclick="">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-book icon me-3" style="color:chocolate"></i>
+                            <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-3">
+                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-book icon me-3" style="color:cyan"></i>
+                            <h5 class="mb-0">Third Party Test Tracker</h5>
+                        </div>
+                    </div>
+                </div> *@
             </div>
       
 

@@ -39,6 +39,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<ProjectInit_TPT> ProjectInitTPT { get; set; }
         public DbSet<TestDet_TPT> TestDetTPT { get; set; }
         public DbSet<FIFOTracker> FIFOTracker { get; set; }
+        public DbSet<PDI_Auth_Signatory> PDI_Auth_Signatory { get; set; }
 
 
 

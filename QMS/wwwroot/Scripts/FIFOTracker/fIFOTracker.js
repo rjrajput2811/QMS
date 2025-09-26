@@ -82,7 +82,7 @@ function loadData() {
         }
         // Step 3: Load grid data
         $.ajax({
-            url: '/BisProjectTrac/GetAll',
+            url: '/FIFOTrac/GetAll',
             type: 'GET',
             dataType: 'json',
             data: {
@@ -535,17 +535,17 @@ function OnTabGridLoad(response) {
             tabledata.push({
                 Sr_No: index + 1,
                 Id: item.id,
-                Sample_Recv_Date: formatDate(item.Sample_Recv_Date),
-                Sample_Cat_Ref: item.Sample_Cat_Ref,
-                Sample_Desc: item.Sample_Desc,
-                Vendor: item.Vendor,
-                Sample_Qty: item.Sample_Qty,
-                Test_Req: item.Test_Req,
-                Test_Status: item.Test_Status,
-                Responsbility: item.Responsbility,
-                Test_Completion_Date: formatDate(item.Test_Completion_Date),
-                Report_Release_Date: formatDate(item.Report_Release_Date),
-                NABL_Released_Date: formatDate(item.NABL_Released_Date),
+                Sample_Recv_Date: formatDate(item.sample_Recv_Date),
+                Sample_Cat_Ref: item.sample_Cat_Ref,
+                Sample_Desc: item.sample_Desc,
+                Vendor: item.vendor,
+                Sample_Qty: item.sample_Qty,
+                Test_Req: item.test_Req,
+                Test_Status: item.test_Status,
+                Responsbility: item.responsbility,
+                Test_Completion_Date: formatDate(item.test_Completion_Date),
+                Report_Release_Date: formatDate(item.report_Release_Date),
+                NABL_Released_Date: formatDate(item.nABL_Released_Date),
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
                 UpdatedDate: formatDate(item.updatedDate),
@@ -680,29 +680,29 @@ function OnTabGridLoad(response) {
     });
 
     table.on("cellEdited", function (cell) {
-        const field = cell.getField();
-        const row = cell.getRow();
-        const data = row.getData();
+        //const field = cell.getField();
+        //const row = cell.getRow();
+        //const data = row.getData();
 
-        if (["Test_Duration", "Bis_Duration"].includes(field)) {
-            return;
-        }
+        //if (["Test_Duration", "Bis_Duration"].includes(field)) {
+        //    return;
+        //}
 
-        if (["Start_Date", "Comp_Date"].includes(field)) {
-            const start = parseDate(data.Start_Date);
-            const end = parseDate(data.Comp_Date);
-            const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
-            row.update({ Test_Duration: diff.toString() });
-        }
+        //if (["Start_Date", "Comp_Date"].includes(field)) {
+        //    const start = parseDate(data.Start_Date);
+        //    const end = parseDate(data.Comp_Date);
+        //    const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
+        //    row.update({ Test_Duration: diff.toString() });
+        //}
 
-        if (["Ven_Sample_Sub_Date", "Received_Date"].includes(field)) {
-            const sub = parseDate(data.Ven_Sample_Sub_Date);
-            const rec = parseDate(data.Received_Date);
-            const diff = sub && rec ? Math.floor((rec - sub) / (1000 * 60 * 60 * 24)) : "";
-            row.update({ Bis_Duration: diff.toString() });
-        }
+        //if (["Ven_Sample_Sub_Date", "Received_Date"].includes(field)) {
+        //    const sub = parseDate(data.Ven_Sample_Sub_Date);
+        //    const rec = parseDate(data.Received_Date);
+        //    const diff = sub && rec ? Math.floor((rec - sub) / (1000 * 60 * 60 * 24)) : "";
+        //    row.update({ Bis_Duration: diff.toString() });
+        //}
 
-        InsertUpdateBisProject(cell.getRow().getData());
+        InsertUpdateFIFO(cell.getRow().getData());
     });
 
 
@@ -715,37 +715,21 @@ function OnTabGridLoad(response) {
             $btn.data("busy", true).prop("disabled", true);
 
             try {
-                const fyOptions = getFinancialYears() || {};
-                const currentFY = Object.keys(fyOptions)[0] || "";
-                const month = getMonthString() || "";
 
                 const newRow = {
                     Sr_No: 1,               // will renumber after insert
                     Id: 0,
-                    Financial_Year: currentFY,
-                    Mon_PC: month,
-                    Nat_Project: "",
-                    Lea_Model_No: "",
-                    No_Seri_Add: "",
-                    Cat_Ref_Lea_Model: "",
-                    Section: "",
-                    Manuf_Location: "",
-                    BIS_Project_Id: "",
-                    Lab: "",
-                    Report_Owner: "",
-                    Start_Date: "",
-                    Comp_Date: "",
-                    Test_Duration: "",
-                    Submitted_Date: "",
-                    Received_Date: "",
-                    Bis_Duration: "",
-                    Ven_Sample_Sub_Date: "",
-                    Current_Status: "",
-                    BIS_Attachment: "",
-                    Effective_Date: "",
-                    Document_No: "",
-                    Revision_No: "",
-                    Revision_Date: "",
+                    Sample_Recv_Date: "",
+                    Sample_Cat_Ref: "",
+                    Sample_Desc: "",
+                    Vendor: "",
+                    Sample_Qty: "",
+                    Test_Req: "",
+                    Test_Status: "",
+                    Responsbility: "",
+                    Test_Completion_Date: "",
+                    Report_Release_Date: "",
+                    NABL_Released_Date: "",
                     CreatedBy: "",
                     UpdatedBy: "",
                     UpdatedDate: "",
@@ -773,7 +757,7 @@ function OnTabGridLoad(response) {
     })();
 
     // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
-    document.getElementById("exportBisButton").addEventListener("click", async function () {
+    document.getElementById("exportFIFOButton").addEventListener("click", async function () {
         // ===== 0) OPTIONS =====
         const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
         const EXPORT_RAW = false;      // false = formatted values exactly as shown in Tabulator
@@ -1030,7 +1014,7 @@ function renumberSrNo() {
     });
 }
 
-$('#bisProject_Table').on('change', '.bis-upload', function () {
+$('#fifoTrac_Table').on('change', '.bis-upload', function () {
     const input = this;
     const file = input.files[0];
 
@@ -1058,7 +1042,7 @@ $('#bisProject_Table').on('change', '.bis-upload', function () {
     Blockloadershow();
 
     $.ajax({
-        url: "/BisProjectTrac/UploadBISAttachment",
+        url: "/FIFOTrac/UploadFIFOAttachment",
         type: "POST",
         data: formData,
         contentType: false,
@@ -1285,7 +1269,6 @@ Tabulator.extendModule("edit", "editors", {
 
 function delConfirm(recid, element) {
     if (!recid || recid <= 0) {
-        // Unsaved row: just remove from UI
         const rowEl = $(element).closest(".tabulator-row")[0];
         const row = table.getRow(rowEl);
         if (row) row.delete();
@@ -1310,12 +1293,12 @@ function delConfirm(recid, element) {
                         // lock buttons while deleting
                         notice.get().find('.btn').prop('disabled', true);
                         $.ajax({
-                            url: '/BisProjectTrac/Delete',
+                            url: '/FIFOTrac/Delete',
                             type: 'POST',
                             data: { id: recid }
                         }).done(function (data) {
                             if (data && data.success === true) {
-                                showSuccessNewAlert("BIS Project deleted successfully.");
+                                showSuccessNewAlert("FIFOTracker Detail deleted successfully.");
                                 // remove row immediately
                                 const rowEl = $(element).closest(".tabulator-row")[0];
                                 const row = table.getRow(rowEl);
@@ -1376,7 +1359,7 @@ function delConfirm(recid, element) {
 //    window.location.href = url;
 //}
 
-function InsertUpdateBisProject(rowData) {
+function InsertUpdateFIFO(rowData) {
     debugger
     if (!rowData) {
         showDangerAlert("Invalid data provided.");
@@ -1409,34 +1392,21 @@ function InsertUpdateBisProject(rowData) {
 
     var Model = {
         Id: rowData.Id || 0,
-        Financial_Year: rowData.Financial_Year || null,
-        Mon_Pc: rowData.Mon_PC || null,
-        Nat_Project: rowData.Nat_Project || null,
-        Lea_Model_No: rowData.Lea_Model_No || null,
-        No_Seri_Add: rowData.No_Seri_Add || null,
-        Cat_Ref_Lea_Model: rowData.Cat_Ref_Lea_Model || null,
-        Section: rowData.Section || null,
-        Manuf_Location: rowData.Manuf_Location || null,
-        BIS_Project_Id: rowData.BIS_Project_Id || null,
-        Lab: rowData.Lab || null,
-        Report_Owner: rowData.Report_Owner || null,
-        Ven_Sample_Sub_Date: toIsoDate(rowData.Ven_Sample_Sub_Date),
-        Start_Date: toIsoDate(rowData.Start_Date),
-        Comp_Date: toIsoDate(rowData.Comp_Date),
-        Test_Duration: rowData.Test_Duration.toString() || null,
-        Submitted_Date: toIsoDate(rowData.Submitted_Date),
-        Received_Date: toIsoDate(rowData.Received_Date),
-        Bis_Duration: rowData.Bis_Duration.toString() || null,
-        Current_Status: rowData.Current_Status || null,
-        BIS_Attachment: rowData.BIS_Attachment || null,
-        Effective_Date: toIsoDate(rowData.Effective_Date),
-        Document_No: rowData.Document_No || null,
-        Revision_No: rowData.Revision_No || null,
-        Revision_Date: toIsoDate(rowData.Revision_Date)
+        Sample_Recv_Date: toIsoDate(rowData.Sample_Recv_Date) || null,
+        Sample_Cat_Ref: rowData.Sample_Cat_Ref || null,
+        Sample_Desc: rowData.Sample_Desc || null,
+        Vendor: rowData.Vendor || null,
+        Sample_Qty: rowData.Sample_Qty || null,
+        Test_Req: rowData.Test_Req || null,
+        Test_Status: rowData.Test_Status || null,
+        Responsbility: rowData.Responsbility || null,
+        Test_Completion_Date: toIsoDate(rowData.Test_Completion_Date) || null,
+        Report_Release_Date: toIsoDate(rowData.Report_Release_Date) || null,
+        NABL_Released_Date: toIsoDate(rowData.NABL_Released_Date) || null
     };
 
     const isNew = Model.Id === 0;
-    var ajaxUrl = isNew ? '/BisProjectTrac/Create' : '/BisProjectTrac/Update';
+    var ajaxUrl = isNew ? '/FIFOTrac/Create' : '/FIFOTrac/Update';
 
     $.ajax({
         url: ajaxUrl,
@@ -1446,18 +1416,13 @@ function InsertUpdateBisProject(rowData) {
         success: function (response) {
             //Blockloaderhide();
             if (response.success) {
-                //const msg = Model.Id != 0
-                //    ? "BIS Project Tracker updated successfully!"
-                //    : "BIS Project Tracker saved successfully!";
-                //showSuccessAlert(msg);
-                //loadData();
                 if (isNew) {
                     showSuccessNewAlert("Saved successfully!.");
                     loadData();
                 }
             }
             else if (response.message === "Exist") {
-                showDangerAlert("BIS Project Tracker Detail already exists.");
+                showDangerAlert("FIFO Tracker Detail already exists.");
             }
             else {
                 var errorMessg = "";
@@ -1479,257 +1444,257 @@ function InsertUpdateBisProject(rowData) {
 }
 
 
-function loadNatProjectData() {
-    Blockloadershow();
-    $.ajax({
-        url: '/BisProjectTrac/GetNatProject',
-        type: 'GET',
-        success: function (data) {
-            Blockloaderhide();
-            if (data && Array.isArray(data)) {
-                OnNatProjectTabGridLoad(data);
-            } else {
-                showDangerAlert('No data available to load.');
-            }
-        },
-        error: function (xhr, status, error) {
-            Blockloaderhide();
-            showDangerAlert('Error retrieving data: ' + error);
-        }
-    });
-}
+//function loadNatProjectData() {
+//    Blockloadershow();
+//    $.ajax({
+//        url: '/BisProjectTrac/GetNatProject',
+//        type: 'GET',
+//        success: function (data) {
+//            Blockloaderhide();
+//            if (data && Array.isArray(data)) {
+//                OnNatProjectTabGridLoad(data);
+//            } else {
+//                showDangerAlert('No data available to load.');
+//            }
+//        },
+//        error: function (xhr, status, error) {
+//            Blockloaderhide();
+//            showDangerAlert('Error retrieving data: ' + error);
+//        }
+//    });
+//}
 
-function OnNatProjectTabGridLoad(response) {
-    debugger;
-    Blockloadershow();
+//function OnNatProjectTabGridLoad(response) {
+//    debugger;
+//    Blockloadershow();
 
-    tabledataNatProject = [];
-    let columns = [];
+//    tabledataNatProject = [];
+//    let columns = [];
 
-    // Map the response to the table format
-    if (response.length > 0) {
-        $.each(response, function (index, item) {
+//    // Map the response to the table format
+//    if (response.length > 0) {
+//        $.each(response, function (index, item) {
 
-            function formatDate(value) {
-                return value ? new Date(value).toLocaleDateString("en-GB") : "";
-            }
+//            function formatDate(value) {
+//                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+//            }
 
-            tabledataNatProject.push({
-                Sr_No: index + 1,
-                Id: item.id,
-                Nat_Project: item.nat_Project,
-                CreatedBy: item.createdBy,
-                UpdatedBy: item.updatedBy,
-                UpdatedDate: formatDate(item.updatedDate),
-                CreatedDate: formatDate(item.createdDate),
-            });
-        });
-    }
+//            tabledataNatProject.push({
+//                Sr_No: index + 1,
+//                Id: item.id,
+//                Nat_Project: item.nat_Project,
+//                CreatedBy: item.createdBy,
+//                UpdatedBy: item.updatedBy,
+//                UpdatedDate: formatDate(item.updatedDate),
+//                CreatedDate: formatDate(item.createdDate),
+//            });
+//        });
+//    }
 
-    if (tabledataNatProject.length === 0 && tableNatProject) {
-        tableNatProject.clearData();
-        Blockloaderhide();
-        return;
-    }
+//    if (tabledataNatProject.length === 0 && tableNatProject) {
+//        tableNatProject.clearData();
+//        Blockloaderhide();
+//        return;
+//    }
 
-    columns.push(
-        {
-            title: "Action",
-            field: "Action",
-            width: 46,
-            hozAlign: "center",
-            headerHozAlign: "center",
-            formatter: function (cell, formatterParams) {
-                const rowData = cell.getRow().getData();
-                let actionButtons = "";
+//    columns.push(
+//        {
+//            title: "Action",
+//            field: "Action",
+//            width: 46,
+//            hozAlign: "center",
+//            headerHozAlign: "center",
+//            formatter: function (cell, formatterParams) {
+//                const rowData = cell.getRow().getData();
+//                let actionButtons = "";
 
-                actionButtons += `<i onclick="delNatProjectConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+//                actionButtons += `<i onclick="delNatProjectConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
 
-                return actionButtons;
-            }
-        },
-        {
-            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
-        },
-        editableColumn("Nature of Project", "Nat_Project", true),
-        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-    );
+//                return actionButtons;
+//            }
+//        },
+//        {
+//            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
+//        },
+//        editableColumn("Nature of Project", "Nat_Project", true),
+//        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+//    );
 
-    // // Initialize Tabulator
-    tableNatProject = new Tabulator("#natProject_Table", {
-        data: tabledataNatProject,
-        renderHorizontal: "virtual",
-        movableColumns: true,
-        pagination: "local",
-        paginationSize: 10,
-        paginationSizeSelector: [50, 100, 500, 1500, 2000],
-        paginationCounter: "rows",
-        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-        columns: columns
-    });
+//    // // Initialize Tabulator
+//    tableNatProject = new Tabulator("#natProject_Table", {
+//        data: tabledataNatProject,
+//        renderHorizontal: "virtual",
+//        movableColumns: true,
+//        pagination: "local",
+//        paginationSize: 10,
+//        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+//        paginationCounter: "rows",
+//        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+//        columns: columns
+//    });
 
-    tableNatProject.on("cellEdited", function (cell) {
-        InsertUpdateNatProject(cell.getRow().getData());
-    });
+//    tableNatProject.on("cellEdited", function (cell) {
+//        InsertUpdateNatProject(cell.getRow().getData());
+//    });
 
-    $("#addNatProjectBtn").on("click", function () {
-        const newRow1 = {
-            Sr_No: tableNatProject.getDataCount() + 1,
-            Id: 0,
-            Nat_Project: "",
-            CreatedBy: "",
-            UpdatedBy: "",
-            UpdatedDate: "",
-            CreatedDate: ""
-        };
-        tableNatProject.addRow(newRow1, false);
-    });
+//    $("#addNatProjectBtn").on("click", function () {
+//        const newRow1 = {
+//            Sr_No: tableNatProject.getDataCount() + 1,
+//            Id: 0,
+//            Nat_Project: "",
+//            CreatedBy: "",
+//            UpdatedBy: "",
+//            UpdatedDate: "",
+//            CreatedDate: ""
+//        };
+//        tableNatProject.addRow(newRow1, false);
+//    });
 
 
 
-    Blockloaderhide();
-}
+//    Blockloaderhide();
+//}
 
-function InsertUpdateNatProject(rowData) {
-    debugger
-    if (!rowData) {
-        showDangerAlert("Invalid data provided.");
-        return;
-    }
+//function InsertUpdateNatProject(rowData) {
+//    debugger
+//    if (!rowData) {
+//        showDangerAlert("Invalid data provided.");
+//        return;
+//    }
 
-    Blockloadershow();
-    var errorMsg = "";
+//    Blockloadershow();
+//    var errorMsg = "";
 
-    if (errorMsg !== "") {
-        Blockloaderhide();
-        showDangerAlert(errorMsg);
-        return false;
-    }
+//    if (errorMsg !== "") {
+//        Blockloaderhide();
+//        showDangerAlert(errorMsg);
+//        return false;
+//    }
 
-    var Model = {
-        Id: rowData.Id || 0,
-        Nat_Project: rowData.Nat_Project || null,
-    };
+//    var Model = {
+//        Id: rowData.Id || 0,
+//        Nat_Project: rowData.Nat_Project || null,
+//    };
 
-    var ajaxUrl = Model.Id === 0 ? '/BisProjectTrac/CreateNatProject' : '/BisProjectTrac/UpdateNatProject';
+//    var ajaxUrl = Model.Id === 0 ? '/BisProjectTrac/CreateNatProject' : '/BisProjectTrac/UpdateNatProject';
 
-    $.ajax({
-        url: ajaxUrl,
-        type: "POST",
-        data: JSON.stringify(Model),
-        contentType: 'application/json',
-        success: function (response) {
-            Blockloaderhide();
-            if (response.success) {
-                const msg = Model.Id != 0
-                    ? "Nature of Project updated successfully!"
-                    : "Nature of Project saved successfully!";
-                showSuccessAlert(msg);
-                loadNatProjectData();
-            }
-            else if (response.message === "Exist") {
-                showDangerAlert("Nature of Project already exists.");
-            }
-            else {
-                var errorMessg = "";
-                if (response.errors) {
-                    for (var error in response.errors) {
-                        if (response.errors.hasOwnProperty(error)) {
-                            errorMessg += `${response.errors[error]}\n`;
-                        }
-                    }
-                }
-                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
-            }
-        },
-        error: function (xhr, status, error) {
-            Blockloaderhide();
-            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
-        }
-    });
-}
+//    $.ajax({
+//        url: ajaxUrl,
+//        type: "POST",
+//        data: JSON.stringify(Model),
+//        contentType: 'application/json',
+//        success: function (response) {
+//            Blockloaderhide();
+//            if (response.success) {
+//                const msg = Model.Id != 0
+//                    ? "Nature of Project updated successfully!"
+//                    : "Nature of Project saved successfully!";
+//                showSuccessAlert(msg);
+//                loadNatProjectData();
+//            }
+//            else if (response.message === "Exist") {
+//                showDangerAlert("Nature of Project already exists.");
+//            }
+//            else {
+//                var errorMessg = "";
+//                if (response.errors) {
+//                    for (var error in response.errors) {
+//                        if (response.errors.hasOwnProperty(error)) {
+//                            errorMessg += `${response.errors[error]}\n`;
+//                        }
+//                    }
+//                }
+//                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
+//            }
+//        },
+//        error: function (xhr, status, error) {
+//            Blockloaderhide();
+//            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
+//        }
+//    });
+//}
 
-$('#natProjectModel').on('hidden.bs.modal', function () {
-    loadData(); // uncomment if you want full reload
-});
+//$('#natProjectModel').on('hidden.bs.modal', function () {
+//    loadData(); // uncomment if you want full reload
+//});
 
-function delNatProjectConfirm(recid, element) {
-    debugger;
+//function delNatProjectConfirm(recid, element) {
+//    debugger;
 
-    if (!recid || recid <= 0) {
-        const rowEl = $(element).closest(".tabulator-row")[0];
-        const row = tableNatProject.getRow(rowEl);
-        if (row) {
-            row.delete();
-        }
-        return;
-    }
+//    if (!recid || recid <= 0) {
+//        const rowEl = $(element).closest(".tabulator-row")[0];
+//        const row = tableNatProject.getRow(rowEl);
+//        if (row) {
+//            row.delete();
+//        }
+//        return;
+//    }
 
-    PNotify.prototype.options.styling = "bootstrap3";
-    (new PNotify({
-        title: 'Confirmation Needed',
-        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
-        icon: 'glyphicon glyphicon-question-sign',
-        hide: false,
-        confirm: {
-            confirm: true
-        },
-        buttons: {
-            closer: false,
-            sticker: false
-        },
-        history: {
-            history: false
-        },
-    })).get().on('pnotify.confirm', function () {
-        $.ajax({
-            url: '/BisProjectTrac/DeleteNatProjectAsync',
-            type: 'POST',
-            data: { id: recid },
-            success: function (data) {
-                if (data.success == true) {
-                    showSuccessNewAlert("Nature of Project Deleted successfully.");
-                    setTimeout(function () {
-                        window.location.reload();
-                    }, 2500);
-                }
-                else if (data.success == false && data.message == "Not_Deleted") {
-                    showDangerAlert("Record is used in QMS Log transactions.");
-                }
-                else {
-                    showDangerAlert(data.message);
-                }
-            },
-            error: function () {
-                showDangerAlert('Error retrieving data.');
-            }
-        });
-    }).on('pnotify.cancel', function () {
-        loadNatProjectData();
-    });
-}
+//    PNotify.prototype.options.styling = "bootstrap3";
+//    (new PNotify({
+//        title: 'Confirmation Needed',
+//        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+//        icon: 'glyphicon glyphicon-question-sign',
+//        hide: false,
+//        confirm: {
+//            confirm: true
+//        },
+//        buttons: {
+//            closer: false,
+//            sticker: false
+//        },
+//        history: {
+//            history: false
+//        },
+//    })).get().on('pnotify.confirm', function () {
+//        $.ajax({
+//            url: '/BisProjectTrac/DeleteNatProjectAsync',
+//            type: 'POST',
+//            data: { id: recid },
+//            success: function (data) {
+//                if (data.success == true) {
+//                    showSuccessNewAlert("Nature of Project Deleted successfully.");
+//                    setTimeout(function () {
+//                        window.location.reload();
+//                    }, 2500);
+//                }
+//                else if (data.success == false && data.message == "Not_Deleted") {
+//                    showDangerAlert("Record is used in QMS Log transactions.");
+//                }
+//                else {
+//                    showDangerAlert(data.message);
+//                }
+//            },
+//            error: function () {
+//                showDangerAlert('Error retrieving data.');
+//            }
+//        });
+//    }).on('pnotify.cancel', function () {
+//        loadNatProjectData();
+//    });
+//}
 
-function clearForm() {
-    // Clear all input fields
-    document.querySelectorAll('.form-control').forEach(function (input) {
-        if (input.tagName === 'INPUT') {
-            if (input.type === 'hidden' || input.readOnly) {
-                // Skip hidden or readonly inputs
-                return;
-            }
-            input.value = ''; // Clear input value
-        } else if (input.tagName === 'SELECT') {
-            input.selectedIndex = 0; // Reset dropdown to first option
-        }
-    });
+//function clearForm() {
+//    // Clear all input fields
+//    document.querySelectorAll('.form-control').forEach(function (input) {
+//        if (input.tagName === 'INPUT') {
+//            if (input.type === 'hidden' || input.readOnly) {
+//                // Skip hidden or readonly inputs
+//                return;
+//            }
+//            input.value = ''; // Clear input value
+//        } else if (input.tagName === 'SELECT') {
+//            input.selectedIndex = 0; // Reset dropdown to first option
+//        }
+//    });
 
-    // Clear error messages if needed
-    document.querySelectorAll('.text-danger').forEach(function (error) {
-        error.textContent = '';
-    });
-}
+//    // Clear error messages if needed
+//    document.querySelectorAll('.text-danger').forEach(function (error) {
+//        error.textContent = '';
+//    });
+//}
 
 

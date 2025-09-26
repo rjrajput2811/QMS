@@ -135,12 +135,11 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     new SqlParameter("@Report_Release_Date", updatedRecord.Report_Release_Date ?? (object)DBNull.Value),
                     new SqlParameter("@NABL_Released_Date", updatedRecord.NABL_Released_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Report", updatedRecord.Final_Report ?? (object)DBNull.Value),
-                    new SqlParameter("@CreatedBy", updatedRecord.CreatedBy ?? (object)DBNull.Value),
-                    new SqlParameter("@IsDeleted", updatedRecord.Deleted),
+                    new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 var sql = @"EXEC sp_Update_FifoTrac @FifoTrac_Id,@Sample_Recv_Date,@Sample_Cat_Ref,@Sample_Desc,@Vendor,@Sample_Qty,@Test_Req,@Test_Status,@Responsbility,@Test_Completion_Date,
-                        @Report_Release_Date,@NABL_Released_Date,@Final_Report,@UpdatedBy,@IsDeleted";
+                        @Report_Release_Date,@NABL_Released_Date,@Final_Report,@UpdatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -249,6 +248,33 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                 }
 
                 return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> UpdateAttachmentAsync(int id, string fileName)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return false;
+
+                var record = await _dbContext.FIFOTracker.FindAsync(id);
+                if (record == null)
+                    return false;
+
+                record.Final_Report = fileName;
+
+                // Only update the BIS_Attachment property
+                _dbContext.Entry(record).Property(x => x.Final_Report).IsModified = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
             }
             catch (Exception ex)
             {

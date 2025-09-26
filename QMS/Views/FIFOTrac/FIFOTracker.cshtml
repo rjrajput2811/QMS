@@ -20,6 +20,26 @@
 
 <style>
 
+    /* Your custom CSS */
+    .nav-pills .nav-link {
+        text-align: left;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+        font-weight: 500;
+        width: 100%;
+        padding: 12px;
+        background-color: #fff;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: #f4f3f8;
+            border-left: 4px solid #645394;
+            color: #645394;
+            font-weight: bold;
+        }
+
     .form-control {
         padding: 0 10px !important;
         border: 0;
@@ -33,11 +53,11 @@
     }
 
     #scrollToTopBtn:hover {
-        background-color: #0056b3; /* Darker blue */
+        background-color: #0056b3;
     }
 
     #scrollToTopBtn {
-        outline: none; /* Removes the focus border */
+        outline: none;
     }
 
     .tabulator .tabulator-header .tabulator-col {
@@ -60,7 +80,44 @@
     }
 
     .form-group {
-        margin-bottom: 0.5rem; /* Reduce space between each input group */
+        margin-bottom: 0.5rem;
+    }
+    /* Select2 styling inside Tabulator cells */
+    .select2-container--default .select2-selection--single {
+        height: auto !important;
+        padding: 5px !important;
+    }
+
+    .select2-dropdown {
+        z-index: 999999 !important;
+    }
+
+    .autocomplete-dropdown {
+        position: absolute;
+        z-index: 99999 !important;
+        background: #fff;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        max-height: 200px;
+        overflow-y: auto;
+        border-radius: 4px;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+    }
+
+    .autocomplete-option {
+        padding: 6px 10px;
+        border-bottom: 1px solid #eee;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .autocomplete-option:hover {
+            background-color: #f0f0f0;
+        }
+
+    .modal-body {
+        overflow: visible !important; /* required for dropdown to be visible in Bootstrap modal */
     }
 
     .calendar-container {
@@ -107,7 +164,7 @@
         }
         /* light warning */
         100% {
-            background-color: transparent;
+            background-color: #e6e6e6 !important;
         }
     }
 
@@ -115,10 +172,57 @@
         animation: flash-bg 2s ease-out forwards;
     }
 
-    /* if your table has zebra or hover styles, ensure the flash wins */
-    .tabulator-row.row-flash {
-        transition: background-color 2s ease-out;
+    .tab-multi-ac {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        align-items: center;
+        min-height: 30px;
+        padding: 4px;
+        cursor: text;
     }
+
+        .tab-multi-ac input {
+            border: none;
+            outline: none;
+            flex: 1 0 120px;
+            min-width: 100px;
+        }
+
+    .tab-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: #eef1f6;
+        font-size: 12px;
+    }
+
+        .tab-tag .tab-x {
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+    .autocomplete-dropdown {
+        position: fixed; /* stays put while page scrolls */
+        z-index: 99999;
+        max-height: 240px;
+        overflow: auto;
+        border: 1px solid #ddd;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+
+    .autocomplete-option {
+        padding: 6px 10px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .autocomplete-option:hover, .autocomplete-option.active {
+            background: #f2f6ff;
+        }
 </style>
 
 
@@ -188,7 +292,7 @@
         window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
     </script>
 
-    <script src="~/scripts/bisprojecttracker/bisproject.js" asp-append-version="true"></script>
+    <script src="~/scripts/fifotracker/fifotracker.js" asp-append-version="true"></script>
 }
 
 @section HideSidebar { }

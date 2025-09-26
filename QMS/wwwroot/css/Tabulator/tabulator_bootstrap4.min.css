@@ -610,7 +610,7 @@
 
 @media (hover:hover) and (pointer:fine) {
     .tabulator-row.tabulator-selected:hover {
-        background-color: #769bcc;
+    /*    background-color: #769bcc;*/
         cursor: pointer
     }
 }

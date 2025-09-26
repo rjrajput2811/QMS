@@ -42,133 +42,50 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        [Route("KaizenTracker/CreateAsync")]
-        public async Task<JsonResult> CreateAsync([FromBody] KaizenTracker model)
+        public async Task<JsonResult> CreateAsync([FromBody] Kaizen_Tracker model)
         {
             try
             {
+
                 if (model == null)
-                    return Json(new { success = false, message = "Invalid data" });
+                    return Json(new { success = false, message = "Invalid Kaizen Tracker data." });
 
-                // Optional: Add duplication logic
-                bool exists = false;
 
-                if (!exists)
+                model.CreatedDate = DateTime.Now;
+                model.CreatedBy = HttpContext.Session.GetString("FullName");
+                var result = await _kaizenTrackerRepository.CreateAsync(model);
+
+                if (result.Success)
                 {
-                  // model.CreatedDate = DateTime.Now;
-                    model.CreatedBy = HttpContext.Session.GetString("FullName");
-
-                    var result = await _kaizenTrackerRepository.CreateAsync(model);
-
-                    if (result.Success)
-                        return Json(new { success = true, message = "Saved successfully.", id = result.ObjectId });
-
-                    return Json(new { success = false, message = "Failed to save.", id = 0 });
+                    return Json(new { success = true, message = "Kaizen Tracker Detail saved successfully." });
                 }
-                else
-                {
-                    return Json(new { success = false, message = "Duplicate entry." });
-                }
+
+                return Json(new { success = false, message = "Failed to save kaizen tracker detail.", id = 0 });
+
             }
             catch (Exception ex)
             {
                 _systemLogService.WriteLog(ex.Message);
-                return Json(new { success = false, message = "Error occurred while saving." });
+                throw;
             }
         }
 
         [HttpPost]
-        [Route("KaizenTracker/UpdateAsync")]
-        public async Task<JsonResult> UpdateAsync([FromBody] KaizenTracker model)
+        public async Task<JsonResult> UpdateAsync([FromBody] Kaizen_Tracker model)
         {
-            try
+            if (ModelState.IsValid)
             {
-                if (model == null || model.Id <= 0)
-                    return Json(new { success = false, message = "Invalid update data" });
-
                 model.UpdatedDate = DateTime.Now;
                 model.UpdatedBy = HttpContext.Session.GetString("FullName");
 
-                var result = await _kaizenTrackerRepository.UpdateAsync(model);
+                var operationResult = await _kaizenTrackerRepository.UpdateAsync(model);
 
-                if (result.Success)
-                    return Json(new { success = true, message = "Updated successfully." });
-
-                return Json(new { success = false, message = "Update failed." });
+                return Json(operationResult);
             }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                return Json(new { success = false, message = "Error during update." });
-            }
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
         }
 
-        [HttpPost]
-        [Route("KaizenTracker/UploadFile")]
-        public async Task<IActionResult> UploadFile(IFormFile file, int kId)
-        {
-            if (file == null || file.Length == 0)
-                return BadRequest(new { message = "No file uploaded." });
-
-            try
-            {
-                const long MaxFileSize = 5 * 1024 * 1024;
-                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
-
-                var record = await _kaizenTrackerRepository.GetByIdAsync(kId);
-                if (record == null)
-                    return NotFound(new { message = "Kaizen record not found." });
-
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "KaizenAttachments");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var ext = Path.GetExtension(file.FileName).ToLower();
-                if (file.Length > MaxFileSize)
-                    return Json(new { success = false, message = $"File '{file.FileName}' exceeds the 5MB limit." });
-
-                if (!allowedExtensions.Contains(ext))
-                    return Json(new { success = false, message = $"File type not allowed: {file.FileName}" });
-
-                var uniqueFileName = $"{record.Vendor}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
-                string relativePath = Path.Combine("KaizenAttachments", uniqueFileName).Replace("\\", "/");
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                record.KaizenFile = relativePath;
-                record.Id = kId;
-
-                var updateResult = await _kaizenTrackerRepository.UpdateAsync(record);
-                if (!updateResult.Success)
-                    return StatusCode(500, new { message = "Failed to update the record with file info." });
-
-                return Json(new { success = true, message = "done" });
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                return StatusCode(500, new { message = "File upload or update failed." });
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetVendor()
-        {
-            try
-            {
-                var vendorList = await _kaizenTrackerRepository.GetVendorDropdownAsync();
-                return Json(vendorList);
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                return StatusCode(500, "Error retrieving vendor dropdown.");
-            }
-        }
 
         [HttpPost]
         public async Task<JsonResult> Delete(int id)
@@ -182,6 +99,46 @@ namespace QMS.Controllers
             {
                 _systemLogService.WriteLog(ex.Message);
                 return Json(new { success = false, message = "Error occurred while deleting Kaizen record." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadKaizenAttachment(IFormFile file, int id)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file selected." });
+
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                    return Json(new { success = false, message = "Only PDF and image files are allowed." });
+
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "KaizenTrac_Attach", id.ToString());
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
+
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+                var newFileName = $"{nameWithoutExt}_{timestamp}{extension}";
+                var filePath = Path.Combine(uploadsPath, newFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Optional: update DB with the new file name
+                await _kaizenTrackerRepository.UpdateAttachmentAsync(id, newFileName);
+
+                return Json(new { success = true, id = id, fileName = newFileName });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
             }
         }
     }

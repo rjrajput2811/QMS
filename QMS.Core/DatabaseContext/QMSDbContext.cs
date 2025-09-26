@@ -31,7 +31,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<PDITracker> PDITracker { get; set; }
         public DbSet<DNTracker> DeviationNote { get; set; }
         public DbSet<ImprovementTracker> ImprovementTracker { get; set; }
-        public DbSet<KaizenTracker> KaizenTracker { get; set; }
+        public DbSet<Kaizen_Tracker> Kaizen_Tracker { get; set; }
         public DbSet<SPMReport> SPMReports { get; set; }
         public DbSet<RMTCDetails> RMTCDetails { get; set; }
         public DbSet<ThirdPartyTesting> ThirdPartyTesting { get; set; }

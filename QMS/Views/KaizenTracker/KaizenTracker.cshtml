@@ -1,37 +1,25 @@
 ﻿@{
     ViewData["Title"] = "Kaizen Tracker";
 }
-
-<!-- CSS files -->
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
-<link href="~/css/pnotify.css" rel="stylesheet" />
-
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+@* <script src="~/lib/bootstrap/dist/js/popupAlert.js"></script> *@
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
+@* <script src="~/js/xlsx.min.js"></script> *@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
-    .nav-pills .nav-link {
-        text-align: left;
-        border-radius: 0;
-        border-left: 4px solid transparent;
-        font-weight: 500;
-        width: 100%;
-        padding: 12px;
-        background-color: #fff;
-        color: #333;
-        margin-bottom: 4px;
-    }
-
-        .nav-pills .nav-link.active {
-            background-color: #f4f3f8;
-            border-left: 4px solid #645394;
-            color: #645394;
-            font-weight: bold;
-        }
-
     .form-control {
         padding: 0 10px !important;
         border: 0;
@@ -44,6 +32,14 @@
         margin-top: .3rem;
     }
 
+    #scrollToTopBtn:hover {
+        background-color: #0056b3; /* Darker blue */
+    }
+
+    #scrollToTopBtn {
+        outline: none; /* Removes the focus border */
+    }
+
     .tabulator .tabulator-header .tabulator-col {
         font-size: 14px;
         background-color: #D6E4F0;
@@ -54,7 +50,7 @@
     .tabulator-row .tabulator-cell {
         padding: 5px 5px;
         font-size: 14px;
-        height: 30px;
+        height: 35px;
     }
 
     .tabulator-cell:hover {
@@ -63,16 +59,21 @@
         font-weight: bold;
     }
 
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+
     .calendar-container {
         cursor: pointer;
-        padding: 10px 15px;
+        padding: 8px 8px;
         width: 100%;
-        border-radius: 8px;
+        border-radius: 5px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
         transition: background-color 0.3s, box-shadow 0.3s;
         gap: 8px;
+        border: 1px solid slategray;
     }
 
         .calendar-container:hover {
@@ -89,40 +90,35 @@
         .calendar-container span {
             color: #4682B4;
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
         }
 
-    .modal-body {
-        overflow: visible !important;
-    }
-
-    .form-group {
-        margin-bottom: 0.5rem;
-    }
-
-    .autocomplete-dropdown {
-        position: absolute;
-        z-index: 99999 !important;
-        background: #fff;
-        border: 1px solid #ccc;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        max-height: 200px;
-        overflow-y: auto;
-        border-radius: 4px;
-        font-family: Arial, sans-serif;
+    .container__predefined-ranges {
         font-size: 14px;
     }
 
-    .autocomplete-option {
-        padding: 6px 10px;
-        border-bottom: 1px solid #eee;
-        cursor: pointer;
-        white-space: nowrap;
+    .month-item {
+        font-size: 14px;
     }
 
-        .autocomplete-option:hover {
-            background-color: #f0f0f0;
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
         }
+        /* light warning */
+        100% {
+            background-color: transparent;
+        }
+    }
+
+    .row-flash {
+        animation: flash-bg 2s ease-out forwards;
+    }
+
+    /* if your table has zebra or hover styles, ensure the flash wins */
+    .tabulator-row.row-flash {
+        transition: background-color 2s ease-out;
+    }
 </style>
 
 <div class="content">
@@ -131,11 +127,23 @@
             <div>
                 <b style="font-size: large; color: #4682B4;">Kaizen Tracker</b>
             </div>
+            <div class="col-md-3">
+                <div id="customDateTriggerKaiz" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeKaiz">Select Date Range</span>
+                </div>
+            </div>
             <div>
-                <button id="addButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px; font-size:15px">
+                <button id="addKaizenButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 95px; font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button id="backButton" class="btn btn-outline-primary">
+                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel('Kaizen')" style="width: 183px;font-size:15px">
+                    <i class="fas fa-regular fa-book mr-2 fa-1x"></i>Add Doc. Detail
+                </button>
+                <button id="exportKaizenButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
+                </button>
+                <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
@@ -147,16 +155,8 @@
             <div class="card">
                 <div class="card-body">
                     <div class="chart-container">
-                        <div class="col-md-4">
-                            <div id="customDateTrigger" class="calendar-container">
-                                <i class="fa fa-calendar"></i>
-                                <span id="dateRangeText">Select Date Range</span>
-                            </div>
-                        </div>
-                        <div class="form-group row mt-3">
-                            <div id="kaizen_table_wrapper" style="overflow-x: auto;">
-                                <div id="kaizen_table"></div>
-                            </div>
+                        <div class="form-group row">
+                            <div id="kaizen_table" class="col-12"></div>
                         </div>
                     </div>
                 </div>
@@ -166,38 +166,26 @@
 </div>
 
 @section Scripts {
-    <script src="~/js/jquery.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
 
-    <!-- DataTables core & buttons (optional if using only Tabulator) -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 
-    <!-- Select2 -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <!-- Tabulator -->
-    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
     <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
 
-    <!-- XLSX -->
-    <script src="~/js/xlsx.min.js"></script>
-
-    <!-- PNotify -->
-    <script src="~/js/pnotify.js"></script>
-    <script src="~/js/pnotify.confirm.js"></script>
-
-    <!-- Popup Alert -->
-    <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
-
-    <!-- Custom JS for Kaizen Tracker -->
-    <script src="~/scripts/KaizenTracker/kaizen-tracker.js" asp-append-version="true"></script>
+    <script src="~/scripts/kaizentracker/kaizen-tracker.js" asp-append-version="true"></script>
 }
+
+@section HideSidebar { }
+@await Html.PartialAsync("_DocumentDetModelpartial")

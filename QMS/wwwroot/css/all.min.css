@@ -5731,7 +5731,7 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 
 .nav-link {
     display: block;
-    padding: .75rem 1.25rem
+    padding: .10rem 1.25rem
 }
 
     .nav-link:focus, .nav-link:hover {
@@ -6313,7 +6313,7 @@ input[type=button].btn-block, input[type=reset].btn-block, input[type=submit].bt
 }
 
 .card-header {
-    padding: 1.25rem 1.25rem;
+    padding: 0.25rem 1.25rem;
     margin-bottom: 0;
     background-color: rgba(0,0,0,.02);
     border-bottom: 1px solid rgba(0,0,0,.125)

@@ -31,7 +31,7 @@
     <link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/all.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+   
     <style>
         body {
             background: #D6E4F0 ;
@@ -96,6 +96,9 @@
                 display: block; /* Show the submenu when it has the 'open' class */
                 color: #FFFF00 !important;
             }
+
+
+
     </style>
 </head>
 <body style="overflow:hidden">
@@ -159,14 +162,26 @@
 
         </div>
     </div>
+ 
+    <div class="row align-items-center" style="padding:10px;">
+        <!-- Search box on the left -->
+        <div class="col-md-4">
+            <input type="text" id="cardSearch" class="form-control" placeholder="Search Tracker..." style="border-radius: 20px;">
+        </div>
 
-    <div class="ml-auto">
-        <button id="tarcBackButton" type="button" class="btn btn-outline-primary" onclick="location.href='@Url.Action("WiproMenu", "Home")'" style="margin: 5px 3px;width: 175px; font-size:15px;margin-bottom:-50px;margin-right:15px;">
-            <i class="fas fa-arrow-left"></i>Back To Wipro
-        </button>
+        <!-- Back button on the right -->
+        <div class="col-md-8 text-end">
+            <button id="tarcBackButton" type="button" class="btn btn-primary"
+                    onclick="location.href='@Url.Action("WiproMenu", "Home")'"
+                    style="width: 175px; font-size:15px;">
+                <i class="fas fa-arrow-left"></i> Back To Wipro
+            </button>
+        </div>
     </div>
 
-    <div class=" py-5" >
+
+    <div  style="padding:50px;" >
+        
         <div class="d-flex flex-column gap-2">
 
             <div class="row g-2">
@@ -208,7 +223,8 @@
                 </div>
 
                 <div class="col-2">
-                    <div class="card qms-card " onclick="">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("FIFOTracker", "FIFOTrac")'">
+                     
                         <div class="d-flex align-items-center">
                             <i class="bi bi-alipay icon me-3" style="color:chocolate"></i>
                             <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
@@ -236,8 +252,8 @@
                     </div>
                 </div>
 
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("PDIAuthSignatory","PDIAuthSign")'">
+                <div class="col-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("PDIAuthSignatory","PDIAuthSign")'">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkkhaki"></i>
                             <h5 class="mb-0">PDI Authorised Signatory </h5>
@@ -245,23 +261,7 @@
                     </div>
                 </div>
 
-                @* <div class="col-3">
-                    <div class="card qms-card p-2" onclick="">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:chocolate"></i>
-                            <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-3">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:cyan"></i>
-                            <h5 class="mb-0">Third Party Test Tracker</h5>
-                        </div>
-                    </div>
-                </div> *@
+               
             </div>
       
 
@@ -306,6 +306,26 @@
             section.style.display = 'block';
             titleElement.textContent = `${title} - Details`;
         }
+
+
+
+        // Search Functionality
+        const searchInput = document.getElementById("cardSearch");
+        const cards = document.querySelectorAll("#cardContainer .card-item");
+
+        searchInput.addEventListener("keyup", function() {
+            const filter = this.value.toLowerCase();
+
+            cards.forEach(card => {
+                const title = card.querySelector("h5").innerText.toLowerCase();
+                if (title.includes(filter)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+   
     </script>
 
 </body>

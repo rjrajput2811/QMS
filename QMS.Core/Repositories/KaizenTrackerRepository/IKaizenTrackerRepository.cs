@@ -8,11 +8,11 @@ namespace QMS.Core.Repositories.KaizenTrackerRepository
 {
     public interface IKaizenTrackerRepository
     {
-        Task<List<KaizenTrackerViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null);
-        Task<KaizenTracker?> GetByIdAsync(int id);
-        Task<OperationResult> CreateAsync(KaizenTracker entity, bool returnCreatedRecord = false);
-        Task<OperationResult> UpdateAsync(KaizenTracker entity, bool returnUpdatedRecord = false);
+        Task<List<KaizenTracViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null);
+        Task<KaizenTracViewModel?> GetByIdAsync(int id);
+        Task<OperationResult> CreateAsync(Kaizen_Tracker kaizen, bool returnCreatedRecord = false);
+        Task<OperationResult> UpdateAsync(Kaizen_Tracker kaizen, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int id);
-        Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync();
+        Task<bool> UpdateAttachmentAsync(int id, string fileName);
     }
 }

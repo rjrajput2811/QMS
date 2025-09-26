@@ -5,48 +5,41 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QMS.Core.DatabaseContext
 {
-    [Table("tbl_KaizenTracker")]
-    public class KaizenTracker : SqlTable
+    [Table("tbl_Kaizen_Tracker")]
+    public class Kaizen_Tracker : SqlTable
     {
         //-----------------------------------
         // SqlTable override
         //-----------------------------------
         [Key]
-        [Column("Id")]
+        [Column("Kaizen_Id")]
         public override int Id { get; set; }
 
         [Column("IsDeleted")]
         public override bool Deleted { get; set; }
         //------------ END overrides --------
 
-        [Column("Vendor")]
         public string? Vendor { get; set; }
 
-        [Column("KaizenTheme")]
-        public string? KaizenTheme { get; set; }
+        public string? Kaizen_Theme { get; set; }
 
-        [Column("KMonth")]
-        public string? KMonth { get; set; }
+        public string? Month { get; set; }
 
-        [Column("Team")]
         public string? Team { get; set; }
 
-        [Column("KaizenFile")]
-        public string? KaizenFile { get; set; }
+        public string? Kaizen_Attch { get; set; }
 
-        [Column("CreatedDate")]
+        public string? Remark { get; set; }
+
+        public string? FY { get; set; }
+
         public DateTime? CreatedDate { get; set; }
 
-        [Column("UpdatedDate")]
-        public DateTime? UpdatedDate { get; set; }
-
-        [Column("CreatedBy")]
         public string? CreatedBy { get; set; }
 
-        [Column("UpdatedBy")]
+        public DateTime? UpdatedDate { get; set; }
+
         public string? UpdatedBy { get; set; }
 
-        [Column("Remarks")]
-        public string? Remarks { get; set; }
     }
 }

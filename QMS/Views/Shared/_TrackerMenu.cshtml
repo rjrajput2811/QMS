@@ -34,7 +34,8 @@
 
     <style>
         body {
-            background: #e9ecef;
+            background: #D6E4F0 ;
+          
         }
 
         .qms-card {
@@ -97,7 +98,7 @@
             }
     </style>
 </head>
-<body>
+<body style="overflow:hidden">
 
     <div class="navbar navbar-dark navbar-expand-lg navbar-static">
         <div class="d-md-none">
@@ -165,12 +166,12 @@
         </button>
     </div>
 
-    <div class="container py-5" style="max-width:50%;">
+    <div class=" py-5" >
         <div class="d-flex flex-column gap-2">
 
             <div class="row g-2">
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("BisProjectTracker","BisProjectTrac")'">
+                <div class="col-2">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("BisProjectTracker","BisProjectTrac")'">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-calendar icon me-3"></i>
                             <h5 class="mb-0">BIS Project Tracker</h5>
@@ -178,8 +179,8 @@
                     </div>
                 </div>
 
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("ThirdPartyInspection","ThirdPartyInspection")'">
+                <div class="col-2">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("ThirdPartyInspection","ThirdPartyInspection")'">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred"></i>
                             <h5 class="mb-0">Third Party Inspection Tracker</h5>
@@ -187,26 +188,18 @@
                     </div>
                 </div>
 
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("PaymentTracker","PaymentTracker")'">
+                <div class="col-2">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("PaymentTracker","PaymentTracker")'">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-person-badge icon me-3" style="color:seagreen"></i>
                             <h5 class="mb-0">Payment Tracker</h5>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            @*  <div class="card qms-card p-2" onclick="location.href='@Url.Action("PaymentTracker","PaymentTracker")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-person-badge icon me-3" style="color:seagreen"></i>
-                    <h5 class="mb-0">Payment Tracker</h5>
-                </div>
-            </div> *@
-
-            <div class="row g-2">
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("PDITracker","PDITracker")'">
+           
+          
+                <div class="col-2">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("PDITracker","PDITracker")'">
                         <div class="d-flex align-items-center">
                             <i class="bi bi-book icon me-3" style="color:blueviolet"></i>
                             <h5 class="mb-0">PDI Tracker</h5>
@@ -214,54 +207,38 @@
                     </div>
                 </div>
 
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="">
+                <div class="col-2">
+                    <div class="card qms-card " onclick="">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:chocolate"></i>
+                            <i class="bi bi-alipay icon me-3" style="color:chocolate"></i>
                             <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
+                <div class="col-2">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:cyan"></i>
+                            <i class="bi bi-bar-chart-steps icon me-3" style="color:cyan"></i>
                             <h5 class="mb-0">Third Party Test Tracker</h5>
                         </div>
                     </div>
                 </div>
-            </div>
+          
 
-            <div class="row g-2">
-                <div class="col-4">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("KaizenTracker","KaizenTracker")'">
+           
+                <div class="col-2">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("KaizenTracker","KaizenTracker")'">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:blueviolet"></i>
+                            <i class="bi bi-amd icon me-3" style="color:blueviolet"></i>
                             <h5 class="mb-0">Kaizen Tracker</h5>
                         </div>
                     </div>
                 </div>
 
-                @* <div class="col-3">
-                    <div class="card qms-card p-2" onclick="">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:chocolate"></i>
-                            <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-3">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:cyan"></i>
-                            <h5 class="mb-0">Third Party Test Tracker</h5>
-                        </div>
-                    </div>
-                </div> *@
+               
             </div>
-
+      
 
 
         </div>

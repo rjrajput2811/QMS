@@ -121,7 +121,7 @@ namespace QMS.Core.Repositories.ContiImproveRespository
                     new SqlParameter("@Conti_Improve_Plane", updatedRecord.Conti_Improve_Plane ?? (object)DBNull.Value),
                     new SqlParameter("@Iso_9001", updatedRecord.Iso_9001 ?? (object)DBNull.Value),
                     new SqlParameter("@Iso9001_Plane_Implement", updatedRecord.Iso9001_Plane_Implement ?? (object)DBNull.Value),
-                    new SqlParameter("@Iso_14001", updatedRecord.Iso14001_Plane_Implement ?? (object)DBNull.Value),
+                    new SqlParameter("@Iso_14001", updatedRecord.Iso_14001 ?? (object)DBNull.Value),
                     new SqlParameter("@Iso14001_Plane_Implement", updatedRecord.Iso14001_Plane_Implement ?? (object)DBNull.Value),
                     new SqlParameter("@Iso_45001", updatedRecord.Iso_45001 ?? (object)DBNull.Value),
                     new SqlParameter("@Iso_45001_Plane_Implement", updatedRecord.Iso_45001_Plane_Implement ?? (object)DBNull.Value),

@@ -304,7 +304,7 @@ function OnTabGridLoad(response) {
             }
         ),
 
-        { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
+        { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
         { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false }
     );
@@ -887,7 +887,7 @@ function InsertUpdateContiImprove(rowData) {
         Iso9001_Plane_Implement: rowData.Iso9001_Plane_Implement || "",
         Iso_14001: rowData.Iso_14001 || false,
         Iso14001_Plane_Implement: rowData.Iso14001_Plane_Implement || "",
-        Iso_45001: rowData.iso_45001 || false,
+        Iso_45001: rowData.Iso_45001 || false,
         Iso_45001_Plane_Implement: rowData.Iso_45001_Plane_Implement || "",
         FY: rowData.FY || ""
     };

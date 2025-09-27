@@ -582,6 +582,7 @@ function OnTabGridLoad(response) {
         },
 
         editableColumn("Sample Received Date", "Sample_Recv_Date", "date", "center"),
+
         {
             title: "Sample Cat Ref.",
             field: "ProductCode",

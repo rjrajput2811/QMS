@@ -166,7 +166,7 @@
     <div class="row align-items-center" style="padding:10px;">
         <!-- Search box on the left -->
         <div class="col-md-4">
-            <input type="text" id="cardSearch" class="form-control" placeholder="Search Tracker..." style="border-radius: 20px;">
+            <input type="text" id="cardSearch" class="form-control" placeholder="Search Tracker..." style="border-radius: 10px;">
         </div>
 
         <!-- Back button on the right -->
@@ -260,7 +260,14 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="col-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("PDIAuthSignatory", "PDIAuthSign")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkkhaki"></i>
+                            <h5 class="mb-0">PDI Authorised Signatory </h5>
+                        </div>
+                    </div>
+                </div>
                
             </div>
       

@@ -41,6 +41,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<PDI_Auth_Signatory> PDI_Auth_Signatory { get; set; }
         public DbSet<Continual_Improve_Tracker> Continual_Improves { get; set; }
         public DbSet<RM_TC_Tracker> RM_TC_Tracker { get; set; }
+        public DbSet<CSAT_Comment> CSAT_Comment { get; set; }
 
 
 

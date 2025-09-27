@@ -16,6 +16,6 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
         Task<OperationResult> DeleteAsync(int Id);
         Task<FIFOTrackerViewModel?> GetByIdAsync(int id);
         Task<bool> CheckDuplicate(string searchText, int id);
-        //Task<bool> UpdateAttachmentAsync(int id, string fileName);
+        Task<bool> UpdateAttachmentAsync(int id, string fileName);
     }
 }

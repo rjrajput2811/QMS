@@ -29,6 +29,7 @@ using QMS.Core.Repositories.DocumentConfiRepository;
 using QMS.Core.Repositories.ThirdPartyTestRepository;
 using QMS.Core.Repositories.FIFOTrackerRepository;
 using QMS.Core.Repositories.PDIAuthSignRepository;
+using QMS.Core.Repositories.ContiImproveRespository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -69,6 +70,7 @@ builder.Services.AddTransient<IDocumentConfiRepository, DocumentConfiRepository>
 builder.Services.AddTransient<IThirdPartyTestRepository, ThirdPartyTestRepository>();
 builder.Services.AddTransient<IFIFOTrackerRepository, FIFOTrackerRepository>();
 builder.Services.AddTransient<IPDIAuthSignRepository, PDIAuthSignRepository>();
+builder.Services.AddTransient<IContiImproveRespository, ContiImproveRespository>();
 
 //
 

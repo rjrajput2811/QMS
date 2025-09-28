@@ -11,7 +11,6 @@ namespace QMS.Core.Repositories.DNTrackerRepository
         Task<OperationResult> CreateAsync(DNTracker entity);
         Task<OperationResult> UpdateAsync(DNTracker entity);
         Task<OperationResult> DeleteAsync(int id);
-        Task<List<DropdownOptionViewModel>> GetProductCodeAsync();
-        Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync();
+        Task<bool> UpdateAttachmentAsync(int id, string fileName);
     }
 }

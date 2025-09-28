@@ -154,10 +154,16 @@
             </div>
 
             <div>
-                <button id="addButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px; font-size:15px">
+                <button id="addDNButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px; font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button id="backButton" class="btn btn-outline-primary">
+                <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel('CSAT')" style="width: 183px;font-size:15px">
+                    <i class="fas fa-regular fa-book mr-2 fa-1x"></i>Add Doc. Detail
+                </button>
+                <button id="exportDNButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
+                </button>
+                <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>

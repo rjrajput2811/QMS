@@ -99,29 +99,7 @@ namespace QMS.Controllers
                 return Json(new { success = false, message = "Error during update." });
             }
         }
-        [HttpGet]
-        public async Task<JsonResult> GetCodeSearchAsync(string search = "")
-        {
-            try
-            {
-                // Initialize processed search terms
-                string processedSearch = string.Empty;
-
-                if (!string.IsNullOrEmpty(search))
-                {
-                    if (search.Length >= 4)
-                        processedSearch = search.Substring(0, 4); // First 4 characters
-                }
-
-                var productCodeDetailsList = await _vendorRepository.GetCodeSearchAsync(processedSearch);
-
-                return Json(productCodeDetailsList);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
+       
         [HttpPost]
         public async Task<JsonResult> Delete(int id)
         {
@@ -136,26 +114,46 @@ namespace QMS.Controllers
                 return Json(new { success = false, message = "Error occurred while deleting Deviation Note." });
             }
         }
-        [HttpGet]
-        public async Task<IActionResult> GetVendor()
+
+        [HttpPost]
+        public async Task<IActionResult> UploadDNAttachment(IFormFile file, int id)
         {
             try
             {
-                var vendorList = await _deviationNoteRepository.GetVendorDropdownAsync();
-                return Json(vendorList);
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file selected." });
+
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                    return Json(new { success = false, message = "Only PDF and image files are allowed." });
+
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "DNTrac_Attach", id.ToString());
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
+
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+                var newFileName = $"{nameWithoutExt}_{timestamp}{extension}";
+                var filePath = Path.Combine(uploadsPath, newFileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                // Optional: update DB with the new file name
+                await _deviationNoteRepository.UpdateAttachmentAsync(id, newFileName);
+
+                return Json(new { success = true, id = id, fileName = newFileName });
             }
             catch (Exception ex)
             {
                 _systemLogService.WriteLog(ex.Message);
-                return StatusCode(500, "Error retrieving vendor dropdown.");
+                throw;
             }
         }
-        //[HttpGet]
-        //public async Task<IActionResult> GetProductCodes()
-        //{
-        //    var productCodes = await _deviationNoteRepository.GetProductCodeAsync();
-        //    return Json(productCodes);
-        //}
 
     }
 }

@@ -43,7 +43,7 @@ namespace QMS.Core.Repositories.DNTrackerRepository
                     DNoteNumber = x.DNoteNumber,
                     DNoteCategory = x.DNoteCategory,
                     ProductCode = x.ProductCode,
-                    ProductDescription = x.ProductDescription,
+                    ProdDesc = x.ProdDesc,
                     Wattage = x.Wattage,
                     DQty = x.DQty,
                     DRequisitionBy = x.DRequisitionBy,
@@ -91,7 +91,7 @@ namespace QMS.Core.Repositories.DNTrackerRepository
             new SqlParameter("@DNoteNumber", entity.DNoteNumber ?? (object)DBNull.Value),
             new SqlParameter("@DNoteCategory", entity.DNoteCategory ?? (object)DBNull.Value),
             new SqlParameter("@ProductCode", entity.ProductCode ?? (object)DBNull.Value),
-            new SqlParameter("@ProductDescription", entity.ProductDescription ?? (object)DBNull.Value),
+            new SqlParameter("@ProdDesc", entity.ProdDesc ?? (object)DBNull.Value),
             new SqlParameter("@Wattage", entity.Wattage ?? (object)DBNull.Value),
             new SqlParameter("@DQty", entity.DQty ?? (object)DBNull.Value),
             new SqlParameter("@DRequisitionBy", entity.DRequisitionBy ?? (object)DBNull.Value),
@@ -103,7 +103,7 @@ namespace QMS.Core.Repositories.DNTrackerRepository
         };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Insert_DN_Tracker @DNoteNumber, @DNoteCategory, @ProductCode, @ProductDescription, @Wattage, @DQty, @DRequisitionBy, @Vendor, @Remark, @CreatedBy, @CreatedDate, @IsDeleted",
+                    "EXEC sp_Insert_DN_Tracker @DNoteNumber, @DNoteCategory, @ProductCode, @ProdDesc, @Wattage, @DQty, @DRequisitionBy, @Vendor, @Remark, @CreatedBy, @CreatedDate, @IsDeleted",
                     parameters);
 
                 return new OperationResult { Success = true };
@@ -125,7 +125,7 @@ namespace QMS.Core.Repositories.DNTrackerRepository
                     new SqlParameter("@DNoteNumber", entity.DNoteNumber ?? (object)DBNull.Value),
                     new SqlParameter("@DNoteCategory", entity.DNoteCategory ?? (object)DBNull.Value),
                     new SqlParameter("@ProductCode", entity.ProductCode ?? (object)DBNull.Value),
-                    new SqlParameter("@ProductDescription", entity.ProductDescription ?? (object)DBNull.Value),
+                    new SqlParameter("@ProdDesc", entity.ProdDesc ?? (object)DBNull.Value),
                     new SqlParameter("@Wattage", entity.Wattage ?? (object)DBNull.Value),
                     new SqlParameter("@DQty", entity.DQty ?? (object)DBNull.Value),
                     new SqlParameter("@DRequisitionBy", entity.DRequisitionBy ?? (object)DBNull.Value),
@@ -135,7 +135,7 @@ namespace QMS.Core.Repositories.DNTrackerRepository
             new SqlParameter("@UpdatedDate", entity.UpdatedDate)
                 };
 
-                await _dbContext.Database.ExecuteSqlRawAsync("EXEC sp_Update_DN_Tracker @DNoteId, @DNoteNumber, @DNoteCategory, @ProductCode, @ProductDescription, @Wattage, @DQty, @DRequisitionBy, @Vendor, @Remark,@UpdatedBy,@UpdatedDate", parameters);
+                await _dbContext.Database.ExecuteSqlRawAsync("EXEC sp_Update_DN_Tracker @DNoteId, @DNoteNumber, @DNoteCategory, @ProductCode, @ProdDesc, @Wattage, @DQty, @DRequisitionBy, @Vendor, @Remark,@UpdatedBy,@UpdatedDate", parameters);
                 return new OperationResult { Success = true };
             }
             catch (Exception ex)
@@ -157,32 +157,33 @@ namespace QMS.Core.Repositories.DNTrackerRepository
                 throw;
             }
         }
-        public async Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync()
+
+        public async Task<bool> UpdateAttachmentAsync(int id, string fileName)
         {
-            return await _dbContext.Vendor
-                .Where(v => !v.Deleted)
-                .Select(v => new DropdownOptionViewModel
-                {
-                    Label = v.Name,
-                    Value = v.Vendor_Code
-                })
-                .Distinct()
-                .ToListAsync();
-        }
-        public async Task<List<DropdownOptionViewModel>> GetProductCodeAsync()
-        {
-
-
-            var sql = @"EXEC sp_GetProductCode_Detail";
-            var result = await _dbContext.ProductCode.FromSqlRaw(sql).ToListAsync();
-
-            return result.Select(data => new DropdownOptionViewModel
+            try
             {
-                Label = data.OldPart_No,
-                Value = data.OldPart_No
-            })
-                .Distinct()
-                .ToList();
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return false;
+
+                var record = await _dbContext.DeviationNote.FindAsync(id);
+                if (record == null)
+                    return false;
+
+                record.Remark = fileName;
+
+                // Only update the BIS_Attachment property
+                _dbContext.Entry(record).Property(x => x.Remark).IsModified = true;
+
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _log.WriteLog(ex.Message);
+                throw;
+            }
         }
+
     }
 }

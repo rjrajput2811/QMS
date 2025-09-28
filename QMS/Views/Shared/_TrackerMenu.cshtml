@@ -33,9 +33,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
    
     <style>
-        body {
-            background: #D6E4F0;
-        }
+        
 
         .qms-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
@@ -129,7 +127,7 @@
 
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <button id="wiproBackButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'" style="margin: 5px 3px;width: 172px; font-size:15px">
+                    <button id="wiproBackButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'" >
                         <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
                     </button>
                 </li>
@@ -215,7 +213,7 @@
                 <div class="col-2">
                     <div class="card qms-card " onclick="location.href='@Url.Action("PDITracker","PDITracker")'">
                         <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:blueviolet"></i>
+                            <i class="bi bi-book icon me-3" style="color:green"></i>
                             <h5 class="mb-0">PDI Tracker</h5>
                         </div>
                     </div>
@@ -247,6 +245,14 @@
                         <div class="d-flex align-items-center">
                             <i class="bi bi-amd icon me-3" style="color:blueviolet"></i>
                             <h5 class="mb-0">Kaizen Tracker</h5>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-2">
+                    <div class="card qms-card " onclick="location.href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-arrow-clockwise icon me-3" style="color:RED"></i>
+                            <h5 class="mb-0">Continual Improvement </h5>
                         </div>
                     </div>
                 </div>

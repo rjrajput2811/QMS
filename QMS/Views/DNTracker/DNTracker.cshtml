@@ -12,8 +12,8 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
-
 <style>
+    /* Your custom CSS */
     .nav-pills .nav-link {
         text-align: left;
         border-radius: 0;
@@ -46,13 +46,12 @@
     }
 
     #scrollToTopBtn:hover {
-        background-color: #0056b3; /* Darker blue */
+        background-color: #0056b3;
     }
 
     #scrollToTopBtn {
-        outline: none; /* Removes the focus border */
+        outline: none;
     }
-
 
     .tabulator .tabulator-header .tabulator-col {
         font-size: 14px;
@@ -64,7 +63,7 @@
     .tabulator-row .tabulator-cell {
         padding: 5px 5px;
         font-size: 14px;
-        height: 30px;
+        height: 35px;
     }
 
     .tabulator-cell:hover {
@@ -74,7 +73,16 @@
     }
 
     .form-group {
-        margin-bottom: 0.5rem; /* Reduce space between each input group */
+        margin-bottom: 0.5rem;
+    }
+    /* Select2 styling inside Tabulator cells */
+    .select2-container--default .select2-selection--single {
+        height: auto !important;
+        padding: 5px !important;
+    }
+
+    .select2-dropdown {
+        z-index: 999999 !important;
     }
 
     .autocomplete-dropdown {
@@ -107,14 +115,15 @@
 
     .calendar-container {
         cursor: pointer;
-        padding: 10px 15px;
+        padding: 8px 8px;
         width: 100%;
-        border-radius: 8px;
+        border-radius: 5px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
         transition: background-color 0.3s, box-shadow 0.3s;
         gap: 8px;
+        border: 1px solid slategray;
     }
 
         .calendar-container:hover {
@@ -131,7 +140,7 @@
         .calendar-container span {
             color: #4682B4;
             margin: 0;
-            font-size: 16px;
+            font-size: 14px;
         }
 
     .container__predefined-ranges {
@@ -142,6 +151,71 @@
         font-size: 14px;
     }
 
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+        /* light warning */
+        100% {
+            background-color: #e6e6e6 !important;
+        }
+    }
+
+    .row-flash {
+        animation: flash-bg 2s ease-out forwards;
+    }
+
+    .tab-multi-ac {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        align-items: center;
+        min-height: 30px;
+        padding: 4px;
+        cursor: text;
+    }
+
+        .tab-multi-ac input {
+            border: none;
+            outline: none;
+            flex: 1 0 120px;
+            min-width: 100px;
+        }
+
+    .tab-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: #eef1f6;
+        font-size: 12px;
+    }
+
+        .tab-tag .tab-x {
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+    .autocomplete-dropdown {
+        position: fixed; /* stays put while page scrolls */
+        z-index: 99999;
+        max-height: 240px;
+        overflow: auto;
+        border: 1px solid #ddd;
+        background: #fff;
+        box-shadow: 0 6px 18px rgba(0,0,0,.08);
+    }
+
+    .autocomplete-option {
+        padding: 6px 10px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+        .autocomplete-option:hover, .autocomplete-option.active {
+            background: #f2f6ff;
+        }
 </style>
 
 
@@ -152,7 +226,12 @@
             <div>
                 <b style="font-size: large; color: #4682B4;">Deviation Note Tracker</b>
             </div>
-
+            <div class="col-md-3">
+                <div id="customDateTrigger" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeText">Select Date Range</span>
+                </div>
+            </div>
             <div>
                 <button id="addDNButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px; font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
@@ -174,22 +253,9 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                 
                     <div class="chart-container">
-                        <div class="col-md-4">
-                            <div id="customDateTrigger" class="calendar-container">
-                                <i class="fa fa-calendar"></i>
-                                <span id="dateRangeText">Select Date Range</span>
-                            </div>
-                        </div>
-                        <div class="chart-container">
-                            <div class="form-group row"></div>
-                            <div class="form-group row"></div>
-                        <div class="form-group row">
-                           
-                            <div id="deviation_note_table_wrapper" style="overflow-x: auto;">
-                                <div id="dn_table"></div>
-                            </div>
+                        <div id="deviation_note_table_wrapper" style="overflow-x: auto;">
+                            <div id="dn_table"></div>
                         </div>
                     </div>
                 </div>
@@ -199,46 +265,25 @@
 </div>
 
 @section Scripts {
-    <!-- jQuery -->
-    <script src="~/js/jquery.min.js"></script>
-
-    <!-- jQuery UI (if you use sortable, draggable, etc.) -->
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
-
-    <!-- jQuery BlockUI (for popupalert.js) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js"></script>
-
-    <!-- DataTables core -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-
-    <!-- DataTables Buttons extensions -->
-    <script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
-
-    <!-- Select2 -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
-    <!-- Tabulator -->
-    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
     <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
 
-    <!-- XLSX -->
-    <script src="~/js/xlsx.min.js"></script>
-
-    <!-- PNotify -->
-    <script src="~/js/pnotify.js"></script>
-    <script src="~/js/pnotify.confirm.js"></script>
-
-    <!-- Noty (if used) -->
-    <script src="https://cdn.jsdelivr.net/npm/noty/lib/noty.min.js"></script>
-
-    <!-- Popup Alert -->
-    <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
+    <!-- Your main PDI Tracker script -->
     <script src="~/scripts/DNTracker/dn-tracker.js" asp-append-version="true"></script>
 }
+
+@section HideSidebar { }
+@await Html.PartialAsync("_DocumentDetModelpartial")

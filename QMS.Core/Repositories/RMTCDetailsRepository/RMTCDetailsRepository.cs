@@ -19,49 +19,49 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
             _systemLogService = systemLogService;
         }
 
-        public async Task<List<RMTCDetailsViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<List<RM_TCViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
-                var result = await _dbContext.RMTCDetails
-                    .FromSqlRaw("EXEC sp_Get_RMTCDetails")
+                var result = await _dbContext.RM_TC_Tracker
+                    .FromSqlRaw("EXEC sp_Get_RM_TC_Tracker")
                     .ToListAsync();
 
                 // Apply optional date filtering based on RMTCDate
                 if (startDate.HasValue && endDate.HasValue)
                 {
                     result = result
-                        .Where(x => x.RMTCDate.HasValue &&
-                                    x.RMTCDate.Value.Date >= startDate.Value.Date &&
-                                    x.RMTCDate.Value.Date <= endDate.Value.Date)
+                        .Where(x => x.Date.HasValue &&
+                                    x.Date.Value.Date >= startDate.Value.Date &&
+                                    x.Date.Value.Date <= endDate.Value.Date)
                         .ToList();
                 }
 
-                return result.Select(data => new RMTCDetailsViewModel
+                return result.Select(data => new RM_TCViewModel
                 {
                     Id = data.Id,
                     Vendor = data.Vendor,
-                    ProductCatRef = data.ProductCatRef,
-                    ProductDescription = data.ProductDescription,
-                    RMTCDate = data.RMTCDate,
+                    Product_No = data.Product_No,
+                    ProdDesc = data.ProdDesc,
+                    Date = data.Date,
+                    Housing_Body = data.Housing_Body,
+                    Wires_Cable = data.Wires_Cable,
+                    Diffuser_Lens = data.Diffuser_Lens,
+                    Pcb = data.Pcb,
+                    Connectors = data.Connectors,
+                    Powder_Coat = data.Powder_Coat,
+                    Led_LM80 = data.Led_LM80,
+                    Led_Purchase_Proof = data.Led_Purchase_Proof,
+                    Driver = data.Driver,
+                    Pre_Treatment = data.Pre_Treatment,
+                    Hardware = data.Hardware,
+                    Other_Critical_Items = data.Other_Critical_Items,
+                    Attchment = data.Attchment,
+                    Remarks = data.Remarks,
                     CreatedDate = data.CreatedDate,
                     UpdatedDate = data.UpdatedDate,
                     CreatedBy = data.CreatedBy,
-                    UpdatedBy = data.UpdatedBy,
-                    Remarks = data.Remarks,
-                    HousingBody = data.HousingBody,
-                    WiresCables = data.WiresCables,
-                    DiffuserLens = data.DiffuserLens,
-                    PCB = data.PCB,
-                    Connectors = data.Connectors,
-                    PowderCoat = data.PowderCoat,
-                    LEDLM80PhotoBiological = data.LEDLM80PhotoBiological,
-                    LEDPurchaseProof = data.LEDPurchaseProof,
-                    Driver = data.Driver,
-                    Pretreatment = data.Pretreatment,
-                    Hardware = data.Hardware,
-                    OtherCriticalItems = data.OtherCriticalItems,
-                    Filename = data.Filename
+                    UpdatedBy = data.UpdatedBy
                 }).ToList();
             }
             catch (Exception ex)
@@ -71,16 +71,49 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
             }
         }
 
-
-        public async Task<RMTCDetails?> GetByIdAsync(int id)
+        public async Task<RM_TCViewModel?> GetByIdAsync(int id)
         {
             try
             {
-                var result = await _dbContext.RMTCDetails
-                    .FromSqlRaw("EXEC sp_Get_RMTCDetails_ByID @RMTCId", new SqlParameter("@RMTCId", id))
-                    .ToListAsync();
+                var parameters = new[]
+                {
+                    new SqlParameter("@Rm_Tc_Id", id),
+                };
 
-                return result.FirstOrDefault();
+                var sql = @"EXEC sp_Get_RM_TC_Tracker_ById @Rm_Tc_Id";
+
+                var result = await _dbContext.RM_TC_Tracker.FromSqlRaw(sql, parameters).ToListAsync();
+
+                var viewModelList = result.Select(data => new RM_TCViewModel
+                {
+                    Id = data.Id,
+                    Vendor = data.Vendor,
+                    Product_No = data.Product_No,
+                    ProdDesc = data.ProdDesc,
+                    Date = data.Date,
+                    Housing_Body = data.Housing_Body,
+                    Wires_Cable = data.Wires_Cable,
+                    Diffuser_Lens = data.Diffuser_Lens,
+                    Pcb = data.Pcb,
+                    Connectors = data.Connectors,
+                    Powder_Coat = data.Powder_Coat,
+                    Led_LM80 = data.Led_LM80,
+                    Led_Purchase_Proof = data.Led_Purchase_Proof,
+                    Driver = data.Driver,
+                    Pre_Treatment = data.Pre_Treatment,
+                    Hardware = data.Hardware,
+                    Other_Critical_Items = data.Other_Critical_Items,
+                    Attchment = data.Attchment,
+                    Remarks = data.Remarks,
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = data.CreatedDate,
+                    UpdatedBy = data.UpdatedBy,
+                    UpdatedDate = data.UpdatedDate
+
+                }).ToList();
+
+                return viewModelList.FirstOrDefault();
+
             }
             catch (Exception ex)
             {
@@ -89,38 +122,38 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
             }
         }
 
-        public async Task<OperationResult> CreateAsync(RMTCDetails entity,bool returnCreatedRecord = false)
+        public async Task<OperationResult> CreateAsync(RM_TC_Tracker entity,bool returnCreatedRecord = false)
         {
             try
             {
                 var parameters = new[]
                 {
                     new SqlParameter("@Vendor", entity.Vendor ?? (object)DBNull.Value),
-                    new SqlParameter("@ProductCatRef", entity.ProductCatRef ?? (object)DBNull.Value),
-                    new SqlParameter("@ProductDescription", entity.ProductDescription ?? (object)DBNull.Value),
-                    new SqlParameter("@RMTCDate", entity.RMTCDate ?? (object)DBNull.Value),
-                    new SqlParameter("@HousingBody", entity.HousingBody ?? (object)DBNull.Value),
-                    new SqlParameter("@WiresCables", entity.WiresCables ?? (object)DBNull.Value),
-                    new SqlParameter("@DiffuserLens", entity.DiffuserLens ?? (object)DBNull.Value),
-                    new SqlParameter("@PCB", entity.PCB ?? (object)DBNull.Value),
+                    new SqlParameter("@Product_No", entity.Product_No ?? (object)DBNull.Value),
+                    new SqlParameter("@ProdDesc", entity.ProdDesc ?? (object)DBNull.Value),
+                    new SqlParameter("@Date", entity.Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Housing_Body", entity.Housing_Body ?? (object)DBNull.Value),
+                    new SqlParameter("@Wires_Cable", entity.Wires_Cable ?? (object)DBNull.Value),
+                    new SqlParameter("@Diffuser_Lens", entity.Diffuser_Lens ?? (object)DBNull.Value),
+                    new SqlParameter("@Pcb", entity.Pcb ?? (object)DBNull.Value),
                     new SqlParameter("@Connectors", entity.Connectors ?? (object)DBNull.Value),
-                    new SqlParameter("@PowderCoat", entity.PowderCoat ?? (object)DBNull.Value),
-                    new SqlParameter("@LEDLM80PhotoBiological", entity.LEDLM80PhotoBiological ?? (object)DBNull.Value),
-                    new SqlParameter("@LEDPurchaseProof", entity.LEDPurchaseProof ?? (object)DBNull.Value),
+                    new SqlParameter("@Powder_Coat", entity.Powder_Coat ?? (object)DBNull.Value),
+                    new SqlParameter("@Led_LM80", entity.Led_LM80 ?? (object)DBNull.Value),
+                    new SqlParameter("@Led_Purchase_Proof", entity.Led_Purchase_Proof ?? (object)DBNull.Value),
                     new SqlParameter("@Driver", entity.Driver ?? (object)DBNull.Value),
-                    new SqlParameter("@Pretreatment", entity.Pretreatment ?? (object)DBNull.Value),
+                    new SqlParameter("@Pre_Treatment", entity.Pre_Treatment ?? (object)DBNull.Value),
                     new SqlParameter("@Hardware", entity.Hardware ?? (object)DBNull.Value),
-                    new SqlParameter("@OtherCriticalItems", entity.OtherCriticalItems ?? (object)DBNull.Value),
+                    new SqlParameter("@Other_Critical_Items", entity.Other_Critical_Items ?? (object)DBNull.Value),
+                    new SqlParameter("@Attchment", entity.Attchment ?? (object)DBNull.Value),
                     new SqlParameter("@Remarks", entity.Remarks ?? (object)DBNull.Value),
-                    new SqlParameter("@Filename", entity.Filename ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object)DBNull.Value)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Insert_RMTCDetails " +
-                    "@Vendor, @ProductCatRef, @ProductDescription, @RMTCDate, @HousingBody, @WiresCables, " +
-                    "@DiffuserLens, @PCB, @Connectors, @PowderCoat, @LEDLM80PhotoBiological, @LEDPurchaseProof, " +
-                    "@Driver, @Pretreatment, @Hardware, @OtherCriticalItems, @Remarks, @Filename, @CreatedBy",
+                    "EXEC sp_Insert_RM_TCTracker " +
+                    "@Vendor, @Product_No, @ProdDesc, @Date, @Housing_Body, @Wires_Cable, " +
+                    "@Diffuser_Lens, @Pcb, @Connectors, @Powder_Coat, @Led_LM80, @Led_Purchase_Proof, " +
+                    "@Driver, @Pre_Treatment, @Hardware, @Other_Critical_Items,@Attchment, @Remarks, @CreatedBy",
                     parameters
                 );
 
@@ -133,7 +166,7 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
             }
         }
 
-        public async Task<OperationResult> UpdateAsync(RMTCDetails entity, bool returnCreatedRecord = false)
+        public async Task<OperationResult> UpdateAsync(RM_TC_Tracker entity, bool returnCreatedRecord = false)
         {
             try
             {
@@ -141,31 +174,31 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
                 {
                     new SqlParameter("@RMTCId", entity.Id),
                     new SqlParameter("@Vendor", entity.Vendor ?? (object)DBNull.Value),
-                    new SqlParameter("@ProductCatRef", entity.ProductCatRef ?? (object)DBNull.Value),
-                    new SqlParameter("@ProductDescription", entity.ProductDescription ?? (object)DBNull.Value),
-                    new SqlParameter("@RMTCDate", entity.RMTCDate ?? (object)DBNull.Value),
-                    new SqlParameter("@HousingBody", entity.HousingBody ?? (object)DBNull.Value),
-                    new SqlParameter("@WiresCables", entity.WiresCables ?? (object)DBNull.Value),
-                    new SqlParameter("@DiffuserLens", entity.DiffuserLens ?? (object)DBNull.Value),
-                    new SqlParameter("@PCB", entity.PCB ?? (object)DBNull.Value),
+                    new SqlParameter("@Product_No", entity.Product_No ?? (object)DBNull.Value),
+                    new SqlParameter("@ProdDesc", entity.ProdDesc ?? (object)DBNull.Value),
+                    new SqlParameter("@Date", entity.Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Housing_Body", entity.Housing_Body ?? (object)DBNull.Value),
+                    new SqlParameter("@Wires_Cable", entity.Wires_Cable ?? (object)DBNull.Value),
+                    new SqlParameter("@Diffuser_Lens", entity.Diffuser_Lens ?? (object)DBNull.Value),
+                    new SqlParameter("@Pcb", entity.Pcb ?? (object)DBNull.Value),
                     new SqlParameter("@Connectors", entity.Connectors ?? (object)DBNull.Value),
-                    new SqlParameter("@PowderCoat", entity.PowderCoat ?? (object)DBNull.Value),
-                    new SqlParameter("@LEDLM80PhotoBiological", entity.LEDLM80PhotoBiological ?? (object)DBNull.Value),
-                    new SqlParameter("@LEDPurchaseProof", entity.LEDPurchaseProof ?? (object)DBNull.Value),
+                    new SqlParameter("@Powder_Coat", entity.Powder_Coat ?? (object)DBNull.Value),
+                    new SqlParameter("@Led_LM80", entity.Led_LM80 ?? (object)DBNull.Value),
+                    new SqlParameter("@Led_Purchase_Proof", entity.Led_Purchase_Proof ?? (object)DBNull.Value),
                     new SqlParameter("@Driver", entity.Driver ?? (object)DBNull.Value),
-                    new SqlParameter("@Pretreatment", entity.Pretreatment ?? (object)DBNull.Value),
+                    new SqlParameter("@Pre_Treatment", entity.Pre_Treatment ?? (object)DBNull.Value),
                     new SqlParameter("@Hardware", entity.Hardware ?? (object)DBNull.Value),
-                    new SqlParameter("@OtherCriticalItems", entity.OtherCriticalItems ?? (object)DBNull.Value),
+                    new SqlParameter("@Other_Critical_Items", entity.Other_Critical_Items ?? (object)DBNull.Value),
+                    new SqlParameter("@Attchment", entity.Attchment ?? (object)DBNull.Value),
                     new SqlParameter("@Remarks", entity.Remarks ?? (object)DBNull.Value),
-                    new SqlParameter("@Filename", entity.Filename ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", entity.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Update_RMTCDetails " +
-                    "@RMTCId, @Vendor, @ProductCatRef, @ProductDescription, @RMTCDate, @HousingBody, @WiresCables, " +
-                    "@DiffuserLens, @PCB, @Connectors, @PowderCoat, @LEDLM80PhotoBiological, @LEDPurchaseProof, " +
-                    "@Driver, @Pretreatment, @Hardware, @OtherCriticalItems, @Remarks, @Filename, @UpdatedBy",
+                    "EXEC sp_Update_RM_TCTracker " +
+                    "@RMTCId, @Vendor, @Product_No, @ProdDesc, @Date, @Housing_Body, @Wires_Cable, " +
+                    "@Diffuser_Lens, @Pcb, @Connectors, @Powder_Coat, @Led_LM80, @Led_Purchase_Proof, " +
+                    "@Driver, @Pre_Treatment, @Hardware, @Other_Critical_Items,@Attchment, @Remarks, @UpdatedBy",
                     parameters
                 );
 
@@ -182,7 +215,7 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
         {
             try
             {
-                return await base.DeleteAsync<RMTCDetails>(id);
+                return await base.DeleteAsync<RM_TC_Tracker>(id);
             }
             catch (Exception ex)
             {
@@ -191,47 +224,25 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
             }
         }
 
-        public async Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync()
+        public async Task<bool> UpdateAttachmentAsync(int id, string fileName)
         {
             try
             {
-                return await _dbContext.Vendor
-                    .Where(v => !v.Deleted)
-                    .Select(v => new DropdownOptionViewModel
-                    {
-                        Label = v.Name,
-                        Value = v.Vendor_Code
-                    })
-                    .Distinct()
-                    .ToListAsync();
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                throw;
-            }
-        }
-        public async Task<List<ProductCodeDetailViewModel>> GetCodeSearchAsync(string search = "")
-        {
-            try
-            {
-                var parameters = new[]
-                {
-                    new SqlParameter("@OldPartNo", search),
-                };
+                if (string.IsNullOrWhiteSpace(fileName))
+                    return false;
 
-                var sql = @"EXEC sp_GetProductCode_Detail_ByCode @OldPartNo";
+                var record = await _dbContext.RM_TC_Tracker.FindAsync(id);
+                if (record == null)
+                    return false;
 
-                var result = await _dbContext.ProductCode.FromSqlRaw(sql, parameters).ToListAsync();
+                record.Attchment = fileName;
 
-                var viewModelList = result.Select(data => new ProductCodeDetailViewModel
-                {
-                    PCDetails_Id = data.PCDetails_Id,
-                    OldPart_No = data.OldPart_No,
-                    Description = data.Description
-                }).ToList();
+                // Only update the BIS_Attachment property
+                _dbContext.Entry(record).Property(x => x.Attchment).IsModified = true;
 
-                return viewModelList; // Assuming you want a single view model based on the ID
+                await _dbContext.SaveChangesAsync();
+
+                return true;
             }
             catch (Exception ex)
             {

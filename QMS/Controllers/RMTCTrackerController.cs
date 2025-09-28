@@ -6,18 +6,18 @@ using QMS.Core.Services.SystemLogs;
 
 namespace QMS.Controllers
 {
-    public class RMTCController : Controller
+    public class RMTCTrackerController : Controller
     {
         private readonly IRMTCDetailsRepository _rmtcRepository;
         private readonly ISystemLogService _systemLogService;
 
-        public RMTCController(IRMTCDetailsRepository rmtcRepository, ISystemLogService systemLogService)
+        public RMTCTrackerController(IRMTCDetailsRepository rmtcRepository, ISystemLogService systemLogService)
         {
             _rmtcRepository = rmtcRepository;
             _systemLogService = systemLogService;
         }
 
-        public IActionResult RMTC()
+        public IActionResult RMTCTracker()
         {
             return View();
         }
@@ -53,8 +53,7 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        [Route("RMTC/CreateAsync")]
-        public async Task<JsonResult> CreateAsync([FromBody] RMTCDetails model)
+        public async Task<JsonResult> CreateAsync([FromBody] RM_TC_Tracker model)
         {
             try
             {
@@ -78,8 +77,7 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        [Route("RMTC/UpdateAsync")]
-        public async Task<JsonResult> UpdateAsync([FromBody] RMTCDetails model)
+        public async Task<JsonResult> UpdateAsync([FromBody] RM_TC_Tracker model)
         {
             try
             {
@@ -101,55 +99,44 @@ namespace QMS.Controllers
                 return Json(new { success = false, message = "Error during update." });
             }
         }
-        [HttpPost]
-        [Route("RMTC/UploadFile")]
-        public async Task<IActionResult> UploadFile(IFormFile file, int Id)
-        {
-            if (file == null || file.Length == 0)
-                return BadRequest(new { message = "No file uploaded." });
 
+        [HttpPost]
+        public async Task<IActionResult> UploadRMTCAttachment(IFormFile file, int id)
+        {
             try
             {
-                const long MaxFileSize = 5 * 1024 * 1024;
-                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png" };
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "No file selected." });
 
-                var record = await _rmtcRepository.GetByIdAsync(Id);
-                if (record == null)
-                    return NotFound(new { message = "record not found." });
+                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
 
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "RMTCAttachments");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
+                if (!allowedExtensions.Contains(extension))
+                    return Json(new { success = false, message = "Only PDF and image files are allowed." });
 
-                var ext = Path.GetExtension(file.FileName).ToLower();
-                if (file.Length > MaxFileSize)
-                    return Json(new { success = false, message = $"File '{file.FileName}' exceeds the 5MB limit." });
+                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "RMTCTrac_Attach", id.ToString());
+                if (!Directory.Exists(uploadsPath))
+                    Directory.CreateDirectory(uploadsPath);
 
-                if (!allowedExtensions.Contains(ext))
-                    return Json(new { success = false, message = $"File type not allowed: {file.FileName}" });
-
-                var uniqueFileName = $"{record.Vendor}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
-                string relativePath = Path.Combine("RMTCAttachments", uniqueFileName).Replace("\\", "/");
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
+                var newFileName = $"{nameWithoutExt}_{timestamp}{extension}";
+                var filePath = Path.Combine(uploadsPath, newFileName);
 
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     await file.CopyToAsync(stream);
                 }
 
-                record.Filename = relativePath;
-                record.Id = Id;
+                // Optional: update DB with the new file name
+                await _rmtcRepository.UpdateAttachmentAsync(id, newFileName);
 
-                var updateResult = await _rmtcRepository.UpdateAsync(record);
-                if (!updateResult.Success)
-                    return StatusCode(500, new { message = "Failed to update the record with file info." });
-
-                return Json(new { success = true, message = "done" });
+                return Json(new { success = true, id = id, fileName = newFileName });
             }
             catch (Exception ex)
             {
                 _systemLogService.WriteLog(ex.Message);
-                return StatusCode(500, new { ex.Message });
+                throw;
             }
         }
 
@@ -167,25 +154,6 @@ namespace QMS.Controllers
                 return Json(new { success = false, message = "Error occurred while deleting RMTC record." });
             }
         }
-        [HttpGet]
-        public async Task<IActionResult> GetVendors()
-        {
-            try
-            {
-                var vendorList = await _rmtcRepository.GetVendorDropdownAsync();
-                return Json(vendorList);
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                return StatusCode(500, ex.Message);
-            }
-        }
-        [HttpGet]
-        public async Task<IActionResult> GetProductCodeSearch(string search)
-        {
-            var data = await _rmtcRepository.GetCodeSearchAsync(search);
-            return Json(data);
-        }
+        
     }
 }

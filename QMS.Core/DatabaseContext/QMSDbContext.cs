@@ -33,7 +33,6 @@ namespace QMS.Core.DatabaseContext
         public DbSet<ImprovementTracker> ImprovementTracker { get; set; }
         public DbSet<Kaizen_Tracker> Kaizen_Tracker { get; set; }
         public DbSet<SPMReport> SPMReports { get; set; }
-        public DbSet<RMTCDetails> RMTCDetails { get; set; }
         public DbSet<ThirdPartyTesting> ThirdPartyTesting { get; set; }
         public DbSet<Purpose_TPT> PurposeTPT { get; set; }
         public DbSet<ProjectInit_TPT> ProjectInitTPT { get; set; }
@@ -41,6 +40,8 @@ namespace QMS.Core.DatabaseContext
         public DbSet<FIFOTracker> FIFOTracker { get; set; }
         public DbSet<PDI_Auth_Signatory> PDI_Auth_Signatory { get; set; }
         public DbSet<Continual_Improve_Tracker> Continual_Improves { get; set; }
+        public DbSet<RM_TC_Tracker> RM_TC_Tracker { get; set; }
+        public DbSet<CSAT_Comment> CSAT_Comment { get; set; }
 
 
 

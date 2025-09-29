@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using QMS.Core.DatabaseContext.Shared;
+using QMS.Core.Models;
 
 namespace QMS.Core.DatabaseContext
 {
@@ -52,10 +53,16 @@ namespace QMS.Core.DatabaseContext
         [Column("VendorCode")]
         public string? VendorCode { get; set; }
         [Column("CertificateMasterId ")]
-        public int? CertificateMasterId { get; set; }
+        public int CertificateMasterId { get; set; }
        public virtual CertificateMaster? CertificateMaster { get; set; }
         [Column("VendorID")]
-        public int? VendorID { get; set; }
+        public int VendorID { get; set; }
        //public virtual Vendor? Vendor { get; set; }
+    }
+
+    public class BulkCertiCreateResult
+    {
+        public OperationResult Result { get; set; } = new();
+        public List<(CertificationDetailViewModel Record, string Reason)> FailedRecords { get; set; } = new();
     }
 }

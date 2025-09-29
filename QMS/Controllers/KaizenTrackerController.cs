@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ClosedXML.Excel;
+using Microsoft.AspNetCore.Mvc;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.KaizenTrackerRepository;
@@ -139,6 +140,87 @@ namespace QMS.Controllers
             {
                 _systemLogService.WriteLog(ex.Message);
                 throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadKaizenExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        {
+            var prRecordsToAdd = new List<KaizenTracViewModel>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName");
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.LastRowUsed().RowNumber();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+
+                    var model = new KaizenTracViewModel
+                    {
+                        FY = worksheet.Cell(row, 1).GetString().Trim(),
+                        Month = worksheet.Cell(row, 2).GetString().Trim(),
+                        Vendor = worksheet.Cell(row, 3).GetString().Trim(),
+                        Kaizen_Theme = worksheet.Cell(row, 4).GetString().Trim(),
+                        Team = worksheet.Cell(row, 5).GetString().Trim(),
+                        Kaizen_Attch = worksheet.Cell(row, 6).GetString().Trim(),
+                        Remark = worksheet.Cell(row, 7).GetString().Trim(),
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now,
+                    };
+
+                    prRecordsToAdd.Add(model);
+                }
+
+                var importResult = await _kaizenTrackerRepository.BulkKaizenCreateAsync(prRecordsToAdd, fileName, uploadedBy, "KaizenTracker");
+
+                // If there are failed records, return file
+                if (importResult.FailedRecords.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "Kaizen Theme";
+                    failSheet.Cell(1, 2).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var fail in importResult.FailedRecords)
+                    {
+                        failSheet.Cell(i, 1).Value = fail.Record.Kaizen_Theme;
+                        failSheet.Cell(i, 2).Value = fail.Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+                    //string logFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    //return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", logFileName);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
             }
         }
     }

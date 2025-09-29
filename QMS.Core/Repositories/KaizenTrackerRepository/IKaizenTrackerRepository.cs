@@ -14,5 +14,7 @@ namespace QMS.Core.Repositories.KaizenTrackerRepository
         Task<OperationResult> UpdateAsync(Kaizen_Tracker kaizen, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int id);
         Task<bool> UpdateAttachmentAsync(int id, string fileName);
+        Task<BulkKaizenCreateResult> BulkKaizenCreateAsync(List<KaizenTracViewModel> listOfData, string fileName, string uploadedBy, string recordType);
+
     }
 }

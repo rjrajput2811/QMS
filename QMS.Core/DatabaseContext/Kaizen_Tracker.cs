@@ -1,4 +1,5 @@
 ﻿using QMS.Core.DatabaseContext.Shared;
+using QMS.Core.Models;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -41,5 +42,11 @@ namespace QMS.Core.DatabaseContext
 
         public string? UpdatedBy { get; set; }
 
+    }
+
+    public class BulkKaizenCreateResult
+    {
+        public OperationResult Result { get; set; } = new();
+        public List<(KaizenTracViewModel Record, string Reason)> FailedRecords { get; set; } = new();
     }
 }

@@ -137,8 +137,14 @@
                 <button id="addKaizenButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 95px; font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
+                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 136px;font-size:14px">
+                    <i class="fas fa-upload mr-2"></i>Upload Xl
+                </button>
                 <button id="addDocDet" type="button" class="btn btn-outline-info legitRipple mr-2" onclick="openDocModel('Kaizen')" style="width: 183px;font-size:15px">
                     <i class="fas fa-regular fa-book mr-2 fa-1x"></i>Add Doc. Detail
+                </button>
+                <button type="button" id="download-template" class="btn btn-outline-secondary">
+                    <i class="fas fa-download mr-2"></i> Blank Xl
                 </button>
                 <button id="exportKaizenButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
@@ -189,3 +195,4 @@
 
 @section HideSidebar { }
 @await Html.PartialAsync("_DocumentDetModelpartial")
+@await Html.PartialAsync("_UploadModalpartial")

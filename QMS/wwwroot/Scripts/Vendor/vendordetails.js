@@ -19,6 +19,13 @@ $(document).ready(function () {
             e.preventDefault();
         }
     });
+
+    $('#upload-button').on('click', async function () {
+        var expectedColumns = ['Certificate Detail', 'Product Code', 'Vendor Detail', 'Issue Date', 'Expiry Date', 'Certificate', 'Remarks'];
+
+        var url = '/Vendor/UploadCertiExcel';
+        handleImportExcelFile(url, expectedColumns);
+    });
 });
 
 let searchTimeout; // Timeout variable for debounce
@@ -274,7 +281,7 @@ var headerMenu = function () {
 };
 function clearCertificateForm() {
     $('#vendorCertID').val(0); // Reset ID to indicate insert mode
-    $('#productCodeInput').val('');
+    $('#certi_productCodeInput').val('');
     $('#issueDate').val('');
     $('#expiryDate').val('');
     $('#remarks').val('');
@@ -295,7 +302,7 @@ function InsertUpdateVendorcert(event) {
   
 
     const certificateMasterId = $('#certificateID').val();
-    const productCode = $('#productCodeInput').val().trim();
+    const productCode = $('#certi_productCodeInput').val().trim();
     const issueDate = $('#issueDate').val();
     const expiryDate = $('#expiryDate').val();
     const remarks = $('#remarks').val().trim();
@@ -476,7 +483,7 @@ function initializeCertificateTable(data) {
                     title: "Attachment",
                     field: "certUpload",
                     hozAlign: "center", headerMenu: headerMenu,
-                    headerHozAlign: "center", visible: false,
+                    headerHozAlign: "center",
                     formatter: function (cell) {
                         const value = cell.getValue();
                         if (!value) return "";
@@ -529,7 +536,7 @@ function initializeCertificateTable(data) {
                 let rowData = cell.getRow().getData();
 
                 $('#vendorCertID').val(rowData.vendorCertID || '');
-                $('#productCodeInput').val(rowData.productCode || '');
+                $('#certi_productCodeInput').val(rowData.productCode || '');
                 $('#certificateID').val(rowData.certificateID || '').trigger('change');
 
                 $('#vendorID').val(rowData.vendorID || '');
@@ -734,6 +741,60 @@ function InsertUpdateVendorDetail() {
         }
     });
 }
+
+function openUpload() {
+
+    clearForm();
+    if (!$('#uploadModal').length) {
+        $('body').append(partialView);
+    }
+    $('#uploadModal').modal('show');
+}
+
+//$('#download-template').on('click', async function () {
+//    var expectedColumns = ['Certificate Detail', 'Product Code', 'Vendor Detail', 'Issue Date', 'Expiry Date', 'Certificate', 'Remarks'];
+
+//    // Create a new workbook
+//    const workbook = new ExcelJS.Workbook();
+//    const worksheet = workbook.addWorksheet("Certificate Template");
+
+//    // Add header row
+//    worksheet.addRow(expectedColumns);
+
+//    // Style header row (optional)
+//    worksheet.getRow(1).eachCell(cell => {
+//        cell.font = { bold: true };
+//        cell.alignment = { horizontal: 'center' };
+//        cell.fill = {
+//            type: 'pattern',
+//            pattern: 'solid',
+//            fgColor: { argb: 'FFD9D9D9' } // light gray
+//        };
+//    });
+
+//    // Generate Excel file and trigger download
+//    const buffer = await workbook.xlsx.writeBuffer();
+//    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+//    const link = document.createElement("a");
+//    link.href = URL.createObjectURL(blob);
+//    link.download = "Certificate Template.xlsx";
+//    link.click();
+//});
+
+$('#download-template').on('click', function () {
+    var expectedColumns = ['Certificate Detail', 'Product Code', 'Vendor Detail', 'Issue Date', 'Expiry Date', 'Certificate', 'Remarks'];
+
+    // Create a worksheet with only headers
+    const worksheetData = [expectedColumns];
+
+    // Create worksheet and workbook
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Certificate Template");
+
+    // Trigger download
+    XLSX.writeFile(workbook, "Certificate Template.xlsx");
+});
 
 
 

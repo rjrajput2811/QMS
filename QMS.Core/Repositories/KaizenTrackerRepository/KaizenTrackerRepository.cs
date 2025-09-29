@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace QMS.Core.Repositories.KaizenTrackerRepository
 {
@@ -200,5 +201,137 @@ namespace QMS.Core.Repositories.KaizenTrackerRepository
                 throw;
             }
         }
+
+        public async Task<BulkKaizenCreateResult> BulkKaizenCreateAsync(List<KaizenTracViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+        {
+            var result = new BulkKaizenCreateResult();
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                // 1) Preload vendor master once
+                var vendors = await _dbContext.Vendor
+                    .Where(v => !v.Deleted) // keep only active vendors
+                    .Select(v => new { v.Name, v.Vendor_Code })
+                    .ToListAsync();
+
+                static string Key(string s) => (s ?? string.Empty).Trim().ToUpperInvariant();
+                var vendorByName = vendors
+                    .GroupBy(v => Key(v.Name))
+                    .ToDictionary(g => g.Key, g => g.First().Vendor_Code); // if dup names exist, you may want to fail instead
+                var vendorByCode = vendors
+                    .GroupBy(v => Key(v.Vendor_Code))
+                    .ToDictionary(g => g.Key, g => g.First().Vendor_Code);
+
+                var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+
+                foreach (var item in listOfData)
+                {
+                    // Normalize inputs
+                    item.Kaizen_Theme = (item.Kaizen_Theme ?? string.Empty).Trim();
+                    var incomingVendor = (item.Vendor ?? string.Empty).Trim();
+
+                    // Basic validation
+                    if (string.IsNullOrWhiteSpace(item.Kaizen_Theme))
+                    {
+                        result.FailedRecords.Add((item, "Missing Kaizen Theme"));
+                        continue;
+                    }
+                    if (string.IsNullOrWhiteSpace(incomingVendor))
+                    {
+                        result.FailedRecords.Add((item, "Missing Vendor"));
+                        continue;
+                    }
+
+                    // 3) Resolve Vendor → Vendor_Code (accept either name or code from file)
+                    string vendorCode = null;
+                    var key = Key(incomingVendor);
+                    if (vendorByCode.TryGetValue(key, out var codeFromCode))
+                        vendorCode = codeFromCode;
+                    else if (vendorByName.TryGetValue(key, out var codeFromName))
+                        vendorCode = codeFromName;
+
+                    if (string.IsNullOrEmpty(vendorCode))
+                    {
+                        result.FailedRecords.Add((item, $"Unknown Vendor: '{incomingVendor}'"));
+                        continue;
+                    }
+
+                    // In-batch duplicate check (optionally include Vendor/FY/Month if needed)
+                    var compositeKey = $"{Key(item.Kaizen_Theme)}|{vendorCode}";
+                    if (seenKeys.Contains(compositeKey))
+                    {
+                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+                        continue;
+                    }
+                    seenKeys.Add(compositeKey);
+
+                    // 4) Database duplicate check
+                    bool existsInDb = await _dbContext.Kaizen_Tracker.AnyAsync(x =>
+                        x.Kaizen_Theme == item.Kaizen_Theme &&
+                        x.Vendor == vendorCode); // assuming the column is named 'Vendor' and stores the code
+
+                    if (existsInDb)
+                    {
+                        result.FailedRecords.Add((item, "Duplicate in database"));
+                        continue;
+                    }
+
+                    // 5) Passed all checks — add to DB using vendorCode
+                    var entity = new Kaizen_Tracker
+                    {
+                        Vendor = vendorCode,           // <-- store CODE here
+                        Kaizen_Theme = item.Kaizen_Theme,
+                        Month = item.Month?.Trim(),
+                        Team = item.Team?.Trim(),
+                        Kaizen_Attch = item.Kaizen_Attch?.Trim(),
+                        Remark = item.Remark?.Trim(),
+                        FY = item.FY?.Trim(),
+                        CreatedBy = string.IsNullOrWhiteSpace(item.CreatedBy) ? uploadedBy : item.CreatedBy,
+                        CreatedDate = item.CreatedDate == default ? DateTime.Now : item.CreatedDate
+                    };
+
+                    _dbContext.Kaizen_Tracker.Add(entity);
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                // 6) Log the upload
+                var importLog = new FailedRecord_Log
+                {
+                    FileName = fileName,
+                    TotalRecords = listOfData.Count,
+                    ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+                    FailedRecords = result.FailedRecords.Count,
+                    RecordType = recordType,
+                    UploadedBy = uploadedBy,
+                    UploadedAt = DateTime.Now
+                };
+                _dbContext.FailedRecord_Log.Add(importLog);
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                result.Result = new OperationResult
+                {
+                    Success = true,
+                    Message = result.FailedRecords.Any()
+                        ? "Import completed with some skipped records."
+                        : "All records imported successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                result.Result = new OperationResult
+                {
+                    Success = false,
+                    Message = "Error during import: " + ex.Message
+                };
+            }
+
+            return result;
+        }
+
     }
 }

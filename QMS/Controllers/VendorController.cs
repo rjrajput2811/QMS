@@ -1,10 +1,12 @@
-﻿using DocumentFormat.OpenXml.Office2010.Excel;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Office2010.Excel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.VendorRepository;
 using QMS.Core.Services.SystemLogs;
+using System.Globalization;
 
 namespace QMS.Controllers
 {
@@ -247,6 +249,134 @@ namespace QMS.Controllers
                 _systemLogService.WriteLog($"CreateCertificate Error: {ex.Message}\n{ex.StackTrace}");
                 return Json(new { success = false, message = "Failed to process certificate." });
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadCertiExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        {
+            var prRecordsToAdd = new List<CertificationDetailViewModel>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName");
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.LastRowUsed().RowNumber();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+
+                    DateTime? issueDate = ParseExcelDate(worksheet.Cell(row, 4));
+                    DateTime? expiryDate = ParseExcelDate(worksheet.Cell(row, 5));
+
+                    var model = new CertificationDetailViewModel
+                    {
+                        CertificateName = worksheet.Cell(row, 1).GetString().Trim(),
+                        ProductCode = worksheet.Cell(row, 2).GetString().Trim(),
+                        VendorCode = worksheet.Cell(row, 3).GetString().Trim(),
+                        IssueDate = issueDate,
+                        ExpiryDate = expiryDate,
+                        CertUpload = worksheet.Cell(row, 6).GetString().Trim(),
+                        Remarks = worksheet.Cell(row, 7).GetString().Trim(),
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now,
+                    };
+
+                    prRecordsToAdd.Add(model);
+                }
+
+                var importResult = await _vendorRepository.BulkCertiCreateAsync(prRecordsToAdd, fileName, uploadedBy, "Certificate");
+
+                // If there are failed records, return file
+                if (importResult.FailedRecords.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "Certificate Name";
+                    failSheet.Cell(1, 2).Value = "Product Code";
+                    failSheet.Cell(1, 3).Value = "Vendor";
+                    failSheet.Cell(1, 4).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var fail in importResult.FailedRecords)
+                    {
+                        failSheet.Cell(i, 1).Value = fail.Record.CertificateName;
+                        failSheet.Cell(i, 2).Value = fail.Record.ProductCode;
+                        failSheet.Cell(i, 3).Value = fail.Record.VendorCode;
+                        failSheet.Cell(i, 4).Value = fail.Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+                    //string logFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    //return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", logFileName);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
+            }
+        }
+
+        private DateTime? ParseExcelDate(IXLCell cell)
+        {
+            try
+            {
+                if (cell == null || cell.IsEmpty())
+                    return null;
+
+                if (cell.DataType == XLDataType.DateTime)
+                {
+                    return cell.GetDateTime();
+                }
+                else if (cell.DataType == XLDataType.Number)
+                {
+                    return DateTime.FromOADate(cell.GetDouble());
+                }
+                else
+                {
+                    var strVal = cell.GetString().Trim();
+
+                    string[] formats = { "dd-MMM-yy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd-MM-yyyy" };
+
+                    if (DateTime.TryParseExact(strVal, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime dt))
+                    {
+                        if (dt.Year < 50) dt = dt.AddYears(2000 - dt.Year);  // handle 2-digit year case
+                        return dt;
+                    }
+                    else if (DateTime.TryParse(strVal, out dt))
+                    {
+                        return dt;
+                    }
+                }
+            }
+            catch
+            {
+                return null;
+            }
+
+            return null;
         }
 
         [HttpGet]

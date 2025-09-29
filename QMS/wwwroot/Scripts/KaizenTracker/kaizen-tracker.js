@@ -58,6 +58,13 @@ $(document).ready(function () {
         window.history.back();
     });
 
+    $('#upload-button').on('click', async function () {
+        var expectedColumns = ['FY', 'Month', 'Vendor', 'Kaizen theme', 'Team', 'Kaizen','Remarks' ];
+
+        var url = '/KaizenTracker/UploadKaizenExcel';
+        handleImportExcelFile(url, expectedColumns);
+    });
+
     loadData();
 });
 
@@ -1288,3 +1295,61 @@ function InsertUpdateKaizen(rowData) {
         }
     });
 }
+
+function clearForm() {
+    // Clear all input fields
+    document.querySelectorAll('.form-control').forEach(function (input) {
+        if (input.tagName === 'INPUT') {
+            if (input.type === 'hidden' || input.readOnly) {
+                // Skip hidden or readonly inputs
+                return;
+            }
+            input.value = ''; // Clear input value
+        } else if (input.tagName === 'SELECT') {
+            input.selectedIndex = 0; // Reset dropdown to first option
+        }
+    });
+
+    // Clear error messages if needed
+    document.querySelectorAll('.text-danger').forEach(function (error) {
+        error.textContent = '';
+    });
+}
+function openUpload() {
+
+    clearForm();
+    if (!$('#uploadModal').length) {
+        $('body').append(partialView);
+    }
+    $('#uploadModal').modal('show');
+}
+
+$('#download-template').on('click', async function () {
+    var expectedColumns = ['FY', 'Month', 'Vendor', 'Kaizen theme', 'Team', 'Kaizen', 'Remarks'];
+
+    // Create a new workbook
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Kaizen Tracker");
+
+    // Add header row
+    worksheet.addRow(expectedColumns);
+
+    // Style header row (optional)
+    worksheet.getRow(1).eachCell(cell => {
+        cell.font = { bold: true };
+        cell.alignment = { horizontal: 'center' };
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFD9D9D9' } // light gray
+        };
+    });
+
+    // Generate Excel file and trigger download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Kaizen_Tracker.xlsx";
+    link.click();
+});

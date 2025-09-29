@@ -150,19 +150,7 @@ function initializeBISCertificateTable(data) {
                         return `<i class="fas fa-trash-alt text-danger" style="cursor:pointer;" title="Delete" onclick="deleteBISCertificate(${rowData.id})"></i>`;
                     }
                 },
-                {
-                    title: "Attachment", field: "fileName", hozAlign: "center", visible: false, headerMenu: headerMenu,
-                    formatter: function (cell) {
-                        const value = cell.getValue();
-                        if (!value) return "";
-                        const files = value.split(/[,;]+/).map(f => f.trim()).filter(Boolean);
-                        return files.map(path =>
-                            `<a href="/${path}" target="_blank" download title="Download">
-                    <i class="fas fa-download text-primary"></i>
-                </a>`
-                        ).join(" ");
-                    }
-                },
+                
                 { title: "Sn", formatter: "rownum", width: 90, hozAlign: "center", headerMenu: headerMenu },
                 { title: "ID", field: "id", visible: false, headerMenu: headerMenu },
                 { title: "BIS Certificate", field: "certificateDetail", hozAlign: "center", headerFilter: "input", headerMenu: headerMenu },
@@ -178,7 +166,20 @@ function initializeBISCertificateTable(data) {
                     title: "Expiry Date", field: "expiryDate", hozAlign: "center", formatter: dateFormatter,
                     headerFilter: "input", headerMenu: headerMenu
                 },
-                { title: "Remarks", field: "remarks", hozAlign: "center", headerMenu: headerMenu },
+                {
+                    title: "Attachment", field: "fileName", hozAlign: "center",  headerMenu: headerMenu,
+                    formatter: function (cell) {
+                        const value = cell.getValue();
+                        if (!value) return "";
+                        const files = value.split(/[,;]+/).map(f => f.trim()).filter(Boolean);
+                        return files.map(path =>
+                            `<a href="/${path}" target="_blank" download title="Download">
+                    <i class="fas fa-download text-primary"></i>
+                </a>`
+                        ).join(" ");
+                    }
+                },
+                { title: "Remarks", field: "remarks", hozAlign: "center", headerMenu: headerMenu ,visible: false },
                 {
                     title: "Created By", field: "createdBy",
                     hozAlign: "center",

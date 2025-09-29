@@ -403,6 +403,306 @@ namespace QMS.Core.Repositories.VendorRepository
             return new OperationResult { Success = true };
         }
 
+        //public async Task<BulkCertiCreateResult> BulkCertiCreateAsync(List<CertificationDetailViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+        //{
+        //    var result = new BulkCertiCreateResult();
+        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var seenKeys = new HashSet<string>();
+
+        //        foreach (var item in listOfData)
+        //        {
+        //            item.CertificateName = item.CertificateName;
+        //            item.ProductCode = item.ProductCode?.Trim();
+
+        //            var compositeKey = $"{item.CertificateName}|{item.ProductCode}";
+
+        //            if (string.IsNullOrWhiteSpace(item.CertificateName) || string.IsNullOrWhiteSpace(item.ProductCode))
+        //            {
+        //                result.FailedRecords.Add((item, "Missing CertificateName or ProductCode"));
+        //                continue;
+        //            }
+
+        //            // Check if this key combination has already been seen in the batch
+        //            if (seenKeys.Contains(compositeKey))
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+        //                continue;
+        //            }
+
+        //            seenKeys.Add(compositeKey); // Mark this combination as seen
+
+        //            // Now check against database
+        //            bool existsInDb = await _dbContext.CertificationDetails
+        //                .AnyAsync(x => x.CertificateName == item.CertificateName && x.ProductCode == item.ProductCode);
+
+        //            if (existsInDb)
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in database"));
+        //                continue;
+        //            }
+
+        //            // Passed all checks — add to DB
+        //            var entity = new CertificationDetailViewModel
+        //            {
+        //                VendorCode = item.VendorCode,
+        //                CertificateName
+        //                IssueDate = item.IssueDate,
+        //                ExpiryDate = item.ExpiryDate,
+        //                ProductCode = item.ProductCode,
+        //                Remarks = item.Remarks,
+        //                CertUpload = item.CertUpload,
+        //                CreatedBy = item.CreatedBy,
+        //                CreatedDate = item.CreatedDate
+        //            };
+
+        //            _dbContext.ThirdPartyInspections.Add(entity);
+        //        }
+
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Log the upload
+        //        var importLog = new FailedRecord_Log
+        //        {
+        //            FileName = fileName,
+        //            TotalRecords = listOfData.Count,
+        //            ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+        //            FailedRecords = result.FailedRecords.Count,
+        //            RecordType = recordType,
+        //            UploadedBy = uploadedBy,
+        //            UploadedAt = DateTime.Now
+        //        };
+
+        //        _dbContext.FailedRecord_Log.Add(importLog);
+        //        await _dbContext.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = true,
+        //            Message = result.FailedRecords.Any()
+        //                ? "Import completed with some skipped records."
+        //                : "All records imported successfully."
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = false,
+        //            Message = "Error during import: " + ex.Message
+        //        };
+        //    }
+
+        //    return result;
+        //}
+
+        public async Task<BulkCertiCreateResult> BulkCertiCreateAsync(List<CertificationDetailViewModel> listOfData,string fileName,string uploadedBy,string recordType)
+        {
+            var result = new BulkCertiCreateResult();
+
+            // Short-circuit: nothing to do
+            if (listOfData == null || listOfData.Count == 0)
+            {
+                result.Result = new OperationResult { Success = true, Message = "No rows to import." };
+                return result;
+            }
+
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
+            {
+                // ---------- 0) Helpers ----------
+                static string K(string s) => (s ?? string.Empty).Trim().ToUpperInvariant();
+                static bool IsNull(object o) => o == null || (o is string s && string.IsNullOrWhiteSpace(s));
+
+                // ---------- 1) Preload masters (active only) ----------
+                var vendors = await _dbContext.Vendor
+                    .Where(v => !v.Deleted)
+                    .Select(v => new { v.Name, v.Vendor_Code })
+                    .ToListAsync();
+
+                // If your certificate master has an "IsDeleted" (bit) column, we filter to active ones.
+                var certificates = await _dbContext.CertificateMaster
+                    .Where(c => !c.Deleted) // remove if you don't soft-delete
+                    .Select(c => new { c.Id, c.CertificateName })
+                    .ToListAsync();
+
+                var vendorByCode = vendors
+                    .GroupBy(v => K(v.Vendor_Code))
+                    .ToDictionary(g => g.Key, g => g.First().Vendor_Code);
+
+                var vendorByName = vendors
+                    .GroupBy(v => K(v.Name))
+                    .ToDictionary(g => g.Key, g => g.First().Vendor_Code);
+
+                var certIdByName = certificates
+                    .GroupBy(c => K(c.CertificateName))
+                    .ToDictionary(g => g.Key, g => g.First().Id);
+
+                var certExistsById = certificates
+                    .ToDictionary(c => c.Id, c => true);
+
+                // ---------- 2) In-batch duplicate detection ----------
+                // Uniqueness rule (adjust as needed):
+                // ProductCode + VendorCode + CertificateID
+                var seenKeys = new HashSet<string>();
+
+                // We'll stage valid entities and batch-insert once
+                var toInsert = new List<CertificationDetail>(capacity: listOfData.Count);
+
+                foreach (var item in listOfData)
+                {
+                    // ---------- Normalize ----------
+                    item.ProductCode = (item.ProductCode ?? string.Empty).Trim();
+                    item.VendorCode = (item.VendorCode ?? string.Empty).Trim();
+                    item.CertificateName = (item.CertificateName ?? string.Empty).Trim();
+
+                    // ---------- Basic validation ----------
+                    if (string.IsNullOrWhiteSpace(item.ProductCode))
+                    {
+                        result.FailedRecords.Add((item, "Missing Product Code"));
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(item.VendorCode))
+                    {
+                        result.FailedRecords.Add((item, "Missing Vendor (name or code)"));
+                        continue;
+                    }
+
+                    if (string.IsNullOrWhiteSpace(item.CertificateName))
+                    {
+                        result.FailedRecords.Add((item, "Missing Certificate (name or ID)"));
+                        continue;
+                    }
+
+                    // ---------- 3) Resolve VendorCode (accept name or code) ----------
+                    string resolvedVendorCode = null;
+                    var vKey = K(item.VendorCode);
+
+                    if (vendorByCode.TryGetValue(vKey, out var codeFromCode))
+                        resolvedVendorCode = codeFromCode;
+                    else if (vendorByName.TryGetValue(vKey, out var codeFromName))
+                        resolvedVendorCode = codeFromName;
+
+                    if (string.IsNullOrEmpty(resolvedVendorCode))
+                    {
+                        result.FailedRecords.Add((item, $"Unknown Vendor: '{item.VendorCode}'"));
+                        continue;
+                    }
+
+                    // ---------- 4) Resolve CertificateID (accept ID or Name) ----------
+                    int resolvedCertId = 0;
+                    if (int.TryParse(item.CertificateName, out var parsedId))
+                    {
+                        // File provided an ID
+                        if (certExistsById.ContainsKey(parsedId))
+                        {
+                            resolvedCertId = parsedId;
+                        }
+                        else
+                        {
+                            result.FailedRecords.Add((item, $"Unknown CertificateID: {parsedId}"));
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        // File provided a name
+                        var cKey = K(item.CertificateName);
+                        if (!certIdByName.TryGetValue(cKey, out resolvedCertId))
+                        {
+                            result.FailedRecords.Add((item, $"Unknown Certificate Name: '{item.CertificateName}'"));
+                            continue;
+                        }
+                    }
+
+                    // ---------- 5) In-batch duplicate check ----------
+                    var batchKey = $"{K(item.ProductCode)}|{resolvedVendorCode}|{resolvedCertId}";
+                    if (!seenKeys.Add(batchKey))
+                    {
+                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+                        continue;
+                    }
+
+                    // ---------- 6) DB duplicate check ----------
+                    // Adjust to your true uniqueness. Here: ProductCode+VendorCode+CertificateMasterId
+                    bool existsInDb = await _dbContext.CertificationDetails.AnyAsync(x =>
+                        x.ProductCode == item.ProductCode &&
+                        x.VendorCode == resolvedVendorCode &&
+                        x.CertificateMasterId == resolvedCertId
+                    );
+
+                    if (existsInDb)
+                    {
+                        result.FailedRecords.Add((item, "Duplicate in database"));
+                        continue;
+                    }
+
+                    // ---------- 7) Stage entity ----------
+                    var entity = new CertificationDetail
+                    {
+                        CertificateMasterId = resolvedCertId, // <-- store ID here
+                        IssueDate = item.IssueDate,
+                        ExpiryDate = item.ExpiryDate,
+                        ProductCode = item.ProductCode,
+                        Remarks = item.Remarks,
+                        CertUpload = item.CertUpload,
+                        VendorCode = resolvedVendorCode,      // <-- store CODE here
+                        CreatedBy = string.IsNullOrWhiteSpace(item.CreatedBy) ? uploadedBy : item.CreatedBy,
+                        CreatedDate = item.CreatedDate == default ? DateTime.Now : item.CreatedDate
+                    };
+
+                    toInsert.Add(entity);
+                }
+
+                // ---------- 8) Persist ----------
+                if (toInsert.Count > 0)
+                    await _dbContext.CertificationDetails.AddRangeAsync(toInsert);
+
+                await _dbContext.SaveChangesAsync();
+
+                // ---------- 9) Import log ----------
+                var importLog = new FailedRecord_Log
+                {
+                    FileName = fileName,
+                    TotalRecords = listOfData.Count,
+                    ImportedRecords = toInsert.Count,
+                    FailedRecords = result.FailedRecords.Count,
+                    RecordType = recordType,
+                    UploadedBy = uploadedBy,
+                    UploadedAt = DateTime.Now
+                };
+                _dbContext.FailedRecord_Log.Add(importLog);
+
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                result.Result = new OperationResult
+                {
+                    Success = true,
+                    Message = result.FailedRecords.Any()
+                        ? $"Imported {toInsert.Count} of {listOfData.Count} rows; some were skipped."
+                        : "All records imported successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                result.Result = new OperationResult
+                {
+                    Success = false,
+                    Message = "Error during import: " + ex.Message
+                };
+            }
+
+            return result;
+        }
+
+
         //Third Party Testing Report//
         public async Task<List<ThirdPartyTestReportViewModel>> ReportGetAllAsync()
         {

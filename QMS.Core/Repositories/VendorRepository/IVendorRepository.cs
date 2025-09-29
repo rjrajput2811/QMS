@@ -22,6 +22,8 @@ namespace QMS.Core.Repositories.VendorRepository
         Task<OperationResult> CertUpdateAsync(CertificationDetail cert);
         Task<OperationResult> CertDeleteAsync(int id, string updatedBy);
         Task<List<CertificationDetailViewModel?>> CertGetAllAsync();
+        Task<BulkCertiCreateResult> BulkCertiCreateAsync(List<CertificationDetailViewModel> listOfData, string fileName, string uploadedBy, string recordType);
+
         //Task<List<ProductCodeDetailDto>> GetProductCodesAsync(string term);
         Task<List<ThirdPartyTestReportViewModel>> ReportGetAllAsync();
         Task<OperationResult> ReportCreateAsync(ThirdPartyTestReport model);

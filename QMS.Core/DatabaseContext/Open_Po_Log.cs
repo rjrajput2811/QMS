@@ -24,6 +24,7 @@ namespace QMS.Core.DatabaseContext
         public override bool Deleted { get; set; }
         //------------ END overrides --------
         public string? FileName { get; set; }
+        public string? FileType { get; set; }
         public int? TotalRecords { get; set; }
         public int? ImportedRecords { get; set; }
         public int? FailedRecords { get; set; }

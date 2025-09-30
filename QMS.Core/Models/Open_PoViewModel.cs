@@ -60,6 +60,7 @@ namespace QMS.Core.Models
         public  int Id { get; set; }
         public  bool Deleted { get; set; }
         public string? FileName { get; set; }
+        public string? FileType { get; set; }
         public int? TotalRecords { get; set; }
         public int? ImportedRecords { get; set; }
         public int? FailedRecords { get; set; }

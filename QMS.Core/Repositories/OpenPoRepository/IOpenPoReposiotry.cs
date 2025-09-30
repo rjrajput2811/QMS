@@ -12,6 +12,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
     {
         Task<List<Open_PoViewModel>> GetListAsync();
         Task<List<Open_Po_LogViewModel>> GetPoLogListAsync();
+        Task<List<Open_Po_LogViewModel>> GetSOLogListAsync();
         Task<List<Open_PoViewModel>> GetVendorListAsync(string vendor);
         Task<BulkCreateLogResult> BulkCreateAsync(List<Open_PoViewModel> listOfData, string fileName, string uploadedBy);
 

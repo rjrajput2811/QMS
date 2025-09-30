@@ -108,8 +108,39 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     ImportedRecords = data.ImportedRecords,
                     FailedRecords = data.FailedRecords,
                     UploadedAt = data.UploadedAt,
-                    UploadedBy = data.UploadedBy
-                }).ToList();
+                    UploadedBy = data.UploadedBy,
+                    FileType = data.FileType
+                }).Where(x => x.FileType == "PO").ToList();
+
+                return viewModelList;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<Open_Po_LogViewModel>> GetSOLogListAsync()
+        {
+            try
+            {
+
+                var result = await _dbContext.OpenPo_Log.FromSqlRaw("EXEC sp_Get_PO_Log_Details").ToListAsync();
+
+                // Map results to ViewModel
+                var viewModelList = result.Select(data => new Open_Po_LogViewModel
+                {
+                    Id = data.Id,
+                    FileName = data.FileName,
+                    TotalRecords = data.TotalRecords,
+                    ImportedRecords = data.ImportedRecords,
+                    FailedRecords = data.FailedRecords,
+                    UploadedAt = data.UploadedAt,
+                    UploadedBy = data.UploadedBy,
+                    FileType = data.FileType
+                }).Where(x => x.FileType == "SO").ToList();
 
                 return viewModelList;
 
@@ -376,7 +407,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     ImportedRecords = listOfData.Count - result.FailedRecords.Count,
                     FailedRecords = result.FailedRecords.Count,
                     UploadedBy = uploadedBy,
-                    UploadedAt = DateTime.Now
+                    UploadedAt = DateTime.Now,
+                    FileType = "PO"
                 };
 
                 _dbContext.OpenPo_Log.Add(importLog);
@@ -1002,7 +1034,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     ImportedRecords = listOfData.Count - result.FailedRecords.Count,
                     FailedRecords = result.FailedRecords.Count,
                     UploadedBy = uploadedBy,
-                    UploadedAt = DateTime.Now
+                    UploadedAt = DateTime.Now,
+                    FileType = "SO"
                 };
 
                 _dbContext.OpenPo_Log.Add(importLog);

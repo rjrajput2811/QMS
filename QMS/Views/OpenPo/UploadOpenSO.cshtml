@@ -1,0 +1,447 @@
+﻿@using QMS.Core.Enums
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = "Vendor";
+    var userType = "Vendor";
+    var vendor_Name = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
+}
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/js/tabulator.js"></script>
+<script src="~/js/xlsx.min.js"></script>
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+
+    .bborder {
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    th {
+        border-bottom: 3px solid #eeeeee;
+    }
+
+    .current {
+        background-color: white !important;
+        color: blue !important;
+    }
+
+    .modal-header {
+        /* background-color: #ececec !important; */
+        padding-bottom: 7px !important;
+        font-weight: bold;
+    }
+
+    .modal-body {
+        padding: 0.4rem 1.25rem;
+    }
+
+    .form-control {
+        padding: 0 10px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #0056b3; /* Darker blue */
+    }
+
+    #scrollToTopBtn {
+        outline: none; /* Removes the focus border */
+    }
+
+    #uploadDetailTable tr {
+        background-color: #ffffff !important; /* Force all rows to be white */
+    }
+
+    #uploadDetailTable {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .modal-open .tabulator-row {
+        min-height: unset; /* Removes the min-height */
+    }
+
+    .select2-container {
+        z-index: 0 !important; /* Ensure it's above the modal */
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        /* border-right: none; */
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 30px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    /* Slideout modal customization */
+    .modal-dialog-slideout {
+        position: fixed;
+        margin: auto;
+        width: 60%;
+        height: 100%;
+        right: 10px;
+        top: 250px;
+        bottom: 0;
+        transform: translate3d(100%, 0, 0);
+        transition: transform 0.5s ease-out;
+    }
+
+    .modal.fade .modal-dialog-slideout {
+        transform: translate3d(100%, 0, 0);
+    }
+
+    .modal.fade.show .modal-dialog-slideout {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .tabulator-tree-col .tabulator-tree-control {
+        display: none;
+    }
+
+    /* .tabulator-row.tabulator-tree-level-0 {
+                        font-size: large;
+                        color: #4682B4 !important;
+                        font-weight: 600;
+                    } */
+
+    .tabulator-row.tabulator-tree-level-1 {
+        font-size: medium;
+    }
+
+    .tabulator-row .tabulator-cell .tabulator-data-tree-control {
+        border: 2px solid #4682B4 !important;
+        background-color: #4682B4 !important;
+    }
+
+    .tabulator .tabulator-data-tree-branch {
+        border-left: 2px solid #4682B4 !important;
+        border-bottom: 2px solid #4682B4 !important;
+    }
+
+    .form-check.form-switch .form-check-input {
+        width: 2.4em;
+        height: 1.2em;
+        background-color: #ddd;
+        border-radius: 1.2em;
+        position: relative;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        transition: background-color 0.3s;
+    }
+
+        .form-check.form-switch .form-check-input:checked {
+            background-color: #007bff;
+        }
+
+        .form-check.form-switch .form-check-input::before {
+            content: "";
+            position: absolute;
+            top: 0.140em;
+            left: 0.125em;
+            width: 0.9em;
+            height: 0.9em;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .form-check.form-switch .form-check-input:checked::before {
+            transform: translateX(1.2em);
+        }
+</style>
+
+
+<div class="content">
+
+    <div class="card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div style="font-size: large; color: #4682B4;">
+                Uplaod Sales Order
+            </div>
+            <div>
+                <div class="ml-auto">
+                    <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
+                        <i class="fas fa-upload mr-2"></i>Upload Xl
+                    </button>
+                    <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
+                        <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
+                    </button>&nbsp;
+
+                    <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("SCMMenu","Home")'" style="font-size:14px">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div class="form-group row">
+                            <div id="So_Log_Table" class="col-12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scroll to Top Button -->
+<button id="scrollToTopBtn" style="
+    display: none;
+    position: fixed;
+    bottom: 10px;
+    right: 40px;
+    z-index: 1000;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10%;
+    padding: 10px 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: opacity 0.3s;">
+    <i class="fa fa-arrow-up"></i>
+</button>
+
+@section Scripts {
+    <script src="~/js/select2.min.js"></script>
+    <script>
+
+         var tabledata = [];
+         var table = '';
+
+
+         $(document).ready(function () {
+             $('#upload-button').on('click', async function () {
+                    var expectedColumns = [
+                       'SO', 'Sale Order Type', 'SO DATE', 'LINE ITEM', 'Indent Number', 'Indent Date','Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip', 'Sales Person', 'Project Name',
+                       'CUSTOMER', 'CUST. NAME', 'MATERIAL', 'Old material number', 'Description', 'SO QUANTITY', 'SO Value', 'DEL QUANTITY',
+                       'OPEN SALES QTY', 'OPEN SALES Value', 'Plant', 'Item Category', 'Procurement Type', 'Vendor PO Number', 'Vendor PO Date', 'PO Release Qty',
+                       'Allocated Stock QTY', 'Allocated Stock Value','Indent Status',
+                       'Delivery Schedule', 'DELIVERY DATE','Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2', 'Schedule Line Qty3', 'Schedule Line Date3'
+                    ];
+
+                    var url = '@Url.Action("UploadSalesOrderDataExcel", "OpenPo")';
+                    handleImportExcelFile(url, expectedColumns);
+             });
+
+
+                loadData();
+         });
+
+        function clearForm() {
+            // Clear all input fields
+            document.querySelectorAll('.form-control').forEach(function (input) {
+                if (input.tagName === 'INPUT') {
+                    if (input.type === 'hidden' || input.readOnly) {
+                        // Skip hidden or readonly inputs
+                        return;
+                    }
+                    input.value = ''; // Clear input value
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0; // Reset dropdown to first option
+                }
+            });
+
+            // Clear error messages if needed
+            document.querySelectorAll('.text-danger').forEach(function (error) {
+                error.textContent = '';
+            });
+        }
+
+        function openUpload() {
+
+            clearForm();
+            if (!$('#uploadModal').length) {
+                $('body').append(partialView);
+            }
+            $('#uploadModal').modal('show');
+        }
+
+        function loadData() {
+
+            Blockloadershow();
+
+            $.ajax({
+                url: '@Url.Action("GetAllSOLog", "OpenPo")',
+                type: 'GET',
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnTabGridLoad(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+
+                //create checkbox element using font awesome icons
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                //build label
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                //create menu item
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        //prevent menu closing
+                        e.stopPropagation();
+
+                        //toggle current column visibility
+                        column.toggle();
+
+                        //change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+        function wildcardFilter(headerValue, rowValue) {
+            if (!headerValue) return true;
+
+            let regexStr = headerValue
+                .replace(/[-[\]/{}()+?.\\^$|]/g, "\\$&")  // escape special characters
+                .replace(/\*/g, ".*"); // convert * to regex
+
+            try {
+                let regex = new RegExp("^" + regexStr + "$", "i");
+                return regex.test(rowValue || ""); // handle nulls gracefully
+            } catch (e) {
+                return true; // fallback: show all if regex fails
+            }
+        }
+
+        function OnTabGridLoad(response) {
+            // Clear table data
+            debugger;
+            Blockloadershow();
+
+            tabledata = [];
+            let columns = [];
+
+            // Map the response to the table format
+            if (response.length > 0) {
+
+                function formatDate(value) {
+                        return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                }
+
+                $.each(response, function (index, item) {
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        FileName: item.fileName,
+                        TotalRecords: item.totalRecords,
+                        ImportedRecords: item.importedRecords,
+                        FailedRecords: item.failedRecords,
+                        UploadedAt: formatDate(item.uploadedAt),
+                        UploadedBy: item.uploadedBy
+                    });
+                });
+            }
+                // // Initialize Tabulator
+            table = new Tabulator("#So_Log_Table", {
+                data:tabledata, // Table data
+                renderHorizontal: "virtual",
+                movableColumns: true, // Allow column reordering
+                pagination: "local", // Enable pagination
+                paginationSize: 10, // Rows per page
+                paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                paginationCounter: "rows",
+                layout: "fitColumns",
+                dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                index: "Id", // This tells Tabulator to use `Id` as the unique row key
+                columns: [
+                    { title: "Sr No",formatter: "rownum",hozAlign: "center",headerSort: false,width: 70 },
+                    { title: "File Name", field: "FileName", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                    { title: "Total Records", field: "TotalRecords",headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                    { title: "Imported Records", field: "ImportedRecords", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                    { title: "Failed Records", field: "FailedRecords",headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                    { title: "Uploaded Date", field: "UploadedAt",headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                    { title: "UploadedBy", field: "UploadedBy",headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" }
+                ]
+
+            });
+
+
+            document.getElementById("exportExcel").addEventListener("click", function () {
+                table.download("xlsx", "Sales Order List.xlsx", { sheetName: "Sales Order Log List" });
+            });
+
+            // Hide loader
+            Blockloaderhide();
+        }
+
+    </script>
+}
+@section HideSidebar { }
+@await Html.PartialAsync("_UploadModalpartial")
+
+
+

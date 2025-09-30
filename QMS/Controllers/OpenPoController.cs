@@ -215,6 +215,17 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult UploadOpenSO()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetAllSOLog()
+        {
+            var openPoLogDeatilsList = await _openPoReposiotry.GetSOLogListAsync();
+            return Json(openPoLogDeatilsList);
+        }
 
         [HttpGet]
         public async Task<JsonResult> GetSalesOrderAll(string? type)

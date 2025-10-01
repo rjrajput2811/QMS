@@ -177,7 +177,7 @@
     </div>
 
 
-    <div  style="padding:50px;" >
+@*     <div  style="padding:50px;" >
         
         <div class="d-flex flex-column gap-2">
 
@@ -279,7 +279,97 @@
 
 
         </div>
+    </div> *@
+
+    <!-- CARDS GRID -->
+    <div class="container-fluid pb-4" style="padding-left:50px; padding-right:50px;">
+        <div class="d-flex flex-column gap-2">
+            <div class="row g-2" id="cardGrid">
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("BisProjectTracker","BisProjectTrac")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-calendar icon me-3"></i>
+                            <h5 class="mb-0">BIS Project Tracker</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("ThirdPartyInspection","ThirdPartyInspection")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred;"></i>
+                            <h5 class="mb-0">Third Party Inspection Tracker</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("PaymentTracker","PaymentTracker")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-badge icon me-3" style="color:seagreen;"></i>
+                            <h5 class="mb-0">Payment Tracker</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("PDITracker","PDITracker")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-book icon me-3" style="color:green;"></i>
+                            <h5 class="mb-0">PDI Tracker</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("FIFOTracker", "FIFOTrac")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-alipay icon me-3" style="color:chocolate;"></i>
+                            <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-bar-chart-steps icon me-3" style="color:cyan;"></i>
+                            <h5 class="mb-0">Third Party Test Tracker</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("KaizenTracker","KaizenTracker")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-amd icon me-3" style="color:blueviolet;"></i>
+                            <h5 class="mb-0">Kaizen Tracker</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-arrow-clockwise icon me-3" style="color:red;"></i>
+                            <h5 class="mb-0">Continual Improvement</h5>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-6 col-md-4 col-lg-3 col-xxl-2">
+                    <div class="card qms-card" onclick="location.href='@Url.Action("PDIAuthSignatory","PDIAuthSign")'">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkkhaki;"></i>
+                            <h5 class="mb-0">PDI Authorised Signatory</h5>
+                        </div>
+                    </div>
+                </div>
+                <!-- Removed duplicate "PDI Authorised Signatory" card -->
+            </div>
+        </div>
     </div>
+
 
     <div class="content-wrapper">
         @RenderBody()
@@ -312,32 +402,28 @@
     <script src="~/js/components_collapsible.js" asp-append-version="true"></script>
 
     <script>
-        function showDetails(title) {
-            const section = document.getElementById("detailsSection");
-            const titleElement = document.getElementById("detailsTitle");
-            section.style.display = 'block';
-            titleElement.textContent = `${title} - Details`;
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('cardSearch');
+            // Scope to this grid for safety
+            const cards = document.querySelectorAll('#cardGrid .qms-card');
 
+            function applyFilter(q) {
+                const query = (q || '').trim().toLowerCase();
+                cards.forEach(card => {
+                    const title = (card.querySelector('h5')?.textContent || '').toLowerCase();
+                    const col = card.closest('.col-6, .col-md-4, .col-lg-3, .col-xxl-2') || card.parentElement;
+                    const match = title.includes(query);
+                    // Use CSS display toggle to keep Bootstrap grid reflowing
+                    col.style.display = match ? '' : 'none';
+                });
+            }
 
+            // Initial (show all)
+            applyFilter('');
 
-        // Search Functionality
-        const searchInput = document.getElementById("cardSearch");
-        const cards = document.querySelectorAll("#cardContainer .card-item");
-
-        searchInput.addEventListener("keyup", function() {
-            const filter = this.value.toLowerCase();
-
-            cards.forEach(card => {
-                const title = card.querySelector("h5").innerText.toLowerCase();
-                if (title.includes(filter)) {
-                    card.style.display = "block";
-                } else {
-                    card.style.display = "none";
-                }
-            });
+            // Live filter on each keystroke
+            searchInput.addEventListener('input', (e) => applyFilter(e.target.value));
         });
-   
     </script>
 
 </body>

@@ -1,0 +1,526 @@
+﻿@using QMS.Core.Enums
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = "MTO";
+    var userType = HttpContextAccessor.HttpContext.Session.GetString("User_Type") ?? "";
+    var vendor_Name = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
+}
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/js/tabulator.js"></script>
+<script src="~/js/xlsx.min.js"></script>
+<link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+
+    .bborder {
+        border-bottom: 1px solid #eeeeee;
+    }
+
+    th {
+        border-bottom: 3px solid #eeeeee;
+    }
+
+    .current {
+        background-color: white !important;
+        color: blue !important;
+    }
+
+    .modal-header {
+        /* background-color: #ececec !important; */
+        padding-bottom: 7px !important;
+        font-weight: bold;
+    }
+
+    .modal-body {
+        padding: 0.4rem 1.25rem;
+    }
+
+    .form-control {
+        padding: 0 10px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #0056b3; /* Darker blue */
+    }
+
+    #scrollToTopBtn {
+        outline: none; /* Removes the focus border */
+    }
+
+    #uploadDetailTable tr {
+        background-color: #ffffff !important; /* Force all rows to be white */
+    }
+
+    #uploadDetailTable {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .modal-open .tabulator-row {
+        min-height: unset; /* Removes the min-height */
+    }
+
+    .select2-container {
+        z-index: 0 !important; /* Ensure it's above the modal */
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        /* border-right: none; */
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 30px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    /* Slideout modal customization */
+    .modal-dialog-slideout {
+        position: fixed;
+        margin: auto;
+        width: 60%;
+        height: 100%;
+        right: 10px;
+        top: 250px;
+        bottom: 0;
+        transform: translate3d(100%, 0, 0);
+        transition: transform 0.5s ease-out;
+    }
+
+    .modal.fade .modal-dialog-slideout {
+        transform: translate3d(100%, 0, 0);
+    }
+
+    .modal.fade.show .modal-dialog-slideout {
+        transform: translate3d(0, 0, 0);
+    }
+
+    .tabulator-tree-col .tabulator-tree-control {
+        display: none;
+    }
+
+    /* .tabulator-row.tabulator-tree-level-0 {
+                                font-size: large;
+                                color: #4682B4 !important;
+                                font-weight: 600;
+                            } */
+
+    .tabulator-row.tabulator-tree-level-1 {
+        font-size: medium;
+    }
+
+    .tabulator-row .tabulator-cell .tabulator-data-tree-control {
+        border: 2px solid #4682B4 !important;
+        background-color: #4682B4 !important;
+    }
+
+    .tabulator .tabulator-data-tree-branch {
+        border-left: 2px solid #4682B4 !important;
+        border-bottom: 2px solid #4682B4 !important;
+    }
+
+    .form-check.form-switch .form-check-input {
+        width: 2.4em;
+        height: 1.2em;
+        background-color: #ddd;
+        border-radius: 1.2em;
+        position: relative;
+        appearance: none;
+        -webkit-appearance: none;
+        outline: none;
+        transition: background-color 0.3s;
+    }
+
+        .form-check.form-switch .form-check-input:checked {
+            background-color: #007bff;
+        }
+
+        .form-check.form-switch .form-check-input::before {
+            content: "";
+            position: absolute;
+            top: 0.140em;
+            left: 0.125em;
+            width: 0.9em;
+            height: 0.9em;
+            background-color: #fff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .form-check.form-switch .form-check-input:checked::before {
+            transform: translateX(1.2em);
+        }
+</style>
+
+
+<div class="content">
+
+    <div class="card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div style="font-size: large; color: #4682B4;">
+                MTO
+            </div>
+            <!-- Back Button -->
+            <div>
+                <div class="ml-auto">
+                    <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
+                        <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
+                    </button>&nbsp;
+
+                    <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("SCMMenu","Home")'" style="font-size:14px">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div class="form-group row">
+
+                            <!-- Summary Section -->
+                            <div class="col-12" id="summary">
+                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3" id="summary-cards">
+
+                                    <div class="p-2 flex-fill text-center">
+                                        <div class="text-muted">Total PO</div>
+                                        <div class="h4 mb-0" id="total-po">0</div>
+                                    </div>
+
+                                    <div class="p-2 flex-fill text-center">
+                                        <div class="text-muted">Total SO</div>
+                                        <div class="h4 mb-0" id="total-so">0</div>
+                                    </div>
+
+                                    <div class="p-2 flex-fill text-center">
+                                        <div class="text-success">Matched</div>
+                                        <div class="h4 mb-0" id="matched">0</div>
+                                    </div>
+
+                                    <div class="p-2 flex-fill text-center">
+                                        <div class="text-danger">Unmatched PO</div>
+                                        <div class="h4 mb-0" id="notmatched-po">0</div>
+                                    </div>
+
+                                    <div class="p-2 flex-fill text-center">
+                                        <div class="text-warning">Unmatched SO</div>
+                                        <div class="h4 mb-0" id="notmatched-so">0</div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Summary Table -->
+                                <div id="summary_Table"></div>
+                            </div>
+                            <!-- End Summary Section -->
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<button id="scrollToTopBtn" style="
+    display: none;
+    position: fixed;
+    bottom: 10px;
+    right: 40px;
+    z-index: 1000;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 10%;
+    padding: 10px 15px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: opacity 0.3s;">
+    <i class="fa fa-arrow-up"></i>
+</button>
+
+@section Scripts {
+    <script src="~/js/select2.min.js"></script>
+    <script>
+
+         var tabledata = [];
+         var table;
+         $(document).ready(function () {
+             loadMatchedSummary();
+         });
+
+        function clearForm() {
+            // Clear all input fields
+            document.querySelectorAll('.form-control').forEach(function (input) {
+                if (input.tagName === 'INPUT') {
+                    if (input.type === 'hidden' || input.readOnly) {
+                        // Skip hidden or readonly inputs
+                        return;
+                    }
+                    input.value = ''; // Clear input value
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0; // Reset dropdown to first option
+                }
+            });
+
+            // Clear error messages if needed
+            document.querySelectorAll('.text-danger').forEach(function (error) {
+                error.textContent = '';
+            });
+        }
+
+
+        function loadMatchedSummary() {
+            Blockloadershow();
+            $.ajax({
+                url: '@Url.Action("GetPOSOMatchSummary", "OpenPo")',
+                method: 'GET',
+                success: function(response) {
+                    Blockloaderhide();
+                    if (response.summary) {
+                        $('#total-po').text(response.summary.total_PO_Count || 0);
+                        $('#total-so').text(response.summary.total_SO_Count || 0);
+                        $('#matched').text(response.summary.matched_Count || 0);
+                        $('#notmatched-po').text(response.summary.not_Matched_PO_Count || 0);
+                        $('#notmatched-so').text(response.summary.not_Matched_SO_Count || 0);
+                    }
+
+                    var records = response.matched || [];
+                    tabledata = [];
+
+                    if (records.length > 0) {
+
+                        function formatDate(value) {
+                                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                        }
+
+                        $.each(records, function (index, item) {
+                            tabledata.push({
+                                Sr_No: index + 1,
+                                Item_Category: item.item_Category,
+                                SO_Key: item.sO_Key,
+                                PO_Key: item.pO_Key,
+                                SO_Key1: item.sO_Key1,
+                                PO_Key1: item.pO_Key1,
+                                PO_Date: formatDate(item.pO_Date),
+                                PO_Qty: item.pO_Qty,
+                                PO_Material: item.pO_Material,
+                                SO_No: item.sO_No,
+                                SO_Date: formatDate(item.sO_Date),
+                                SO_Qty: item.sO_Qty,
+                                SO_Material: item.sO_Material,
+                                SO_SaleOrder_Type: item.sO_SaleOrder_Type,
+                                Line_Item: item.line_Item,
+                                Indent_No: item.indent_No,
+                                Indent_Date: formatDate(item.indent_Date),
+                                Sales_Group: item.sales_Group,
+                                Sales_Group_desc: item.sales_Group_desc,
+                                Sales_Office: item.sales_Office,
+                                Sales_Office_Desc: item.sales_Office_Desc,
+                                Sale_Person: item.sale_Person,
+                                Project_Name: item.project_Name,
+                                Customer_Name: item.customer_Name,
+                                Customer_Code: item.customer_Code,
+                                Old_Material_No: item.old_Material_No,
+                                Description: item.description,
+                                SO_Qty: item.sO_Qty,
+                                SO_Value: item.sO_Value,
+                                Del_Qty: item.del_Qty,
+                                Open_Sale_Qty: item.open_Sale_Qty,
+                                Opne_Sale_Value: item.opne_Sale_Value,
+                                Plant: item.plant,
+                                Procurement_Type: item.procurement_Type,
+                                Vendor_Po_No: item.vendor_Po_No,
+                                Vendor_Po_Date: formatDate(item.vendor_Po_Date),
+                                Po_Release_Qty: item.po_Release_Qty,
+                                Allocated_Stock_Qty: item.allocated_Stock_Qty,
+                                Allocated_Stock_Value: item.allocated_Stock_Value,
+                                Net_Qty: item.net_Qty,
+                                Net_Value: item.net_Value,
+                                Indent_Status: item.indent_Status,
+                                Delivery_Schedule: formatDate(item.delivery_Schedule),
+                                Delivert_Date: formatDate(item.delivert_Date),
+                                Readiness_Schedule_Vendor_Released: item.readiness_Schedule_Vendor_Released,
+                                Schedule_Line_Qty1: item.schedule_Line_Qty1,
+                                Schedule_Line_Date1: formatDate(item.schedule_Line_Date1),
+                                Schedule_Line_Qty2: item.schedule_Line_Qty2,
+                                Schedule_Line_Date2: formatDate(item.schedule_Line_Date2),
+                                Schedule_Line_Qty3: item.schedule_Line_Qty3,
+                                Schedule_Line_Date3: formatDate(item.schedule_Line_Date3),
+                                Total_Scheduled_Qty: item.total_Scheduled_Qty,
+                                Last_Schedule_Updated: formatDate(item.last_Schedule_Updated),
+                            });
+                        });
+                    }
+
+                    new Tabulator("#summary_Table", {
+                        data: tabledata,
+                        layout: "fitDataFill",
+                        renderHorizontal: "virtual",
+                        movableColumns: true, // Allow column reordering
+                        pagination: "local", // Enable pagination
+                        paginationSize: 10, // Rows per page
+                        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                        paginationCounter: "rows",
+                        // placeholder: "No data available",
+                        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+
+                        // rowFormatter: function(row) {
+                        //     var data = row.getData();
+                        //     if (data.Delivery_Schedule && data.Delivery_Schedule.trim() !== "") {
+                        //         row.getElement().style.backgroundColor = "#fff3cd";
+                        //     } else {
+                        //         row.getElement().style.backgroundColor = "";
+                        //     }
+                        // },
+
+                         rowFormatter: function (row) {
+                        const v = row.getData()?.Delivery_Schedule;
+                        const el = row.getElement();
+                        const hasValue = v && String(v).trim() !== "";
+                        el.style.backgroundColor = hasValue ? "#d4edda" : ""; // light green (bootstrap-success)
+                    },
+
+                        columns: [
+                            { title: "Sr No",formatter: "rownum",hozAlign: "center",headerSort: false,width: 70 },
+                            { title: "Item Category", field: "Item_Category", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "SO Key", field: "SO_Key", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "center" },
+                            { title: "PO Key", field: "PO_Key", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "center" },
+                            { title: "SO Key1", field: "SO_Key1", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "center" },
+                            { title: "PO Key1", field: "PO_Key1", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "center" },
+                            { title: "SO No", field: "SO_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "SO Date", field: "SO_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "SO Qty", field: "SO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "SO Value", field: "SO_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Sales Office", field: "Sales_Office", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Sale Order Type", field: "SO_SaleOrder_Type", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Line Item", field: "Line_Item", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Indent No", field: "Indent_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Indent_Date", field: "Indent_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Sales_Group", field: "Sales_Group", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Sales_Group_desc", field: "Sales_Group_desc", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Sales Office", field: "Sales_Office", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Sales_Office_Desc", field: "Sales_Office_Desc", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Sale Person", field: "Sale_Person", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Project Name", field: "Project_Name", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Customer Code", field: "Customer_Code", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Customer Name", field: "Customer_Name", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "SO Material", field: "SO_Material",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Old Material No", field: "Old_Material_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Description", field: "Description", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Del Qty", field: "Del_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Open Sale Qty", field: "Open_Sale_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Opne Sale Value", field: "Opne_Sale_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Plant", field: "Plant", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Procurement_Type", field: "Procurement_Type", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Vendor Po No", field: "Vendor_Po_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Vendor Po Date", field: "Vendor_Po_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Po Release Qty", field: "Po_Release_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Allocated Stock Qty", field: "Allocated_Stock_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Allocated Stock Value", field: "Allocated_Stock_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Net Qty", field: "Net_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Net Value", field: "Net_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Indent Status", field: "Indent_Status", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Delivery Schedule", field: "Delivery_Schedule", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Delivery Date", field: "Delivert_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Readiness Schedule Vendor Released", field: "Readiness_Schedule_Vendor_Released", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                            { title: "Total Scheduled Qty", field: "Total_Scheduled_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Last Schedule Date", field: "Last_Schedule_Updated", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "PO No", field: "PO_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left",visible: false },
+                            { title: "PO Date", field: "PO_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
+                            { title: "PO Qty", field: "PO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
+                            { title: "Delivery Date", field: "Delivery_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
+                            { title: "PO Material", field: "PO_Material",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left",visible: false }
+                        ]
+                    });
+                }
+            });
+        }
+
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+
+                //create checkbox element using font awesome icons
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                //build label
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                //create menu item
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        //prevent menu closing
+                        e.stopPropagation();
+
+                        //toggle current column visibility
+                        column.toggle();
+
+                        //change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+    </script>
+}
+@section HideSidebar { }
+@await Html.PartialAsync("_UploadModalpartial")
+
+
+

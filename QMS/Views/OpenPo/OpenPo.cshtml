@@ -257,6 +257,8 @@
             </div>
 
             <div class="modal-body">
+                <input type="hidden" id="Key" />
+                <input type="hidden" id="Key1" />
 
                 <!-- PO Info -->
                 <div class="border rounded p-3 bg-light mb-3 d-flex justify-content-between" style="font-size:larger">
@@ -1032,6 +1034,9 @@
             $("#lblPODate").text(row.PO_Date);
             $("#lblPOQty").text(row.PO_Qty);
             $("#lblBalanceQty").text(row.Balance_Qty);
+            $("#Key").val(row.Key);
+            $("#Key1").val(row.Key1);
+
 
 
 
@@ -1283,6 +1288,7 @@
 
 
         function saveDeliverySchedule() {
+            debugger
             Blockloadershow();
 
             const data = deliveryScheduleTable.getData() || [];
@@ -1378,6 +1384,8 @@
                 PO_Date: headerData.PO_Date ? new Date(headerData.PO_Date) : null,
                 PO_Qty: poQty,
                 Balance_Qty: balanceQty,
+                Key : headerData.Key,
+                Key1 : headerData.Key1,
                 DeliveryScheduleList: mappedData
             };
 

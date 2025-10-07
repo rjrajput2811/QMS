@@ -456,6 +456,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 PO_Date = header.PO_Date,
                 PO_Qty = header.PO_Qty,
                 Balance_Qty = header.Balance_Qty,
+                Key = header.Key,
+                Key1 = header.Key1,
                 DeliveryScheduleList = deliveries.Select(d => new DeliveryScheduleItem
                 {
                     Delivery_Date = d.Delivery_Date,
@@ -489,6 +491,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Delivery_Qty = item.Delivery_Qty,
                     Delivery_Remark = item.Delivery_Remark,
                     Date_PC_Week = item.Date_PC_Week,
+                    Key = model.Key,
+                    Key1 = model.Key1,
                     CreatedBy = updatedBy,
                     CreatedDate = DateTime.Now
                 };
@@ -689,6 +693,24 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
+        //public async Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
+        //{
+        //    var connectionString = _dbContext.Database.GetConnectionString();
+
+        //    using (var connection = new SqlConnection(connectionString))
+        //    {
+        //        await connection.OpenAsync();
+
+        //        using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report", new { Type = type }, commandType: CommandType.StoredProcedure))
+        //        {
+        //            var matched = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
+        //            var summary = (await multi.ReadAsync<MatchSummaryViewModel>()).FirstOrDefault();
+
+        //            return (matched, summary);
+        //        }
+        //    }
+        //}
+
         public async Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
         {
             var connectionString = _dbContext.Database.GetConnectionString();
@@ -697,7 +719,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
             {
                 await connection.OpenAsync();
 
-                using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report", new { Type = type }, commandType: CommandType.StoredProcedure))
+                using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report_1", new { Type = type }, commandType: CommandType.StoredProcedure))
                 {
                     var matched = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
                     var summary = (await multi.ReadAsync<MatchSummaryViewModel>()).FirstOrDefault();

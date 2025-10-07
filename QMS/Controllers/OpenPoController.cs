@@ -220,6 +220,11 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult MTO()
+        {
+            return View();
+        }
+
         [HttpGet]
         public async Task<JsonResult> GetAllSOLog()
         {
@@ -427,7 +432,7 @@ namespace QMS.Controllers
 
 
         [HttpGet]
-        public async Task<JsonResult> GetPOSOMatchSummary(string? type)
+        public async Task<JsonResult> GetPOSOMatchSummary(string? type = "MTO")
         {
             var result = await _openPoReposiotry.GetPO_SO_MatchReportAsync(type);
 

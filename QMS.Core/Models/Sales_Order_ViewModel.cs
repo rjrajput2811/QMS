@@ -103,20 +103,24 @@ namespace QMS.Core.Models
 
     public class MatchedRecordViewModel
     {
+        public string? SO_Key { get; set; }
+        public string? PO_Key { get; set; }
+        public string? SO_Key1 { get; set; }
+        public string? PO_Key1 { get; set; }
         public string? PO_No { get; set; }
         public DateTime? PO_Date { get; set; }
         public decimal? PO_Qty { get; set; }
         public DateTime? Delivery_Date { get; set; }
+        public string? Item_Category { get; set; }
         public string? SO_No { get; set; }
-        public string? Item_Category_Latest { get; set; }
-        public DateTime? SO_Date { get; set; }
-        public int? SO_Qty { get; set; }
-        public string? PO_Material { get; set; }
-        public string? SO_Material { get; set; }
         public string? SO_SaleOrder_Type { get; set; }
+        public DateTime? SO_Date { get; set; }
         public int? Line_Item { get; set; }
         public string? Indent_No { get; set; }
         public DateTime? Indent_Date { get; set; }
+        public int? SO_Qty { get; set; }
+        public string? PO_Material { get; set; }
+        public string? SO_Material { get; set; }
         public string? Sales_Group { get; set; }
         public string? Sales_Group_desc { get; set; }
         public string? Sales_Office { get; set; }

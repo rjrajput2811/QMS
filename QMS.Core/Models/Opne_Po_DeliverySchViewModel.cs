@@ -17,6 +17,8 @@ namespace QMS.Core.Models
         public DateTime? PO_Date { get; set; }
         public int? PO_Qty { get; set; }
         public int? Balance_Qty { get; set; }
+        public string? Key { get; set; }
+        public string? Key1 { get; set; }
 
         //public DateTime? Delivery_Date { get; set; }
         //public int? Delivery_Qty { get; set; }

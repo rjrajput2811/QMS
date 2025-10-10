@@ -33,14 +33,32 @@ namespace QMS.Core.DatabaseContext
         public string? InspectedBy { get; set; }
         public string? Remark { get; set; }
         public string? Attahcment { get; set; }
-        public string? Document_No { get; set; }
-        public string? Revision_No { get; set; }
-        public DateTime? Effective_Date { get; set; }
-        public DateTime? Revision_Date { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
        
+    }
+
+    [Table("tbl_BatchCode_PDI")]
+    public class BatchCode_PDI : SqlTable
+    {
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("Batch_Id")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+
+        public string? Vendor { get; set; }
+        public string? Batch_Code { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
     }
 }

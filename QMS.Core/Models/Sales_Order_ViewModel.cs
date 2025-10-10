@@ -167,4 +167,16 @@ namespace QMS.Core.Models
         public int Not_Matched_PO_Count { get; set; }
         public int Not_Matched_SO_Count { get; set; }
     }
+
+    public class MatchDeliverySchViewModel
+    {
+        public string? DS_PO_No { get; set; }
+        public DateTime? DS_PO_Date { get; set; }
+        public int? DS_PO_Qty { get; set; }
+        public DateTime? Delivery_Date { get; set; }
+        public int? Delivery_Qty { get; set; }
+        public string? Date_PC_Week { get; set; }
+        public string? DS_Key { get; set; }
+        public string? DS_Key1 { get; set; }
+    }
 }

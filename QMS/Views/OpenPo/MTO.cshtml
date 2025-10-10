@@ -321,6 +321,7 @@
                     }
 
                     var records = response.matched || [];
+                    var allTS = response.deliverySch || [];
                     tabledata = [];
 
                     if (records.length > 0) {
@@ -330,6 +331,7 @@
                         }
 
                         $.each(records, function (index, item) {
+
                             tabledata.push({
                                 Sr_No: index + 1,
                                 Item_Category: item.item_Category,
@@ -373,7 +375,7 @@
                                 Net_Qty: item.net_Qty,
                                 Net_Value: item.net_Value,
                                 Indent_Status: item.indent_Status,
-                                Delivery_Schedule: formatDate(item.delivery_Schedule),
+                                Delivery_Schedule: "",
                                 Delivert_Date: formatDate(item.delivert_Date),
                                 Readiness_Schedule_Vendor_Released: item.readiness_Schedule_Vendor_Released,
                                 Schedule_Line_Qty1: item.schedule_Line_Qty1,
@@ -384,20 +386,73 @@
                                 Schedule_Line_Date3: formatDate(item.schedule_Line_Date3),
                                 Total_Scheduled_Qty: item.total_Scheduled_Qty,
                                 Last_Schedule_Updated: formatDate(item.last_Schedule_Updated),
+                                 _children: []
                             });
+                        });
+
+                        $.each(allTS, function () {
+                            var parentRow = tabledata.find(row =>
+                                row.PO_Key === this.dS_Key && row.PO_Key1 === this.dS_Key1
+                            );
+
+                            if (parentRow) 
+                            {
+
+                                if (!parentRow._childrenHeaderAdded) {
+                                   parentRow._children.unshift({
+                                     _isChildHeader: true,
+                                     Delivery_Schedule: "Delivery Date",
+                                     Delivert_Date: "Date PC Week",
+                                     Readiness_Schedule_Vendor_Released: "Qty",
+                                     //Schedule_Line_Qty1: "Remark"
+                                   });
+                                   parentRow._childrenHeaderAdded = true;
+                                }
+
+                                parentRow._children.push({
+                                    // DeliverySchu_Id: this.id, // pick what your API returns
+                                    // Ven_PoId: this.ven_PoId,
+                                    // Sr_No: "",
+                                    // Reference_No:"",
+                                    // PO_No: "",
+                                    // PO_Date: "",
+                                    // PO_Qty: "",
+                                    // Destination: "",
+                                    Delivery_Schedule:formatDate(this.delivery_Date),
+                                    Delivert_Date: this.date_PC_Week,
+                                    Readiness_Schedule_Vendor_Released: this.delivery_Qty,
+                                    //Schedule_Line_Qty1: this.delivery_Remark,
+                                    // Buffer_Day : this.buffer_Day,
+                                    // Comit_Planner_date: formatDate(this.planner_Date),
+                                    // PCWeekDate: this.planner_PC_Date,
+                                    // Comit_Date : formatDate(this.comit_Date),
+                                    // Comit_Qty : this.comit_Qty,
+                                    // Comit_Date1 : formatDate(this.comit_Date1),
+                                    // Comit_Qty1 : this.comit_Qty1,
+                                    // Comit_Final_Date : formatDate(this.comit_Final_Date),
+                                    // Comit_Final_Qty : this.comit_Final_Qty,
+                                    // CreatedBy: "",    // empty in child if not used
+                                });
+                            }
                         });
                     }
 
+                    window.PendTSTableData = JSON.parse(JSON.stringify(tabledata));
+
                     new Tabulator("#summary_Table", {
-                        data: tabledata,
+                        data: window.PendTSTableData,
                         layout: "fitDataFill",
                         renderHorizontal: "virtual",
                         movableColumns: true, // Allow column reordering
                         pagination: "local", // Enable pagination
-                        paginationSize: 10, // Rows per page
-                        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                        paginationSize: 50, // Rows per page
+                        paginationSizeSelector: [70, 100, 500, 1500, 2000],
                         paginationCounter: "rows",
                         // placeholder: "No data available",
+                        dataTree: true,
+                        dataTreeStartExpanded: true,
+                        dataTreeChildField: "_children",
+                        dataTreeFilter: false,
                         dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
 
                         // rowFormatter: function(row) {
@@ -409,11 +464,42 @@
                         //     }
                         // },
 
-                         rowFormatter: function (row) {
-                        const v = row.getData()?.Delivery_Schedule;
-                        const el = row.getElement();
-                        const hasValue = v && String(v).trim() !== "";
-                        el.style.backgroundColor = hasValue ? "#d4edda" : ""; // light green (bootstrap-success)
+                        //  rowFormatter: function (row) {
+                        // const v = row.getData()?.Delivery_Schedule;
+                        // const el = row.getElement();
+                        // const hasValue = v && String(v).trim() !== "";
+                        // el.style.backgroundColor = hasValue ? "#d4edda" : ""; // light green (bootstrap-success)
+                        rowFormatter: function (row) {
+                          const el = row.getElement();
+                              const d  = row.getData() || {};
+
+                              // 1) Reset any prior/recycled styles
+                              el.style.backgroundColor = "";
+                              el.style.fontWeight = "";
+                              el.style.background = "";
+                              row.getCells().forEach(c => {
+                                c.getElement().style.pointerEvents = "";
+                              });
+
+                              // 2) Special style for child-header rows
+                              if (d._isChildHeader) {
+                                el.style.fontWeight = "700";
+                                el.style.background = "#f1f5f9"; // subtle slate-ish
+                                row.getCells().forEach(c => {
+                                  c.getElement().style.pointerEvents = "none"; // make header non-interactive
+                                });
+                                return; // don't apply any other styling
+                              }
+
+                              // 3) Light green highlight if Delivery_Schedule has a value
+                              const hasValue =
+                                d.Delivery_Schedule != null && String(d.Delivery_Schedule).trim() !== "";
+
+                              if (hasValue) {
+                                el.style.backgroundColor = "#d4edda"; // bootstrap success-light
+                              }
+                        // }
+
                     },
 
                         columns: [

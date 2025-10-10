@@ -439,6 +439,7 @@ namespace QMS.Controllers
             var response = new
             {
                 Matched = result.matched,
+                DeliverySch = result.deliverySch,
                 Summary = result.summary
             };
 

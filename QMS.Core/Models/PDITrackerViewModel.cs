@@ -37,10 +37,6 @@ namespace QMS.Core.Models
         public string? Remark { get; set; }
 
         public string? Attahcment { get; set; }
-        public string? Document_No { get; set; }
-        public string? Revision_No { get; set; }
-        public DateTime? Effective_Date { get; set; }
-        public DateTime? Revision_Date { get; set; }
         public string? CreatedBy { get; set; }
 
         public DateTime? CreatedDate { get; set; }
@@ -52,4 +48,15 @@ namespace QMS.Core.Models
         public bool? IsDelete { get; set; }
     }
 
+    public class BatchCodePDIViewModel
+    {
+        public int Id { get; set; }
+        public bool Deleted { get; set; }
+        public string? Vendor { get; set; }
+        public string? Batch_Code { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
 }

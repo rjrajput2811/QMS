@@ -29,14 +29,14 @@ $(document).ready(function () {
                 filterStartDate = start.format('YYYY-MM-DD');
                 filterEndDate = end.format('YYYY-MM-DD');
                 $('#dateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                OnThirdPartyGridLoad();
+                loadThirdInsData();
             });
 
             picker.on('clear', () => {
                 filterStartDate = "";
                 filterEndDate = "";
                 $('#dateRangeText').text("Select Date Range");
-                OnThirdPartyGridLoad();
+                loadThirdInsData();
             });
         },
         ranges: {
@@ -58,7 +58,7 @@ $(document).ready(function () {
 
     $('#upload-button').on('click', async function () {
         var expectedColumns = [
-            'Inspection Date', 'Customer/Project Name', 'Inspector Name', 'Product Code', 'Product Description', 'LOT QTY(No)',
+            'PC','Inspection Date', 'Customer/Project Name', 'Inspector Name', 'Product Code', 'Product Description', 'LOT QTY(No)',
             'Project Value(Mn).', 'TPI Duration(DAYS)', 'Location(Waluj Lab/Vendor Location)', 'Mode Of Inspection(Physical/Online)',
             'Cleared in first attempt', 'Remark', 'Actions plan (If any issue)', 'MOM performed date'
         ];
@@ -634,13 +634,14 @@ function OnTabThirdInsGridLoad(response) {
         $.each(response, function (index, item) {
             tabledata.push({
                 Sr_No: index + 1,
+                PC: item.pc,
                 InspectionID: item.inspectionID,
                 InspectionDate: formatDate(item.inspectionDate),
                 ProjectName: item.projectName || "",
                 InspName: item.inspName || "",
                 ProductCode: item.productCode || "",
                 ProdDesc: item.prodDesc || "",
-                LOTQty: item.lOTQty,
+                LOTQty: item.lotQty,
                 ProjectValue: item.projectValue || "",
                 Tpi_Duration: item.tpi_Duration || "",
                 Location: item.location || "",
@@ -648,7 +649,7 @@ function OnTabThirdInsGridLoad(response) {
                 FirstAttempt: item.firstAttempt || "",
                 Remark: item.remark || "",
                 ActionPlan: item.actionPlan || "",
-                MOMDate: formatDate(item.mOMDate),
+                MOMDate: formatDate(item.momDate),
                 Attachment: item.attachment || "",
                 UpdatedDate: formatDate(item.updatedDate),
                 CreatedDate: formatDate(item.createdDate),
@@ -671,9 +672,10 @@ function OnTabThirdInsGridLoad(response) {
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
 
+        editableColumn("PC", "PC", "input", "center", "input", {}, {}, 120),
         editableColumn("Inspection Date", "InspectionDate", "date", "center", "input", {}, {}, 120),
         editableColumn("Customer/Project Name", "ProjectName", "input", "left", "input", {}, {} ),
-        editableColumn("Inspector Name", "InspName", "input", "left", "input", {}, {} ),
+        editableColumn("TPI Agency/Inspector Name", "InspName", "input", "left", "input", {}, {} ),
         //editableColumn("Product Code", "ProductCode", "autocomplete_ajax"),
         {
             title: "Product Codes",
@@ -717,8 +719,28 @@ function OnTabThirdInsGridLoad(response) {
         editableColumn("LOT QTY(No's)", "LOTQty", "input", "center", "input", {}, 110),
         editableColumn("Project Value(Mn).", "ProjectValue", "input", "left", "input", {}, {}),
         editableColumn("TPI Duration(DAYS)", "Tpi_Duration", "input", "center", "input", {}, {}),
-        editableColumn("Location(Waluj Lab/Vendor Location)", "Location", "input", "left", "input", {}, {}),
-        editableColumn("Mode Of Inspection(Physical/Online)", "Mode", "input", "center", "input", {}, {}),
+        //editableColumn("Location(Waluj Lab/Vendor Location)", "Location", "input", "left", "input", {}, {}),
+        editableColumn(
+            "Location(Waluj Lab/Vendor Location)",
+            "Location",
+            "list",                        // editor type
+            "center",                      // hoz align
+            "list",                        // header filter type
+            { values: { "Waluj Lab": "Waluj Lab", "Vendor Location": "Vendor Location" } },
+            { values: { "Waluj Lab": "Waluj Lab", "Vendor Location": "Vendor Location" }, allowEmpty: true },
+            null
+        ),
+        //editableColumn("Mode Of Inspection(Physical/Online)", "Mode", "input", "center", "input", {}, {}),
+        editableColumn(
+            "Mode Of Inspection(Physical/Online)",
+            "Mode",
+            "list",                        // editor type
+            "center",                      // hoz align
+            "list",                        // header filter type
+            { values: { Physical: "Physical", Online: "Online" } },  // headerFilterParams
+            { values: { Physical: "Physical", Online: "Online" } },  // editorParams
+            null
+        ),
         editableColumn("Cleared in first attempt", "FirstAttempt", "input", "left", "input", {}, {}),
         editableColumn("Remark", "Remark", "input", "left", "input", {}, {}),
         editableColumn("Actions plan (If any issue)", "ActionPlan", "input", "left", "input", {}, {}),
@@ -1457,7 +1479,24 @@ Tabulator.extendModule("edit", "editors", {
 //}
 
 function saveEditedRow(rowData) {
-    debugger
+    debugger;
+    var errorMsg = "";
+    var fields = "";
+
+
+    if (rowData.InspectionDate == '' || rowData.InspectionDate == null || rowData.InspectionDate == undefined) {
+        fields += " - Inspection Date" + "<br>";
+    }
+
+    if (fields != "") {
+        errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
+    }
+
+    if (errorMsg != "") {
+        showDangerAlert(errorMsg);
+        return false;
+    }
+
     // ----- helpers -----
     const toStrOrNull = (v) => {
         if (v === undefined || v === null) return null;
@@ -1503,7 +1542,7 @@ function saveEditedRow(rowData) {
     // NOTE: Your model key is Id (mapped to column "InspectionID" in DB). Send "Id" in JSON.
     const cleanedData = {
         Id: Number(rowData.Id ?? rowData.InspectionID ?? 0) || 0,
-
+        Pc: toStrOrNull(rowData.PC),
         InspectionDate: toIsoDate(rowData.InspectionDate),
         ProjectName: toStrOrNull(rowData.ProjectName),
         InspName: toStrOrNull(rowData.InspName),
@@ -1602,6 +1641,7 @@ function openUpload() {
 
 $('#download-template').on('click', function () {
     const expectedColumns = [
+        'PC',
         'Inspection Date',
         'Customer/Project Name',
         'Inspector Name',

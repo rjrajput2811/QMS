@@ -711,7 +711,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
         //    }
         //}
 
-        public async Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
+        public async Task<(List<MatchedRecordViewModel> matched,List<MatchDeliverySchViewModel> deliverySch, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
         {
             var connectionString = _dbContext.Database.GetConnectionString();
 
@@ -722,9 +722,10 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report_1", new { Type = type }, commandType: CommandType.StoredProcedure))
                 {
                     var matched = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
+                    var deliverySch = (await multi.ReadAsync<MatchDeliverySchViewModel>()).ToList();
                     var summary = (await multi.ReadAsync<MatchSummaryViewModel>()).FirstOrDefault();
 
-                    return (matched, summary);
+                    return (matched, deliverySch, summary);
                 }
             }
         }

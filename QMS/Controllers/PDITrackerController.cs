@@ -206,5 +206,114 @@ namespace QMS.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetBatchCodeDropdown()
+        {
+            try
+            {
+                var vendorList = await _pdiTrackerRepository.GetBatchCodeDropdownAsync();
+                return Json(vendorList);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return StatusCode(500, "Error retrieving Batch Code dropdown.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetBatchCodePDIByIdAsync(int Id)
+        {
+            var instId = await _pdiTrackerRepository.GetBatchCodePDIByIdAsync(Id);
+            return Json(instId);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetBatchCodePDIAsync()
+        {
+            var instList = await _pdiTrackerRepository.GetBatchCodePDIAsync();
+            return Json(instList);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateBatchCodePDIAsync([FromBody] BatchCodePDIViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _pdiTrackerRepository.CheckBatchCodePDIDuplicate(model.Batch_Code.Trim(), 0);
+                    if (!existingResult)
+                    {
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        model.CreatedDate = DateTime.Now;
+                        operationResult = await _pdiTrackerRepository.CreateBatchCodePDIAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateBatchCodePDIAsync([FromBody] BatchCodePDIViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _pdiTrackerRepository.CheckBatchCodePDIDuplicate(model.Batch_Code.Trim(), model.Id);
+                    if (!existingResult)
+                    {
+                        model.UpdatedDate = DateTime.Now;
+                        model.UpdatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _pdiTrackerRepository.UpdateBatchCodePDIAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteBatchCodePDIAsync(int id)
+        {
+            try
+            {
+                var operationResult = await _pdiTrackerRepository.DeleteBatchCodePDIAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+
+        }
+
     }
 }

@@ -1,7 +1,13 @@
 ﻿var tabledata = [];
-var table = ''; let vendorOptions = {};
+var table = '';
+let vendorOptions = {};
+let vendorBatchCodeOptions = {};
 let filterStartDate = moment().startOf('week').format('YYYY-MM-DD');
 let filterEndDate = moment().endOf('week').format('YYYY-MM-DD');
+var tabledataBatchCode = [];
+var tableBatchCode = '';
+let batchCodeOptions = {};
+let selectedBatchCodeCell = null;
 
 $(document).ready(function () {
     $('#dateRangeText').text(
@@ -59,7 +65,9 @@ $(document).ready(function () {
     });
 
     loadData();
+
 });
+
 var headerMenu = function () {
     var menu = [];
     var columns = this.getColumns();
@@ -105,20 +113,72 @@ var headerMenu = function () {
     return menu;
 };
 
+//function loadData() {
+//    Blockloadershow();
+//    $.ajax({
+//        url: '/PDITracker/GetVendor',
+//        type: 'GET'
+//    }).done(function (vendorData) {
+//        if (Array.isArray(vendorData)) {
+//            vendorOptions = vendorData.reduce((acc, v) => {
+//                acc[v.value] = v.label;
+//                return acc;
+//            }, {});
+//        }
+
+//        // Nested AJAX call to get actual data after vendorOptions is populated
+//        $.ajax({
+//            url: '/PDITracker/GetAll',
+//            type: 'GET',
+//            dataType: 'json',
+//            data: {
+//                startDate: filterStartDate,
+//                endDate: filterEndDate
+//            },
+//        })
+//            .done(function (data) {
+//                const safeData = Array.isArray(data) ? data : [];
+//                if (safeData.length) {
+//                    console.log("PDI data:", safeData);
+//                    OnTabGridLoad(safeData);
+//                } else {
+//                    showDangerAlert('No data available to load.');
+//                    OnTabGridLoad([]);
+//                }
+//            })
+//            .fail(function (xhr, status, error) {
+//                console.error('Error retrieving data:', status, error, xhr.responseText);
+//                showDangerAlert('Error retrieving data: ' + (error || status));
+//                OnTabGridLoad([]);
+//            })
+//            .always(function () {
+//                Blockloaderhide();
+//            });
+
+//    });
+//}
+
+
 function loadData() {
     Blockloadershow();
+
+    // Step 1: Load vendor data
+
+
+    // Step 2: Load Nat Project data
     $.ajax({
-        url: '/PDITracker/GetVendor',
+        url: '/PDITracker/GetBatchCodeDropdown',
         type: 'GET'
-    }).done(function (vendorData) {
-        if (Array.isArray(vendorData)) {
-            vendorOptions = vendorData.reduce((acc, v) => {
+    }).done(function (lab) {
+        //let natProjectOptions = {};
+
+        if (Array.isArray(lab)) {
+            batchCodeOptions = lab.reduce((acc, v) => {
                 acc[v.value] = v.label;
                 return acc;
             }, {});
         }
 
-        // Nested AJAX call to get actual data after vendorOptions is populated
         $.ajax({
             url: '/PDITracker/GetAll',
             type: 'GET',
@@ -127,26 +187,22 @@ function loadData() {
                 startDate: filterStartDate,
                 endDate: filterEndDate
             },
-        })
-            .done(function (data) {
-                const safeData = Array.isArray(data) ? data : [];
-                if (safeData.length) {
-                    console.log("PDI data:", safeData);
-                    OnTabGridLoad(safeData);
+            success: function (data) {
+                Blockloaderhide();
+                if (data && Array.isArray(data)) {
+                    OnTabGridLoad(data);
                 } else {
                     showDangerAlert('No data available to load.');
-                    OnTabGridLoad([]);
                 }
-            })
-            .fail(function (xhr, status, error) {
-                console.error('Error retrieving data:', status, error, xhr.responseText);
-                showDangerAlert('Error retrieving data: ' + (error || status));
-                OnTabGridLoad([]);
-            })
-            .always(function () {
+            },
+            error: function (xhr, status, error) {
                 Blockloaderhide();
-            });
-
+                showDangerAlert('Error retrieving data: ' + error);
+            }
+        });
+    }).fail(function () {
+        Blockloaderhide();
+        showDangerAlert('Failed to load Nat Project data.');
     });
 }
 
@@ -636,8 +692,8 @@ function getDisplayValue(cell) {
     if (def.headerFilterParams && def.headerFilterParams.values) maps.push(_valuesToMap(def.headerFilterParams.values));
 
     // 2) Field-specific fallbacks to your global dictionaries
-    //if (def.field === "Lab" && window.labOptions) maps.push(window.labOptions);
-    if (def.field === "Vendor" && window.vendorOptions) maps.push(window.vendorOptions);
+    if (def.field === "BatchCodeVendor" && window.batchCodeOptions) maps.push(window.batchCodeOptions);
+    //if (def.field === "Vendor" && window.vendorOptions) maps.push(window.vendorOptions);
 
     for (const map of maps) {
         if (map && Object.prototype.hasOwnProperty.call(map, String(v))) {
@@ -707,8 +763,8 @@ function OnTabGridLoad(response) {
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
 
-        editableColumn("Dispatch Date", "DispatchDate", "date", "center", "input", {}, {}, 120),
         editableColumn("PC", "PC", "input", "center", "input", {}, {}, 160),
+        editableColumn("Dispatch Date", "DispatchDate", "date", "center", "input", {}, {}, 120),
         //editableColumn("Product Code", "ProductCode", "autocomplete_ajax"),
         {
             title: "Product Codes",
@@ -750,12 +806,20 @@ function OnTabGridLoad(response) {
         //editableColumn("Product Description", "ProductDescription", "input"),
         { title: "Product Description", field: "ProdDesc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
         // editableColumn("Batch Code (Vendor)", "BatchCodeVendor", "input", "center", null, {}, {}, 140),
+        //editableColumn("Batch Code(Vendor)", "BatchCodeVendor", "select2", "center", "input", {}, {
+        //    values: vendorOptions
+        //}, function (cell) {
+        //    const val = cell.getValue();
+        //    return vendorOptions[val] || val;
+        //}, 130),
+
         editableColumn("Batch Code(Vendor)", "BatchCodeVendor", "select2", "center", "input", {}, {
-            values: vendorOptions
+            values: batchCodeOptions
         }, function (cell) {
             const val = cell.getValue();
-            return vendorOptions[val] || val;
-        }, 130),
+            return batchCodeOptions[val] || val;
+        }, 170),
+        editableColumn("PO No.", "PONo", "input", "center", "input", {}, {}, 250),
         editableColumn("PDI Date", "PDIDate", "date", "center", "input", {}, {}, 120),
         editableColumn("PDI Ref No", "PDIRefNo", "input", "center", "input", {}, {}, 130),
         editableColumn("Offered Qty", "OfferedQty", "input", "center", "input", {}, {}, 110),
@@ -884,7 +948,7 @@ function OnTabGridLoad(response) {
                     Sr_No: table.getDataCount() + 1,
                     DispatchDate: "",
                     PC: "",
-                    ProductCode : "",
+                    ProductCode: "",
                     ProductDescription: "",
                     BatchCodeVendor: "",
                     PONo: "",
@@ -1361,12 +1425,42 @@ function delConfirm(recid, element) {
     });
 }
 
+//Tabulator.extendModule("edit", "editors", {
+//    select2: function (cell, onRendered, success, cancel, editorParams) {
+//        const values = editorParams.values || {};
+//        const select = document.createElement("select");
+//        select.style.width = "100%";
+
+//        for (let val in values) {
+//            let option = document.createElement("option");
+//            option.value = val;
+//            option.text = values[val];
+//            if (val === cell.getValue()) option.selected = true;
+//            select.appendChild(option);
+//        }
+
+//        onRendered(function () {
+//            $(select).select2({
+//                dropdownParent: document.body,
+//                width: 'resolve',
+//                placeholder: "Select value"
+//            }).on("change", function () {
+//                success(select.value);
+//            });
+//        });
+
+//        return select;
+//    }
+//});
+
 Tabulator.extendModule("edit", "editors", {
     select2: function (cell, onRendered, success, cancel, editorParams) {
+        const fieldName = cell.getField(); // column field
         const values = editorParams.values || {};
         const select = document.createElement("select");
         select.style.width = "100%";
 
+        // Add regular options
         for (let val in values) {
             let option = document.createElement("option");
             option.value = val;
@@ -1375,19 +1469,47 @@ Tabulator.extendModule("edit", "editors", {
             select.appendChild(option);
         }
 
+        // Add "Add New" option only for Nat_Project
+        if (fieldName === "BatchCodeVendor") {
+            let addOption = document.createElement("option");
+            addOption.value = "__add_new__";
+            addOption.text = "➕ Add New Batch-Code";
+            select.appendChild(addOption);
+        }
+
         onRendered(function () {
             $(select).select2({
                 dropdownParent: document.body,
                 width: 'resolve',
-                placeholder: "Select value"
-            }).on("change", function () {
-                success(select.value);
+                placeholder: "Select value",
+                templateResult: function (data) {
+                    if (data.id === "__add_new__") {
+                        return $('<span style="color: blue;"><i class="fas fa-plus-circle"></i> ' + data.text + '</span>');
+                    }
+                    return data.text;
+                },
+                templateSelection: function (data) {
+                    return values[data.id] || data.text;
+                }
+            }).on("select2:select", function (e) {
+                const selectedVal = select.value;
+
+                if (selectedVal === "__add_new__") {
+                    $(select).select2('close');
+                    cancel(); // cancel cell edit
+                    selectedBatchCodeCell = cell; // store the cell
+                    $('#batchCodePDIModel').modal('show');
+                    loadBatchCodeData();
+                } else {
+                    success(selectedVal);
+                }
             });
         });
 
         return select;
     }
 });
+
 
 //function saveEditedPDIRow(rowData) {
 //    debugger
@@ -1534,7 +1656,8 @@ function saveEditedPDIRow(rowData) {
         ClearedQty: rowData.ClearedQty || 0,
         BISCompliance: rowData.BISCompliance || false,
         InspectedBy: rowData.InspectedBy || null,
-        Remark: rowData.InspectedBy || null,
+        Remark: rowData.Remark || null,
+        Attahcment: rowData.Attahcment || null
     };
 
     console.log("Cleaned data:", cleanedData);
@@ -1570,5 +1693,270 @@ function saveEditedPDIRow(rowData) {
         error: function (xhr) {
             showDangerAlert(xhr.responseText || "Error saving record.");
         },
+    });
+}
+
+function loadBatchCodeData() {
+    Blockloadershow();
+    $.ajax({
+        url: '/PDITracker/GetVendor',
+        type: 'GET'
+    }).done(function (vendorData) {
+        if (Array.isArray(vendorData)) {
+            vendorBatchCodeOptions = vendorData.reduce((acc, v) => {
+                acc[v.value] = v.label;
+                return acc;
+            }, {});
+        }
+
+        // Nested AJAX call to get actual data after vendorOptions is populated
+        $.ajax({
+            url: '/PDITracker/GetBatchCodePDI',
+            type: 'GET',
+        })
+            .done(function (data) {
+                const safeData = Array.isArray(data) ? data : [];
+                if (safeData.length) {
+                    console.log("PDI data:", safeData);
+                    OnBatchCodeGridLoad(safeData);
+                } else {
+                    showDangerAlert('No data available to load.');
+                    OnBatchCodeGridLoad([]);
+                }
+            })
+            .fail(function (xhr, status, error) {
+                console.error('Error retrieving data:', status, error, xhr.responseText);
+                showDangerAlert('Error retrieving data: ' + (error || status));
+                OnBatchCodeGridLoad([]);
+            })
+            .always(function () {
+                Blockloaderhide();
+            });
+
+    }).fail(function () {
+        Blockloaderhide();
+        showDangerAlert('Failed to load Nat Project data.');
+    });
+}
+
+function OnBatchCodeGridLoad(response) {
+    debugger;
+    Blockloadershow();
+
+    tabledataBatchCode = [];
+    let columns = [];
+
+    // Map the response to the table format
+    if (response.length > 0) {
+        $.each(response, function (index, item) {
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+            }
+
+            tabledataBatchCode.push({
+                Sr_No: index + 1,
+                Id: item.id,
+                Vendor: item.vendor,
+                Batch_Code: item.batch_Code,
+                CreatedBy: item.createdBy,
+                UpdatedBy: item.updatedBy,
+                UpdatedDate: formatDate(item.updatedDate),
+                CreatedDate: formatDate(item.createdDate),
+            });
+        });
+    }
+
+    if (tabledataBatchCode.length === 0 && tableBatchCode) {
+        tableBatchCode.clearData();
+        Blockloaderhide();
+        return;
+    }
+
+    columns.push(
+        {
+            title: "Action",
+            field: "Action",
+            width: 46,
+            hozAlign: "center",
+            headerHozAlign: "center",
+            formatter: function (cell, formatterParams) {
+                const rowData = cell.getRow().getData();
+                let actionButtons = "";
+
+                actionButtons += `<i onclick="delBatchCodeConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+
+                return actionButtons;
+            }
+        },
+        {
+            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
+        },
+        editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
+            values: vendorBatchCodeOptions
+        }, function (cell) {
+            const val = cell.getValue();
+            return vendorBatchCodeOptions[val] || val;
+        }, null),
+        editableColumn("Batch Code", "Batch_Code", true),
+        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+    );
+
+    // // Initialize Tabulator
+    tableBatchCode = new Tabulator("#batch_Table", {
+        data: tabledataBatchCode,
+        renderHorizontal: "virtual",
+        movableColumns: true,
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+        paginationCounter: "rows",
+        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+        columns: columns
+    });
+
+    tableBatchCode.on("cellEdited", function (cell) {
+        InsertUpdateBatchCode(cell.getRow().getData());
+    });
+
+    $("#addBatchBtn").on("click", function () {
+        const newRow1 = {
+            Sr_No: tableBatchCode.getDataCount() + 1,
+            Id: 0,
+            Vendor: "",
+            Batch_Code: "",
+            CreatedBy: "",
+            UpdatedBy: "",
+            UpdatedDate: "",
+            CreatedDate: ""
+        };
+        tableBatchCode.addRow(newRow1, false);
+    });
+
+
+    Blockloaderhide();
+}
+
+function InsertUpdateBatchCode(rowData) {
+    debugger
+    if (!rowData) {
+        showDangerAlert("Invalid data provided.");
+        return;
+    }
+
+    //Blockloadershow();
+    var errorMsg = "";
+
+    if (errorMsg !== "") {
+        Blockloaderhide();
+        showDangerAlert(errorMsg);
+        return false;
+    }
+
+    var Model = {
+        Id: rowData.Id || 0,
+        Vendor: rowData.Vendor || null,
+        Batch_Code: rowData.Batch_Code || null
+    };
+
+    var ajaxUrl = Model.Id === 0 ? '/PDITracker/CreateBatchCodePDI' : '/PDITracker/UpdateBatchCodePDI';
+
+    $.ajax({
+        url: ajaxUrl,
+        type: "POST",
+        data: JSON.stringify(Model),
+        contentType: 'application/json',
+        success: function (response) {
+            //Blockloaderhide();
+            if (response.success) {
+                const msg = Model.Id != 0
+                    ? "Batch Code updated successfully!"
+                    : "Batch Code saved successfully!";
+                showSuccessAlert(msg);
+                loadBatchCodeData();
+            }
+            else if (response.message === "Exist") {
+                showDangerAlert("Batch Code already exists.");
+            }
+            else {
+                var errorMessg = "";
+                if (response.errors) {
+                    for (var error in response.errors) {
+                        if (response.errors.hasOwnProperty(error)) {
+                            errorMessg += `${response.errors[error]}\n`;
+                        }
+                    }
+                }
+                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
+            }
+        },
+        error: function (xhr, status, error) {
+            //Blockloaderhide();
+            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
+        }
+    });
+}
+
+$('#batchCodePDIModel').on('hidden.bs.modal', function () {
+    loadBatchCodeData(); // uncomment if you want full reload
+});
+
+
+function delBatchCodeConfirm(recid, element) {
+    debugger;
+
+    if (!recid || recid <= 0) {
+        const rowEl = $(element).closest(".tabulator-row")[0];
+        const row = tableBatchCode.getRow(rowEl);
+        if (row) {
+            row.delete();
+        }
+        return;
+    }
+
+    PNotify.prototype.options.styling = "bootstrap3";
+    (new PNotify({
+        title: 'Confirmation Needed',
+        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+        icon: 'glyphicon glyphicon-question-sign',
+        hide: false,
+        confirm: {
+            confirm: true
+        },
+        buttons: {
+            closer: false,
+            sticker: false
+        },
+        history: {
+            history: false
+        },
+    })).get().on('pnotify.confirm', function () {
+        $.ajax({
+            url: '/PDITracker/DeleteBatchCodePDI',
+            type: 'POST',
+            data: { id: recid },
+            success: function (data) {
+                if (data.success == true) {
+                    showSuccessAlert("Batch Code Deleted successfully.");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2500);
+                }
+                else if (data.success == false && data.message == "Not_Deleted") {
+                    showDangerAlert("Record is used in QMS Log transactions.");
+                }
+                else {
+                    showDangerAlert(data.message);
+                }
+            },
+            error: function () {
+                showDangerAlert('Error retrieving data.');
+            }
+        });
+    }).on('pnotify.cancel', function () {
+        loadBatchCodeData();
     });
 }

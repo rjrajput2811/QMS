@@ -29,7 +29,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
         Task<BulkSalesCreateLogResult> BulkSalesCreateAsync(List<Sales_Order_ViewModel> listOfData, string fileName, string uploadedBy);
 
-        Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type);
+        Task<(List<MatchedRecordViewModel> matched, List<MatchDeliverySchViewModel> deliverySch, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type);
 
         Task<OperationResult> UpdateAsync(Open_Po updatedRecord, bool returnUpdatedRecord = false);
 

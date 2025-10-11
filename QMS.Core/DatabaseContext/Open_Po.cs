@@ -63,5 +63,9 @@ namespace QMS.Core.DatabaseContext
         public string? CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public string? UpdatedBy { get; set; }
+        public DateTime? LastUploadedAt { get; set; }
+        public Guid? LastUploadBatchId { get; set; }
+        public bool SuppressChildDelivery { get; set; }
+
     }
 }

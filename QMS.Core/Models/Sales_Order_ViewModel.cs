@@ -9,8 +9,8 @@ namespace QMS.Core.Models
 {
     public class Sales_Order_ViewModel
     {
-        public  int Id { get; set; }
-        public  bool Deleted { get; set; }
+        public int Id { get; set; }
+        public bool Deleted { get; set; }
         public string? SO_No { get; set; }
         public string? SaleOrder_Type { get; set; }
         public DateTime? SO_Date { get; set; }
@@ -157,6 +157,15 @@ namespace QMS.Core.Models
         public DateTime? Schedule_Line_Date3 { get; set; }
         public int? Total_Scheduled_Qty { get; set; }
         public DateTime? Last_Schedule_Updated { get; set; }
+        public string DS_Delivery_Date { get; set; }
+        public string DS_Delivery_Qty { get; set; }
+        public string DS_Date_PC_Week { get; set; }
+        public string DS_Comit_Qty { get; set; }
+        public string DS_Comit_Qty1 { get; set; }
+        public string DS_Comit_Final_Qty { get; set; }
+        public string DS_Comit_Date { get; set; }
+        public string DS_Comit_Date1 { get; set; }
+        public string DS_Comit_Final_Date { get; set; }
     }
 
     public class MatchSummaryViewModel

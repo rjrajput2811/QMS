@@ -286,6 +286,9 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
             try
             {
+                var batchId = Guid.NewGuid();
+                var uploadTs = DateTime.Now;
+
                 var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
 
                 foreach (var item in listOfData)
@@ -359,11 +362,18 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             existingEntity.Cleared_Date = item.Cleared_Date;
                             existingEntity.CreatedBy = uploadedBy;
                             existingEntity.CreatedDate = DateTime.Now;
+                            existingEntity.LastUploadBatchId = batchId;
+                            existingEntity.LastUploadedAt = uploadTs;
+                            existingEntity.SuppressChildDelivery = true;
                         }
                         else
                         {
                             result.FailedRecords.Add((item, "Duplicate in database with no changes"));
                         }
+
+                        existingEntity.LastUploadBatchId = batchId;
+                        existingEntity.LastUploadedAt = uploadTs;
+                        existingEntity.SuppressChildDelivery = true;
                     }
                     else
                     {
@@ -391,7 +401,10 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             Cleared_Date = item.Cleared_Date,
                             Key1 = (item.Batch_No ?? string.Empty) + (item.Reference_No ?? string.Empty),
                             CreatedBy = uploadedBy,
-                            CreatedDate = DateTime.Now
+                            CreatedDate = DateTime.Now,
+                            LastUploadBatchId = batchId,
+                            LastUploadedAt = uploadTs,
+                            SuppressChildDelivery = true
                         };
                         _dbContext.OpenPo.Add(newEntity);
                     }
@@ -407,7 +420,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     ImportedRecords = listOfData.Count - result.FailedRecords.Count,
                     FailedRecords = result.FailedRecords.Count,
                     UploadedBy = uploadedBy,
-                    UploadedAt = DateTime.Now,
+                    UploadedAt = uploadTs,
                     FileType = "PO"
                 };
 
@@ -440,7 +453,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
         public async Task<Opne_Po_DeliverySchViewModel> GetByPOIdAsync(int poId)
         {
 
-            var deliveries = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == poId).ToListAsync();
+            var deliveries = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == poId && x.Deleted == false).ToListAsync();
 
             if (deliveries == null || deliveries.Count == 0)
                 return null;
@@ -470,38 +483,225 @@ namespace QMS.Core.Repositories.OpenPoRepository
             return viewModel;
         }
 
+        //public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
+        //{
+        //    // First delete existing records
+        //    var existing = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == model.Ven_PoId).ToListAsync();
+        //    _dbContext.Opne_Po_Deliveries.RemoveRange(existing);
+
+        //    // Insert new records
+        //    foreach (var item in model.DeliveryScheduleList)
+        //    {
+        //        var entity = new Opne_Po_DeliverySchedule
+        //        {
+        //            Ven_PoId = model.Ven_PoId,
+        //            Vendor = model.Vendor,
+        //            PO_No = model.PO_No,
+        //            PO_Date = model.PO_Date,
+        //            PO_Qty = model.PO_Qty,
+        //            Balance_Qty = model.Balance_Qty,
+        //            Delivery_Date = item.Delivery_Date,
+        //            Delivery_Qty = item.Delivery_Qty,
+        //            Delivery_Remark = item.Delivery_Remark,
+        //            Date_PC_Week = item.Date_PC_Week,
+        //            Key = model.Key,
+        //            Key1 = model.Key1,
+        //            CreatedBy = updatedBy,
+        //            CreatedDate = DateTime.Now
+        //        };
+
+        //        _dbContext.Opne_Po_Deliveries.Add(entity);
+        //    }
+
+        //    await _dbContext.SaveChangesAsync();
+        //}
+
         public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
         {
-            // First delete existing records
-            var existing = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == model.Ven_PoId).ToListAsync();
-            _dbContext.Opne_Po_Deliveries.RemoveRange(existing);
+            // Guard
+            if (model == null) throw new ArgumentNullException(nameof(model));
+            if (model.DeliveryScheduleList == null) model.DeliveryScheduleList = new List<DeliveryScheduleItem>();
 
-            // Insert new records
+            using var tx = await _dbContext.Database.BeginTransactionAsync();
+
+            bool anyRowSaved = false;
+
             foreach (var item in model.DeliveryScheduleList)
             {
-                var entity = new Opne_Po_DeliverySchedule
-                {
-                    Ven_PoId = model.Ven_PoId,
-                    Vendor = model.Vendor,
-                    PO_No = model.PO_No,
-                    PO_Date = model.PO_Date,
-                    PO_Qty = model.PO_Qty,
-                    Balance_Qty = model.Balance_Qty,
-                    Delivery_Date = item.Delivery_Date,
-                    Delivery_Qty = item.Delivery_Qty,
-                    Delivery_Remark = item.Delivery_Remark,
-                    Date_PC_Week = item.Date_PC_Week,
-                    Key = model.Key,
-                    Key1 = model.Key1,
-                    CreatedBy = updatedBy,
-                    CreatedDate = DateTime.Now
-                };
+                // Find an existing row for this Ven_PoId + Key + Key1 (tweak if your uniqueness differs)
+                var entity = await _dbContext.Opne_Po_Deliveries
+                    .FirstOrDefaultAsync(x =>
+                        x.Ven_PoId == model.Ven_PoId &&
+                        x.Key == model.Key &&
+                        x.Key1 == model.Key1);
 
-                _dbContext.Opne_Po_Deliveries.Add(entity);
+                if (entity == null)
+                {
+                    // Create the row and set the first commit
+                    entity = new Opne_Po_DeliverySchedule
+                    {
+                        Ven_PoId = model.Ven_PoId,
+                        Vendor = model.Vendor,
+                        PO_No = model.PO_No,
+                        PO_Date = model.PO_Date,
+                        PO_Qty = model.PO_Qty,
+                        Balance_Qty = model.Balance_Qty,
+
+                        // Optional: mirror the "incoming" values into Delivery_* if you still want to store them
+                        Delivery_Date = item.Delivery_Date,
+                        Delivery_Qty = item.Delivery_Qty,
+                        Delivery_Remark = item.Delivery_Remark,
+
+                        Date_PC_Week = item.Date_PC_Week,
+                        Key = model.Key,
+                        Key1 = model.Key1,
+
+                        // First commit lands in Comit_*
+                        Comit_Date = item.Delivery_Date,
+                        Comit_Qty = item.Delivery_Qty,
+
+                        CreatedBy = updatedBy,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    _dbContext.Opne_Po_Deliveries.Add(entity);
+
+                    anyRowSaved = true;
+                }
+                else
+                {
+                    // Update common PO/meta fields (if they can change)
+                    entity.Vendor = model.Vendor;
+                    entity.PO_No = model.PO_No;
+                    entity.PO_Date = model.PO_Date;
+                    entity.PO_Qty = model.PO_Qty;
+                    entity.Balance_Qty = model.Balance_Qty;
+
+                    // Optional: keep Delivery_* as the "incoming" values for reference
+                    entity.Delivery_Date = item.Delivery_Date;
+                    entity.Delivery_Qty = item.Delivery_Qty;
+                    entity.Delivery_Remark = item.Delivery_Remark;
+                    entity.Date_PC_Week = item.Date_PC_Week;
+
+                    // Apply the rotation with the new incoming values
+                    ApplyCommitRotation(entity, item.Delivery_Date, item.Delivery_Qty);
+                    anyRowSaved = true;
+                }
             }
 
             await _dbContext.SaveChangesAsync();
+
+            if (anyRowSaved)
+            {
+                var parent = await _dbContext.OpenPo.FirstOrDefaultAsync(p => p.Id == model.Ven_PoId);
+                if (parent != null && parent.SuppressChildDelivery)
+                {
+                    parent.SuppressChildDelivery = false;
+                    parent.UpdatedBy = updatedBy;
+                    parent.UpdatedDate = DateTime.Now;
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+            await tx.CommitAsync();
         }
+
+        ///// <summary>
+        ///// Rotates Comit_* fields with a 3-slot queue:
+        ///// Final <- Comit_Date1 <- Comit_Date <- (newDate,newQty)
+        ///// Handles empty/first/second/third+ updates safely.
+        ///// </summary>
+        //private static void ApplyCommitRotation(Opne_Po_DeliverySchedule e, DateTime? newDate, int? newQty)
+        //{
+        //    // If nothing new, no-op
+        //    bool hasNew = newDate.HasValue || (newQty.HasValue && newQty.Value != 0);
+        //    if (!hasNew) return;
+
+        //    // If nothing ever set, first fill Comit_*
+        //    if (!e.Comit_Date.HasValue && !e.Comit_Qty.HasValue)
+        //    {
+        //        e.Comit_Date = newDate;
+        //        e.Comit_Qty = newQty;
+        //        return;
+        //    }
+
+        //    // If the new value equals the current Comit_*, skip (prevents duplicate churn)
+        //    bool sameAsCurrent =
+        //        Nullable.Equals(e.Comit_Date, newDate) &&
+        //        ((e.Comit_Qty ?? 0) == (newQty ?? 0));
+
+        //    if (sameAsCurrent) return;
+
+        //    // General rotation:
+        //    // Move Comit_Date1/Qty1 -> Final
+        //    e.Comit_Final_Date = e.Comit_Date1;
+        //    e.Comit_Final_Qty = e.Comit_Qty1;
+
+        //    // Move Comit_Date/Qty -> Comit_Date1/Qty1
+        //    e.Comit_Date1 = e.Comit_Date;
+        //    e.Comit_Qty1 = e.Comit_Qty;
+
+        //    // New -> Comit_Date/Qty
+        //    e.Comit_Date = newDate;
+        //    e.Comit_Qty = newQty;
+        //}
+
+        /// <summary>
+        /// Rotation rules requested:
+        /// 1) 1st commit → Comit_Date/Qty
+        /// 2) 2nd commit → move Comit_Date → Comit_Date1; new → Comit_Date
+        /// 3) 3rd commit → Comit_Date1 → Comit_Final_Date; Comit_Date → Comit_Date1; new → Comit_Date
+        /// 4th+ commits → DO NOT change Comit_Date1 or Comit_Final_Date; only set Comit_Date to the new value
+        /// </summary>
+        private static void ApplyCommitRotation(Opne_Po_DeliverySchedule e, DateTime? newDate, int? newQty)
+        {
+            // nothing to do if no incoming data
+            bool hasNew = newDate.HasValue || (newQty.HasValue && newQty.Value != 0);
+            if (!hasNew) return;
+
+            // If nothing ever set -> first fill current
+            if (!e.Comit_Date.HasValue && !e.Comit_Qty.HasValue)
+            {
+                e.Comit_Date = newDate;
+                e.Comit_Qty = newQty;
+                return;
+            }
+
+            // If the new value is identical to current, skip (idempotent)
+            bool sameAsCurrent =
+                Nullable.Equals(e.Comit_Date, newDate) &&
+                ((e.Comit_Qty ?? 0m) == (newQty ?? 0m));
+            if (sameAsCurrent) return;
+
+            // If we haven't yet filled Comit_Date1 (2nd commit)
+            if (!e.Comit_Date1.HasValue && !e.Comit_Qty1.HasValue)
+            {
+                e.Comit_Date1 = e.Comit_Date;
+                e.Comit_Qty1 = e.Comit_Qty;
+
+                e.Comit_Date = newDate;
+                e.Comit_Qty = newQty;
+                return;
+            }
+
+            // If we haven't yet filled Comit_Final (3rd commit)
+            if (!e.Comit_Final_Date.HasValue && !e.Comit_Final_Qty.HasValue)
+            {
+                e.Comit_Final_Date = e.Comit_Date1;
+                e.Comit_Final_Qty = e.Comit_Qty1;
+
+                e.Comit_Date1 = e.Comit_Date;
+                e.Comit_Qty1 = e.Comit_Qty;
+
+                e.Comit_Date = newDate;
+                e.Comit_Qty = newQty;
+                return;
+            }
+
+            // 4th+ commits: freeze Comit_Date1 & Comit_Final_*; only update current
+            e.Comit_Date = newDate;
+            e.Comit_Qty = newQty;
+        }
+
 
 
         public async Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor)
@@ -513,7 +713,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     if (connection.State != ConnectionState.Open)
                         await connection.OpenAsync();
 
-                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule_Bak]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
 
                     {
                         var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();

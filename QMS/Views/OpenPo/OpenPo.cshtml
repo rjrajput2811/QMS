@@ -195,12 +195,12 @@
                     <i class="fas fa-regular fa-file-excel mr-2"></i>Download Blank Exl
                 </button> *@
                 <div class="ml-auto">
-                    @if (userType != "Vendor")
+                  @*   @if (userType != "Vendor")
                     {
                         <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
                             <i class="fas fa-upload mr-2"></i>Upload Xl
                         </button>
-                    }
+                    } *@
                     <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
                         <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
                     </button>&nbsp;
@@ -636,6 +636,13 @@
                         return value ? new Date(value).toLocaleDateString("en-GB") : "";
                 }
 
+                
+
+                 function isTrue(v) {
+                  return v === true || v === 1 || v === "1" ||
+                         (typeof v === "string" && v.toLowerCase() === "true");
+                }
+
                 $.each(myList, function (index, item) {
 
                     const plannerDateStr = formatDate(item.comit_Planner_date);
@@ -681,6 +688,7 @@
                         Buffer_Day : item.buffer_Day,
                         CreatedBy: item.createdBy,
                         CreatedDate : formatDate(item.createdDate),
+                        SuppressChildDelivery: !!item.suppressChildDelivery,
                         _children: []
                     });
                 });
@@ -692,7 +700,7 @@
                     );
 
                     if (parentRow) {
-
+                        const suppress = isTrue(!!parentRow.SuppressChildDelivery);
                          if (!parentRow._childrenHeaderAdded) {
                            parentRow._children.unshift({
                              _isChildHeader: true,
@@ -713,10 +721,10 @@
                             PO_Date: "",
                             PO_Qty: "",
                             Destination: "",
-                            Delivery_Date:formatDate(this.delivery_Date),
-                            Material: this.date_PC_Week,
-                            Hold_Date: this.delivery_Qty,
-                            Cleared_Date: this.delivery_Remark,
+                            Delivery_Date:suppress ? "" : formatDate(this.delivery_Date),
+                            Material: suppress ? "" : this.date_PC_Week,
+                            Hold_Date: suppress ? "" : this.delivery_Qty,
+                            Cleared_Date: suppress ? "" : this.delivery_Remark,
                             Buffer_Day : this.buffer_Day,
                             Comit_Planner_date: formatDate(this.planner_Date),
                             PCWeekDate: this.planner_PC_Date,
@@ -810,7 +818,19 @@
                                 const data = row.getData();
                                 const isChild = row.getTreeParent() !== null;
 
-                                    function parseDateString(str) {
+                                    if (data.SuppressChildDelivery === true) {
+                                      return `<div style="display:flex; align-items:center; justify-content:space-between;">
+                                                <span style="flex:1; text-align:center; font-weight:600; color:#59C3C3;"></span>
+                                                <i class="fas fa-regular fa-calendar-days"
+                                                   title="Manage Delivery Schedule"
+                                                   style="cursor:pointer; font-size:18px;"
+                                                   onclick="openDeliverySchedule(${data.Id})">
+                                                </i>
+                                            </div>`;
+                                    }
+
+                                    function parseDateString(str) 
+                                    {
                                         const parts = str?.split("/");
                                         if (parts?.length === 3) {
                                             const day = parseInt(parts[0], 10);
@@ -821,7 +841,8 @@
                                         return null;
                                     }
 
-                                if (data.Id) {
+                                if (data.Id) 
+                                {
                                     let latestDate = "";
 
                                     const children = row.getTreeChildren();

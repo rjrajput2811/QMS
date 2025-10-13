@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -762,118 +763,121 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        public async Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type)
-        {
-            try
-            {
+        //public async Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type)
+        //{
+        //    try
+        //    {
 
-                var result = await _dbContext.Sales_Order.FromSqlRaw("EXEC sp_Get_SalesOrder_SCM").ToListAsync();
+        //        var parameters = new[]
+        //        {
+        //            new SqlParameter("@type", type ?? (object)DBNull.Value),
+        //        };
 
-                if (!string.IsNullOrEmpty(type))
-                    result = result.Where(x => x.Item_Category_Latest == type).ToList();
+        //        var result = await _dbContext.Sales_Order
+        //            .FromSqlRaw("EXEC sp_Get_SalesOrder_SCM @type", parameters)
+        //            .ToListAsync();
 
 
-                // Map results to ViewModel
-                var viewModelList = result.Select(data => new Sales_Order_ViewModel
-                {
-                    Id = data.Id,
-                    SO_No = data.SO_No,
-                    SaleOrder_Type = data.SaleOrder_Type,
-                    SO_Date = data.SO_Date,
-                    Line_Item = data.Line_Item,
-                    Indent_No = data.Indent_No,
-                    Indent_Date = data.Indent_Date,
-                    Order_Type = data.Order_Type,
-                    Vertical = data.Vertical,
-                    Region = data.Region,
-                    Sales_Group = data.Sales_Group,
-                    Sales_Group_desc = data.Sales_Group_desc,
-                    Sales_Office = data.Sales_Office,
-                    Sales_Office_Desc = data.Sales_Office_Desc,
-                    Sale_Person = data.Sale_Person,
-                    Project_Name = data.Project_Name,
-                    Project_Name_Tag = data.Project_Name_Tag,
-                    Priority_Tag = data.Priority_Tag,
-                    Customer_Name = data.Customer_Name,
-                    Customer_Code = data.Customer_Code,
-                    Dealer_Direct = data.Dealer_Direct,
-                    Inspection = data.Inspection,
-                    Material = data.Material,
-                    Old_Material_No = data.Old_Material_No,
-                    Description = data.Description,
-                    SO_Qty = data.SO_Qty,
-                    SO_Value = data.SO_Value,
-                    Rate = data.Rate,
-                    Del_Qty = data.Del_Qty,
-                    Open_Sale_Qty = data.Open_Sale_Qty,
-                    Opne_Sale_Value = data.Opne_Sale_Value,
-                    Plant = data.Plant,
-                    Item_Category = data.Item_Category,
-                    Item_Category_Latest = data.Item_Category_Latest,
-                    Procurement_Type = data.Procurement_Type,
-                    Vendor_Po_No = data.Vendor_Po_No,
-                    Vendor_Po_Date = data.Vendor_Po_Date,
-                    CPR_Number = data.CPR_Number,
-                    Vendor = data.Vendor,
-                    Planner = data.Planner,
-                    Po_Release_Qty = data.Po_Release_Qty,
-                    Allocated_Stock_Qty = data.Allocated_Stock_Qty,
-                    Allocated_Stock_Value = data.Allocated_Stock_Value,
-                    Net_Qty = data.Net_Qty,
-                    Net_Value = data.Net_Value,
-                    Qty_In_Week = data.Qty_In_Week,
-                    Value_In_Week = data.Value_In_Week,
-                    Qty_After_Week = data.Qty_After_Week,
-                    Value_After_Week = data.Value_After_Week,
-                    Check5 = data.Check5,
-                    Indent_Status = data.Indent_Status,
-                    Sales_Call_Point = data.Sales_Call_Point,
-                    Free_Stock = data.Free_Stock,
-                    Grn_Qty = data.Grn_Qty,
-                    Last_Grn_Date = data.Last_Grn_Date,
-                    Check1 = data.Check1,
-                    Delivery_Schedule = data.Delivery_Schedule,
-                    Readiness_Vendor_Released_Fr_Date = data.Readiness_Vendor_Released_Fr_Date,
-                    Readiness_Vendor_Released_To_Date = data.Readiness_Vendor_Released_To_Date,
-                    Readiness_Schedule_Vendor_Released = data.Readiness_Schedule_Vendor_Released,
-                    Delivery_Schedule_PC_Breakup = data.Delivery_Schedule_PC_Breakup,
-                    Check2 = data.Check2,
-                    Line_Item_Schedule = data.Line_Item_Schedule,
-                    R_B = data.R_B,
-                    Schedule_Repeat = data.Schedule_Repeat,
-                    Internal_Pending_Issue = data.Internal_Pending_Issue,
-                    Pending_With = data.Pending_With,
-                    Remark = data.Remark,
-                    CRD_OverDue = data.CRD_OverDue,
-                    Delivert_Date = data.Delivert_Date,
-                    Process_Plan_On_Crd = data.Process_Plan_On_Crd,
-                    Last_Week_PC = data.Last_Week_PC,
-                    Schedule_Line_Qty1 = data.Schedule_Line_Qty1,
-                    Schedule_Line_Date1 = data.Schedule_Line_Date1,
-                    Schedule_Line_Qty2 = data.Schedule_Line_Qty2,
-                    Schedule_Line_Date2 = data.Schedule_Line_Date2,
-                    Schedule_Line_Qty3 = data.Schedule_Line_Qty3,
-                    Schedule_Line_Date3 = data.Schedule_Line_Date3,
-                    To_Consider = data.To_Consider,
-                    Person_Name = data.Person_Name,
-                    Visibility = data.Visibility,
-                    CreatedDate = data.CreatedDate,
-                    CreatedBy = data.CreatedBy,
-                    Key = data.Key,
-                    Key1 = data.Key1,
-                    UpdatedBy = data.UpdatedBy,
-                    UpdatedDate = data.UpdatedDate
-                }).ToList();
+        //        var viewModelList = result.Select(data => new Sales_Order_ViewModel
+        //        {
+        //            Id = data.Id,
+        //            SO_No = data.SO_No,
+        //            SaleOrder_Type = data.SaleOrder_Type,
+        //            SO_Date = data.SO_Date,
+        //            Line_Item = data.Line_Item,
+        //            Indent_No = data.Indent_No,
+        //            Indent_Date = data.Indent_Date,
+        //            Order_Type = data.Order_Type,
+        //            Vertical = data.Vertical,
+        //            Region = data.Region,
+        //            Sales_Group = data.Sales_Group,
+        //            Sales_Group_desc = data.Sales_Group_desc,
+        //            Sales_Office = data.Sales_Office,
+        //            Sales_Office_Desc = data.Sales_Office_Desc,
+        //            Sale_Person = data.Sale_Person,
+        //            Project_Name = data.Project_Name,
+        //            Project_Name_Tag = data.Project_Name_Tag,
+        //            Priority_Tag = data.Priority_Tag,
+        //            Customer_Name = data.Customer_Name,
+        //            Customer_Code = data.Customer_Code,
+        //            Dealer_Direct = data.Dealer_Direct,
+        //            Inspection = data.Inspection,
+        //            Material = data.Material,
+        //            Old_Material_No = data.Old_Material_No,
+        //            Description = data.Description,
+        //            SO_Qty = data.SO_Qty,
+        //            SO_Value = data.SO_Value,
+        //            Rate = data.Rate,
+        //            Del_Qty = data.Del_Qty,
+        //            Open_Sale_Qty = data.Open_Sale_Qty,
+        //            Opne_Sale_Value = data.Opne_Sale_Value,
+        //            Plant = data.Plant,
+        //            Item_Category = data.Item_Category,
+        //            Item_Category_Latest = data.Item_Category_Latest,
+        //            Procurement_Type = data.Procurement_Type,
+        //            Vendor_Po_No = data.Vendor_Po_No,
+        //            Vendor_Po_Date = data.Vendor_Po_Date,
+        //            CPR_Number = data.CPR_Number,
+        //            Vendor = data.Vendor,
+        //            Planner = data.Planner,
+        //            Po_Release_Qty = data.Po_Release_Qty,
+        //            Allocated_Stock_Qty = data.Allocated_Stock_Qty,
+        //            Allocated_Stock_Value = data.Allocated_Stock_Value,
+        //            Net_Qty = data.Net_Qty,
+        //            Net_Value = data.Net_Value,
+        //            Qty_In_Week = data.Qty_In_Week,
+        //            Value_In_Week = data.Value_In_Week,
+        //            Qty_After_Week = data.Qty_After_Week,
+        //            Value_After_Week = data.Value_After_Week,
+        //            Check5 = data.Check5,
+        //            Indent_Status = data.Indent_Status,
+        //            Sales_Call_Point = data.Sales_Call_Point,
+        //            Free_Stock = data.Free_Stock,
+        //            Grn_Qty = data.Grn_Qty,
+        //            Last_Grn_Date = data.Last_Grn_Date,
+        //            Check1 = data.Check1,
+        //            Delivery_Schedule = data.Delivery_Schedule,
+        //            Readiness_Vendor_Released_Fr_Date = data.Readiness_Vendor_Released_Fr_Date,
+        //            Readiness_Vendor_Released_To_Date = data.Readiness_Vendor_Released_To_Date,
+        //            Readiness_Schedule_Vendor_Released = data.Readiness_Schedule_Vendor_Released,
+        //            Delivery_Schedule_PC_Breakup = data.Delivery_Schedule_PC_Breakup,
+        //            Check2 = data.Check2,
+        //            Line_Item_Schedule = data.Line_Item_Schedule,
+        //            R_B = data.R_B,
+        //            Schedule_Repeat = data.Schedule_Repeat,
+        //            Internal_Pending_Issue = data.Internal_Pending_Issue,
+        //            Pending_With = data.Pending_With,
+        //            Remark = data.Remark,
+        //            CRD_OverDue = data.CRD_OverDue,
+        //            Delivert_Date = data.Delivert_Date,
+        //            Process_Plan_On_Crd = data.Process_Plan_On_Crd,
+        //            Last_Week_PC = data.Last_Week_PC,
+        //            Schedule_Line_Qty1 = data.Schedule_Line_Qty1,
+        //            Schedule_Line_Date1 = data.Schedule_Line_Date1,
+        //            Schedule_Line_Qty2 = data.Schedule_Line_Qty2,
+        //            Schedule_Line_Date2 = data.Schedule_Line_Date2,
+        //            Schedule_Line_Qty3 = data.Schedule_Line_Qty3,
+        //            Schedule_Line_Date3 = data.Schedule_Line_Date3,
+        //            To_Consider = data.To_Consider,
+        //            Person_Name = data.Person_Name,
+        //            Visibility = data.Visibility,
+        //            CreatedDate = data.CreatedDate,
+        //            CreatedBy = data.CreatedBy,
+        //            Key = data.Key,
+        //            Key1 = data.Key1,
+        //            UpdatedBy = data.UpdatedBy,
+        //            UpdatedDate = data.UpdatedDate
+        //        }).ToList();
 
-                return viewModelList;
+        //        return viewModelList;
 
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                throw;
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _systemLogService.WriteLog(ex.Message);
+        //        throw;
+        //    }
+        //}
 
         public async Task<List<Sales_Order_ViewModel>> GetSalesOrdersQtyAsync(string? type)
         {
@@ -1459,6 +1463,154 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
 
             return res;
+        }
+
+        public async Task<(List<OpenPODetailViewModel> openPo, List<So_DeliveryScheduleViewModel> deliverySch)> GetPOListByMaterialRefNoAsync(string? material, string? oldMaterialNo, int soId)
+        {
+            try
+            {
+                // Get the connection string from configuration or your context
+                var connectionString = _dbContext.Database.GetConnectionString();
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    //var result = await connection.QueryAsync<OpenPODetailViewModel>("[dbo].[sp_Get_OpenPO_Delivery_ByMaterial]", new { Material = material, Old_Material_No = oldMaterialNo },commandType: CommandType.StoredProcedure);
+
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_Delivery_ByMaterial]", new { Material = material, Old_Material_No = oldMaterialNo , SaleOrder_Id = soId }, commandType: CommandType.StoredProcedure))
+
+                    {
+                        var openPo = (await multi.ReadAsync<OpenPODetailViewModel>()).ToList();
+                        //var deliverySch = (await multi.ReadAsync<So_DeliveryScheduleViewModel>()).ToList();
+
+                        var rawRows = await multi.ReadAsync<dynamic>();
+
+                        // Convert flat rows into grouped structure
+                        var grouped = rawRows.GroupBy(r => new
+                        {
+                            Material = (string?)r.Material,
+                            OldMaterial = (string?)r.Old_Material_No,
+                            SO_Id = (int?)r.SaleOrder_Id
+                        });
+
+                        var deliverySch = new List<So_DeliveryScheduleViewModel>();
+
+                        foreach (var grp in grouped)
+                        {
+                            var first = grp.First();
+
+                            var parent = new So_DeliveryScheduleViewModel
+                            {
+                                Id = first.Id ?? 0,
+                                Deleted = first.Deleted ?? false,
+                                SaleOrder_Id = grp.Key.SO_Id,
+                                Vendor = first.Vendor ?? "",
+                                SO_No = first.SO_No ?? "",
+                                SO_Date = first.SO_Date == null ? (DateTime?)null : Convert.ToDateTime(first.SO_Date),
+                                SO_Qty = first.SO_Qty ?? 0,
+                                Key = first.Key ?? "",
+                                Key1 = first.Key1 ?? "",
+                                Material = grp.Key.Material ?? "",
+                                Old_Material_No = grp.Key.OldMaterial ?? "",
+                                CreatedBy = first.CreatedBy ?? "",
+                                CreatedDate = first.CreatedDate == null ? (DateTime?)null : Convert.ToDateTime(first.CreatedDate)
+                            };
+
+                            // Child list
+                            int sr = 1;
+                            foreach (var r in grp)
+                            {
+                                parent.SODeliveryScheduleList.Add(new So_DeliveryScheduleItem
+                                {
+                                    SrNo = sr++,
+                                    Delivery_Date = r.Delivery_Date == null ? (DateTime?)null : Convert.ToDateTime(r.Delivery_Date),
+                                    Delivery_Qty = r.Delivery_Qty ?? 0,
+                                    Delivery_Remark = r.Delivery_Remark ?? "",
+                                    Date_PC_Week = r.Date_PC_Week ?? ""
+                                });
+                            }
+
+                            deliverySch.Add(parent);
+                        }
+
+                        return (openPo, deliverySch);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task SOSaveDeliverySchAsync(So_DeliveryScheduleViewModel model, string updatedBy)
+        {
+            try
+            { 
+                // First delete existing records
+                var existing = await _dbContext.So_Deliveries.Where(x => x.SaleOrder_Id == model.SaleOrder_Id).ToListAsync();
+                _dbContext.So_Deliveries.RemoveRange(existing);
+
+                // Insert new records
+                foreach (var item in model.SODeliveryScheduleList)
+                {
+                    var entity = new So_DeliverySchedule
+                    {
+                        SaleOrder_Id = model.SaleOrder_Id,
+                        Vendor = model.Vendor,
+                        SO_No = model.SO_No,
+                        SO_Date = model.SO_Date,
+                        SO_Qty = model.SO_Qty,
+                        Delivery_Date = item.Delivery_Date,
+                        Delivery_Qty = item.Delivery_Qty,
+                        Delivery_Remark = item.Delivery_Remark,
+                        Date_PC_Week = item.Date_PC_Week,
+                        Key = model.Key,
+                        Key1 = model.Key1,
+                        Material = model.Material,
+                        Old_Material_No = model.Old_Material_No,
+                        CreatedBy = updatedBy,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    _dbContext.So_Deliveries.Add(entity);
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<(List<Sales_Order_SCM> soHeaders, List<So_DeliverySchedule> deliverySchedules)> GetSOWithDeliveryScheduleAsync(string type)
+        {
+            try
+            {
+                using (var connection = _dbContext.Database.GetDbConnection())
+                {
+                    if (connection.State != ConnectionState.Open)
+                        await connection.OpenAsync();
+
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_SalesOrder_SCM]", new { Type = type }, commandType: CommandType.StoredProcedure))
+
+                    {
+                        var soHeaders = (await multi.ReadAsync<Sales_Order_SCM>()).ToList();
+                        var deliverySchedules = (await multi.ReadAsync<So_DeliverySchedule>()).ToList();
+
+                        return (soHeaders, deliverySchedules);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
 
 

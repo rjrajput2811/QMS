@@ -225,6 +225,11 @@ namespace QMS.Controllers
             return View();
         }
 
+        public IActionResult MTA()
+        {
+            return View();
+        }
+
         [HttpGet]
         public async Task<JsonResult> GetAllSOLog()
         {
@@ -232,13 +237,26 @@ namespace QMS.Controllers
             return Json(openPoLogDeatilsList);
         }
 
-        [HttpGet]
-        public async Task<JsonResult> GetSalesOrderAll(string? type)
-        {
-            var openPoDeatilsList = await _openPoReposiotry.GetSalesOrderListAsync(type);
-            return Json(openPoDeatilsList);
-        }
+        //[HttpGet]
+        //public async Task<JsonResult> GetSalesOrderAll(string? type)
+        //{
+        //    var openPoDeatilsList = await _openPoReposiotry.GetSalesOrderListAsync(type);
+        //    return Json(openPoDeatilsList);
+        //}
 
+        [HttpGet]
+        public async Task<JsonResult> GetSalesOrderAll(string type)
+        {
+            var result = await _openPoReposiotry.GetSOWithDeliveryScheduleAsync(type);
+
+            var response = new
+            {
+                SOHeaders = result.soHeaders,
+                DeliverySchedules = result.deliverySchedules
+            };
+
+            return Json(response);
+        }
 
         [HttpGet]
         public async Task<JsonResult> GetSalesOrdersQty(string? type)
@@ -666,6 +684,35 @@ namespace QMS.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = "Import failed: " + ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetPODeliDateByMatrialRefNo(string? material, string? oldMaterialNo, int soId)
+        {
+            var result = await _openPoReposiotry.GetPOListByMaterialRefNoAsync(material,oldMaterialNo,soId);
+            var response = new
+            {
+                poResponse = result.openPo,
+                soResponse = result.deliverySch
+            };
+
+            return Json(response);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> SOSaveDeliverySchedule([FromBody] So_DeliveryScheduleViewModel request)
+        {
+            try
+            {
+                string updatedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                await _openPoReposiotry.SOSaveDeliverySchAsync(request, updatedBy);
+
+                return Json(new { success = true, message = "SO Delivery Schedule saved successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
             }
         }
     }

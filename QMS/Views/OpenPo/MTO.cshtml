@@ -425,6 +425,7 @@
                                 Schedule_Line_Date3: formatDate(item.schedule_Line_Date3),
                                 Total_Scheduled_Qty: item.total_Scheduled_Qty,
                                 DS_Delivery_Date: formatPipeDates(item.dS_Delivery_Date),
+                                DS_Week_Qty: item.dS_Week_Qty,
                                 DS_Delivery_Qty: item.dS_Delivery_Qty,
                                 DS_Date_PC_Week: item.dS_Date_PC_Week,
                                 DS_Comit_Date: formatPipeDates(item.dS_Comit_Date),
@@ -474,26 +475,17 @@
                               el.style.backgroundColor = "";
                               el.style.fontWeight = "";
                               el.style.background = "";
+                              el.style.color = "";
                               row.getCells().forEach(c => {
                                 c.getElement().style.pointerEvents = "";
                               });
 
-                              // 2) Special style for child-header rows
-                              if (d._isChildHeader) {
-                                el.style.fontWeight = "700";
-                                el.style.background = "#f1f5f9"; // subtle slate-ish
-                                row.getCells().forEach(c => {
-                                  c.getElement().style.pointerEvents = "none"; // make header non-interactive
-                                });
-                                return; // don't apply any other styling
-                              }
-
                               // 3) Light green highlight if Delivery_Schedule has a value
                               const hasValue =
-                                d.Delivery_Schedule != null && String(d.Delivery_Schedule).trim() !== "";
+                                d.Delivery_Schedule != null && String(d.DS_Delivery_Date).trim() !== "";
 
                               if (hasValue) {
-                                el.style.backgroundColor = "#d4edda"; // bootstrap success-light
+                                el.style.color  = "#16a34a"; // bootstrap success-light
                               }
                         // }
 
@@ -540,6 +532,7 @@
                             { title: "Net Value", field: "Net_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "Indent Status", field: "Indent_Status", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "Delivery Schedule", field: "DS_Delivery_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                            { title: "Delivery PC Week Qty", field: "DS_Week_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "Delivery Qty", field: "DS_Delivery_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "Date PC Week", field: "DS_Date_PC_Week", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                             { title: "1st Commitment Date", field: "DS_Comit_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },

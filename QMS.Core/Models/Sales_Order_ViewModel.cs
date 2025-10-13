@@ -166,6 +166,7 @@ namespace QMS.Core.Models
         public string DS_Comit_Date { get; set; }
         public string DS_Comit_Date1 { get; set; }
         public string DS_Comit_Final_Date { get; set; }
+        public string DS_Week_Qty { get; set; }
     }
 
     public class MatchSummaryViewModel
@@ -187,5 +188,22 @@ namespace QMS.Core.Models
         public string? Date_PC_Week { get; set; }
         public string? DS_Key { get; set; }
         public string? DS_Key1 { get; set; }
+    }
+
+    public class OpenPODetailViewModel
+    {
+        public string? Vendor { get; set; }
+        public string? PO_No { get; set; }
+        public DateTime? PO_Date { get; set; }
+        public int? PO_Qty { get; set; }
+        public int? Balance_Qty { get; set; }
+        public DateTime? Delivery_Date { get; set; }
+        public string? Date_PC_Week { get; set; }
+        public int? Delivery_Qty { get; set; }
+        public string? Delivery_Remark { get; set; }
+        public string? Reference_No { get; set; }
+        public string? PO_Material { get; set; }
+        public int? Remaining_Qty { get; set; }
+
     }
 }

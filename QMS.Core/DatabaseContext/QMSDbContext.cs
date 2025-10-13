@@ -66,6 +66,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Open_Po_Log> OpenPo_Log { get; set; }
         public DbSet<Opne_Po_DeliverySchedule> Opne_Po_Deliveries { get; set; }
         public DbSet<Sales_Order_SCM> Sales_Order { get; set; }
+        public DbSet<So_DeliverySchedule> So_Deliveries { get; set; }
         public DbSet<PC_Calendar_SCM> PC_Calendar { get; set; }
 
 

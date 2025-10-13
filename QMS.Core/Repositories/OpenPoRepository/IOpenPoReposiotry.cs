@@ -23,7 +23,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
         Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor);
 
-        Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type);
+        //Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type);
 
         Task<List<Sales_Order_ViewModel>> GetSalesOrdersQtyAsync(string? type);
 
@@ -36,5 +36,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
         Task<List<PCCalendarViewModel>> GetPCListAsync();
 
         Task<BulkPCCreateLogResult> BulkPCCreateAsync(List<PCCalendarViewModel> listOfData, string fileName, string uploadedBy);
+        Task<(List<OpenPODetailViewModel> openPo, List<So_DeliveryScheduleViewModel> deliverySch)> GetPOListByMaterialRefNoAsync(string? material, string? oldMaterialNo, int soId);
+        Task SOSaveDeliverySchAsync(So_DeliveryScheduleViewModel model, string updatedBy);
+        Task<(List<Sales_Order_SCM> soHeaders, List<So_DeliverySchedule> deliverySchedules)> GetSOWithDeliveryScheduleAsync(string type);
     }
 }

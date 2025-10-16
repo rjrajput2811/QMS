@@ -33,7 +33,7 @@
     <link href="~/css/all.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <style>
+    @*  <style>
         body {
             background: #e9ecef;
         }
@@ -96,6 +96,124 @@
                 display: block; /* Show the submenu when it has the 'open' class */
                 color: #FFFF00 !important;
             }
+    </style> *@
+
+    <style>
+        :root {
+            --border: #e4e7eb;
+            --hover-bg: #f8f9fa;
+            --label-color: #222;
+            --pill-radius: 8px;
+            --transition: all 0.25s ease-in-out;
+        }
+
+        .card-body {
+            background: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            margin-top: -15px;
+        }
+
+        .card-section {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            width: 520px;
+            max-width: 90%;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 22px;
+            background: #f9fafb;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 18px;
+            color: #111;
+        }
+
+        .list-group {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .list-group-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            border-bottom: 1px dashed var(--border);
+            color: var(--label-color);
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+            .list-group-item:last-child {
+                border-bottom: none;
+            }
+
+            .list-group-item:hover {
+                background: var(--hover-bg);
+                transform: scale(1.01);
+                color: #4682B4;
+            }
+
+        .label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .badge-pill {
+            font-size: 13px;
+            padding: 5px 10px;
+            border-radius: var(--pill-radius);
+            font-weight: 600;
+            letter-spacing: .3px;
+            min-width: 70px;
+            text-align: center;
+            margin-left: auto;
+        }
+
+        .badge-blue {
+            background: #007bff;
+            color: #fff;
+        }
+
+        .badge-gray {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .badge-green {
+            background: #198754;
+            color: #fff;
+        }
+
+        .badge-cyan {
+            background: #0dcaf0;
+            color: #fff;
+        }
+
+        .badge-light {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .icon-right {
+            color: #aaa;
+            font-size: 16px;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -170,7 +288,7 @@
         </div>
     </div>
 
-    <div class="container py-5" style="max-width:30%;">
+    @*  <div class="container py-5" style="max-width:30%;">
         <div class="d-flex flex-column gap-2">
 
             <div class="card qms-card p-2" onclick="location.href='@Url.Action("PCCalendar","OpenPo")'">
@@ -212,6 +330,13 @@
                 </div>
             </div>
 
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("MTAMaster","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkorchid"></i>
+                    <h5 class="mb-0">Upload MTA Master</h5>
+                </div>
+            </div>
+
 
             <div class="card qms-card p-2" onclick="location.href='@Url.Action("SalesOrder","OpenPo")'">
                 <div class="d-flex align-items-center">
@@ -237,10 +362,66 @@
             </div>
 
         </div>
+    </div> *@
+
+
+    <div class="card-body">
+        <div class="card-section">
+            <div class="card-header">
+                <span><i class="bi bi-diagram-3 me-2"></i> Core Processes</span>
+                <i class="bi bi-chevron-down"></i>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item" onclick="location.href='@Url.Action("PCCalendar","OpenPo")'">
+                    <span class="label"><i class="bi bi-calendar3"></i> PC Calendar</span>
+                    <span class="badge-pill badge-blue">Plan</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("UploadOpenPO","OpenPo")'">
+                    <span class="label"><i class="bi bi-file-earmark-arrow-up"></i> Upload PO Details</span>
+                    <span class="badge-pill badge-gray">CSV/XLS</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("Vendor","OpenPo")'">
+                    <span class="label"><i class="bi bi-people"></i> Vendor Management</span>
+                    <span class="badge-pill badge-green">Profiles</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("OpenPo","OpenPo")'">
+                    <span class="label"><i class="bi bi-calendar2-week"></i> Planner</span>
+                    <span class="badge-pill badge-cyan">Schedule</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("MTAMaster","OpenPo")'">
+                    <span class="label"><i class="bi bi-box-seam"></i> Material Master</span>
+                    <span class="badge-pill badge-light">MTO/MTA tags</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("UploadOpenSO","OpenPo")'">
+                    <span class="label"><i class="bi bi-upload"></i> Upload SO Details</span>
+                    <span class="badge-pill badge-gray">CSV/XLS</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("SalesOrder","OpenPo")'">
+                    <span class="label"><i class="bi bi-journal-text"></i> Sales Order Details</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+
+                <li class="list-group-item" onclick="location.href='@Url.Action("MTO","OpenPo")'">
+                    <span class="label"><i class="bi bi-clipboard-check"></i>MTO</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+
+                <li class="list-group-item" onclick="location.href='@Url.Action("MTA","OpenPo")'">
+                    <span class="label"><i class="bi bi-sort-up-alt"></i>MTA</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+            </ul>
+        </div>
     </div>
 
     <div class="content-wrapper">
-            @RenderBody()
+        @RenderBody()
     </div>
 
     <!-- Bootstrap JS -->

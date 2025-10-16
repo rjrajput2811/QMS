@@ -611,10 +611,11 @@
         function loadSalesOrderTable() {
 
             Blockloadershow();
-
+            var selectedType = $("#typeDropdown").val();
             $.ajax({
-                url: '@Url.Action("GetSalesOrderAll", "OpenPo")',
+                url: '@Url.Action("GetSalesOrderDetail", "OpenPo")',
                 type: 'GET',
+                data: { type: selectedType },
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data)) {

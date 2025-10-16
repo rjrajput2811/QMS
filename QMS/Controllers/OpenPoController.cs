@@ -259,6 +259,13 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
+        public async Task<JsonResult> GetSalesOrderDetail(string type)
+        {
+            var result = await _openPoReposiotry.GetSalesOrderListAsync(type);
+            return Json(result);
+        }
+
+        [HttpGet]
         public async Task<JsonResult> GetSalesOrdersQty(string? type)
         {
             var saleOrderQtyList = await _openPoReposiotry.GetSalesOrdersQtyAsync(type);
@@ -713,6 +720,147 @@ namespace QMS.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+
+        public IActionResult MTAMaster()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetMTADetail()
+        {
+            var openPoDeatilsList = await _openPoReposiotry.GetMTAListAsync();
+            return Json(openPoDeatilsList);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadMTADataExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
+        {
+            var prRecordsToAdd = new List<MTAMasterViewModel>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName") ?? "System" ;
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.LastRowUsed().RowNumber();  // Accurate count!
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    string GetStr(int col) => worksheet.Cell(row, col).GetValue<string>()?.Trim();
+                    int? GetInt(int col)
+                    {
+                        var val = GetStr(col);
+                        return int.TryParse(val, out var result) ? result : null;
+                    }
+                    double? GetDouble(int col)
+                    {
+                        var val = GetStr(col)?.Replace(",", "");
+                        return double.TryParse(val, out var result) ? result : null;
+                    }
+                    DateTime? GetDate(int col)
+                    {
+                        return worksheet.Cell(row, col).GetValue<DateTime?>();
+                    }
+
+                    var model = new MTAMasterViewModel
+                    {
+                        Material_No = GetStr(2),
+                        Ref_Code = GetStr(3),
+                        Material_Desc = GetStr(4),
+                        Tog = GetInt(5),
+                        Tor = GetInt(6),
+                        Toy = GetInt(7),
+                        Spike_Threshold = GetInt(8),
+                        Material_Category = GetStr(9),
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now,
+                    };
+
+                    prRecordsToAdd.Add(model);
+                }
+
+                var importResult = await _openPoReposiotry.BulkMTACreateAsync(prRecordsToAdd, fileName, uploadedBy);
+
+                // If there are failed records, return file
+                //if (importResult.FailedRecords.Any())
+                //{
+                //    using var failStream = new MemoryStream();
+                //    using var failWb = new XLWorkbook();
+                //    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                //    failSheet.Cell(1, 1).Value = "Material No";
+                //    failSheet.Cell(1, 2).Value = "Ref Code";
+                //    failSheet.Cell(1, 3).Value = "Reason";
+
+                //    int i = 2;
+                //    foreach (var fail in importResult.FailedRecords)
+                //    {
+                //        failSheet.Cell(i, 1).Value = fail.Record.Material_No;
+                //        failSheet.Cell(i, 2).Value = fail.Record.Ref_Code;
+                //        failSheet.Cell(i, 3).Value = fail.Reason;
+                //        i++;
+                //    }
+
+                //    failWb.SaveAs(failStream);
+                //    failStream.Position = 0;
+
+                //    var failedFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                //    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                //    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+                //    //string logFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                //    //return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", logFileName);
+                //}
+
+                if (importResult.FailedRecords.Any() )
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var sheet = failWb.Worksheets.Add("Failed Records");
+
+                    sheet.Cell(1, 1).Value = "Row";
+                    sheet.Cell(1, 2).Value = "Material No";
+                    sheet.Cell(1, 3).Value = "Ref Code";
+                    sheet.Cell(1, 4).Value = "Reason";
+
+                    int i = 2;
+
+                    foreach (var f in importResult.FailedRecords)
+                    {
+                        sheet.Cell(i, 1).Value = i - 1;
+                        sheet.Cell(i, 2).Value = f.Record.Material_No;
+                        sheet.Cell(i, 3).Value = f.Record.Ref_Code;
+                        sheet.Cell(i, 4).Value = f.Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+                    var failedFileName = $"FailedPCCalendar_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {recordCount}, Saved: {prRecordsToAdd.Count}, Duplicates: 0"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
             }
         }
     }

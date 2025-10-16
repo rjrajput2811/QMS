@@ -763,121 +763,121 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        //public async Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type)
-        //{
-        //    try
-        //    {
+        public async Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type)
+        {
+            try
+            {
 
-        //        var parameters = new[]
-        //        {
-        //            new SqlParameter("@type", type ?? (object)DBNull.Value),
-        //        };
+                var parameters = new[]
+                {
+                    new SqlParameter("@type", type ?? (object)DBNull.Value),
+                };
 
-        //        var result = await _dbContext.Sales_Order
-        //            .FromSqlRaw("EXEC sp_Get_SalesOrder_SCM @type", parameters)
-        //            .ToListAsync();
+                var result = await _dbContext.Sales_Order
+                    .FromSqlRaw("EXEC sp_Get_All_SalesOrder @type", parameters)
+                    .ToListAsync();
 
 
-        //        var viewModelList = result.Select(data => new Sales_Order_ViewModel
-        //        {
-        //            Id = data.Id,
-        //            SO_No = data.SO_No,
-        //            SaleOrder_Type = data.SaleOrder_Type,
-        //            SO_Date = data.SO_Date,
-        //            Line_Item = data.Line_Item,
-        //            Indent_No = data.Indent_No,
-        //            Indent_Date = data.Indent_Date,
-        //            Order_Type = data.Order_Type,
-        //            Vertical = data.Vertical,
-        //            Region = data.Region,
-        //            Sales_Group = data.Sales_Group,
-        //            Sales_Group_desc = data.Sales_Group_desc,
-        //            Sales_Office = data.Sales_Office,
-        //            Sales_Office_Desc = data.Sales_Office_Desc,
-        //            Sale_Person = data.Sale_Person,
-        //            Project_Name = data.Project_Name,
-        //            Project_Name_Tag = data.Project_Name_Tag,
-        //            Priority_Tag = data.Priority_Tag,
-        //            Customer_Name = data.Customer_Name,
-        //            Customer_Code = data.Customer_Code,
-        //            Dealer_Direct = data.Dealer_Direct,
-        //            Inspection = data.Inspection,
-        //            Material = data.Material,
-        //            Old_Material_No = data.Old_Material_No,
-        //            Description = data.Description,
-        //            SO_Qty = data.SO_Qty,
-        //            SO_Value = data.SO_Value,
-        //            Rate = data.Rate,
-        //            Del_Qty = data.Del_Qty,
-        //            Open_Sale_Qty = data.Open_Sale_Qty,
-        //            Opne_Sale_Value = data.Opne_Sale_Value,
-        //            Plant = data.Plant,
-        //            Item_Category = data.Item_Category,
-        //            Item_Category_Latest = data.Item_Category_Latest,
-        //            Procurement_Type = data.Procurement_Type,
-        //            Vendor_Po_No = data.Vendor_Po_No,
-        //            Vendor_Po_Date = data.Vendor_Po_Date,
-        //            CPR_Number = data.CPR_Number,
-        //            Vendor = data.Vendor,
-        //            Planner = data.Planner,
-        //            Po_Release_Qty = data.Po_Release_Qty,
-        //            Allocated_Stock_Qty = data.Allocated_Stock_Qty,
-        //            Allocated_Stock_Value = data.Allocated_Stock_Value,
-        //            Net_Qty = data.Net_Qty,
-        //            Net_Value = data.Net_Value,
-        //            Qty_In_Week = data.Qty_In_Week,
-        //            Value_In_Week = data.Value_In_Week,
-        //            Qty_After_Week = data.Qty_After_Week,
-        //            Value_After_Week = data.Value_After_Week,
-        //            Check5 = data.Check5,
-        //            Indent_Status = data.Indent_Status,
-        //            Sales_Call_Point = data.Sales_Call_Point,
-        //            Free_Stock = data.Free_Stock,
-        //            Grn_Qty = data.Grn_Qty,
-        //            Last_Grn_Date = data.Last_Grn_Date,
-        //            Check1 = data.Check1,
-        //            Delivery_Schedule = data.Delivery_Schedule,
-        //            Readiness_Vendor_Released_Fr_Date = data.Readiness_Vendor_Released_Fr_Date,
-        //            Readiness_Vendor_Released_To_Date = data.Readiness_Vendor_Released_To_Date,
-        //            Readiness_Schedule_Vendor_Released = data.Readiness_Schedule_Vendor_Released,
-        //            Delivery_Schedule_PC_Breakup = data.Delivery_Schedule_PC_Breakup,
-        //            Check2 = data.Check2,
-        //            Line_Item_Schedule = data.Line_Item_Schedule,
-        //            R_B = data.R_B,
-        //            Schedule_Repeat = data.Schedule_Repeat,
-        //            Internal_Pending_Issue = data.Internal_Pending_Issue,
-        //            Pending_With = data.Pending_With,
-        //            Remark = data.Remark,
-        //            CRD_OverDue = data.CRD_OverDue,
-        //            Delivert_Date = data.Delivert_Date,
-        //            Process_Plan_On_Crd = data.Process_Plan_On_Crd,
-        //            Last_Week_PC = data.Last_Week_PC,
-        //            Schedule_Line_Qty1 = data.Schedule_Line_Qty1,
-        //            Schedule_Line_Date1 = data.Schedule_Line_Date1,
-        //            Schedule_Line_Qty2 = data.Schedule_Line_Qty2,
-        //            Schedule_Line_Date2 = data.Schedule_Line_Date2,
-        //            Schedule_Line_Qty3 = data.Schedule_Line_Qty3,
-        //            Schedule_Line_Date3 = data.Schedule_Line_Date3,
-        //            To_Consider = data.To_Consider,
-        //            Person_Name = data.Person_Name,
-        //            Visibility = data.Visibility,
-        //            CreatedDate = data.CreatedDate,
-        //            CreatedBy = data.CreatedBy,
-        //            Key = data.Key,
-        //            Key1 = data.Key1,
-        //            UpdatedBy = data.UpdatedBy,
-        //            UpdatedDate = data.UpdatedDate
-        //        }).ToList();
+                var viewModelList = result.Select(data => new Sales_Order_ViewModel
+                {
+                    Id = data.Id,
+                    SO_No = data.SO_No,
+                    SaleOrder_Type = data.SaleOrder_Type,
+                    SO_Date = data.SO_Date,
+                    Line_Item = data.Line_Item,
+                    Indent_No = data.Indent_No,
+                    Indent_Date = data.Indent_Date,
+                    Order_Type = data.Order_Type,
+                    Vertical = data.Vertical,
+                    Region = data.Region,
+                    Sales_Group = data.Sales_Group,
+                    Sales_Group_desc = data.Sales_Group_desc,
+                    Sales_Office = data.Sales_Office,
+                    Sales_Office_Desc = data.Sales_Office_Desc,
+                    Sale_Person = data.Sale_Person,
+                    Project_Name = data.Project_Name,
+                    Project_Name_Tag = data.Project_Name_Tag,
+                    Priority_Tag = data.Priority_Tag,
+                    Customer_Name = data.Customer_Name,
+                    Customer_Code = data.Customer_Code,
+                    Dealer_Direct = data.Dealer_Direct,
+                    Inspection = data.Inspection,
+                    Material = data.Material,
+                    Old_Material_No = data.Old_Material_No,
+                    Description = data.Description,
+                    SO_Qty = data.SO_Qty,
+                    SO_Value = data.SO_Value,
+                    Rate = data.Rate,
+                    Del_Qty = data.Del_Qty,
+                    Open_Sale_Qty = data.Open_Sale_Qty,
+                    Opne_Sale_Value = data.Opne_Sale_Value,
+                    Plant = data.Plant,
+                    Item_Category = data.Item_Category,
+                    Item_Category_Latest = data.Item_Category_Latest,
+                    Procurement_Type = data.Procurement_Type,
+                    Vendor_Po_No = data.Vendor_Po_No,
+                    Vendor_Po_Date = data.Vendor_Po_Date,
+                    CPR_Number = data.CPR_Number,
+                    Vendor = data.Vendor,
+                    Planner = data.Planner,
+                    Po_Release_Qty = data.Po_Release_Qty,
+                    Allocated_Stock_Qty = data.Allocated_Stock_Qty,
+                    Allocated_Stock_Value = data.Allocated_Stock_Value,
+                    Net_Qty = data.Net_Qty,
+                    Net_Value = data.Net_Value,
+                    Qty_In_Week = data.Qty_In_Week,
+                    Value_In_Week = data.Value_In_Week,
+                    Qty_After_Week = data.Qty_After_Week,
+                    Value_After_Week = data.Value_After_Week,
+                    Check5 = data.Check5,
+                    Indent_Status = data.Indent_Status,
+                    Sales_Call_Point = data.Sales_Call_Point,
+                    Free_Stock = data.Free_Stock,
+                    Grn_Qty = data.Grn_Qty,
+                    Last_Grn_Date = data.Last_Grn_Date,
+                    Check1 = data.Check1,
+                    Delivery_Schedule = data.Delivery_Schedule,
+                    Readiness_Vendor_Released_Fr_Date = data.Readiness_Vendor_Released_Fr_Date,
+                    Readiness_Vendor_Released_To_Date = data.Readiness_Vendor_Released_To_Date,
+                    Readiness_Schedule_Vendor_Released = data.Readiness_Schedule_Vendor_Released,
+                    Delivery_Schedule_PC_Breakup = data.Delivery_Schedule_PC_Breakup,
+                    Check2 = data.Check2,
+                    Line_Item_Schedule = data.Line_Item_Schedule,
+                    R_B = data.R_B,
+                    Schedule_Repeat = data.Schedule_Repeat,
+                    Internal_Pending_Issue = data.Internal_Pending_Issue,
+                    Pending_With = data.Pending_With,
+                    Remark = data.Remark,
+                    CRD_OverDue = data.CRD_OverDue,
+                    Delivert_Date = data.Delivert_Date,
+                    Process_Plan_On_Crd = data.Process_Plan_On_Crd,
+                    Last_Week_PC = data.Last_Week_PC,
+                    Schedule_Line_Qty1 = data.Schedule_Line_Qty1,
+                    Schedule_Line_Date1 = data.Schedule_Line_Date1,
+                    Schedule_Line_Qty2 = data.Schedule_Line_Qty2,
+                    Schedule_Line_Date2 = data.Schedule_Line_Date2,
+                    Schedule_Line_Qty3 = data.Schedule_Line_Qty3,
+                    Schedule_Line_Date3 = data.Schedule_Line_Date3,
+                    To_Consider = data.To_Consider,
+                    Person_Name = data.Person_Name,
+                    Visibility = data.Visibility,
+                    CreatedDate = data.CreatedDate,
+                    CreatedBy = data.CreatedBy,
+                    Key = data.Key,
+                    Key1 = data.Key1,
+                    UpdatedBy = data.UpdatedBy,
+                    UpdatedDate = data.UpdatedDate
+                }).ToList();
 
-        //        return viewModelList;
+                return viewModelList;
 
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _systemLogService.WriteLog(ex.Message);
-        //        throw;
-        //    }
-        //}
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
 
         public async Task<List<Sales_Order_ViewModel>> GetSalesOrdersQtyAsync(string? type)
         {
@@ -943,10 +943,29 @@ namespace QMS.Core.Repositories.OpenPoRepository
             {
                 var seenKeys = new HashSet<string>();
 
+                var matsNeedingDerive = listOfData
+           .Where(x => string.IsNullOrWhiteSpace(x.Item_Category))
+           .Select(x => (x.Material ?? string.Empty).Trim())
+           .Where(m => !string.IsNullOrEmpty(m))
+           .Distinct(StringComparer.OrdinalIgnoreCase)
+           .ToList();
+
+                var mtaMaterials = new HashSet<string>(await _dbContext.MTAMaster.Where(m => !m.Deleted && matsNeedingDerive.Contains(m.Material_No)).Select(m => m.Material_No).ToListAsync(),StringComparer.OrdinalIgnoreCase);
+
                 foreach (var item in listOfData)
                 {
                     item.Indent_No = item.Indent_No?.Trim();
                     item.Old_Material_No = item.Old_Material_No?.Trim();
+                    item.Material = item.Material?.Trim();   // ensure trimmed
+                    item.Item_Category = item.Item_Category?.Trim();
+
+                    if (string.IsNullOrWhiteSpace(item.Item_Category))
+                    {
+                        if (!string.IsNullOrEmpty(item.Material) && mtaMaterials.Contains(item.Material))
+                            item.Item_Category = "MTA";
+                        else
+                            item.Item_Category = "MTO";
+                    }
 
                     var compositeKey = $"{item.Indent_No}|{item.Old_Material_No}";
 
@@ -1587,7 +1606,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        public async Task<(List<Sales_Order_SCM> soHeaders, List<So_DeliverySchedule> deliverySchedules)> GetSOWithDeliveryScheduleAsync(string type)
+        public async Task<(List<MatchedRecordViewModel> soHeaders, List<MatchSODeliverySchViewModel> deliverySchedules)> GetSOWithDeliveryScheduleAsync(string type)
         {
             try
             {
@@ -1596,15 +1615,172 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     if (connection.State != ConnectionState.Open)
                         await connection.OpenAsync();
 
-                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_SalesOrder_SCM]", new { Type = type }, commandType: CommandType.StoredProcedure))
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_SO_OpenPO_Snapshots_ByType]", new { Type = type }, commandType: CommandType.StoredProcedure))
 
                     {
-                        var soHeaders = (await multi.ReadAsync<Sales_Order_SCM>()).ToList();
-                        var deliverySchedules = (await multi.ReadAsync<So_DeliverySchedule>()).ToList();
+                        var soHeaders = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
+                        var deliverySchedules = (await multi.ReadAsync<MatchSODeliverySchViewModel>()).ToList();
 
                         return (soHeaders, deliverySchedules);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<BulkMTACreateResult> BulkMTACreateAsync(List<MTAMasterViewModel> listOfData, string fileName, string uploadedBy)
+        {
+            var result = new BulkMTACreateResult();
+            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+            try
+            {
+                var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+
+                foreach (var item in listOfData)
+                {
+                    item.Material_No = item.Material_No?.Trim();
+                    item.Ref_Code = item.Ref_Code?.Trim();
+
+                    var compositeKey = $"{item.Material_No}|{item.Ref_Code}";
+
+                    if (string.IsNullOrWhiteSpace(item.Material_No) || string.IsNullOrWhiteSpace(item.Ref_Code))
+                    {
+                        result.FailedRecords.Add((item, "Missing Material_No or Ref_Code"));
+                        continue;
+                    }
+
+                    // Check if this key combination has already been seen in the batch
+                    if (seenKeys.Contains(compositeKey))
+                    {
+                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+                        continue;
+                    }
+
+                    seenKeys.Add(compositeKey); // Mark this combination as seen
+
+                    // Now check against database
+                    var existingEntity = await _dbContext.MTAMaster.FirstOrDefaultAsync(x => x.Material_No == item.Material_No && x.Ref_Code == item.Ref_Code);
+
+                    if (existingEntity != null)
+                    {
+                        // Compare fields one by one — if any field differs, update
+                        bool isDifferent =
+                            existingEntity.Material_No != item.Material_No ||
+                            existingEntity.Ref_Code != item.Ref_Code ||
+                            existingEntity.Material_Desc != item.Material_Desc ||
+                            existingEntity.Tog != item.Tog ||
+                            existingEntity.Tor != item.Tor ||
+                            existingEntity.Toy != item.Toy ||
+                            existingEntity.Spike_Threshold != item.Spike_Threshold ||
+                            existingEntity.Material_Category != item.Material_Category;
+
+                        if (isDifferent)
+                        {
+                            // Update existing entity
+                            existingEntity.Material_No = item.Material_No;
+                            existingEntity.Ref_Code = item.Ref_Code;
+                            existingEntity.Material_Desc = item.Material_Desc;
+                            existingEntity.Tog = item.Tog;
+                            existingEntity.Tor = item.Tor;
+                            existingEntity.Toy = item.Toy;
+                            existingEntity.Spike_Threshold = item.Spike_Threshold;
+                            existingEntity.Material_Category = item.Material_Category;
+                            existingEntity.CreatedBy = uploadedBy;
+                            existingEntity.CreatedDate = DateTime.Now;
+                        }
+                        else
+                        {
+                            result.FailedRecords.Add((item, "Duplicate in database with no changes"));
+                        }
+                    }
+                    else
+                    {
+                        // Insert new record
+                        var newEntity = new MTAMaster_SCM
+                        {
+                            Material_No = item.Material_No,
+                            Ref_Code = item.Ref_Code,
+                            Material_Desc = item.Material_Desc,
+                            Tog = item.Tog,
+                            Tor = item.Tor,
+                            Toy = item.Toy,
+                            Spike_Threshold = item.Spike_Threshold,
+                            Material_Category = item.Material_Category,
+                            CreatedBy = uploadedBy,
+                            CreatedDate = DateTime.Now,
+                           
+                        };
+                        _dbContext.MTAMaster.Add(newEntity);
+                    }
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                // Log the upload
+                var importLog = new Open_Po_Log
+                {
+                    FileName = fileName,
+                    TotalRecords = listOfData.Count,
+                    ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+                    FailedRecords = result.FailedRecords.Count,
+                    UploadedBy = uploadedBy,
+                    UploadedAt = DateTime.Now,
+                    FileType = "MTA - File"
+                };
+
+                _dbContext.OpenPo_Log.Add(importLog);
+                await _dbContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                result.Result = new OperationResult
+                {
+                    Success = true,
+                    Message = result.FailedRecords.Any()
+                        ? "Import completed with some skipped records."
+                        : "All records imported successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                result.Result = new OperationResult
+                {
+                    Success = false,
+                    Message = "Error during import: " + ex.Message
+                };
+            }
+
+            return result;
+        }
+
+        public async Task<List<MTAMasterViewModel>> GetMTAListAsync()
+        {
+            try
+            {
+                var result = await _dbContext.MTAMaster.FromSqlRaw("EXEC sp_Get_MTAMaster").ToListAsync();
+
+                var viewModelList = result.Select(data => new MTAMasterViewModel
+                {
+                    Id = data.Id,
+                    Material_No = data.Material_No,
+                    Ref_Code = data.Ref_Code,
+                    Material_Desc = data.Material_Desc,
+                    Tog = data.Tog,
+                    Tor = data.Tor,
+                    Toy = data.Toy,
+                    Spike_Threshold = data.Spike_Threshold,
+                    Material_Category = data.Material_Category,
+                    CreatedDate = data.CreatedDate,
+                    CreatedBy = data.CreatedBy,
+                }).ToList();
+
+                return viewModelList;
+
             }
             catch (Exception ex)
             {

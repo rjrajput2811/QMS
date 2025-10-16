@@ -51,4 +51,10 @@ namespace QMS.Core.DatabaseContext
         public List<(PCCalendarViewModel Record, string Reason)> FailedRecords { get; set; } = new();
     }
 
+    public class BulkMTACreateResult
+    {
+        public OperationResult Result { get; set; } = new();
+        public List<(MTAMasterViewModel Record, string Reason)> FailedRecords { get; set; } = new();
+    }
+
 }

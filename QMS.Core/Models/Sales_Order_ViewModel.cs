@@ -110,7 +110,8 @@ namespace QMS.Core.Models
         public string? PO_No { get; set; }
         public DateTime? PO_Date { get; set; }
         public decimal? PO_Qty { get; set; }
-        public DateTime? Delivery_Date { get; set; }
+
+        //public DateTime? Delivery_Date { get; set; }
         public string? Item_Category { get; set; }
         public string? SO_No { get; set; }
         public string? SO_SaleOrder_Type { get; set; }
@@ -167,6 +168,10 @@ namespace QMS.Core.Models
         public string DS_Comit_Date1 { get; set; }
         public string DS_Comit_Final_Date { get; set; }
         public string DS_Week_Qty { get; set; }
+
+        public string? Delivery_Date { get; set; }
+        public int Delivery_Qty { get; set; }
+        public string? Date_PC_Week { get; set; }
     }
 
     public class MatchSummaryViewModel
@@ -188,6 +193,19 @@ namespace QMS.Core.Models
         public string? Date_PC_Week { get; set; }
         public string? DS_Key { get; set; }
         public string? DS_Key1 { get; set; }
+    }
+
+    public class MatchSODeliverySchViewModel
+    {
+        public int? SaleOrder_Id { get; set; }
+        public string? Material { get; set; }
+        public string? Old_Material_No { get; set; }
+        public DateTime? SO_Date { get; set; }
+        public int? Net_Qty { get; set; }
+        public int? Delivery_Qty { get; set; }
+        public string? Date_PC_Week { get; set; }
+        public string? Delivery_Date { get; set; }
+        public string? Readiness_Schedule_Vendor_Released { get; set; }
     }
 
     public class OpenPODetailViewModel

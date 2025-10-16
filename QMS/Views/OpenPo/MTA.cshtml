@@ -391,6 +391,44 @@
                                     return value ? new Date(value).toLocaleDateString("en-GB") : "";
                             }
 
+                            function toDDMMYYYY(val) {
+
+                                if (!val) return "";
+                                if (typeof val === "string") {
+                                  const s = val.trim();
+                                  // Already DD/MM/YYYY?
+                                  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+
+                                  // ISO like YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss
+                                  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s].*)?$/);
+                                  if (m) {
+                                    const [, y, mo, d] = m;
+                                    return `${d}/${mo}/${y}`;
+                                  }
+                                }
+
+                                // Fallback: let Date parse, then format
+                                const dt = new Date(val);
+                                if (!isNaN(dt.getTime())) {
+                                  const dd = String(dt.getDate()).padStart(2, "0");
+                                  const mm = String(dt.getMonth() + 1).padStart(2, "0");
+                                  const yyyy = dt.getFullYear();
+                                  return `${dd}/${mm}/${yyyy}`;
+                                }
+                                return "";
+                            }
+
+                            function formatPipeDates(val) {
+
+                              if (!val) return "";
+                              // split on pipe and also handle accidental commas/extra spaces gracefully
+                              return String(val)
+                                .split("|")
+                                .map(s => toDDMMYYYY(s.trim()))
+                                .filter(x => x !== "")
+                                .join(" | ");
+                            }
+
                             $.each(myList, function (index, item) {
                                 tabledata.push({
                                     Sr_No: index + 1,
@@ -429,47 +467,22 @@
                                     Allocated_Stock_Value: item.allocated_Stock_Value,
                                     Net_Qty: item.net_Qty,
                                     Net_Value: item.net_Value,
+                                    Delivery_Date: item.delivery_Date,
+                                    Delivery_Qty: item.delivery_Qty,
+                                    Date_PC_Week: item.date_PC_Week,
+                                    Readiness_Schedule_Vendor_Released: item.readiness_Schedule_Vendor_Released,
                                     Indent_Status: item.indent_Status,
                                     Delivery_Schedule: item.delivery_Schedule,
                                     Delivert_Date: formatDate(item.delivert_Date),
-                                    Readiness_Schedule_Vendor_Released: item.readiness_Schedule_Vendor_Released,
                                     Schedule_Line_Qty1: item.schedule_Line_Qty1,
                                     Schedule_Line_Date1: formatDate(item.schedule_Line_Date1),
                                     Schedule_Line_Qty2: item.schedule_Line_Qty2,
                                     Schedule_Line_Date2: formatDate(item.schedule_Line_Date2),
                                     Schedule_Line_Qty3: item.schedule_Line_Qty3,
                                     Schedule_Line_Date3: formatDate(item.schedule_Line_Date3),
-                                    _children: []
                                 });
                             });
 
-                            // Add child rows from Table2 (allTS)
-                            $.each(allTS, function () {
-                                var parentRow = tabledata.find(row => row.Id === this.saleOrder_Id);
-
-                                if (parentRow) {
-
-                                    if (!parentRow._childrenHeaderAdded) {
-                                       parentRow._children.unshift({
-                                         _isChildHeader: true,
-                                         Delivery_Schedule: "Delivery Date",
-                                         Open_Sale_Qty: "Date PC Week",
-                                         Opne_Sale_Value: "Qty",
-                                         Allocated_Stock_Qty: "Remark"
-                                       });
-                                       parentRow._childrenHeaderAdded = true;
-                                    }
-
-                                    parentRow._children.push({
-                                        SoDelSchu_Id: this.id, // pick what your API returns
-                                        SaleOrder_Id: this.saleOrder_Id,
-                                        Delivery_Schedule:formatDate(this.delivery_Date),
-                                        Open_Sale_Qty: this.date_PC_Week,
-                                        Opne_Sale_Value:this.delivery_Qty,
-                                        Allocated_Stock_Qty:this.delivery_Remark
-                                    });
-                                }
-                            });
                         }
 
                         window.PendTSTableData = JSON.parse(JSON.stringify(tabledata));
@@ -484,12 +497,33 @@
                             paginationSize: 10, // Rows per page
                             paginationSizeSelector: [50, 100, 500, 1500, 2000],
                             paginationCounter: "rows",
-                            dataTree: true,
-                            dataTreeStartExpanded: true,
-                            dataTreeChildField: "_children",
-                            dataTreeFilter: false,
+                            // dataTree: true,
+                            // dataTreeStartExpanded: true,
+                            // dataTreeChildField: "_children",
+                            // dataTreeFilter: false,
                             // placeholder: "No data available",
                             dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                            rowFormatter: function (row) {
+                              const el = row.getElement();
+                                  const d  = row.getData() || {};
+
+                                  // 1) Reset any prior/recycled styles
+                                  el.style.backgroundColor = "";
+                                  el.style.fontWeight = "";
+                                  el.style.background = "";
+                                  el.style.color = "";
+                                  row.getCells().forEach(c => {
+                                    c.getElement().style.pointerEvents = "";
+                                  });
+
+                                  // 3) Light green highlight if Delivery_Schedule has a value
+                                  const hasValue =
+                                    d.Delivery_Date != null && String(d.Delivery_Date).trim() !== "";
+
+                                  if (hasValue) {
+                                    el.style.color  = "#16a34a"; // bootstrap success-light
+                                  }
+                            },
                             columns: [
                                 { title: "Sr No",formatter: "rownum",hozAlign: "center",headerSort: false,width: 70 },
                                 { title: "Item Category", field: "Item_Category", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
@@ -513,7 +547,7 @@
                                 { title: "SO Qty", field: "SO_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                                 { title: "SO Value", field: "SO_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                                 { title: "Del Qty", field: "Del_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
-                                // { title: "Delivery Schedule", field: "Delivery_Schedule", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                                { title: "Delivery Schedule", field: "Delivery_Schedule", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
 
                                 // {
                                 //   title: "Delivery Schedule",
@@ -622,148 +656,148 @@
                                 //       }
                                 //   },
                                 // },
-                                         {
-                                  title: "Delivery Schedule",
-                                  field: "Delivery_Schedule",
-                                  headerMenu: headerMenu,
-                                  headerFilter: "input",
-                                  hozAlign: "center",
-                                  headerHozAlign: "center",
+                                //          {
+                                //   title: "Delivery Schedule",
+                                //   field: "Delivery_Schedule",
+                                //   headerMenu: headerMenu,
+                                //   headerFilter: "input",
+                                //   hozAlign: "center",
+                                //   headerHozAlign: "center",
 
-                                  sorter: function (a, b, aRow, bRow) {
-                                    function parseDateLike(val) {
-                                      if (val == null) return 0;
-                                      const s = String(val).trim();
-                                      if (!s) return 0;
-                                      const parts = s.split("|").map(p => p.trim()).filter(Boolean);
-                                      let best = 0;
-                                      for (const piece of (parts.length ? parts : [s])) {
-                                        const m = piece.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); // DD/MM/YYYY
-                                        if (m) {
-                                          const d = new Date(+m[3], +m[2] - 1, +m[1]);
-                                          if (!isNaN(d.getTime())) best = Math.max(best, d.getTime());
-                                          continue;
-                                        }
-                                        const t = Date.parse(piece); // ISO/native
-                                        if (!isNaN(t)) best = Math.max(best, t);
-                                      }
-                                      return best;
-                                    }
+                                //   sorter: function (a, b, aRow, bRow) {
+                                //     function parseDateLike(val) {
+                                //       if (val == null) return 0;
+                                //       const s = String(val).trim();
+                                //       if (!s) return 0;
+                                //       const parts = s.split("|").map(p => p.trim()).filter(Boolean);
+                                //       let best = 0;
+                                //       for (const piece of (parts.length ? parts : [s])) {
+                                //         const m = piece.match(/^(\d{2})\/(\d{2})\/(\d{4})$/); // DD/MM/YYYY
+                                //         if (m) {
+                                //           const d = new Date(+m[3], +m[2] - 1, +m[1]);
+                                //           if (!isNaN(d.getTime())) best = Math.max(best, d.getTime());
+                                //           continue;
+                                //         }
+                                //         const t = Date.parse(piece); // ISO/native
+                                //         if (!isNaN(t)) best = Math.max(best, t);
+                                //       }
+                                //       return best;
+                                //     }
 
-                                    function latestFromChildren(row) {
-                                      const kids = row?.getTreeChildren?.() || [];
-                                      let max = 0;
-                                      for (const r of kids) {
-                                        const d = r.getData();
-                                        max = Math.max(
-                                          max,
-                                          parseDateLike(d?.Delivery_Date),
-                                          parseDateLike(d?.Delivery_Schedule)
-                                        );
-                                      }
-                                      return max;
-                                    }
+                                //     function latestFromChildren(row) {
+                                //       const kids = row?.getTreeChildren?.() || [];
+                                //       let max = 0;
+                                //       for (const r of kids) {
+                                //         const d = r.getData();
+                                //         max = Math.max(
+                                //           max,
+                                //           parseDateLike(d?.Delivery_Date),
+                                //           parseDateLike(d?.Delivery_Schedule)
+                                //         );
+                                //       }
+                                //       return max;
+                                //     }
 
-                                    const aIsParent = !!(aRow?.getTreeChildren?.()?.length);
-                                    const bIsParent = !!(bRow?.getTreeChildren?.()?.length);
-                                    const av = aIsParent ? latestFromChildren(aRow) : parseDateLike(a);
-                                    const bv = bIsParent ? latestFromChildren(bRow) : parseDateLike(b);
-                                    return av - bv;
-                                  },
+                                //     const aIsParent = !!(aRow?.getTreeChildren?.()?.length);
+                                //     const bIsParent = !!(bRow?.getTreeChildren?.()?.length);
+                                //     const av = aIsParent ? latestFromChildren(aRow) : parseDateLike(a);
+                                //     const bv = bIsParent ? latestFromChildren(bRow) : parseDateLike(b);
+                                //     return av - bv;
+                                //   },
 
-                                  formatter: function (cell) {
-                                    const row = cell.getRow();
-                                    const data = row.getData();
-                                    const isChild = !!row.getTreeParent?.();
+                                //   formatter: function (cell) {
+                                //     const row = cell.getRow();
+                                //     const data = row.getData();
+                                //     const isChild = !!row.getTreeParent?.();
 
-                                    // Child rows: show their own value (or blank if suppressed)
-                                    if (isChild) {
-                                      if (data?.SuppressChildDelivery === true) return "";
-                                      return data?.Delivery_Schedule || data?.Delivery_Date || "";
-                                    }
+                                //     // Child rows: show their own value (or blank if suppressed)
+                                //     if (isChild) {
+                                //       if (data?.SuppressChildDelivery === true) return "";
+                                //       return data?.Delivery_Schedule || data?.Delivery_Date || "";
+                                //     }
 
-                                    // --- parent rows: compute latest from children ---
-                                    function parseOneDate(piece) {
-                                      const s = (piece || "").trim();
-                                      if (!s) return NaN;
-                                      const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-                                      if (m) {
-                                        const dt = new Date(+m[3], +m[2] - 1, +m[1]);
-                                        return dt.getTime();
-                                      }
-                                      const t = Date.parse(s);
-                                      return isNaN(t) ? NaN : t;
-                                    }
+                                //     // --- parent rows: compute latest from children ---
+                                //     function parseOneDate(piece) {
+                                //       const s = (piece || "").trim();
+                                //       if (!s) return NaN;
+                                //       const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                                //       if (m) {
+                                //         const dt = new Date(+m[3], +m[2] - 1, +m[1]);
+                                //         return dt.getTime();
+                                //       }
+                                //       const t = Date.parse(s);
+                                //       return isNaN(t) ? NaN : t;
+                                //     }
 
-                                    function toGBDate(ts) {
-                                      if (!ts || isNaN(ts)) return "";
-                                      return new Date(ts).toLocaleDateString("en-GB");
-                                    }
+                                //     function toGBDate(ts) {
+                                //       if (!ts || isNaN(ts)) return "";
+                                //       return new Date(ts).toLocaleDateString("en-GB");
+                                //     }
 
-                                    function latestFromString(str) {
-                                      if (!str) return NaN;
-                                      const parts = String(str).split("|").map(p => p.trim()).filter(Boolean);
-                                      let best = NaN;
-                                      for (const p of (parts.length ? parts : [str])) {
-                                        const t = parseOneDate(p);
-                                        if (!isNaN(t)) best = isNaN(best) ? t : Math.max(best, t);
-                                      }
-                                      return best;
-                                    }
+                                //     function latestFromString(str) {
+                                //       if (!str) return NaN;
+                                //       const parts = String(str).split("|").map(p => p.trim()).filter(Boolean);
+                                //       let best = NaN;
+                                //       for (const p of (parts.length ? parts : [str])) {
+                                //         const t = parseOneDate(p);
+                                //         if (!isNaN(t)) best = isNaN(best) ? t : Math.max(best, t);
+                                //       }
+                                //       return best;
+                                //     }
 
-                                    function latestChildTs() {
-                                      const children = row.getTreeChildren?.() || [];
-                                      let best = NaN;
-                                      for (const cr of children) {
-                                        const cd = cr.getData();
-                                        const t1 = latestFromString(cd?.Delivery_Date);
-                                        const t2 = latestFromString(cd?.Delivery_Schedule);
-                                        const t = isNaN(t1) ? t2 : isNaN(t2) ? t1 : Math.max(t1, t2);
-                                        if (!isNaN(t)) best = isNaN(best) ? t : Math.max(best, t);
-                                      }
-                                      return best;
-                                    }
+                                //     function latestChildTs() {
+                                //       const children = row.getTreeChildren?.() || [];
+                                //       let best = NaN;
+                                //       for (const cr of children) {
+                                //         const cd = cr.getData();
+                                //         const t1 = latestFromString(cd?.Delivery_Date);
+                                //         const t2 = latestFromString(cd?.Delivery_Schedule);
+                                //         const t = isNaN(t1) ? t2 : isNaN(t2) ? t1 : Math.max(t1, t2);
+                                //         if (!isNaN(t)) best = isNaN(best) ? t : Math.max(best, t);
+                                //       }
+                                //       return best;
+                                //     }
 
-                                    // 1) latest child date?
-                                    const childTs = latestChildTs();
+                                //     // 1) latest child date?
+                                //     const childTs = latestChildTs();
 
-                                    // 2) fallback to parent’s own date(s)
-                                    const parentTs = (function () {
-                                      const t1 = latestFromString(data?.Delivery_Schedule);
-                                      const t2 = latestFromString(data?.Delivery_Date);
-                                      if (!isNaN(t1) || !isNaN(t2)) {
-                                        return isNaN(t1) ? t2 : isNaN(t2) ? t1 : Math.max(t1, t2);
-                                      }
-                                      return NaN;
-                                    })();
+                                //     // 2) fallback to parent’s own date(s)
+                                //     const parentTs = (function () {
+                                //       const t1 = latestFromString(data?.Delivery_Schedule);
+                                //       const t2 = latestFromString(data?.Delivery_Date);
+                                //       if (!isNaN(t1) || !isNaN(t2)) {
+                                //         return isNaN(t1) ? t2 : isNaN(t2) ? t1 : Math.max(t1, t2);
+                                //       }
+                                //       return NaN;
+                                //     })();
 
-                                    // Build display text
-                                    const displayText = !isNaN(childTs)
-                                      ? toGBDate(childTs)                                 // latest child date
-                                      : (data?.Delivery_Schedule || data?.Delivery_Date   // fallback raw
-                                         || toGBDate(parentTs) || "");
+                                //     // Build display text
+                                //     const displayText = !isNaN(childTs)
+                                //       ? toGBDate(childTs)                                 // latest child date
+                                //       : (data?.Delivery_Schedule || data?.Delivery_Date   // fallback raw
+                                //          || toGBDate(parentTs) || "");
 
-                                    // ---- NEW: toggle row color when value comes from child ----
-                                    const el = row.getElement();
-                                    if (!isNaN(childTs)) {
-                                      el.classList.add("ds-from-child");   // whole row turns green
-                                    } else {
-                                      el.classList.remove("ds-from-child");
-                                    }
+                                //     // ---- NEW: toggle row color when value comes from child ----
+                                //     const el = row.getElement();
+                                //     if (!isNaN(childTs)) {
+                                //       el.classList.add("ds-from-child");   // whole row turns green
+                                //     } else {
+                                //       el.classList.remove("ds-from-child");
+                                //     }
 
-                                    const safeId = JSON.stringify(data?.Id ?? null);
+                                //     const safeId = JSON.stringify(data?.Id ?? null);
 
-                                    return `
-                                      <div style="display:flex; align-items:center; justify-content:space-between;">
-                                        <span style="flex:1; text-align:center;">${displayText}</span>
-                                        <i class="fa-regular fa-calendar-days"
-                                           title="Manage Delivery Schedule"
-                                           style="cursor:pointer; font-size:18px;"
-                                           onclick="openDeliverySchedule(${safeId})">
-                                        </i>
-                                      </div>`;
-                                  },
-                                },
+                                //     return `
+                                //       <div style="display:flex; align-items:center; justify-content:space-between;">
+                                //         <span style="flex:1; text-align:center;">${displayText}</span>
+                                //         <i class="fa-regular fa-calendar-days"
+                                //            title="Manage Delivery Schedule"
+                                //            style="cursor:pointer; font-size:18px;"
+                                //            onclick="openDeliverySchedule(${safeId})">
+                                //         </i>
+                                //       </div>`;
+                                //   },
+                                // },
 
                                 { title: "Open Sale Qty", field: "Open_Sale_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                                 { title: "Opne Sale Value", field: "Opne_Sale_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
@@ -771,14 +805,17 @@
                                 { title: "Allocated Stock Value", field: "Allocated_Stock_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                                 { title: "Net Qty", field: "Net_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
                                 { title: "Net Value", field: "Net_Value", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                                { title: "Delivery Date", field: "Delivery_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                                { title: "Delivery Qty", field: "Delivery_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                                { title: "Date PC Week", field: "Date_PC_Week", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" },
+                                { title: "Readiness Schedule Vendor Released", field: "Readiness_Schedule_Vendor_Released", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
                                 { title: "Plant", field: "Plant", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left",visible: false },
                                 { title: "Procurement_Type", field: "Procurement_Type", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left",visible: false },
                                 { title: "Vendor Po No", field: "Vendor_Po_No", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
                                 { title: "Vendor Po Date", field: "Vendor_Po_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center" ,visible: false},
                                 { title: "Po Release Qty", field: "Po_Release_Qty", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
                                 { title: "Indent Status", field: "Indent_Status", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
-                                { title: "Delivery Date", field: "Delivert_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
-                                { title: "Readiness Schedule Vendor Released", field: "Readiness_Schedule_Vendor_Released", headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left" },
+                                // { title: "Delivery Date", field: "Delivert_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
                                 { title: "Schedule_Line_Qty1", field: "Schedule_Line_Qty1", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
                                 { title: "Schedule_Line_Date1", field: "Schedule_Line_Date1", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
                                 { title: "Schedule_Line_Qty2", field: "Schedule_Line_Qty2", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
@@ -789,19 +826,19 @@
 
                             ],
 
-                            rowFormatter: function(row){
-                               const d = row.getData();
-                               if (d._isChildHeader) {
-                                 const el = row.getElement();
-                                 el.style.fontWeight = "700";
-                                 el.style.background = "#f1f5f9";
-                                 // el.style.borderLeft = "3px solid #94a3b8";
-                                 // Disable hover/edit/etc.
-                                 row.getCells().forEach(c => {
-                                   c.getElement().style.pointerEvents = "none";
-                                 });
-                               }
-                            },
+                            // rowFormatter: function(row){
+                            //    const d = row.getData();
+                            //    if (d._isChildHeader) {
+                            //      const el = row.getElement();
+                            //      el.style.fontWeight = "700";
+                            //      el.style.background = "#f1f5f9";
+                            //      // el.style.borderLeft = "3px solid #94a3b8";
+                            //      // Disable hover/edit/etc.
+                            //      row.getCells().forEach(c => {
+                            //        c.getElement().style.pointerEvents = "none";
+                            //      });
+                            //    }
+                            // },
                         });
                     }
                 });

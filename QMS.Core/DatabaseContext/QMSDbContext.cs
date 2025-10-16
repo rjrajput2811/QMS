@@ -43,6 +43,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Continual_Improve_Tracker> Continual_Improves { get; set; }
         public DbSet<RM_TC_Tracker> RM_TC_Tracker { get; set; }
         public DbSet<CSAT_Comment> CSAT_Comment { get; set; }
+        public DbSet<PhysicalCheckAndVisualInspection> PhysicalCheckAndVisualInspections { get; set; }
 
 
 

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -286,6 +287,9 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
             try
             {
+                var batchId = Guid.NewGuid();
+                var uploadTs = DateTime.Now;
+
                 var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
 
                 foreach (var item in listOfData)
@@ -359,11 +363,18 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             existingEntity.Cleared_Date = item.Cleared_Date;
                             existingEntity.CreatedBy = uploadedBy;
                             existingEntity.CreatedDate = DateTime.Now;
+                            existingEntity.LastUploadBatchId = batchId;
+                            existingEntity.LastUploadedAt = uploadTs;
+                            existingEntity.SuppressChildDelivery = true;
                         }
                         else
                         {
                             result.FailedRecords.Add((item, "Duplicate in database with no changes"));
                         }
+
+                        existingEntity.LastUploadBatchId = batchId;
+                        existingEntity.LastUploadedAt = uploadTs;
+                        existingEntity.SuppressChildDelivery = true;
                     }
                     else
                     {
@@ -391,7 +402,10 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             Cleared_Date = item.Cleared_Date,
                             Key1 = (item.Batch_No ?? string.Empty) + (item.Reference_No ?? string.Empty),
                             CreatedBy = uploadedBy,
-                            CreatedDate = DateTime.Now
+                            CreatedDate = DateTime.Now,
+                            LastUploadBatchId = batchId,
+                            LastUploadedAt = uploadTs,
+                            SuppressChildDelivery = true
                         };
                         _dbContext.OpenPo.Add(newEntity);
                     }
@@ -407,7 +421,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     ImportedRecords = listOfData.Count - result.FailedRecords.Count,
                     FailedRecords = result.FailedRecords.Count,
                     UploadedBy = uploadedBy,
-                    UploadedAt = DateTime.Now,
+                    UploadedAt = uploadTs,
                     FileType = "PO"
                 };
 
@@ -440,7 +454,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
         public async Task<Opne_Po_DeliverySchViewModel> GetByPOIdAsync(int poId)
         {
 
-            var deliveries = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == poId).ToListAsync();
+            var deliveries = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == poId && x.Deleted == false).ToListAsync();
 
             if (deliveries == null || deliveries.Count == 0)
                 return null;
@@ -456,6 +470,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 PO_Date = header.PO_Date,
                 PO_Qty = header.PO_Qty,
                 Balance_Qty = header.Balance_Qty,
+                Key = header.Key,
+                Key1 = header.Key1,
                 DeliveryScheduleList = deliveries.Select(d => new DeliveryScheduleItem
                 {
                     Delivery_Date = d.Delivery_Date,
@@ -468,36 +484,225 @@ namespace QMS.Core.Repositories.OpenPoRepository
             return viewModel;
         }
 
+        //public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
+        //{
+        //    // First delete existing records
+        //    var existing = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == model.Ven_PoId).ToListAsync();
+        //    _dbContext.Opne_Po_Deliveries.RemoveRange(existing);
+
+        //    // Insert new records
+        //    foreach (var item in model.DeliveryScheduleList)
+        //    {
+        //        var entity = new Opne_Po_DeliverySchedule
+        //        {
+        //            Ven_PoId = model.Ven_PoId,
+        //            Vendor = model.Vendor,
+        //            PO_No = model.PO_No,
+        //            PO_Date = model.PO_Date,
+        //            PO_Qty = model.PO_Qty,
+        //            Balance_Qty = model.Balance_Qty,
+        //            Delivery_Date = item.Delivery_Date,
+        //            Delivery_Qty = item.Delivery_Qty,
+        //            Delivery_Remark = item.Delivery_Remark,
+        //            Date_PC_Week = item.Date_PC_Week,
+        //            Key = model.Key,
+        //            Key1 = model.Key1,
+        //            CreatedBy = updatedBy,
+        //            CreatedDate = DateTime.Now
+        //        };
+
+        //        _dbContext.Opne_Po_Deliveries.Add(entity);
+        //    }
+
+        //    await _dbContext.SaveChangesAsync();
+        //}
+
         public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
         {
-            // First delete existing records
-            var existing = await _dbContext.Opne_Po_Deliveries.Where(x => x.Ven_PoId == model.Ven_PoId).ToListAsync();
-            _dbContext.Opne_Po_Deliveries.RemoveRange(existing);
+            // Guard
+            if (model == null) throw new ArgumentNullException(nameof(model));
+            if (model.DeliveryScheduleList == null) model.DeliveryScheduleList = new List<DeliveryScheduleItem>();
 
-            // Insert new records
+            using var tx = await _dbContext.Database.BeginTransactionAsync();
+
+            bool anyRowSaved = false;
+
             foreach (var item in model.DeliveryScheduleList)
             {
-                var entity = new Opne_Po_DeliverySchedule
-                {
-                    Ven_PoId = model.Ven_PoId,
-                    Vendor = model.Vendor,
-                    PO_No = model.PO_No,
-                    PO_Date = model.PO_Date,
-                    PO_Qty = model.PO_Qty,
-                    Balance_Qty = model.Balance_Qty,
-                    Delivery_Date = item.Delivery_Date,
-                    Delivery_Qty = item.Delivery_Qty,
-                    Delivery_Remark = item.Delivery_Remark,
-                    Date_PC_Week = item.Date_PC_Week,
-                    CreatedBy = updatedBy,
-                    CreatedDate = DateTime.Now
-                };
+                // Find an existing row for this Ven_PoId + Key + Key1 (tweak if your uniqueness differs)
+                var entity = await _dbContext.Opne_Po_Deliveries
+                    .FirstOrDefaultAsync(x =>
+                        x.Ven_PoId == model.Ven_PoId &&
+                        x.Key == model.Key &&
+                        x.Key1 == model.Key1);
 
-                _dbContext.Opne_Po_Deliveries.Add(entity);
+                if (entity == null)
+                {
+                    // Create the row and set the first commit
+                    entity = new Opne_Po_DeliverySchedule
+                    {
+                        Ven_PoId = model.Ven_PoId,
+                        Vendor = model.Vendor,
+                        PO_No = model.PO_No,
+                        PO_Date = model.PO_Date,
+                        PO_Qty = model.PO_Qty,
+                        Balance_Qty = model.Balance_Qty,
+
+                        // Optional: mirror the "incoming" values into Delivery_* if you still want to store them
+                        Delivery_Date = item.Delivery_Date,
+                        Delivery_Qty = item.Delivery_Qty,
+                        Delivery_Remark = item.Delivery_Remark,
+
+                        Date_PC_Week = item.Date_PC_Week,
+                        Key = model.Key,
+                        Key1 = model.Key1,
+
+                        // First commit lands in Comit_*
+                        Comit_Date = item.Delivery_Date,
+                        Comit_Qty = item.Delivery_Qty,
+
+                        CreatedBy = updatedBy,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    _dbContext.Opne_Po_Deliveries.Add(entity);
+
+                    anyRowSaved = true;
+                }
+                else
+                {
+                    // Update common PO/meta fields (if they can change)
+                    entity.Vendor = model.Vendor;
+                    entity.PO_No = model.PO_No;
+                    entity.PO_Date = model.PO_Date;
+                    entity.PO_Qty = model.PO_Qty;
+                    entity.Balance_Qty = model.Balance_Qty;
+
+                    // Optional: keep Delivery_* as the "incoming" values for reference
+                    entity.Delivery_Date = item.Delivery_Date;
+                    entity.Delivery_Qty = item.Delivery_Qty;
+                    entity.Delivery_Remark = item.Delivery_Remark;
+                    entity.Date_PC_Week = item.Date_PC_Week;
+
+                    // Apply the rotation with the new incoming values
+                    ApplyCommitRotation(entity, item.Delivery_Date, item.Delivery_Qty);
+                    anyRowSaved = true;
+                }
             }
 
             await _dbContext.SaveChangesAsync();
+
+            if (anyRowSaved)
+            {
+                var parent = await _dbContext.OpenPo.FirstOrDefaultAsync(p => p.Id == model.Ven_PoId);
+                if (parent != null && parent.SuppressChildDelivery)
+                {
+                    parent.SuppressChildDelivery = false;
+                    parent.UpdatedBy = updatedBy;
+                    parent.UpdatedDate = DateTime.Now;
+                    await _dbContext.SaveChangesAsync();
+                }
+            }
+            await tx.CommitAsync();
         }
+
+        ///// <summary>
+        ///// Rotates Comit_* fields with a 3-slot queue:
+        ///// Final <- Comit_Date1 <- Comit_Date <- (newDate,newQty)
+        ///// Handles empty/first/second/third+ updates safely.
+        ///// </summary>
+        //private static void ApplyCommitRotation(Opne_Po_DeliverySchedule e, DateTime? newDate, int? newQty)
+        //{
+        //    // If nothing new, no-op
+        //    bool hasNew = newDate.HasValue || (newQty.HasValue && newQty.Value != 0);
+        //    if (!hasNew) return;
+
+        //    // If nothing ever set, first fill Comit_*
+        //    if (!e.Comit_Date.HasValue && !e.Comit_Qty.HasValue)
+        //    {
+        //        e.Comit_Date = newDate;
+        //        e.Comit_Qty = newQty;
+        //        return;
+        //    }
+
+        //    // If the new value equals the current Comit_*, skip (prevents duplicate churn)
+        //    bool sameAsCurrent =
+        //        Nullable.Equals(e.Comit_Date, newDate) &&
+        //        ((e.Comit_Qty ?? 0) == (newQty ?? 0));
+
+        //    if (sameAsCurrent) return;
+
+        //    // General rotation:
+        //    // Move Comit_Date1/Qty1 -> Final
+        //    e.Comit_Final_Date = e.Comit_Date1;
+        //    e.Comit_Final_Qty = e.Comit_Qty1;
+
+        //    // Move Comit_Date/Qty -> Comit_Date1/Qty1
+        //    e.Comit_Date1 = e.Comit_Date;
+        //    e.Comit_Qty1 = e.Comit_Qty;
+
+        //    // New -> Comit_Date/Qty
+        //    e.Comit_Date = newDate;
+        //    e.Comit_Qty = newQty;
+        //}
+
+        /// <summary>
+        /// Rotation rules requested:
+        /// 1) 1st commit → Comit_Date/Qty
+        /// 2) 2nd commit → move Comit_Date → Comit_Date1; new → Comit_Date
+        /// 3) 3rd commit → Comit_Date1 → Comit_Final_Date; Comit_Date → Comit_Date1; new → Comit_Date
+        /// 4th+ commits → DO NOT change Comit_Date1 or Comit_Final_Date; only set Comit_Date to the new value
+        /// </summary>
+        private static void ApplyCommitRotation(Opne_Po_DeliverySchedule e, DateTime? newDate, int? newQty)
+        {
+            // nothing to do if no incoming data
+            bool hasNew = newDate.HasValue || (newQty.HasValue && newQty.Value != 0);
+            if (!hasNew) return;
+
+            // If nothing ever set -> first fill current
+            if (!e.Comit_Date.HasValue && !e.Comit_Qty.HasValue)
+            {
+                e.Comit_Date = newDate;
+                e.Comit_Qty = newQty;
+                return;
+            }
+
+            // If the new value is identical to current, skip (idempotent)
+            bool sameAsCurrent =
+                Nullable.Equals(e.Comit_Date, newDate) &&
+                ((e.Comit_Qty ?? 0m) == (newQty ?? 0m));
+            if (sameAsCurrent) return;
+
+            // If we haven't yet filled Comit_Date1 (2nd commit)
+            if (!e.Comit_Date1.HasValue && !e.Comit_Qty1.HasValue)
+            {
+                e.Comit_Date1 = e.Comit_Date;
+                e.Comit_Qty1 = e.Comit_Qty;
+
+                e.Comit_Date = newDate;
+                e.Comit_Qty = newQty;
+                return;
+            }
+
+            // If we haven't yet filled Comit_Final (3rd commit)
+            if (!e.Comit_Final_Date.HasValue && !e.Comit_Final_Qty.HasValue)
+            {
+                e.Comit_Final_Date = e.Comit_Date1;
+                e.Comit_Final_Qty = e.Comit_Qty1;
+
+                e.Comit_Date1 = e.Comit_Date;
+                e.Comit_Qty1 = e.Comit_Qty;
+
+                e.Comit_Date = newDate;
+                e.Comit_Qty = newQty;
+                return;
+            }
+
+            // 4th+ commits: freeze Comit_Date1 & Comit_Final_*; only update current
+            e.Comit_Date = newDate;
+            e.Comit_Qty = newQty;
+        }
+
 
 
         public async Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor)
@@ -509,7 +714,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     if (connection.State != ConnectionState.Open)
                         await connection.OpenAsync();
 
-                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule_Bak]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
 
                     {
                         var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
@@ -558,118 +763,121 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        public async Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type)
-        {
-            try
-            {
+        //public async Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type)
+        //{
+        //    try
+        //    {
 
-                var result = await _dbContext.Sales_Order.FromSqlRaw("EXEC sp_Get_SalesOrder_SCM").ToListAsync();
+        //        var parameters = new[]
+        //        {
+        //            new SqlParameter("@type", type ?? (object)DBNull.Value),
+        //        };
 
-                if (!string.IsNullOrEmpty(type))
-                    result = result.Where(x => x.Item_Category_Latest == type).ToList();
+        //        var result = await _dbContext.Sales_Order
+        //            .FromSqlRaw("EXEC sp_Get_SalesOrder_SCM @type", parameters)
+        //            .ToListAsync();
 
 
-                // Map results to ViewModel
-                var viewModelList = result.Select(data => new Sales_Order_ViewModel
-                {
-                    Id = data.Id,
-                    SO_No = data.SO_No,
-                    SaleOrder_Type = data.SaleOrder_Type,
-                    SO_Date = data.SO_Date,
-                    Line_Item = data.Line_Item,
-                    Indent_No = data.Indent_No,
-                    Indent_Date = data.Indent_Date,
-                    Order_Type = data.Order_Type,
-                    Vertical = data.Vertical,
-                    Region = data.Region,
-                    Sales_Group = data.Sales_Group,
-                    Sales_Group_desc = data.Sales_Group_desc,
-                    Sales_Office = data.Sales_Office,
-                    Sales_Office_Desc = data.Sales_Office_Desc,
-                    Sale_Person = data.Sale_Person,
-                    Project_Name = data.Project_Name,
-                    Project_Name_Tag = data.Project_Name_Tag,
-                    Priority_Tag = data.Priority_Tag,
-                    Customer_Name = data.Customer_Name,
-                    Customer_Code = data.Customer_Code,
-                    Dealer_Direct = data.Dealer_Direct,
-                    Inspection = data.Inspection,
-                    Material = data.Material,
-                    Old_Material_No = data.Old_Material_No,
-                    Description = data.Description,
-                    SO_Qty = data.SO_Qty,
-                    SO_Value = data.SO_Value,
-                    Rate = data.Rate,
-                    Del_Qty = data.Del_Qty,
-                    Open_Sale_Qty = data.Open_Sale_Qty,
-                    Opne_Sale_Value = data.Opne_Sale_Value,
-                    Plant = data.Plant,
-                    Item_Category = data.Item_Category,
-                    Item_Category_Latest = data.Item_Category_Latest,
-                    Procurement_Type = data.Procurement_Type,
-                    Vendor_Po_No = data.Vendor_Po_No,
-                    Vendor_Po_Date = data.Vendor_Po_Date,
-                    CPR_Number = data.CPR_Number,
-                    Vendor = data.Vendor,
-                    Planner = data.Planner,
-                    Po_Release_Qty = data.Po_Release_Qty,
-                    Allocated_Stock_Qty = data.Allocated_Stock_Qty,
-                    Allocated_Stock_Value = data.Allocated_Stock_Value,
-                    Net_Qty = data.Net_Qty,
-                    Net_Value = data.Net_Value,
-                    Qty_In_Week = data.Qty_In_Week,
-                    Value_In_Week = data.Value_In_Week,
-                    Qty_After_Week = data.Qty_After_Week,
-                    Value_After_Week = data.Value_After_Week,
-                    Check5 = data.Check5,
-                    Indent_Status = data.Indent_Status,
-                    Sales_Call_Point = data.Sales_Call_Point,
-                    Free_Stock = data.Free_Stock,
-                    Grn_Qty = data.Grn_Qty,
-                    Last_Grn_Date = data.Last_Grn_Date,
-                    Check1 = data.Check1,
-                    Delivery_Schedule = data.Delivery_Schedule,
-                    Readiness_Vendor_Released_Fr_Date = data.Readiness_Vendor_Released_Fr_Date,
-                    Readiness_Vendor_Released_To_Date = data.Readiness_Vendor_Released_To_Date,
-                    Readiness_Schedule_Vendor_Released = data.Readiness_Schedule_Vendor_Released,
-                    Delivery_Schedule_PC_Breakup = data.Delivery_Schedule_PC_Breakup,
-                    Check2 = data.Check2,
-                    Line_Item_Schedule = data.Line_Item_Schedule,
-                    R_B = data.R_B,
-                    Schedule_Repeat = data.Schedule_Repeat,
-                    Internal_Pending_Issue = data.Internal_Pending_Issue,
-                    Pending_With = data.Pending_With,
-                    Remark = data.Remark,
-                    CRD_OverDue = data.CRD_OverDue,
-                    Delivert_Date = data.Delivert_Date,
-                    Process_Plan_On_Crd = data.Process_Plan_On_Crd,
-                    Last_Week_PC = data.Last_Week_PC,
-                    Schedule_Line_Qty1 = data.Schedule_Line_Qty1,
-                    Schedule_Line_Date1 = data.Schedule_Line_Date1,
-                    Schedule_Line_Qty2 = data.Schedule_Line_Qty2,
-                    Schedule_Line_Date2 = data.Schedule_Line_Date2,
-                    Schedule_Line_Qty3 = data.Schedule_Line_Qty3,
-                    Schedule_Line_Date3 = data.Schedule_Line_Date3,
-                    To_Consider = data.To_Consider,
-                    Person_Name = data.Person_Name,
-                    Visibility = data.Visibility,
-                    CreatedDate = data.CreatedDate,
-                    CreatedBy = data.CreatedBy,
-                    Key = data.Key,
-                    Key1 = data.Key1,
-                    UpdatedBy = data.UpdatedBy,
-                    UpdatedDate = data.UpdatedDate
-                }).ToList();
+        //        var viewModelList = result.Select(data => new Sales_Order_ViewModel
+        //        {
+        //            Id = data.Id,
+        //            SO_No = data.SO_No,
+        //            SaleOrder_Type = data.SaleOrder_Type,
+        //            SO_Date = data.SO_Date,
+        //            Line_Item = data.Line_Item,
+        //            Indent_No = data.Indent_No,
+        //            Indent_Date = data.Indent_Date,
+        //            Order_Type = data.Order_Type,
+        //            Vertical = data.Vertical,
+        //            Region = data.Region,
+        //            Sales_Group = data.Sales_Group,
+        //            Sales_Group_desc = data.Sales_Group_desc,
+        //            Sales_Office = data.Sales_Office,
+        //            Sales_Office_Desc = data.Sales_Office_Desc,
+        //            Sale_Person = data.Sale_Person,
+        //            Project_Name = data.Project_Name,
+        //            Project_Name_Tag = data.Project_Name_Tag,
+        //            Priority_Tag = data.Priority_Tag,
+        //            Customer_Name = data.Customer_Name,
+        //            Customer_Code = data.Customer_Code,
+        //            Dealer_Direct = data.Dealer_Direct,
+        //            Inspection = data.Inspection,
+        //            Material = data.Material,
+        //            Old_Material_No = data.Old_Material_No,
+        //            Description = data.Description,
+        //            SO_Qty = data.SO_Qty,
+        //            SO_Value = data.SO_Value,
+        //            Rate = data.Rate,
+        //            Del_Qty = data.Del_Qty,
+        //            Open_Sale_Qty = data.Open_Sale_Qty,
+        //            Opne_Sale_Value = data.Opne_Sale_Value,
+        //            Plant = data.Plant,
+        //            Item_Category = data.Item_Category,
+        //            Item_Category_Latest = data.Item_Category_Latest,
+        //            Procurement_Type = data.Procurement_Type,
+        //            Vendor_Po_No = data.Vendor_Po_No,
+        //            Vendor_Po_Date = data.Vendor_Po_Date,
+        //            CPR_Number = data.CPR_Number,
+        //            Vendor = data.Vendor,
+        //            Planner = data.Planner,
+        //            Po_Release_Qty = data.Po_Release_Qty,
+        //            Allocated_Stock_Qty = data.Allocated_Stock_Qty,
+        //            Allocated_Stock_Value = data.Allocated_Stock_Value,
+        //            Net_Qty = data.Net_Qty,
+        //            Net_Value = data.Net_Value,
+        //            Qty_In_Week = data.Qty_In_Week,
+        //            Value_In_Week = data.Value_In_Week,
+        //            Qty_After_Week = data.Qty_After_Week,
+        //            Value_After_Week = data.Value_After_Week,
+        //            Check5 = data.Check5,
+        //            Indent_Status = data.Indent_Status,
+        //            Sales_Call_Point = data.Sales_Call_Point,
+        //            Free_Stock = data.Free_Stock,
+        //            Grn_Qty = data.Grn_Qty,
+        //            Last_Grn_Date = data.Last_Grn_Date,
+        //            Check1 = data.Check1,
+        //            Delivery_Schedule = data.Delivery_Schedule,
+        //            Readiness_Vendor_Released_Fr_Date = data.Readiness_Vendor_Released_Fr_Date,
+        //            Readiness_Vendor_Released_To_Date = data.Readiness_Vendor_Released_To_Date,
+        //            Readiness_Schedule_Vendor_Released = data.Readiness_Schedule_Vendor_Released,
+        //            Delivery_Schedule_PC_Breakup = data.Delivery_Schedule_PC_Breakup,
+        //            Check2 = data.Check2,
+        //            Line_Item_Schedule = data.Line_Item_Schedule,
+        //            R_B = data.R_B,
+        //            Schedule_Repeat = data.Schedule_Repeat,
+        //            Internal_Pending_Issue = data.Internal_Pending_Issue,
+        //            Pending_With = data.Pending_With,
+        //            Remark = data.Remark,
+        //            CRD_OverDue = data.CRD_OverDue,
+        //            Delivert_Date = data.Delivert_Date,
+        //            Process_Plan_On_Crd = data.Process_Plan_On_Crd,
+        //            Last_Week_PC = data.Last_Week_PC,
+        //            Schedule_Line_Qty1 = data.Schedule_Line_Qty1,
+        //            Schedule_Line_Date1 = data.Schedule_Line_Date1,
+        //            Schedule_Line_Qty2 = data.Schedule_Line_Qty2,
+        //            Schedule_Line_Date2 = data.Schedule_Line_Date2,
+        //            Schedule_Line_Qty3 = data.Schedule_Line_Qty3,
+        //            Schedule_Line_Date3 = data.Schedule_Line_Date3,
+        //            To_Consider = data.To_Consider,
+        //            Person_Name = data.Person_Name,
+        //            Visibility = data.Visibility,
+        //            CreatedDate = data.CreatedDate,
+        //            CreatedBy = data.CreatedBy,
+        //            Key = data.Key,
+        //            Key1 = data.Key1,
+        //            UpdatedBy = data.UpdatedBy,
+        //            UpdatedDate = data.UpdatedDate
+        //        }).ToList();
 
-                return viewModelList;
+        //        return viewModelList;
 
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                throw;
-            }
-        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _systemLogService.WriteLog(ex.Message);
+        //        throw;
+        //    }
+        //}
 
         public async Task<List<Sales_Order_ViewModel>> GetSalesOrdersQtyAsync(string? type)
         {
@@ -689,7 +897,25 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        public async Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
+        //public async Task<(List<MatchedRecordViewModel> matched, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
+        //{
+        //    var connectionString = _dbContext.Database.GetConnectionString();
+
+        //    using (var connection = new SqlConnection(connectionString))
+        //    {
+        //        await connection.OpenAsync();
+
+        //        using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report", new { Type = type }, commandType: CommandType.StoredProcedure))
+        //        {
+        //            var matched = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
+        //            var summary = (await multi.ReadAsync<MatchSummaryViewModel>()).FirstOrDefault();
+
+        //            return (matched, summary);
+        //        }
+        //    }
+        //}
+
+        public async Task<(List<MatchedRecordViewModel> matched,List<MatchDeliverySchViewModel> deliverySch, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
         {
             var connectionString = _dbContext.Database.GetConnectionString();
 
@@ -697,12 +923,13 @@ namespace QMS.Core.Repositories.OpenPoRepository
             {
                 await connection.OpenAsync();
 
-                using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report", new { Type = type }, commandType: CommandType.StoredProcedure))
+                using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report_1", new { Type = type }, commandType: CommandType.StoredProcedure))
                 {
                     var matched = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
+                    var deliverySch = (await multi.ReadAsync<MatchDeliverySchViewModel>()).ToList();
                     var summary = (await multi.ReadAsync<MatchSummaryViewModel>()).FirstOrDefault();
 
-                    return (matched, summary);
+                    return (matched, deliverySch, summary);
                 }
             }
         }
@@ -1236,6 +1463,154 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
 
             return res;
+        }
+
+        public async Task<(List<OpenPODetailViewModel> openPo, List<So_DeliveryScheduleViewModel> deliverySch)> GetPOListByMaterialRefNoAsync(string? material, string? oldMaterialNo, int soId)
+        {
+            try
+            {
+                // Get the connection string from configuration or your context
+                var connectionString = _dbContext.Database.GetConnectionString();
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    //var result = await connection.QueryAsync<OpenPODetailViewModel>("[dbo].[sp_Get_OpenPO_Delivery_ByMaterial]", new { Material = material, Old_Material_No = oldMaterialNo },commandType: CommandType.StoredProcedure);
+
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_Delivery_ByMaterial]", new { Material = material, Old_Material_No = oldMaterialNo , SaleOrder_Id = soId }, commandType: CommandType.StoredProcedure))
+
+                    {
+                        var openPo = (await multi.ReadAsync<OpenPODetailViewModel>()).ToList();
+                        //var deliverySch = (await multi.ReadAsync<So_DeliveryScheduleViewModel>()).ToList();
+
+                        var rawRows = await multi.ReadAsync<dynamic>();
+
+                        // Convert flat rows into grouped structure
+                        var grouped = rawRows.GroupBy(r => new
+                        {
+                            Material = (string?)r.Material,
+                            OldMaterial = (string?)r.Old_Material_No,
+                            SO_Id = (int?)r.SaleOrder_Id
+                        });
+
+                        var deliverySch = new List<So_DeliveryScheduleViewModel>();
+
+                        foreach (var grp in grouped)
+                        {
+                            var first = grp.First();
+
+                            var parent = new So_DeliveryScheduleViewModel
+                            {
+                                Id = first.Id ?? 0,
+                                Deleted = first.Deleted ?? false,
+                                SaleOrder_Id = grp.Key.SO_Id,
+                                Vendor = first.Vendor ?? "",
+                                SO_No = first.SO_No ?? "",
+                                SO_Date = first.SO_Date == null ? (DateTime?)null : Convert.ToDateTime(first.SO_Date),
+                                SO_Qty = first.SO_Qty ?? 0,
+                                Key = first.Key ?? "",
+                                Key1 = first.Key1 ?? "",
+                                Material = grp.Key.Material ?? "",
+                                Old_Material_No = grp.Key.OldMaterial ?? "",
+                                CreatedBy = first.CreatedBy ?? "",
+                                CreatedDate = first.CreatedDate == null ? (DateTime?)null : Convert.ToDateTime(first.CreatedDate)
+                            };
+
+                            // Child list
+                            int sr = 1;
+                            foreach (var r in grp)
+                            {
+                                parent.SODeliveryScheduleList.Add(new So_DeliveryScheduleItem
+                                {
+                                    SrNo = sr++,
+                                    Delivery_Date = r.Delivery_Date == null ? (DateTime?)null : Convert.ToDateTime(r.Delivery_Date),
+                                    Delivery_Qty = r.Delivery_Qty ?? 0,
+                                    Delivery_Remark = r.Delivery_Remark ?? "",
+                                    Date_PC_Week = r.Date_PC_Week ?? ""
+                                });
+                            }
+
+                            deliverySch.Add(parent);
+                        }
+
+                        return (openPo, deliverySch);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task SOSaveDeliverySchAsync(So_DeliveryScheduleViewModel model, string updatedBy)
+        {
+            try
+            { 
+                // First delete existing records
+                var existing = await _dbContext.So_Deliveries.Where(x => x.SaleOrder_Id == model.SaleOrder_Id).ToListAsync();
+                _dbContext.So_Deliveries.RemoveRange(existing);
+
+                // Insert new records
+                foreach (var item in model.SODeliveryScheduleList)
+                {
+                    var entity = new So_DeliverySchedule
+                    {
+                        SaleOrder_Id = model.SaleOrder_Id,
+                        Vendor = model.Vendor,
+                        SO_No = model.SO_No,
+                        SO_Date = model.SO_Date,
+                        SO_Qty = model.SO_Qty,
+                        Delivery_Date = item.Delivery_Date,
+                        Delivery_Qty = item.Delivery_Qty,
+                        Delivery_Remark = item.Delivery_Remark,
+                        Date_PC_Week = item.Date_PC_Week,
+                        Key = model.Key,
+                        Key1 = model.Key1,
+                        Material = model.Material,
+                        Old_Material_No = model.Old_Material_No,
+                        CreatedBy = updatedBy,
+                        CreatedDate = DateTime.Now
+                    };
+
+                    _dbContext.So_Deliveries.Add(entity);
+                }
+
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<(List<Sales_Order_SCM> soHeaders, List<So_DeliverySchedule> deliverySchedules)> GetSOWithDeliveryScheduleAsync(string type)
+        {
+            try
+            {
+                using (var connection = _dbContext.Database.GetDbConnection())
+                {
+                    if (connection.State != ConnectionState.Open)
+                        await connection.OpenAsync();
+
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_SalesOrder_SCM]", new { Type = type }, commandType: CommandType.StoredProcedure))
+
+                    {
+                        var soHeaders = (await multi.ReadAsync<Sales_Order_SCM>()).ToList();
+                        var deliverySchedules = (await multi.ReadAsync<So_DeliverySchedule>()).ToList();
+
+                        return (soHeaders, deliverySchedules);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
 
 

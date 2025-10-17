@@ -29,6 +29,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<VenBISCertificate> VenBISCertificates { get; set; }
         public DbSet<CSOTracker> CSOTracker { get; set; }
         public DbSet<PDITracker> PDITracker { get; set; }
+        public DbSet<BatchCode_PDI> BatchCode { get; set; }
         public DbSet<DNTracker> DeviationNote { get; set; }
         public DbSet<ImprovementTracker> ImprovementTracker { get; set; }
         public DbSet<Kaizen_Tracker> Kaizen_Tracker { get; set; }
@@ -66,6 +67,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Open_Po_Log> OpenPo_Log { get; set; }
         public DbSet<Opne_Po_DeliverySchedule> Opne_Po_Deliveries { get; set; }
         public DbSet<Sales_Order_SCM> Sales_Order { get; set; }
+        public DbSet<So_DeliverySchedule> So_Deliveries { get; set; }
         public DbSet<PC_Calendar_SCM> PC_Calendar { get; set; }
 
 

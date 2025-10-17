@@ -39,6 +39,7 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                                     x.InspectionDate.Value.Date <= endDate.Value.Date)
                         .ToList();
                 }
+
                 // Map results to ViewModel
                 var viewModelList = result.Select(data => new ThirdPartyInspectionViewModel
                 {
@@ -58,6 +59,7 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                     MOMDate = data.MOMDate,
                     Attachment = data.Attachment,
                     Tpi_Duration = data.Tpi_Duration,
+                    Pc = data.Pc,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -101,6 +103,7 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                     Attachment = data.Attachment,
                     Tpi_Duration = data.Tpi_Duration,
                     InspectionDate = data.InspectionDate,
+                    Pc = data.Pc,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -139,16 +142,13 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                     new SqlParameter("@MOMDate", newRecord.MOMDate ?? (object)DBNull.Value),
                     new SqlParameter("@Attachment", newRecord.Attachment ?? (object)DBNull.Value),
                     new SqlParameter("@Tpi_Duration", newRecord.Tpi_Duration ?? (object)DBNull.Value),
-                    new SqlParameter("@Document_No", newRecord.Document_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_No", newRecord.Revision_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Effective_Date", newRecord.Effective_Date ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_Date", newRecord.Revision_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Pc", newRecord.Pc ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", newRecord.CreatedBy ?? (object)DBNull.Value),
                 };
 
 
                 var sql = @"EXEC sp_Insert_ThirdPartyInspection @InspectionDate,@ProjectName,@InspName,@ProductCode,@ProdDesc,@LOTQty,@ProjectValue,@Location,
-                            @Mode,@FirstAttempt,@Remark,@ActionPlan,@MOMDate,@Attachment,@Tpi_Duration, @Document_No, @Revision_No, @Effective_Date, @Revision_Date, @CreatedBy";
+                            @Mode,@FirstAttempt,@Remark,@ActionPlan,@MOMDate,@Attachment,@Tpi_Duration, @Pc, @CreatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -191,16 +191,13 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                     new SqlParameter("@MOMDate", updatedRecord.MOMDate ?? (object)DBNull.Value),
                     new SqlParameter("@Attachment", updatedRecord.Attachment ?? (object)DBNull.Value),
                     new SqlParameter("@Tpi_Duration", updatedRecord.Tpi_Duration ?? (object)DBNull.Value),
-                    new SqlParameter("@Document_No", updatedRecord.Document_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_No", updatedRecord.Revision_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Effective_Date", updatedRecord.Effective_Date ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_Date", updatedRecord.Revision_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Pc", updatedRecord.Pc ??(object) DBNull.Value),
                     new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value),
                    // new SqlParameter("@IsDeleted", updatedRecord.Deleted),
                 };
 
                 var sql = @"EXEC sp_Update_ThirdPartyInspection @InspectionID,@InspectionDate,@ProjectName,@InspName,@ProductCode,@ProdDesc,@LOTQty,@ProjectValue,@Location,
-                            @Mode,@FirstAttempt,@Remark,@ActionPlan,@MOMDate,@Attachment,@Tpi_Duration,@Document_No, @Revision_No, @Effective_Date, @Revision_Date, @UpdatedBy";
+                            @Mode,@FirstAttempt,@Remark,@ActionPlan,@MOMDate,@Attachment,@Tpi_Duration,@Pc , @UpdatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -431,6 +428,7 @@ namespace QMS.Core.Repositories.ThirdPartyInspectionRepository
                         Remark = item.Remark,
                         ActionPlan = item.ActionPlan,
                         MOMDate = item.MOMDate,
+                        Pc = item.Pc,
                         CreatedBy = item.CreatedBy,
                         CreatedDate = item.CreatedDate
                     };

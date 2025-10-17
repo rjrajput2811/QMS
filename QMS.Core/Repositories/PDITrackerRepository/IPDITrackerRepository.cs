@@ -15,5 +15,13 @@ namespace QMS.Core.Repositories.PDITrackerRepository
         Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync();
         Task<bool> UpdateAttachmentAsync(int id, string fileName);
 
+        Task<List<BatchCodePDIViewModel>> GetBatchCodePDIAsync();
+        Task<BatchCode_PDI?> GetBatchCodePDIByIdAsync(int Id);
+        Task<OperationResult> CreateBatchCodePDIAsync(BatchCodePDIViewModel newNatProjectRecord, bool returnCreatedRecord = false);
+        Task<OperationResult> UpdateBatchCodePDIAsync(BatchCodePDIViewModel updateNatProjectRecord, bool returnUpdatedRecord = false);
+        Task<OperationResult> DeleteBatchCodePDIAsync(int Id);
+        Task<bool> CheckBatchCodePDIDuplicate(string searchText, int Id);
+        Task<List<DropdownOptionViewModel>> GetBatchCodeDropdownAsync();
+
     }
 }

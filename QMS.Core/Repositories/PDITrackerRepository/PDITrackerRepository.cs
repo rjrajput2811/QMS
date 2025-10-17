@@ -30,6 +30,7 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                 .Distinct()
                 .ToListAsync();
         }
+
         public async Task<List<PDITrackerViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
@@ -116,16 +117,12 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                     new SqlParameter("@InspectedBy", entity.InspectedBy ?? (object)DBNull.Value),
                     new SqlParameter("@Remark", entity.Remark ?? (object)DBNull.Value),
                     new SqlParameter("@Attahcment", entity.Attahcment ?? (object)DBNull.Value),
-                    new SqlParameter("@Document_No", entity.Document_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_No", entity.Revision_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Effective_Date", entity.Effective_Date ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_Date", entity.Revision_Date ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", entity.Deleted)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Insert_PDITracker @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark, @Attahcment, @Document_No, @Revision_No, @Effective_Date, @Revision_Date, @CreatedBy, @IsDeleted",
+                    "EXEC sp_Insert_PDITracker @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark, @Attahcment, @CreatedBy, @IsDeleted",
                     parameters
                 );
 
@@ -159,16 +156,12 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                     new SqlParameter("@InspectedBy", entity.InspectedBy ?? (object)DBNull.Value),
                     new SqlParameter("@Remark", entity.Remark ?? (object)DBNull.Value),
                     new SqlParameter("@Attahcment", entity.Attahcment ?? (object)DBNull.Value),
-                    new SqlParameter("@Document_No", entity.Document_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_No", entity.Revision_No ?? (object)DBNull.Value),
-                    new SqlParameter("@Effective_Date", entity.Effective_Date ?? (object)DBNull.Value),
-                    new SqlParameter("@Revision_Date", entity.Revision_Date ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", entity.UpdatedBy ?? (object)DBNull.Value)
 
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Update_PDITracker @PDIId, @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark, @Attahcment, @Document_No, @Revision_No, @Effective_Date, @Revision_Date, @UpdatedBy",
+                    "EXEC sp_Update_PDITracker @PDIId, @DispatchDate, @PC, @ProductCode, @ProductDescription, @BatchCodeVendor, @PONo, @PDIDate, @PDIRefNo, @OfferedQty, @ClearedQty, @BISCompliance, @InspectedBy, @Remark, @Attahcment, @UpdatedBy",
                     parameters
                 );
 
@@ -264,6 +257,144 @@ namespace QMS.Core.Repositories.PDITrackerRepository
             }
         }
 
+        public async Task<List<BatchCodePDIViewModel>> GetBatchCodePDIAsync()
+        {
+            try
+            {
+                var result = await (from pr in _dbContext.BatchCode
+                                    where pr.Deleted == false // Add this condition
+                                    select new BatchCodePDIViewModel
+                                    {
+                                        Id = pr.Id,
+                                        Vendor = pr.Vendor,
+                                        Batch_Code = pr.Batch_Code,
+                                        CreatedBy = pr.CreatedBy,
+                                        CreatedDate = pr.CreatedDate,
+                                        UpdatedBy = pr.UpdatedBy,
+                                        UpdatedDate = pr.UpdatedDate
+                                    }).ToListAsync();
+                return result;
 
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<BatchCode_PDI?> GetBatchCodePDIByIdAsync(int Id)
+        {
+            try
+            {
+                var result = await base.GetByIdAsync<BatchCode_PDI>(Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> CreateBatchCodePDIAsync(BatchCodePDIViewModel newNatProjectRecord, bool returnCreatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = new BatchCode_PDI();
+                natToCreate.Vendor = newNatProjectRecord.Vendor;
+                natToCreate.Batch_Code = newNatProjectRecord.Batch_Code;
+                natToCreate.CreatedBy = newNatProjectRecord.CreatedBy;
+                natToCreate.CreatedDate = DateTime.Now;
+                return await base.CreateAsync<BatchCode_PDI>(natToCreate, returnCreatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> UpdateBatchCodePDIAsync(BatchCodePDIViewModel updateNatProjectRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = await base.GetByIdAsync<BatchCode_PDI>(updateNatProjectRecord.Id);
+                natToCreate.Vendor = updateNatProjectRecord.Vendor;
+                natToCreate.Batch_Code = updateNatProjectRecord.Batch_Code;
+                natToCreate.UpdatedBy = updateNatProjectRecord.UpdatedBy;
+                natToCreate.UpdatedDate = DateTime.Now;
+                return await base.UpdateAsync<BatchCode_PDI>(natToCreate, returnUpdatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> DeleteBatchCodePDIAsync(int Id)
+        {
+            try
+            {
+                return await base.DeleteAsync<BatchCode_PDI>(Id);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckBatchCodePDIDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.BatchCode
+                    .Where(x => x.Deleted == false && x.Batch_Code == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.BatchCode
+                        .Where(x => x.Deleted == false &&
+                               x.Batch_Code == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<DropdownOptionViewModel>> GetBatchCodeDropdownAsync()
+        {
+            return await _dbContext.BatchCode
+                .Where(v => !v.Deleted)
+                .Select(v => new DropdownOptionViewModel
+                {
+                    Label = v.Batch_Code,
+                    Value = v.Batch_Code
+                })
+                .Distinct()
+                .ToListAsync();
+        }
     }
 }

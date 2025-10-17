@@ -402,7 +402,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="~/BISTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="/BISTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `

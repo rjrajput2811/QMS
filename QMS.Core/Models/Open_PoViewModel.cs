@@ -53,6 +53,10 @@ namespace QMS.Core.Models
 
         public DateTime? UpdatedDate { get; set; }
         public string? UpdatedBy { get; set; }
+
+        public DateTime? LastUploadedAt { get; set; }
+        public Guid? LastUploadBatchId { get; set; }
+        public bool SuppressChildDelivery { get; set; }
     }
 
     public class Open_Po_LogViewModel

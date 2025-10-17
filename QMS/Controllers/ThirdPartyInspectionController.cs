@@ -150,23 +150,24 @@ namespace QMS.Controllers
                 {
 
                     DateTime? insDate = ParseExcelDate(worksheet.Cell(row, 1));
-                    DateTime? momDate = ParseExcelDate(worksheet.Cell(row, 14));
+                    DateTime? momDate = ParseExcelDate(worksheet.Cell(row, 15));
 
                     var model = new ThirdPartyInspectionViewModel
                     {
                         InspectionDate = insDate,
-                        ProjectName = worksheet.Cell(row, 2).GetString().Trim(),
-                        InspName = worksheet.Cell(row, 3).GetString().Trim(),
-                        ProductCode = worksheet.Cell(row, 4).GetString().Trim(),
-                        ProdDesc = worksheet.Cell(row, 5).GetString().Trim(),
-                        LOTQty = worksheet.Cell(row, 6).GetString().Trim(),
-                        ProjectValue = worksheet.Cell(row, 7).GetString().Trim(),
-                        Tpi_Duration = worksheet.Cell(row, 8).GetString().Trim(),
-                        Location = worksheet.Cell(row, 9).GetString().Trim(),
-                        Mode = worksheet.Cell(row, 10).GetString().Trim(),
-                        FirstAttempt = worksheet.Cell(row, 11).GetString().Trim(),
-                        Remark = worksheet.Cell(row, 12).GetString().Trim(),
-                        ActionPlan = worksheet.Cell(row, 13).GetString().Trim(),
+                        Pc = worksheet.Cell(row, 2).GetString().Trim(),
+                        ProjectName = worksheet.Cell(row, 3).GetString().Trim(),
+                        InspName = worksheet.Cell(row, 4).GetString().Trim(),
+                        ProductCode = worksheet.Cell(row, 5).GetString().Trim(),
+                        ProdDesc = worksheet.Cell(row, 6).GetString().Trim(),
+                        LOTQty = worksheet.Cell(row, 7).GetString().Trim(),
+                        ProjectValue = worksheet.Cell(row, 8).GetString().Trim(),
+                        Tpi_Duration = worksheet.Cell(row, 9).GetString().Trim(),
+                        Location = worksheet.Cell(row, 10).GetString().Trim(),
+                        Mode = worksheet.Cell(row, 11).GetString().Trim(),
+                        FirstAttempt = worksheet.Cell(row, 12).GetString().Trim(),
+                        Remark = worksheet.Cell(row, 13).GetString().Trim(),
+                        ActionPlan = worksheet.Cell(row, 14).GetString().Trim(),
                         MOMDate = momDate,
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,

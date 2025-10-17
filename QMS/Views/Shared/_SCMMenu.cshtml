@@ -170,83 +170,77 @@
         </div>
     </div>
 
-    <div class="container py-5" style="max-width:55%;">
+    <div class="container py-5" style="max-width:30%;">
         <div class="d-flex flex-column gap-2">
 
-            <div class="row g-2">
-                <div class="col-6">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("PCCalendar","OpenPo")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-calendar icon me-3"></i>
-                            <h5 class="mb-0">PC Calendar</h5>
-                        </div>
-                    </div>
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("PCCalendar","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-calendar icon me-3"></i>
+                    <h5 class="mb-0">PC Calendar</h5>
                 </div>
             </div>
 
-            <div class="row g-2">
-                <div class="col-6">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("UploadOpenPO","OpenPo")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred"></i>
-                            <h5 class="mb-0">Uplaod Po Details</h5>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-6">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("UploadOpenSO","OpenPo")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkorchid"></i>
-                            <h5 class="mb-0">Uplaod SO Details</h5>
-                        </div>
-                    </div>
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("UploadOpenPO","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred"></i>
+                    <h5 class="mb-0">Upload Po Details</h5>
                 </div>
             </div>
 
-            <div class="row g-2">
-                <div class="col-6">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("Vendor","OpenPo")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-person-badge icon me-3" style="color:seagreen"></i>
-                            <h5 class="mb-0">Vendor</h5>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="col-6">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("SalesOrder","OpenPo")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
-                            <h5 class="mb-0">Sales Order Details</h5>
-                        </div>
-                    </div>
+
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("Vendor","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-person-badge icon me-3" style="color:seagreen"></i>
+                    <h5 class="mb-0">Vendor</h5>
                 </div>
             </div>
 
-            <div class="row g-2">
-                <div class="col-6">
-                    <div class="card qms-card p-2" onclick="location.href='@Url.Action("OpenPo","OpenPo")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:blueviolet"></i>
-                            <h5 class="mb-0">Planner</h5>
-                        </div>
-                    </div>
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("OpenPo","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-book icon me-3" style="color:blueviolet"></i>
+                    <h5 class="mb-0">Planner</h5>
                 </div>
             </div>
 
-            @*  <div class="card qms-card p-2" onclick="location.href='@Url.Action("SalesOrder","OpenPo")'">
+
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("UploadOpenSO","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkorchid"></i>
+                    <h5 class="mb-0">Upload SO Details</h5>
+                </div>
+            </div>
+
+
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("SalesOrder","OpenPo")'">
                 <div class="d-flex align-items-center">
                     <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
                     <h5 class="mb-0">Sales Order Details</h5>
                 </div>
-            </div> *@
+            </div>
+
+
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("MTO","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
+                    <h5 class="mb-0">MTO</h5>
+                </div>
+            </div>
+
+
+            <div class="card qms-card p-2" onclick="location.href='@Url.Action("MTA","OpenPo")'">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
+                    <h5 class="mb-0">MTA</h5>
+                </div>
+            </div>
 
         </div>
     </div>
 
     <div class="content-wrapper">
-        @RenderBody()
+            @RenderBody()
     </div>
 
     <!-- Bootstrap JS -->

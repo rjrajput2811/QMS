@@ -248,17 +248,25 @@
 
 
          $(document).ready(function () {
-             $('#upload-button').on('click', async function () {
-                    var expectedColumns = [
-                       'SO', 'Sale Order Type', 'SO DATE', 'LINE ITEM', 'Indent Number', 'Indent Date','Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip', 'Sales Person', 'Project Name',
-                       'CUSTOMER', 'CUST. NAME', 'MATERIAL', 'Old material number', 'Description', 'SO QUANTITY', 'SO Value', 'DEL QUANTITY',
-                       'OPEN SALES QTY', 'OPEN SALES Value', 'Plant', 'Item Category', 'Procurement Type', 'Vendor PO Number', 'Vendor PO Date', 'PO Release Qty',
-                       'Allocated Stock QTY', 'Allocated Stock Value','Indent Status',
-                       'Delivery Schedule', 'DELIVERY DATE','Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2', 'Schedule Line Qty3', 'Schedule Line Date3'
-                    ];
 
-                    var url = '@Url.Action("UploadSalesOrderDataExcel", "OpenPo")';
-                    handleImportExcelFile(url, expectedColumns);
+             
+
+             $('#upload-button').on('click', async function () {
+
+                 var expectedColumns = [
+                   'SO', 'Sale Order Type', 'SO DATE', 'LINE ITEM', 'Indent Number', 'Indent Date',
+                   'Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip',
+                   'Sales Person', 'Project Name', 'CUSTOMER', 'CUST. NAME', 'MATERIAL',
+                   'Old material number', 'Description', 'SO QUANTITY', 'SO Value', 'DEL QUANTITY',
+                   'OPEN SALES QTY', 'OPEN SALES Value', 'Plant', 'Item Category', 'Procurement Type',
+                   'Vendor PO Number', 'Vendor PO Date', 'PO Release Qty', 'Allocated Stock QTY',
+                   'Allocated Stock Value', 'Indent Status', 'Delivery Schedule', 'DELIVERY DATE',
+                   'Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2',
+                   'Schedule Line Qty3', 'Schedule Line Date3'
+                 ];
+
+                  var url = '@Url.Action("UploadSalesOrderDataExcel", "OpenPo")';
+                  handleImportExcelFile(url, expectedColumns);
              });
 
 

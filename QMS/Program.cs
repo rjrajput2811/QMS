@@ -75,7 +75,7 @@ builder.Services.AddTransient<IFIFOTrackerRepository, FIFOTrackerRepository>();
 builder.Services.AddTransient<IPDIAuthSignRepository, PDIAuthSignRepository>();
 builder.Services.AddTransient<IContiImproveRespository, ContiImproveRespository>();
 builder.Services.AddTransient<ICSATCommentRepository, CSATCommentRepository>();
-builder.Services.AddTransient<IProductValidationRepository, ProductValidationRepository>();
+builder.Services.AddTransient<IPhysicalCheckAndVisualInspectionRepository, PhysicalCheckAndVisualInspectionRepository>();
 builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 
 //

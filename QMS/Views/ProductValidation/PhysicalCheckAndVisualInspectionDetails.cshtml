@@ -162,8 +162,8 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-                <form id="physicalCheck-form" method="post" asp-action="InsertUpdatePhysicalCheckAndVisualInspectionDetails" asp-controller="ProductValidation">
-                    <div class="card-body">
+                <div class="card-body">
+                    <form id="physicalCheck-form" method="post" asp-action="InsertUpdatePhysicalCheckAndVisualInspectionDetails" asp-controller="ProductValidation">
                         <div class="card">
                             <div class="card-body">
                                 <div class="col-12">
@@ -748,20 +748,20 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="card">
-                            <div class="card-body text-right">
-                                <div>
-                                    <button id="addPhyCheckButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="insertUpdatePhyCheck()" style="width: 120px; font-size:15px">
-                                        <i class="fas fa-save mr-1"></i>Save
-                                    </button>
-                                    <button id="backButton" class="btn btn-outline-danger" onclick="location.href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'" style="width: 120px; font-size:15px">
-                                        <i class="fas fa-times-circle mr-1"></i>Cancel
-                                    </button>
-                                </div>
+                    </form>
+                    <div class="card">
+                        <div class="card-body text-right">
+                            <div>
+                                <button id="addPhyCheckButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="insertUpdatePhyCheck()" style="width: 120px; font-size:15px">
+                                    <i class="fas fa-save mr-1"></i>Save
+                                </button>
+                                <button id="backButton" class="btn btn-outline-danger" onclick="location.href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'" style="width: 120px; font-size:15px">
+                                    <i class="fas fa-times-circle mr-1"></i>Cancel
+                                </button>
                             </div>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -818,6 +818,15 @@
 
             const form = $('#physicalCheck-form')[0];
             const formData = new FormData(form);
+
+            $('#observationTable [contenteditable="true"]').each(function() {
+                const dataName = $(this).data('name');
+                const content = $(this).text().trim();
+
+                if (dataName) {
+                    formData.append(dataName, content);
+                }
+            });
 
             $.ajax({
                 url: $('#physicalCheck-form').attr('action'),

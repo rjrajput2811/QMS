@@ -69,6 +69,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Sales_Order_SCM> Sales_Order { get; set; }
         public DbSet<So_DeliverySchedule> So_Deliveries { get; set; }
         public DbSet<PC_Calendar_SCM> PC_Calendar { get; set; }
+        public DbSet<MTAMaster_SCM> MTAMaster { get; set; }
 
 
 

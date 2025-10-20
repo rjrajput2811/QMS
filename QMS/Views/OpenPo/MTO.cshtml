@@ -428,11 +428,11 @@
                                 DS_Week_Qty: item.dS_Week_Qty,
                                 DS_Delivery_Qty: item.dS_Delivery_Qty,
                                 DS_Date_PC_Week: item.dS_Date_PC_Week,
-                                DS_Comit_Date: formatPipeDates(item.dS_Comit_Date),
+                                DS_Comit_Date: item.dS_Comit_Date,
                                 DS_Comit_Qty: item.dS_Comit_Qty,
-                                DS_Comit_Date1: formatPipeDates(item.dS_Comit_Date1),
+                                DS_Comit_Date1: item.dS_Comit_Date1,
                                 DS_Comit_Qty1: item.dS_Comit_Qty1,
-                                DS_Comit_Final_Date: formatPipeDates(item.dS_Comit_Final_Date),
+                                DS_Comit_Final_Date: item.dS_Comit_Final_Date,
                                 DS_Comit_Final_Qty: item.dS_Comit_Final_Qty
                             });
                         });
@@ -489,7 +489,7 @@
                               }
                         // }
 
-                    },
+                        },
 
                         columns: [
                             { title: "Sr No",formatter: "rownum",hozAlign: "center",headerSort: false,width: 70 },

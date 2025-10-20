@@ -224,12 +224,24 @@
 
                         <div class="row form-group align-items-center mb-2">
                             <label class="col-1" for="toggleExpandRows" style="font-weight:600;font-size:14px;">Expand Rows :</label>
-                            <div class="col-2">
+                            <div class="col-1">
                                 <div class="form-check form-switch">
                                     <input class="form-check-input" type="checkbox" id="toggleExpandRows" checked>
                                 </div>
                             </div>
+
+                            <label class="col-1.5" for="deliveryRows" style="font-weight:600;font-size:14px;">Delivery Sch Show :</label>
+                            <div class="col-1">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="deliveryRows">
+                                </div>
+                            </div>
                         </div>
+
+                        @* <div class="row form-group align-items-center mb-2">
+                            
+                        </div> *@
+                        
 
                         @* <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" id="toggleExpandRows">
@@ -648,7 +660,6 @@
                     const plannerDateStr = formatDate(item.comit_Planner_date);
                     const plannerPCWeek  = getPCWeekCodeForDate(plannerDateStr);
 
-
                     tabledata.push({
                         Sr_No: index + 1,
                         Id: item.id,
@@ -689,11 +700,14 @@
                         CreatedBy: item.createdBy,
                         CreatedDate : formatDate(item.createdDate),
                         SuppressChildDelivery: !!item.suppressChildDelivery,
+                        "1stcommit" : "",
+                        "2ndcommit" : "",
+                        "3rdcommit" : "",
                         _children: []
                     });
                 });
 
-                // Add child rows from Table2 (allTS)
+                //Add child rows from Table2 (allTS)
                 $.each(allTS, function () {
                     var parentRow = tabledata.find(row =>
                         row.Id === this.ven_PoId && row.Vendor === this.vendor
@@ -711,6 +725,18 @@
                            });
                            parentRow._childrenHeaderAdded = true;
                         }
+
+                        var Comit_DateStr = this.comit_DateStr ?? "";
+                        var Comit_QtyStr = this.comit_QtyStr ?? "";
+                        var Comit_Date1Str = this.comit_Date1Str ?? "";
+                        var Comit_Qty1Str = this.comit_Qty1Str ?? "";
+                        var Comit_Final_DateStr = this.comit_Final_DateStr ?? "";
+                        var Comit_Final_QtyStr = this.comit_Final_QtyStr ?? "";
+
+                        // Build combined string only if both exist, else blank
+                        const firstCommit   = (Comit_DateStr && Comit_QtyStr) ? `${Comit_DateStr} - ${Comit_QtyStr}` : "";
+                        const secondCommit  = (Comit_Date1Str && Comit_Qty1Str) ? `${Comit_Date1Str} - ${Comit_Qty1Str}` : "";
+                        const finalCommit   = (Comit_Final_DateStr && Comit_Final_QtyStr) ? `${Comit_Final_DateStr} - ${Comit_Final_QtyStr}` : "";
 
                         parentRow._children.push({
                             DeliverySchu_Id: this.id, // pick what your API returns
@@ -730,17 +756,67 @@
                             PCWeekDate: this.planner_PC_Date,
                             Comit_Date : formatDate(this.comit_Date),
                             Comit_Qty : this.comit_Qty,
+                            "1stcommit": firstCommit,
                             Comit_Date1 : formatDate(this.comit_Date1),
                             Comit_Qty1 : this.comit_Qty1,
+                            "2ndcommit" : secondCommit,
                             Comit_Final_Date : formatDate(this.comit_Final_Date),
                             Comit_Final_Qty : this.comit_Final_Qty,
+                            "3rdcommit" : finalCommit,
                             CreatedBy: "",    // empty in child if not used
+
                         });
                     }
                 });
             }
 
             window.PendTSTableData = JSON.parse(JSON.stringify(tabledata));
+
+                function hasDeliveryDate(child) {
+                  if (!child || child._isChildHeader) return false;
+                  const val = (child.Delivery_Date ?? "").toString().trim();
+                  return val !== "";
+                }
+                function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+
+                function buildDeliveryFilteredData(onlyWithDelivery){
+                  if (!onlyWithDelivery) return clone(window.PendTSTableData);
+
+                  const filteredParents = [];
+                  for (const parent of window.PendTSTableData) {
+                    const kids = Array.isArray(parent._children) ? parent._children : [];
+                    const realChildren = kids.filter(ch => hasDeliveryDate(ch));
+                    if (realChildren.length > 0) {
+                      const p = clone(parent);
+                      p._children = [];
+                      // Re-add header
+                      p._children.push({
+                        _isChildHeader: true,
+                        Delivery_Date: "Delivery Date",
+                        Material: "Date PC Week",
+                        Hold_Date: "Qty",
+                        Cleared_Date: "Remark"
+                      });
+                      for (const ch of realChildren) p._children.push(ch);
+                      delete p._childrenHeaderAdded;
+                      filteredParents.push(p);
+                    }
+                  }
+                  return filteredParents;
+                }
+
+                function applyDeliveryFilter(onlyWithDelivery){
+                  const data = buildDeliveryFilteredData(onlyWithDelivery);
+                  if (table) {
+                    table.replaceData(data)
+                      .then(() => {
+                        if (onlyWithDelivery) {
+                          table.getRows().forEach(r => { if (r.getTreeChildren().length) r.treeExpand(); });
+                        }
+                      })
+                      .catch(()=>{});
+                  }
+                }
 
                 function isEditable(cell) {
                     const value = cell.getValue();
@@ -781,8 +857,8 @@
                     });
 
                     if (userType != "Vendor") {
-                        columns.push({ title: "Key", field: "Key"/* , width: 110 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
-                        columns.push({ title: "Key1", field: "Key1"/* , width: 110 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
+                        columns.push({ title: "Key", field: "Key", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
+                        columns.push({ title: "Key1", field: "Key1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "PR Type", field: "PR_Type"/* , width: 160 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "PR Description", field: "PR_Desc"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "Requisitioner", field: "Requisitioner"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
@@ -924,10 +1000,13 @@
                         columns.push({ title: "Planner Remark", field: "Comit_Planner_Remark", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "center", editor: "input", editable: isEditable });
                         columns.push({ title: "1st Commitment Date", field: "Comit_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "1st Commitment Qty", field: "Comit_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "PC Week in 1st Commitment", field: "1stcommit", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "2nd Commitment Date", field: "Comit_Date1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "2nd Commitment Qty", field: "Comit_Qty1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"});
+                        columns.push({ title: "PC Week in 2nd Commitment", field: "2ndcommit", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "3rd Commitment Date", field: "Comit_Final_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "3rd Commitment Qty", field: "Comit_Final_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                        columns.push({ title: "PC Week in 3rd Commitment", field: "3rdcommit", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         // columns.push({ title: "Planner Date", field: "Comit_Planner_date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: true });
 
                         columns.push({ title: "Vendor Date", field: "Comit_Vendor_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: isEditable });
@@ -937,7 +1016,7 @@
 
                     columns.push({ title: "ID", field: "Id", visible: false });
 
-                     if (table) {
+                    if (table) {
                        table.replaceData(window.PendTSTableData)
                          .then(() => Blockloaderhide())
                          .catch(() => Blockloaderhide());
@@ -963,19 +1042,57 @@
                     index: "Id", // This tells Tabulator to use `Id` as the unique row key
                     columns: columns,
 
-                     rowFormatter: function(row){
-                       const d = row.getData();
-                       if (d._isChildHeader) {
-                         const el = row.getElement();
-                         el.style.fontWeight = "700";
-                         el.style.background = "#f1f5f9";
-                         // el.style.borderLeft = "3px solid #94a3b8";
-                         // Disable hover/edit/etc.
-                         row.getCells().forEach(c => {
-                           c.getElement().style.pointerEvents = "none";
-                         });
-                       }
-                    },
+                    // rowFormatter: function(row){
+                    //    const d = row.getData();
+                    //    if (d._isChildHeader) {
+                    //      const el = row.getElement();
+                    //      el.style.fontWeight = "700";
+                    //      el.style.background = "#f1f5f9";
+                    //      // el.style.borderLeft = "3px solid #94a3b8";
+                    //      // Disable hover/edit/etc.
+                    //      row.getCells().forEach(c => {
+                    //        c.getElement().style.pointerEvents = "none";
+                    //      });
+                    //    }
+                    // },
+                    rowFormatter: function(row) {
+                        const d = row.getData();
+                        const el = row.getElement();
+                        
+                        // Reset recycled styles
+                        el.style.background = "";
+                        el.style.fontWeight = "";
+                        el.style.color = "";
+                        row.getCells().forEach(c => {
+                          c.getElement().style.pointerEvents = "";
+                        });
+                        
+                        // 1️⃣ Style child headers
+                        if (d._isChildHeader) {
+                          el.style.fontWeight = "700";
+                          el.style.background = "#f1f5f9";
+                          row.getCells().forEach(c => {
+                            c.getElement().style.pointerEvents = "none";
+                          });
+                          return;
+                        }
+                        
+                        // 2️⃣ For parent rows — check if any child row has Delivery_Date
+                        const children = row.getTreeChildren?.() || []; // Tabulator tree structure support
+                        const hasDelivery = children.some(
+                          child => {
+                            const cd = child.getData();
+                            return cd.Delivery_Date && String(cd.Delivery_Date).trim() !== "";
+                          }
+                        );
+                        
+                        if (hasDelivery) {
+                          el.style.background = "#dcfce7"; // Tailwind green-100
+                          el.style.color = "#166534";      // Tailwind green-800
+                          el.style.fontWeight = "600";
+                        }
+                    }
+
                 });
 
 
@@ -1025,6 +1142,16 @@
                             }
                         });
                     });
+
+                          // Bind the Delivery Sch Show toggle
+                    const deliveryToggle = document.getElementById("deliveryRows");
+                    if (deliveryToggle) {
+                      deliveryToggle.addEventListener("change", function () {
+                        applyDeliveryFilter(this.checked);
+                      });
+                      // Apply initial state (if it’s already checked on load)
+                      applyDeliveryFilter(deliveryToggle.checked === true);
+                    }
 
 
                 document.getElementById("exportExcel").addEventListener("click", function () {

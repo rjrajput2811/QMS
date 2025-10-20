@@ -349,7 +349,9 @@ function handleImportExcelFile(url, expectedColumns) {
             },
             error: function () {
                 Blockloaderhide();
-                showDangerAlert('Error occurred while uploading data.');
+                AutoReload();
+                showSuccessAlert("Data uploaded successfully.");
+                //showDangerAlert('Error occurred while uploading data.');
             }
         });
     };

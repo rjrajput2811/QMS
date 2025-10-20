@@ -23,6 +23,10 @@ public class ProductValidationController : Controller
     {
         return View();
     }
+    public IActionResult ElectricalPerformance()
+    {
+        return View();
+    }
 
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
     {

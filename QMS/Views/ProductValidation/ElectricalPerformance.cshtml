@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Physical Check & Visual Inspection";
+    ViewData["Title"] = "Electrical Protection, Safety Test & Reliability Test";
 }
 
 <!-- CSS files -->
@@ -7,6 +7,7 @@
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
 <link href="~/css/pnotify.css" rel="stylesheet" />
+
 
 
 <style>
@@ -219,7 +220,7 @@
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <b style="font-size: large; color: #4682B4;">Physical Check & Visual Inspection</b>
+                <b style="font-size: large; color: #4682B4;">Electrical  Performance</b>
             </div>
             <div>
                 <button id="addPhyCheckButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="location.href='@Url.Action("PhysicalCheckAndVisualInspectionDetails", "ProductValidation")'" style="width: 140px; font-size:15px">
@@ -250,13 +251,13 @@
 @section Scripts {
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
+    <script src="~/js/dashboard/moment/moment.min.js"></script>
+    <script src="~/js/select2.min.js"></script>
     <!-- Moment.js and Litepicker -->
-    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="~/js/ranges.js"></script>
+   
+    <script src="~/js/litepicker.js"></script>
+    <script src="~/js/exceljs.min.js"></script>
     <script>
         window.APP_BASE = '@Url.Content("~")';
         window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
@@ -271,7 +272,7 @@
         function loadProductValidationGridData() {
             Blockloadershow();
             $.ajax({
-                url: '@Url.Action("GetPhysicalCheckAndVisualInspectionList", "ProductValidation")',
+                url: '@Url.Action("GetElectricalPeemoncsList", "ProductValidation")',
                 type: 'GET',
                 success: function (data) {
                     Blockloaderhide();
@@ -334,7 +335,7 @@
             return menu;
         };
 
-        function OnProductValidationGridLoad(response) {
+        function OnElectricalperformanceLoad(response) {
             Blockloadershow();
             tabledata = [];
             let columns = [];
@@ -372,7 +373,7 @@
                             const rowData = cell.getRow().getData();
                             let actionButtons = "";
 
-                            actionButtons += `<i data-toggle="modal" onclick="delPhyCheckConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+                            actionButtons += `<i data-toggle="modal" onclick="delElecPerConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
 
                             return actionButtons;
                         }
@@ -386,7 +387,7 @@
                 );
 
                 // // Initialize Tabulator
-                table = new Tabulator("#phyCheck_table", {
+                table = new Tabulator("#ElecPer_table", {
                     data: tabledata,
                     layout: "fitDataTable",
                     responsiveLayout: false,
@@ -406,7 +407,7 @@
 
                     if (columnField !== "Action") {
                         let rowData = cell.getRow().getData();
-                        window.open("@Url.Action("PhysicalCheckAndVisualInspectionDetails", "ProductValidation")" + "/" + rowData.Id, '_self');
+                        window.open("@Url.Action("ElectricalperformanceDetails", "ProductValidation")" + "/" + rowData.Id, '_self');
                     }
                 });
 
@@ -477,7 +478,7 @@
             Blockloaderhide();
         }
 
-        function delPhyCheckConfirm(recid) {
+        function delElecPerConfirm(recid) {
             PNotify.prototype.options.styling = "bootstrap3";
             (new PNotify({
                 title: 'Confirmation Needed',
@@ -496,7 +497,7 @@
                 },
             })).get().on('pnotify.confirm', function () {
                 $.ajax({
-                    url: '@Url.Action("DeletePhysicalCheckAndVisualInspection", "ProductValidation")',
+                    url: '@Url.Action("DeleteElectricalperformance", "ProductValidation")',
                     type: 'POST',
                     data: { id: recid },
                     success: function (data) {
@@ -524,4 +525,4 @@
     <script src="~/scripts/rmtc/rmtc-tracker.js" asp-append-version="true"></script>
 }
 
-@section HideSidebar { }
+

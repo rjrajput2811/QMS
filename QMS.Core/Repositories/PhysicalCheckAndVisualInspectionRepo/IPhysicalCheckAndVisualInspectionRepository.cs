@@ -2,7 +2,7 @@
 
 namespace QMS.Core.Repositories.ProductValidationRepo;
 
-public interface IProductValidationRepository
+public interface IPhysicalCheckAndVisualInspectionRepository
 {
     Task<List<PhysicalCheckAndVisualInspectionViewModel>> GetPhysicalCheckAndVisualInspectionsAsync();
     Task<PhysicalCheckAndVisualInspectionViewModel> GetPhysicalCheckAndVisualInspectionsByIdAsync(int Id);

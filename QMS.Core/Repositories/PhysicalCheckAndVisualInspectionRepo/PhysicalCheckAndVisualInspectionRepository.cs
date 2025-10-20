@@ -8,12 +8,12 @@ using System.Data;
 
 namespace QMS.Core.Repositories.ProductValidationRepo;
 
-public class ProductValidationRepository : SqlTableRepository, IProductValidationRepository
+public class PhysicalCheckAndVisualInspectionRepository : SqlTableRepository, IPhysicalCheckAndVisualInspectionRepository
 {
     private new readonly QMSDbContext _dbContext;
     private readonly ISystemLogService _systemLogService;
 
-    public ProductValidationRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
+    public PhysicalCheckAndVisualInspectionRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
     {
         _dbContext = dbContext;
         _systemLogService = systemLogService;
@@ -215,7 +215,9 @@ public class ProductValidationRepository : SqlTableRepository, IProductValidatio
                     GlassFragmentation_Sample3 = x.GlassFragmentation_Sample3,
                     GlassFragmentation_Sample4 = x.GlassFragmentation_Sample4,
                     GlassFragmentation_Sample5 = x.GlassFragmentation_Sample5,
-                    GlassFragmentation_Result = x.GlassFragmentation_Result
+                    GlassFragmentation_Result = x.GlassFragmentation_Result,
+                    TestedBy = x.TestedBy,
+                    VerifiedBy = x.VerifiedBy
                 })
                 .FirstOrDefault());
 

@@ -43,6 +43,9 @@ namespace QMS.Core.DatabaseContext
     {
         public OperationResult Result { get; set; } = new();
         public List<(Sales_Order_ViewModel Record, string Reason)> FailedRecords { get; set; } = new();
+        public int TotalRecords { get; set; }
+        public int ImportedRecords { get; set; }
+        public int FailedCount { get; set; }
     }
 
     public class BulkPCCreateLogResult
@@ -57,4 +60,10 @@ namespace QMS.Core.DatabaseContext
         public List<(MTAMasterViewModel Record, string Reason)> FailedRecords { get; set; } = new();
     }
 
+    public sealed class FailedRowDto
+    {
+        public string PO_No { get; set; }
+        public string Key { get; set; }
+        public string Reason { get; set; }
+    }
 }

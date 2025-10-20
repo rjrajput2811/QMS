@@ -99,7 +99,7 @@ namespace QMS.Controllers
                     prRecordsToAdd.Add(model);
                 }
 
-                var importResult = await _openPoReposiotry.BulkCreateAsync(prRecordsToAdd, fileName, uploadedBy);
+                var importResult = await _openPoReposiotry.BulkCreateAsync_Dapper(prRecordsToAdd, fileName, uploadedBy);
 
                 // If there are failed records, return file
                 if (importResult.FailedRecords.Any())
@@ -127,7 +127,7 @@ namespace QMS.Controllers
                     var failedFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
 
                     Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
-                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", failedFileName);
 
                     //string logFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
                     //return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", logFileName);
@@ -162,6 +162,7 @@ namespace QMS.Controllers
             try
             {
                 string updatedBy = HttpContext.Session.GetString("FullName") ?? "System";
+
                 await _openPoReposiotry.SaveDeliveryScheduleAsync(request, updatedBy);
 
                 return Json(new { success = true, message = "Delivery Schedule saved successfully." });
@@ -430,7 +431,7 @@ namespace QMS.Controllers
                     failWb.SaveAs(failStream);
                     failStream.Position = 0;
 
-                    var failedFileName = $"FailedOpenPO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    var failedFileName = $"FailedSO_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
 
                     Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
                     return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

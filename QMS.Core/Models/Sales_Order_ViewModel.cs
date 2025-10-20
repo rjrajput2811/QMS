@@ -172,6 +172,17 @@ namespace QMS.Core.Models
         public string? Delivery_Date { get; set; }
         public int Delivery_Qty { get; set; }
         public string? Date_PC_Week { get; set; }
+
+        public string? Comit_Date { get; set; }
+        public int Comit_Qty { get; set; }
+        public string? Comit_Date_PC_Week { get; set; }
+        public string? Comit_Date1 { get; set; }
+        public int Comit_Qty1 { get; set; }
+        public string? Comit_Date_PC_Week1 { get; set; }
+
+        public string? Final_Comit_Date { get; set; }
+        public int Final_Comit_Qty { get; set; }
+        public string? Final_Comit_Date_PC_Week { get; set; }
     }
 
     public class MatchSummaryViewModel

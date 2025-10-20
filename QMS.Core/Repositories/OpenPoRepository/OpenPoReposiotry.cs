@@ -14,6 +14,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace QMS.Core.Repositories.OpenPoRepository
@@ -280,166 +281,334 @@ namespace QMS.Core.Repositories.OpenPoRepository
         //    }
         //}
 
-        public async Task<BulkCreateLogResult> BulkCreateAsync(List<Open_PoViewModel> listOfData, string fileName, string uploadedBy)
+        // Working ///
+        //public async Task<BulkCreateLogResult> BulkCreateAsync(List<Open_PoViewModel> listOfData, string fileName, string uploadedBy)
+        //{
+        //    var result = new BulkCreateLogResult();
+        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var batchId = Guid.NewGuid();
+        //        var uploadTs = DateTime.Now;
+
+        //        var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+
+        //        foreach (var item in listOfData)
+        //        {
+        //            item.Key = item.Key?.Trim();
+        //            item.PO_No = item.PO_No?.Trim();
+
+        //            var compositeKey = $"{item.Key}|{item.PO_No}";
+
+        //            if (string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.PO_No))
+        //            {
+        //                result.FailedRecords.Add((item, "Missing Key or PO_No"));
+        //                continue;
+        //            }
+
+        //            // Check if this key combination has already been seen in the batch
+        //            if (seenKeys.Contains(compositeKey))
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+        //                continue;
+        //            }
+
+        //            seenKeys.Add(compositeKey); // Mark this combination as seen
+
+        //            // Now check against database
+        //            var existingEntity = await _dbContext.OpenPo.FirstOrDefaultAsync(x => x.PO_No == item.PO_No);
+
+        //            if (existingEntity != null)
+        //            {
+        //                // Compare fields one by one — if any field differs, update
+        //                bool isDifferent =
+        //                    existingEntity.Key != item.Key ||
+        //                    existingEntity.PR_Type != item.PR_Type ||
+        //                    existingEntity.PR_Desc != item.PR_Desc ||
+        //                    existingEntity.Requisitioner != item.Requisitioner ||
+        //                    existingEntity.Tracking_No != item.Tracking_No ||
+        //                    existingEntity.PR_No != item.PR_No ||
+        //                    existingEntity.Batch_No != item.Batch_No ||
+        //                    existingEntity.Reference_No != item.Reference_No ||
+        //                    existingEntity.Vendor != item.Vendor ||
+        //                    existingEntity.PO_Date != item.PO_Date ||
+        //                    existingEntity.PO_Qty != item.PO_Qty ||
+        //                    existingEntity.Balance_Qty != item.Balance_Qty ||
+        //                    existingEntity.Destination != item.Destination ||
+        //                    existingEntity.Delivery_Date != item.Delivery_Date ||
+        //                    existingEntity.Balance_Value != item.Balance_Value ||
+        //                    existingEntity.Material != item.Material ||
+        //                    existingEntity.Hold_Date != item.Hold_Date ||
+        //                    existingEntity.Cleared_Date != item.Cleared_Date;
+
+        //                if (isDifferent)
+        //                {
+        //                    // Update existing entity
+        //                    existingEntity.Key = item.Key;
+        //                    existingEntity.PR_Type = item.PR_Type;
+        //                    existingEntity.PR_Desc = item.PR_Desc;
+        //                    existingEntity.Requisitioner = item.Requisitioner;
+        //                    existingEntity.Tracking_No = item.Tracking_No;
+        //                    existingEntity.PR_No = item.PR_No;
+        //                    existingEntity.Batch_No = item.Batch_No;
+        //                    existingEntity.Reference_No = item.Reference_No;
+        //                    existingEntity.Vendor = item.Vendor;
+        //                    existingEntity.PO_Date = item.PO_Date;
+        //                    existingEntity.PO_Qty = item.PO_Qty;
+        //                    existingEntity.Balance_Qty = item.Balance_Qty;
+        //                    existingEntity.Destination = item.Destination;
+        //                    existingEntity.Delivery_Date = item.Delivery_Date;
+        //                    existingEntity.Balance_Value = item.Balance_Value;
+        //                    existingEntity.Material = item.Material;
+        //                    existingEntity.Hold_Date = item.Hold_Date;
+        //                    existingEntity.Cleared_Date = item.Cleared_Date;
+        //                    existingEntity.CreatedBy = uploadedBy;
+        //                    existingEntity.CreatedDate = DateTime.Now;
+        //                    existingEntity.LastUploadBatchId = batchId;
+        //                    existingEntity.LastUploadedAt = uploadTs;
+        //                    existingEntity.SuppressChildDelivery = true;
+        //                }
+        //                else
+        //                {
+        //                    result.FailedRecords.Add((item, "Duplicate in database with no changes"));
+        //                }
+
+        //                existingEntity.LastUploadBatchId = batchId;
+        //                existingEntity.LastUploadedAt = uploadTs;
+        //                existingEntity.SuppressChildDelivery = true;
+        //            }
+        //            else
+        //            {
+        //                // Insert new record
+        //                var newEntity = new Open_Po
+        //                {
+        //                    Key = item.Key,
+        //                    PR_Type = item.PR_Type,
+        //                    PR_Desc = item.PR_Desc,
+        //                    Requisitioner = item.Requisitioner,
+        //                    Tracking_No = item.Tracking_No,
+        //                    PR_No = item.PR_No,
+        //                    Batch_No = item.Batch_No,
+        //                    Reference_No = item.Reference_No,
+        //                    Vendor = item.Vendor,
+        //                    PO_No = item.PO_No,
+        //                    PO_Date = item.PO_Date,
+        //                    PO_Qty = item.PO_Qty,
+        //                    Balance_Qty = item.Balance_Qty,
+        //                    Destination = item.Destination,
+        //                    Delivery_Date = item.Delivery_Date,
+        //                    Balance_Value = item.Balance_Value,
+        //                    Material = item.Material,
+        //                    Hold_Date = item.Hold_Date,
+        //                    Cleared_Date = item.Cleared_Date,
+        //                    Key1 = (item.Batch_No ?? string.Empty) + (item.Reference_No ?? string.Empty),
+        //                    CreatedBy = uploadedBy,
+        //                    CreatedDate = DateTime.Now,
+        //                    LastUploadBatchId = batchId,
+        //                    LastUploadedAt = uploadTs,
+        //                    SuppressChildDelivery = true
+        //                };
+        //                _dbContext.OpenPo.Add(newEntity);
+        //            }
+        //        }
+
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Log the upload
+        //        var importLog = new Open_Po_Log
+        //        {
+        //            FileName = fileName,
+        //            TotalRecords = listOfData.Count,
+        //            ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+        //            FailedRecords = result.FailedRecords.Count,
+        //            UploadedBy = uploadedBy,
+        //            UploadedAt = uploadTs,
+        //            FileType = "PO"
+        //        };
+
+        //        _dbContext.OpenPo_Log.Add(importLog);
+        //        await _dbContext.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = true,
+        //            Message = result.FailedRecords.Any()
+        //                ? "Import completed with some skipped records."
+        //                : "All records imported successfully."
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = false,
+        //            Message = "Error during import: " + ex.Message
+        //        };
+        //    }
+
+        //    return result;
+        //}
+
+
+        public async Task<BulkCreateLogResult> BulkCreateAsync_Dapper(IList<Open_PoViewModel> listOfData, string fileName, string uploadedBy)
         {
             var result = new BulkCreateLogResult();
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            var batchId = Guid.NewGuid();
+            var uploadTs = DateTime.Now;
+
+            // Build TVP DataTable
+            var tvp = new DataTable();
+            tvp.Columns.AddRange(new[]
+            {
+                new DataColumn("Id", typeof(int)),
+                new DataColumn("Deleted", typeof(bool)),
+                new DataColumn("Key", typeof(string)),
+                new DataColumn("PR_Type", typeof(string)),
+                new DataColumn("PR_Desc", typeof(string)),
+                new DataColumn("Requisitioner", typeof(string)),
+                new DataColumn("Tracking_No", typeof(string)),
+                new DataColumn("PR_No", typeof(string)),
+                new DataColumn("Batch_No", typeof(string)),
+                new DataColumn("Reference_No", typeof(string)),
+                new DataColumn("Vendor", typeof(string)),
+                new DataColumn("PO_No", typeof(string)),
+                new DataColumn("PO_Date", typeof(DateTime)),
+                new DataColumn("PO_Qty", typeof(int)),
+                new DataColumn("Balance_Qty", typeof(int)),
+                new DataColumn("Destination", typeof(string)),
+                new DataColumn("Delivery_Date", typeof(DateTime)),
+                new DataColumn("Balance_Value", typeof(decimal)),
+                new DataColumn("Material", typeof(string)),
+                new DataColumn("Hold_Date", typeof(DateTime)),
+                new DataColumn("Cleared_Date", typeof(DateTime)),
+
+                new DataColumn("Key1", typeof(string)),
+                new DataColumn("Comit_Date", typeof(DateTime)),
+                new DataColumn("Comit_Qty", typeof(int)),
+                new DataColumn("Comit_Planner_Qty", typeof(int)),
+                new DataColumn("Comit_Planner_date", typeof(DateTime)),
+                new DataColumn("PCWeekDate", typeof(string)),
+                new DataColumn("Comit_Vendor_Date", typeof(DateTime)),
+                new DataColumn("Comit_Vendor_Qty", typeof(int)),
+                new DataColumn("Comit_Planner_Remark", typeof(string)),
+                new DataColumn("Comit_Date1", typeof(DateTime)),
+                new DataColumn("Comit_Qty1", typeof(int)),
+                new DataColumn("Comit_Final_Date", typeof(DateTime)),
+                new DataColumn("Comit_Final_Qty", typeof(int)),
+
+                new DataColumn("Buffer_Day", typeof(int)),
+                new DataColumn("CreatedDate", typeof(DateTime)),
+                new DataColumn("CreatedBy", typeof(string)),
+                new DataColumn("UpdatedDate", typeof(DateTime)),
+                new DataColumn("UpdatedBy", typeof(string)),
+                new DataColumn("LastUploadedAt", typeof(DateTime)),
+                new DataColumn("LastUploadBatchId", typeof(Guid)),
+                new DataColumn("SuppressChildDelivery", typeof(bool))
+            });
+
+            foreach (var x in listOfData)
+            {
+                // Normalize to match the SP’s behavior (trim on client side too)
+                string trim(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+                tvp.Rows.Add(
+                    x.Id,
+                    x.Deleted,
+                    trim(x.Key),
+                    trim(x.PR_Type),
+                    trim(x.PR_Desc),
+                    trim(x.Requisitioner),
+                    trim(x.Tracking_No),
+                    trim(x.PR_No),
+                    trim(x.Batch_No),
+                    trim(x.Reference_No),
+                    trim(x.Vendor),
+                    trim(x.PO_No),
+                    x.PO_Date.HasValue ? x.PO_Date.Value : (object)DBNull.Value,
+                    x.PO_Qty.HasValue ? x.PO_Qty.Value : (object)DBNull.Value,
+                    x.Balance_Qty.HasValue ? x.Balance_Qty.Value : (object)DBNull.Value,
+                    trim(x.Destination),
+                    x.Delivery_Date.HasValue ? x.Delivery_Date.Value : (object)DBNull.Value,
+                    x.Balance_Value.HasValue ? x.Balance_Value.Value : (object)DBNull.Value,
+                    trim(x.Material),
+                    x.Hold_Date.HasValue ? x.Hold_Date.Value : (object)DBNull.Value,
+                    x.Cleared_Date.HasValue ? x.Cleared_Date.Value : (object)DBNull.Value,
+
+                    trim(x.Key1),
+                    x.Comit_Date.HasValue ? x.Comit_Date.Value : (object)DBNull.Value,
+                    x.Comit_Qty.HasValue ? x.Comit_Qty.Value : (object)DBNull.Value,
+                    x.Comit_Planner_Qty.HasValue ? x.Comit_Planner_Qty.Value : (object)DBNull.Value,
+                    x.Comit_Planner_date.HasValue ? x.Comit_Planner_date.Value : (object)DBNull.Value,
+                    trim(x.PCWeekDate),
+                    x.Comit_Vendor_Date.HasValue ? x.Comit_Vendor_Date.Value : (object)DBNull.Value,
+                    x.Comit_Vendor_Qty.HasValue ? x.Comit_Vendor_Qty.Value : (object)DBNull.Value,
+                    trim(x.Comit_Planner_Remark),
+                    x.Comit_Date1.HasValue ? x.Comit_Date1.Value : (object)DBNull.Value,
+                    x.Comit_Qty1.HasValue ? x.Comit_Qty1.Value : (object)DBNull.Value,
+                    x.Comit_Final_Date.HasValue ? x.Comit_Final_Date.Value : (object)DBNull.Value,
+                    x.Comit_Final_Qty.HasValue ? x.Comit_Final_Qty.Value : (object)DBNull.Value,
+
+                    x.Buffer_Day.HasValue ? x.Buffer_Day.Value : (object)DBNull.Value,
+                    x.CreatedDate.HasValue ? x.CreatedDate.Value : (object)DBNull.Value,
+                    trim(x.CreatedBy) ?? uploadedBy,
+                    uploadTs, // UpdatedDate
+                    uploadedBy, // UpdatedBy
+                    uploadTs,
+                    batchId,
+                    true
+                );
+            }
 
             try
             {
-                var batchId = Guid.NewGuid();
-                var uploadTs = DateTime.Now;
+                //var connectionString = _dbContext.Database.GetDbConnection();
+                using var conn = _dbContext.Database.GetDbConnection();
+                await conn.OpenAsync();
 
-                var seenKeys = new HashSet<string>(); // for tracking in-batch duplicates
+                var dp = new DynamicParameters();
+                dp.Add("@Rows", tvp.AsTableValuedParameter("dbo.OpenPo_ImportRow"));
+                dp.Add("@FileName", fileName, DbType.String, size: 260);
+                dp.Add("@UploadedBy", uploadedBy, DbType.String, size: 100);
+                dp.Add("@BatchId", batchId, DbType.Guid);
+                dp.Add("@UploadTs", uploadTs, DbType.DateTime2);
 
-                foreach (var item in listOfData)
+                using var grid = await conn.QueryMultipleAsync(
+                    sql: "dbo.sp_OpenPo_BulkUpsert",
+                    param: dp,
+                    commandType: CommandType.StoredProcedure);
+
+                // 1) Summary
+                var summary = (await grid.ReadAsync()).FirstOrDefault();
+                int total = (int)summary?.TotalRecords;
+                int imported = (int)summary?.ImportedRecords;
+                int failed = (int)summary?.FailedRecords;
+
+                // 2) Failed rows
+                var failedRows = (await grid.ReadAsync<FailedRowDto>()).ToList();
+
+                foreach (var f in failedRows)
                 {
-                    item.Key = item.Key?.Trim();
-                    item.PO_No = item.PO_No?.Trim();
+                    // Attempt to map back to original row by Key|PO_No
+                    var row = listOfData.FirstOrDefault(r =>
+                        string.Equals((r.Key ?? "").Trim(), (f.Key ?? "").Trim(), StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals((r.PO_No ?? "").Trim(), (f.PO_No ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
 
-                    var compositeKey = $"{item.Key}|{item.PO_No}";
-
-                    if (string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.PO_No))
-                    {
-                        result.FailedRecords.Add((item, "Missing Key or PO_No"));
-                        continue;
-                    }
-
-                    // Check if this key combination has already been seen in the batch
-                    if (seenKeys.Contains(compositeKey))
-                    {
-                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
-                        continue;
-                    }
-
-                    seenKeys.Add(compositeKey); // Mark this combination as seen
-
-                    // Now check against database
-                    var existingEntity = await _dbContext.OpenPo.FirstOrDefaultAsync(x => x.PO_No == item.PO_No);
-
-                    if (existingEntity != null)
-                    {
-                        // Compare fields one by one — if any field differs, update
-                        bool isDifferent =
-                            existingEntity.Key != item.Key ||
-                            existingEntity.PR_Type != item.PR_Type ||
-                            existingEntity.PR_Desc != item.PR_Desc ||
-                            existingEntity.Requisitioner != item.Requisitioner ||
-                            existingEntity.Tracking_No != item.Tracking_No ||
-                            existingEntity.PR_No != item.PR_No ||
-                            existingEntity.Batch_No != item.Batch_No ||
-                            existingEntity.Reference_No != item.Reference_No ||
-                            existingEntity.Vendor != item.Vendor ||
-                            existingEntity.PO_Date != item.PO_Date ||
-                            existingEntity.PO_Qty != item.PO_Qty ||
-                            existingEntity.Balance_Qty != item.Balance_Qty ||
-                            existingEntity.Destination != item.Destination ||
-                            existingEntity.Delivery_Date != item.Delivery_Date ||
-                            existingEntity.Balance_Value != item.Balance_Value ||
-                            existingEntity.Material != item.Material ||
-                            existingEntity.Hold_Date != item.Hold_Date ||
-                            existingEntity.Cleared_Date != item.Cleared_Date;
-
-                        if (isDifferent)
-                        {
-                            // Update existing entity
-                            existingEntity.Key = item.Key;
-                            existingEntity.PR_Type = item.PR_Type;
-                            existingEntity.PR_Desc = item.PR_Desc;
-                            existingEntity.Requisitioner = item.Requisitioner;
-                            existingEntity.Tracking_No = item.Tracking_No;
-                            existingEntity.PR_No = item.PR_No;
-                            existingEntity.Batch_No = item.Batch_No;
-                            existingEntity.Reference_No = item.Reference_No;
-                            existingEntity.Vendor = item.Vendor;
-                            existingEntity.PO_Date = item.PO_Date;
-                            existingEntity.PO_Qty = item.PO_Qty;
-                            existingEntity.Balance_Qty = item.Balance_Qty;
-                            existingEntity.Destination = item.Destination;
-                            existingEntity.Delivery_Date = item.Delivery_Date;
-                            existingEntity.Balance_Value = item.Balance_Value;
-                            existingEntity.Material = item.Material;
-                            existingEntity.Hold_Date = item.Hold_Date;
-                            existingEntity.Cleared_Date = item.Cleared_Date;
-                            existingEntity.CreatedBy = uploadedBy;
-                            existingEntity.CreatedDate = DateTime.Now;
-                            existingEntity.LastUploadBatchId = batchId;
-                            existingEntity.LastUploadedAt = uploadTs;
-                            existingEntity.SuppressChildDelivery = true;
-                        }
-                        else
-                        {
-                            result.FailedRecords.Add((item, "Duplicate in database with no changes"));
-                        }
-
-                        existingEntity.LastUploadBatchId = batchId;
-                        existingEntity.LastUploadedAt = uploadTs;
-                        existingEntity.SuppressChildDelivery = true;
-                    }
-                    else
-                    {
-                        // Insert new record
-                        var newEntity = new Open_Po
-                        {
-                            Key = item.Key,
-                            PR_Type = item.PR_Type,
-                            PR_Desc = item.PR_Desc,
-                            Requisitioner = item.Requisitioner,
-                            Tracking_No = item.Tracking_No,
-                            PR_No = item.PR_No,
-                            Batch_No = item.Batch_No,
-                            Reference_No = item.Reference_No,
-                            Vendor = item.Vendor,
-                            PO_No = item.PO_No,
-                            PO_Date = item.PO_Date,
-                            PO_Qty = item.PO_Qty,
-                            Balance_Qty = item.Balance_Qty,
-                            Destination = item.Destination,
-                            Delivery_Date = item.Delivery_Date,
-                            Balance_Value = item.Balance_Value,
-                            Material = item.Material,
-                            Hold_Date = item.Hold_Date,
-                            Cleared_Date = item.Cleared_Date,
-                            Key1 = (item.Batch_No ?? string.Empty) + (item.Reference_No ?? string.Empty),
-                            CreatedBy = uploadedBy,
-                            CreatedDate = DateTime.Now,
-                            LastUploadBatchId = batchId,
-                            LastUploadedAt = uploadTs,
-                            SuppressChildDelivery = true
-                        };
-                        _dbContext.OpenPo.Add(newEntity);
-                    }
+                    result.FailedRecords.Add((row ?? new Open_PoViewModel { Key = f.Key, PO_No = f.PO_No }, f.Reason));
                 }
-
-                await _dbContext.SaveChangesAsync();
-
-                // Log the upload
-                var importLog = new Open_Po_Log
-                {
-                    FileName = fileName,
-                    TotalRecords = listOfData.Count,
-                    ImportedRecords = listOfData.Count - result.FailedRecords.Count,
-                    FailedRecords = result.FailedRecords.Count,
-                    UploadedBy = uploadedBy,
-                    UploadedAt = uploadTs,
-                    FileType = "PO"
-                };
-
-                _dbContext.OpenPo_Log.Add(importLog);
-                await _dbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
 
                 result.Result = new OperationResult
                 {
                     Success = true,
-                    Message = result.FailedRecords.Any()
-                        ? "Import completed with some skipped records."
-                        : "All records imported successfully."
+                    Message = failedRows.Any()
+                        ? $"Import completed: {imported}/{total} applied, {failed} failed."
+                        : $"All {imported}/{total} records imported successfully."
                 };
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 result.Result = new OperationResult
                 {
                     Success = false,
@@ -478,7 +647,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Delivery_Qty = d.Delivery_Qty,
                     Delivery_Remark = d.Delivery_Remark,
                     Date_PC_Week = d.Date_PC_Week
-                }).ToList()
+                }).Where(x => x.Delivery_Date != null).ToList()
             };
 
             return viewModel;
@@ -517,107 +686,151 @@ namespace QMS.Core.Repositories.OpenPoRepository
         //    await _dbContext.SaveChangesAsync();
         //}
 
-        public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
-        {
-            // Guard
-            if (model == null) throw new ArgumentNullException(nameof(model));
-            if (model.DeliveryScheduleList == null) model.DeliveryScheduleList = new List<DeliveryScheduleItem>();
 
-            using var tx = await _dbContext.Database.BeginTransactionAsync();
+        /// working
+        //public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
+        //{
+        //    // Guard
+        //    if (model == null) throw new ArgumentNullException(nameof(model));
+        //    if (model.DeliveryScheduleList == null) model.DeliveryScheduleList = new List<DeliveryScheduleItem>();
 
-            bool anyRowSaved = false;
+        //    using var tx = await _dbContext.Database.BeginTransactionAsync();
 
-            foreach (var item in model.DeliveryScheduleList)
-            {
-                // Find an existing row for this Ven_PoId + Key + Key1 (tweak if your uniqueness differs)
-                var entity = await _dbContext.Opne_Po_Deliveries
-                    .FirstOrDefaultAsync(x =>
-                        x.Ven_PoId == model.Ven_PoId &&
-                        x.Key == model.Key &&
-                        x.Key1 == model.Key1);
+        //    bool anyRowSaved = false;
 
-                if (entity == null)
-                {
-                    // Create the row and set the first commit
-                    entity = new Opne_Po_DeliverySchedule
-                    {
-                        Ven_PoId = model.Ven_PoId,
-                        Vendor = model.Vendor,
-                        PO_No = model.PO_No,
-                        PO_Date = model.PO_Date,
-                        PO_Qty = model.PO_Qty,
-                        Balance_Qty = model.Balance_Qty,
+        //    foreach (var item in model.DeliveryScheduleList)
+        //    {
+        //        // Find an existing row for this Ven_PoId + Key + Key1 (tweak if your uniqueness differs)
+        //        var entity = await _dbContext.Opne_Po_Deliveries
+        //            .FirstOrDefaultAsync(x =>
+        //                x.Ven_PoId == model.Ven_PoId &&
+        //                x.Key == model.Key &&
+        //                x.Key1 == model.Key1);
 
-                        // Optional: mirror the "incoming" values into Delivery_* if you still want to store them
-                        Delivery_Date = item.Delivery_Date,
-                        Delivery_Qty = item.Delivery_Qty,
-                        Delivery_Remark = item.Delivery_Remark,
+        //        if (entity == null)
+        //        {
+        //            // Create the row and set the first commit
+        //            entity = new Opne_Po_DeliverySchedule
+        //            {
+        //                Ven_PoId = model.Ven_PoId,
+        //                Vendor = model.Vendor,
+        //                PO_No = model.PO_No,
+        //                PO_Date = model.PO_Date,
+        //                PO_Qty = model.PO_Qty,
+        //                Balance_Qty = model.Balance_Qty,
 
-                        Date_PC_Week = item.Date_PC_Week,
-                        Key = model.Key,
-                        Key1 = model.Key1,
+        //                // Optional: mirror the "incoming" values into Delivery_* if you still want to store them
+        //                Delivery_Date = item.Delivery_Date,
+        //                Delivery_Qty = item.Delivery_Qty,
+        //                Delivery_Remark = item.Delivery_Remark,
 
-                        // First commit lands in Comit_*
-                        Comit_Date = item.Delivery_Date,
-                        Comit_Qty = item.Delivery_Qty,
+        //                Date_PC_Week = item.Date_PC_Week,
+        //                Key = model.Key,
+        //                Key1 = model.Key1,
 
-                        CreatedBy = updatedBy,
-                        CreatedDate = DateTime.Now
-                    };
+        //                // First commit lands in Comit_*
+        //                Comit_Date = item.Delivery_Date,
+        //                Comit_Qty = item.Delivery_Qty,
 
-                    _dbContext.Opne_Po_Deliveries.Add(entity);
+        //                CreatedBy = updatedBy,
+        //                CreatedDate = DateTime.Now
+        //            };
 
-                    anyRowSaved = true;
-                }
-                else
-                {
-                    // Update common PO/meta fields (if they can change)
-                    entity.Vendor = model.Vendor;
-                    entity.PO_No = model.PO_No;
-                    entity.PO_Date = model.PO_Date;
-                    entity.PO_Qty = model.PO_Qty;
-                    entity.Balance_Qty = model.Balance_Qty;
+        //            _dbContext.Opne_Po_Deliveries.Add(entity);
 
-                    // Optional: keep Delivery_* as the "incoming" values for reference
-                    entity.Delivery_Date = item.Delivery_Date;
-                    entity.Delivery_Qty = item.Delivery_Qty;
-                    entity.Delivery_Remark = item.Delivery_Remark;
-                    entity.Date_PC_Week = item.Date_PC_Week;
+        //            anyRowSaved = true;
+        //        }
+        //        else
+        //        {
+        //            // Update common PO/meta fields (if they can change)
+        //            entity.Vendor = model.Vendor;
+        //            entity.PO_No = model.PO_No;
+        //            entity.PO_Date = model.PO_Date;
+        //            entity.PO_Qty = model.PO_Qty;
+        //            entity.Balance_Qty = model.Balance_Qty;
 
-                    // Apply the rotation with the new incoming values
-                    ApplyCommitRotation(entity, item.Delivery_Date, item.Delivery_Qty);
-                    anyRowSaved = true;
-                }
-            }
+        //            // Optional: keep Delivery_* as the "incoming" values for reference
+        //            entity.Delivery_Date = item.Delivery_Date;
+        //            entity.Delivery_Qty = item.Delivery_Qty;
+        //            entity.Delivery_Remark = item.Delivery_Remark;
+        //            entity.Date_PC_Week = item.Date_PC_Week;
 
-            await _dbContext.SaveChangesAsync();
+        //            // Apply the rotation with the new incoming values
+        //            ApplyCommitRotation(entity, item.Delivery_Date, item.Delivery_Qty);
+        //            anyRowSaved = true;
+        //        }
+        //    }
 
-            if (anyRowSaved)
-            {
-                var parent = await _dbContext.OpenPo.FirstOrDefaultAsync(p => p.Id == model.Ven_PoId);
-                if (parent != null && parent.SuppressChildDelivery)
-                {
-                    parent.SuppressChildDelivery = false;
-                    parent.UpdatedBy = updatedBy;
-                    parent.UpdatedDate = DateTime.Now;
-                    await _dbContext.SaveChangesAsync();
-                }
-            }
-            await tx.CommitAsync();
-        }
+        //    await _dbContext.SaveChangesAsync();
+
+        //    if (anyRowSaved)
+        //    {
+        //        var parent = await _dbContext.OpenPo.FirstOrDefaultAsync(p => p.Id == model.Ven_PoId);
+        //        if (parent != null && parent.SuppressChildDelivery)
+        //        {
+        //            parent.SuppressChildDelivery = false;
+        //            parent.UpdatedBy = updatedBy;
+        //            parent.UpdatedDate = DateTime.Now;
+        //            await _dbContext.SaveChangesAsync();
+        //        }
+        //    }
+        //    await tx.CommitAsync();
+        //}
+
+        /////// <summary>
+        /////// Rotates Comit_* fields with a 3-slot queue:
+        /////// Final <- Comit_Date1 <- Comit_Date <- (newDate,newQty)
+        /////// Handles empty/first/second/third+ updates safely.
+        /////// </summary>
+        ////private static void ApplyCommitRotation(Opne_Po_DeliverySchedule e, DateTime? newDate, int? newQty)
+        ////{
+        ////    // If nothing new, no-op
+        ////    bool hasNew = newDate.HasValue || (newQty.HasValue && newQty.Value != 0);
+        ////    if (!hasNew) return;
+
+        ////    // If nothing ever set, first fill Comit_*
+        ////    if (!e.Comit_Date.HasValue && !e.Comit_Qty.HasValue)
+        ////    {
+        ////        e.Comit_Date = newDate;
+        ////        e.Comit_Qty = newQty;
+        ////        return;
+        ////    }
+
+        ////    // If the new value equals the current Comit_*, skip (prevents duplicate churn)
+        ////    bool sameAsCurrent =
+        ////        Nullable.Equals(e.Comit_Date, newDate) &&
+        ////        ((e.Comit_Qty ?? 0) == (newQty ?? 0));
+
+        ////    if (sameAsCurrent) return;
+
+        ////    // General rotation:
+        ////    // Move Comit_Date1/Qty1 -> Final
+        ////    e.Comit_Final_Date = e.Comit_Date1;
+        ////    e.Comit_Final_Qty = e.Comit_Qty1;
+
+        ////    // Move Comit_Date/Qty -> Comit_Date1/Qty1
+        ////    e.Comit_Date1 = e.Comit_Date;
+        ////    e.Comit_Qty1 = e.Comit_Qty;
+
+        ////    // New -> Comit_Date/Qty
+        ////    e.Comit_Date = newDate;
+        ////    e.Comit_Qty = newQty;
+        ////}
 
         ///// <summary>
-        ///// Rotates Comit_* fields with a 3-slot queue:
-        ///// Final <- Comit_Date1 <- Comit_Date <- (newDate,newQty)
-        ///// Handles empty/first/second/third+ updates safely.
+        ///// Rotation rules requested:
+        ///// 1) 1st commit → Comit_Date/Qty
+        ///// 2) 2nd commit → move Comit_Date → Comit_Date1; new → Comit_Date
+        ///// 3) 3rd commit → Comit_Date1 → Comit_Final_Date; Comit_Date → Comit_Date1; new → Comit_Date
+        ///// 4th+ commits → DO NOT change Comit_Date1 or Comit_Final_Date; only set Comit_Date to the new value
         ///// </summary>
         //private static void ApplyCommitRotation(Opne_Po_DeliverySchedule e, DateTime? newDate, int? newQty)
         //{
-        //    // If nothing new, no-op
+        //    // nothing to do if no incoming data
         //    bool hasNew = newDate.HasValue || (newQty.HasValue && newQty.Value != 0);
         //    if (!hasNew) return;
 
-        //    // If nothing ever set, first fill Comit_*
+        //    // If nothing ever set -> first fill current
         //    if (!e.Comit_Date.HasValue && !e.Comit_Qty.HasValue)
         //    {
         //        e.Comit_Date = newDate;
@@ -625,84 +838,362 @@ namespace QMS.Core.Repositories.OpenPoRepository
         //        return;
         //    }
 
-        //    // If the new value equals the current Comit_*, skip (prevents duplicate churn)
+        //    // If the new value is identical to current, skip (idempotent)
         //    bool sameAsCurrent =
         //        Nullable.Equals(e.Comit_Date, newDate) &&
-        //        ((e.Comit_Qty ?? 0) == (newQty ?? 0));
-
+        //        ((e.Comit_Qty ?? 0m) == (newQty ?? 0m));
         //    if (sameAsCurrent) return;
 
-        //    // General rotation:
-        //    // Move Comit_Date1/Qty1 -> Final
-        //    e.Comit_Final_Date = e.Comit_Date1;
-        //    e.Comit_Final_Qty = e.Comit_Qty1;
+        //    // If we haven't yet filled Comit_Date1 (2nd commit)
+        //    if (!e.Comit_Date1.HasValue && !e.Comit_Qty1.HasValue)
+        //    {
+        //        e.Comit_Date1 = e.Comit_Date;
+        //        e.Comit_Qty1 = e.Comit_Qty;
 
-        //    // Move Comit_Date/Qty -> Comit_Date1/Qty1
-        //    e.Comit_Date1 = e.Comit_Date;
-        //    e.Comit_Qty1 = e.Comit_Qty;
+        //        e.Comit_Date = newDate;
+        //        e.Comit_Qty = newQty;
+        //        return;
+        //    }
 
-        //    // New -> Comit_Date/Qty
+        //    // If we haven't yet filled Comit_Final (3rd commit)
+        //    if (!e.Comit_Final_Date.HasValue && !e.Comit_Final_Qty.HasValue)
+        //    {
+        //        e.Comit_Final_Date = e.Comit_Date1;
+        //        e.Comit_Final_Qty = e.Comit_Qty1;
+
+        //        e.Comit_Date1 = e.Comit_Date;
+        //        e.Comit_Qty1 = e.Comit_Qty;
+
+        //        e.Comit_Date = newDate;
+        //        e.Comit_Qty = newQty;
+        //        return;
+        //    }
+
+        //    // 4th+ commits: freeze Comit_Date1 & Comit_Final_*; only update current
         //    e.Comit_Date = newDate;
         //    e.Comit_Qty = newQty;
         //}
 
-        /// <summary>
-        /// Rotation rules requested:
-        /// 1) 1st commit → Comit_Date/Qty
-        /// 2) 2nd commit → move Comit_Date → Comit_Date1; new → Comit_Date
-        /// 3) 3rd commit → Comit_Date1 → Comit_Final_Date; Comit_Date → Comit_Date1; new → Comit_Date
-        /// 4th+ commits → DO NOT change Comit_Date1 or Comit_Final_Date; only set Comit_Date to the new value
-        /// </summary>
-        private static void ApplyCommitRotation(Opne_Po_DeliverySchedule e, DateTime? newDate, int? newQty)
+        ///////////////////////////////////////////////////////////////////////////////////////////
+
+        // latest working
+        //public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
+        //{
+        //    if (model == null) throw new ArgumentNullException(nameof(model));
+        //    if (model.DeliveryScheduleList == null) model.DeliveryScheduleList = new List<DeliveryScheduleItem>();
+
+        //    using var tx = await _dbContext.Database.BeginTransactionAsync();
+
+        //    // 1) Load all rows for this key into memory ONCE
+        //    var rows = await _dbContext.Opne_Po_Deliveries
+        //        .Where(x => x.Ven_PoId == model.Ven_PoId && x.Key == model.Key && x.Key1 == model.Key1)
+        //        .ToListAsync(); // IQueryable -> List (in-memory)
+
+        //    // 2) Partition IN MEMORY (LINQ-to-Objects)
+        //    var finalRows = rows.Where(IsFinalRow).ToList();
+        //    var comit1Rows = rows.Where(IsComit1Row).ToList();
+        //    var comitRows = rows.Where(IsComitRow).ToList();
+        //    var deliveryRows = rows.Where(IsDeliveryRow).ToList();
+
+        //    bool hasFinal = finalRows.Count > 0;
+
+        //    // === ROTATION ===
+        //    // Promote Comit1 -> Final (only if Final empty)
+        //    if (!hasFinal && comit1Rows.Count > 0)
+        //    {
+        //        foreach (var r in comit1Rows)
+        //        {
+        //            var clone = CloneMeta(r);
+        //            clone.Comit_Final_Date = r.Comit_Date1;
+        //            clone.Comit_Final_Qty = r.Comit_Qty1;
+        //            _dbContext.Opne_Po_Deliveries.Add(clone);
+        //            _dbContext.Opne_Po_Deliveries.Remove(r);
+        //        }
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // refresh list in-memory after changes
+        //        rows = await _dbContext.Opne_Po_Deliveries
+        //            .Where(x => x.Ven_PoId == model.Ven_PoId && x.Key == model.Key && x.Key1 == model.Key1)
+        //            .ToListAsync();
+
+        //        finalRows = rows.Where(IsFinalRow).ToList();
+        //        comit1Rows = rows.Where(IsComit1Row).ToList();
+        //        comitRows = rows.Where(IsComitRow).ToList();
+        //        deliveryRows = rows.Where(IsDeliveryRow).ToList();
+        //        hasFinal = finalRows.Count > 0;
+        //    }
+
+        //    // Comit -> Comit1
+        //    if (comitRows.Count > 0)
+        //    {
+        //        foreach (var r in comitRows)
+        //        {
+        //            var clone = CloneMeta(r);
+        //            clone.Comit_Date1 = r.Comit_Date;
+        //            clone.Comit_Qty1 = r.Comit_Qty;
+        //            _dbContext.Opne_Po_Deliveries.Add(clone);
+        //            _dbContext.Opne_Po_Deliveries.Remove(r);
+        //        }
+        //        await _dbContext.SaveChangesAsync();
+
+        //        rows = await _dbContext.Opne_Po_Deliveries
+        //            .Where(x => x.Ven_PoId == model.Ven_PoId && x.Key == model.Key && x.Key1 == model.Key1)
+        //            .ToListAsync();
+
+        //        finalRows = rows.Where(IsFinalRow).ToList();
+        //        comit1Rows = rows.Where(IsComit1Row).ToList();
+        //        comitRows = rows.Where(IsComitRow).ToList();
+        //        deliveryRows = rows.Where(IsDeliveryRow).ToList();
+        //    }
+
+        //    // Delivery -> Comit
+        //    if (deliveryRows.Count > 0)
+        //    {
+        //        foreach (var r in deliveryRows)
+        //        {
+        //            var clone = CloneMeta(r);
+        //            clone.Comit_Date = r.Delivery_Date;
+        //            clone.Comit_Qty = r.Delivery_Qty;
+        //            _dbContext.Opne_Po_Deliveries.Add(clone);
+        //            _dbContext.Opne_Po_Deliveries.Remove(r);
+        //        }
+        //        await _dbContext.SaveChangesAsync();
+        //    }
+
+        //    // Insert NEW Delivery rows (the incoming batch)
+        //    foreach (var item in model.DeliveryScheduleList)
+        //    {
+        //        if (!item.Delivery_Date.HasValue && (!item.Delivery_Qty.HasValue || item.Delivery_Qty == 0))
+        //            continue;
+
+        //        _dbContext.Opne_Po_Deliveries.Add(new Opne_Po_DeliverySchedule
+        //        {
+        //            Ven_PoId = model.Ven_PoId,
+        //            Vendor = model.Vendor,
+        //            PO_No = model.PO_No,
+        //            PO_Date = model.PO_Date,
+        //            PO_Qty = model.PO_Qty,
+        //            Balance_Qty = model.Balance_Qty,
+        //            Key = model.Key,
+        //            Key1 = model.Key1,
+        //            Delivery_Date = item.Delivery_Date,
+        //            Delivery_Qty = item.Delivery_Qty,
+        //            Delivery_Remark = item.Delivery_Remark,
+        //            Date_PC_Week = item.Date_PC_Week,
+        //            CreatedBy = updatedBy,
+        //            CreatedDate = DateTime.Now
+        //        });
+        //    }
+
+        //    await _dbContext.SaveChangesAsync();
+
+        //    // parent flag logic (unchanged)
+        //    var parent = await _dbContext.OpenPo.FirstOrDefaultAsync(p => p.Id == model.Ven_PoId);
+        //    if (parent != null && parent.SuppressChildDelivery)
+        //    {
+        //        parent.SuppressChildDelivery = false;
+        //        parent.UpdatedBy = updatedBy;
+        //        parent.UpdatedDate = DateTime.Now;
+        //        await _dbContext.SaveChangesAsync();
+        //    }
+
+        //    await tx.CommitAsync();
+        //}
+
+        //// Helpers (unchanged)
+        //private static bool IsFinalRow(Opne_Po_DeliverySchedule r)
+        //    => r.Comit_Final_Date.HasValue || (r.Comit_Final_Qty.HasValue && r.Comit_Final_Qty.Value != 0);
+
+        //private static bool IsComit1Row(Opne_Po_DeliverySchedule r)
+        //    => (r.Comit_Date1.HasValue || (r.Comit_Qty1.HasValue && r.Comit_Qty1.Value != 0))
+        //       && !IsFinalRow(r);
+
+        //private static bool IsComitRow(Opne_Po_DeliverySchedule r)
+        //    => (r.Comit_Date.HasValue || (r.Comit_Qty.HasValue && r.Comit_Qty.Value != 0))
+        //       && !IsComit1Row(r) && !IsFinalRow(r);
+
+        //private static bool IsDeliveryRow(Opne_Po_DeliverySchedule r)
+        //    => (r.Delivery_Date.HasValue || (r.Delivery_Qty.HasValue && r.Delivery_Qty.Value != 0))
+        //       && !IsComitRow(r) && !IsComit1Row(r) && !IsFinalRow(r);
+
+        //private static Opne_Po_DeliverySchedule CloneMeta(Opne_Po_DeliverySchedule r)
+        //{
+        //    return new Opne_Po_DeliverySchedule
+        //    {
+        //        Ven_PoId = r.Ven_PoId,
+        //        Vendor = r.Vendor,
+        //        PO_No = r.PO_No,
+        //        PO_Date = r.PO_Date,
+        //        PO_Qty = r.PO_Qty,
+        //        Balance_Qty = r.Balance_Qty,
+        //        Key = r.Key,
+        //        Key1 = r.Key1,
+        //        CreatedBy = r.CreatedBy,
+        //        CreatedDate = DateTime.Now,
+        //    };
+        //}
+
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        ///
+
+        //public async Task SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
+        //{
+        //    if (model == null) throw new ArgumentNullException(nameof(model));
+        //    model.DeliveryScheduleList ??= new List<DeliveryScheduleItem>();
+
+        //    using var tx = await _dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        bool anyRowSaved = false;
+
+        //        // Normalize once for header keys (use item-level keys if you support them)
+        //        string normKey = (model.Key ?? string.Empty).Trim().ToUpperInvariant();
+        //        string normKey1 = (model.Key1 ?? string.Empty).Trim().ToUpperInvariant();
+
+        //        foreach (var item in model.DeliveryScheduleList)
+        //        {
+        //            // Fetch active old rows for same group
+        //            var oldRecords = await _dbContext.Opne_Po_Deliveries
+        //                .Where(x =>
+        //                    x.Ven_PoId == model.Ven_PoId &&
+        //                    ((x.Key ?? "").Trim().ToUpper() == normKey) &&
+        //                    ((x.Key1 ?? "").Trim().ToUpper() == normKey1) &&
+        //                    (x.Deleted == false || x.Deleted == null))
+        //                .ToListAsync();
+
+        //            DateTime? prevComitDate = null;
+        //            int? prevComitQty = null;
+
+        //            if (oldRecords.Count > 0)
+        //            {
+        //                var latest = oldRecords
+        //                    .OrderByDescending(x => x.CreatedDate)
+        //                    .ThenByDescending(x => x.Id)
+        //                    .First();
+
+        //                // NOTE: single 't' column names
+        //                prevComitDate = latest.Comit_Date;
+        //                prevComitQty = latest.Comit_Qty;
+
+        //                foreach (var old in oldRecords)
+        //                {
+        //                    old.Deleted = true;
+        //                }
+        //            }
+
+        //            // Insert the new child row
+        //            var entity = new Opne_Po_DeliverySchedule
+        //            {
+        //                Ven_PoId = model.Ven_PoId,
+        //                Vendor = model.Vendor,
+        //                PO_No = model.PO_No,
+        //                PO_Date = model.PO_Date,
+        //                PO_Qty = model.PO_Qty,
+        //                Balance_Qty = model.Balance_Qty,
+        //                Delivery_Date = item.Delivery_Date,
+        //                Delivery_Qty = item.Delivery_Qty,
+        //                Delivery_Remark = item.Delivery_Remark,
+        //                Date_PC_Week = item.Date_PC_Week,
+        //                Key = model.Key?.Trim(),
+        //                Key1 = model.Key1?.Trim(),
+        //                // inherit previous commit data
+        //                Comit_Date = prevComitDate,
+        //                Comit_Qty = prevComitQty,
+        //                Deleted = false,
+        //                CreatedBy = updatedBy,
+        //                CreatedDate = DateTime.UtcNow
+        //            };
+
+        //            _dbContext.Opne_Po_Deliveries.Add(entity);
+        //            anyRowSaved = true;
+        //        }
+
+        //        // Flip parent.SuppressChildDelivery only if we actually saved at least one new row
+        //        if (anyRowSaved)
+        //        {
+        //            var parent = await _dbContext.OpenPo.FirstOrDefaultAsync(p => p.Id == model.Ven_PoId);
+        //            if (parent != null && parent.SuppressChildDelivery)
+        //            {
+        //                parent.SuppressChildDelivery = false;
+        //                parent.UpdatedBy = updatedBy;
+        //                parent.UpdatedDate = DateTime.UtcNow;
+        //            }
+        //        }
+
+        //        // Single save for everything
+        //        await _dbContext.SaveChangesAsync();
+        //        await tx.CommitAsync();
+        //    }
+        //    catch
+        //    {
+        //        await tx.RollbackAsync();
+        //        throw;
+        //    }
+        //}
+
+
+
+        public async Task<int> SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model,string updatedBy)
         {
-            // nothing to do if no incoming data
-            bool hasNew = newDate.HasValue || (newQty.HasValue && newQty.Value != 0);
-            if (!hasNew) return;
-
-            // If nothing ever set -> first fill current
-            if (!e.Comit_Date.HasValue && !e.Comit_Qty.HasValue)
+            try
             {
-                e.Comit_Date = newDate;
-                e.Comit_Qty = newQty;
-                return;
+                if (model == null) throw new ArgumentNullException(nameof(model));
+                model.DeliveryScheduleList ??= new List<DeliveryScheduleItem>();
+
+                // Build DataTable for TVP
+                var tvp = new DataTable();
+                tvp.Columns.Add("Delivery_Date", typeof(DateTime));
+                tvp.Columns.Add("Delivery_Qty", typeof(int));
+                tvp.Columns.Add("Delivery_Remark", typeof(string));
+                tvp.Columns.Add("Date_PC_Week", typeof(string));
+
+                foreach (var item in model.DeliveryScheduleList)
+                {
+                    var row = tvp.NewRow();
+                    row["Delivery_Date"] = (object?)item.Delivery_Date ?? DBNull.Value;
+                    row["Delivery_Qty"] = (object?)item.Delivery_Qty ?? DBNull.Value;
+                    row["Delivery_Remark"] = (object?)item.Delivery_Remark ?? DBNull.Value;
+                    row["Date_PC_Week"] = (object?)item.Date_PC_Week ?? DBNull.Value;
+                    tvp.Rows.Add(row);
+                }
+
+                //using var conn = new SqlConnection(connectionString)
+                using var conn = _dbContext.Database.GetDbConnection();
+                await conn.OpenAsync();
+
+                var dp = new DynamicParameters();
+                dp.Add("@Ven_PoId", model.Ven_PoId, DbType.Int32);
+                dp.Add("@Vendor", model.Vendor, DbType.String);
+                dp.Add("@PO_No", model.PO_No, DbType.String);
+                dp.Add("@PO_Date", model.PO_Date, DbType.Date);
+                dp.Add("@PO_Qty", model.PO_Qty, DbType.Int32);
+                dp.Add("@Balance_Qty", model.Balance_Qty, DbType.Int32);
+                dp.Add("@Key", model.Key, DbType.String);
+                dp.Add("@Key1", model.Key1, DbType.String);
+                dp.Add("@UpdatedBy", updatedBy, DbType.String);
+
+                // Table-Valued Parameter
+                dp.Add("@Items", tvp.AsTableValuedParameter("dbo.DeliveryScheduleItemType"));
+
+                // Output
+                dp.Add("@RowsInserted", dbType: DbType.Int32, direction: ParameterDirection.Output);
+
+                await conn.ExecuteAsync(
+                    sql: "dbo.sp_SavePO_DeliverySchedule",
+                    param: dp,
+                    commandType: CommandType.StoredProcedure
+                );
+
+                return dp.Get<int>("@RowsInserted");
             }
-
-            // If the new value is identical to current, skip (idempotent)
-            bool sameAsCurrent =
-                Nullable.Equals(e.Comit_Date, newDate) &&
-                ((e.Comit_Qty ?? 0m) == (newQty ?? 0m));
-            if (sameAsCurrent) return;
-
-            // If we haven't yet filled Comit_Date1 (2nd commit)
-            if (!e.Comit_Date1.HasValue && !e.Comit_Qty1.HasValue)
+            catch (Exception ex)
             {
-                e.Comit_Date1 = e.Comit_Date;
-                e.Comit_Qty1 = e.Comit_Qty;
-
-                e.Comit_Date = newDate;
-                e.Comit_Qty = newQty;
-                return;
+                _systemLogService.WriteLog(ex.Message);
+                throw;
             }
-
-            // If we haven't yet filled Comit_Final (3rd commit)
-            if (!e.Comit_Final_Date.HasValue && !e.Comit_Final_Qty.HasValue)
-            {
-                e.Comit_Final_Date = e.Comit_Date1;
-                e.Comit_Final_Qty = e.Comit_Qty1;
-
-                e.Comit_Date1 = e.Comit_Date;
-                e.Comit_Qty1 = e.Comit_Qty;
-
-                e.Comit_Date = newDate;
-                e.Comit_Qty = newQty;
-                return;
-            }
-
-            // 4th+ commits: freeze Comit_Date1 & Comit_Final_*; only update current
-            e.Comit_Date = newDate;
-            e.Comit_Qty = newQty;
         }
-
 
 
         public async Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor)
@@ -767,7 +1258,6 @@ namespace QMS.Core.Repositories.OpenPoRepository
         {
             try
             {
-
                 var parameters = new[]
                 {
                     new SqlParameter("@type", type ?? (object)DBNull.Value),
@@ -915,7 +1405,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
         //    }
         //}
 
-        public async Task<(List<MatchedRecordViewModel> matched,List<MatchDeliverySchViewModel> deliverySch, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
+        public async Task<(List<MatchedRecordViewModel> matched, List<MatchDeliverySchViewModel> deliverySch, MatchSummaryViewModel? summary)> GetPO_SO_MatchReportAsync(string? type)
         {
             var connectionString = _dbContext.Database.GetConnectionString();
 
@@ -934,371 +1424,549 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
-        public async Task<BulkSalesCreateLogResult> BulkSalesCreateAsync(List<Sales_Order_ViewModel> listOfData, string fileName, string uploadedBy)
+        //public async Task<BulkSalesCreateLogResult> BulkSalesCreateAsync(List<Sales_Order_ViewModel> listOfData, string fileName, string uploadedBy)
+        //{
+        //    var result = new BulkSalesCreateLogResult();
+        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var seenKeys = new HashSet<string>();
+
+        //        var matsNeedingDerive = listOfData
+        //   .Where(x => string.IsNullOrWhiteSpace(x.Item_Category))
+        //   .Select(x => (x.Material ?? string.Empty).Trim())
+        //   .Where(m => !string.IsNullOrEmpty(m))
+        //   .Distinct(StringComparer.OrdinalIgnoreCase)
+        //   .ToList();
+
+        //        var mtaMaterials = new HashSet<string>(await _dbContext.MTAMaster.Where(m => !m.Deleted && matsNeedingDerive.Contains(m.Material_No)).Select(m => m.Material_No).ToListAsync(), StringComparer.OrdinalIgnoreCase);
+
+        //        foreach (var item in listOfData)
+        //        {
+        //            item.Indent_No = item.Indent_No?.Trim();
+        //            item.Old_Material_No = item.Old_Material_No?.Trim();
+        //            item.Material = item.Material?.Trim();   // ensure trimmed
+        //            item.Item_Category = item.Item_Category?.Trim();
+
+        //            if (string.IsNullOrWhiteSpace(item.Item_Category))
+        //            {
+        //                if (!string.IsNullOrEmpty(item.Material) && mtaMaterials.Contains(item.Material))
+        //                    item.Item_Category = "MTA";
+        //                else
+        //                    item.Item_Category = "MTO";
+        //            }
+
+        //            var compositeKey = $"{item.Indent_No}|{item.Old_Material_No}";
+
+        //            if (string.IsNullOrWhiteSpace(item.Indent_No) || string.IsNullOrWhiteSpace(item.Old_Material_No))
+        //            {
+        //                result.FailedRecords.Add((item, "Missing Indent_No or Old_Material_No"));
+        //                continue;
+        //            }
+
+        //            if (seenKeys.Contains(compositeKey))
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+        //                continue;
+        //            }
+
+        //            seenKeys.Add(compositeKey);
+
+        //            var existingEntity = await _dbContext.Sales_Order.FirstOrDefaultAsync(x => x.Indent_No == item.Indent_No && x.Old_Material_No == item.Old_Material_No);
+
+        //            if (existingEntity != null)
+        //            {
+        //                bool isDifferent =
+        //                    existingEntity.SO_No != item.SO_No ||
+        //                    existingEntity.SaleOrder_Type != item.SaleOrder_Type ||
+        //                    existingEntity.SO_Date != item.SO_Date ||
+        //                    existingEntity.Line_Item != item.Line_Item ||
+        //                    existingEntity.Indent_No != item.Indent_No ||
+        //                    existingEntity.Indent_Date != item.Indent_Date ||
+        //                    //existingEntity.Order_Type != item.Order_Type ||
+        //                    //existingEntity.Vertical != item.Vertical ||
+        //                    //existingEntity.Region != item.Region ||
+        //                    existingEntity.Sales_Group != item.Sales_Group ||
+        //                    existingEntity.Sales_Group_desc != item.Sales_Group_desc ||
+        //                    existingEntity.Sales_Office != item.Sales_Office ||
+        //                    existingEntity.Sales_Office_Desc != item.Sales_Office_Desc ||
+        //                    existingEntity.Sale_Person != item.Sale_Person ||
+        //                    existingEntity.Project_Name != item.Project_Name ||
+        //                    //existingEntity.Project_Name_Tag != item.Project_Name_Tag ||
+        //                    //existingEntity.Priority_Tag != item.Priority_Tag ||
+        //                    existingEntity.Customer_Code != item.Customer_Code ||
+        //                    existingEntity.Customer_Name != item.Customer_Name ||
+        //                    //existingEntity.Dealer_Direct != item.Dealer_Direct ||
+        //                    //existingEntity.Inspection != item.Inspection ||
+        //                    existingEntity.Material != item.Material ||
+        //                    existingEntity.Old_Material_No != item.Old_Material_No ||
+        //                    existingEntity.Description != item.Description ||
+        //                    existingEntity.SO_Qty != item.SO_Qty ||
+        //                    existingEntity.SO_Value != item.SO_Value ||
+        //                    //existingEntity.Rate != item.Rate ||
+        //                    existingEntity.Del_Qty != item.Del_Qty ||
+        //                    existingEntity.Open_Sale_Qty != item.Open_Sale_Qty ||
+        //                    existingEntity.Opne_Sale_Value != item.Opne_Sale_Value ||
+        //                    existingEntity.Plant != item.Plant ||
+        //                    existingEntity.Item_Category != item.Item_Category ||
+        //                    //existingEntity.Item_Category_Latest != item.Item_Category_Latest ||
+        //                    existingEntity.Procurement_Type != item.Procurement_Type ||
+        //                    existingEntity.Vendor_Po_No != item.Vendor_Po_No ||
+        //                    existingEntity.Vendor_Po_Date != item.Vendor_Po_Date ||
+        //                    //existingEntity.CPR_Number != item.CPR_Number ||
+        //                    //existingEntity.Vendor != item.Vendor ||
+        //                    //existingEntity.Planner != item.Planner ||
+        //                    existingEntity.Po_Release_Qty != item.Po_Release_Qty ||
+        //                    existingEntity.Allocated_Stock_Qty != item.Allocated_Stock_Qty ||
+        //                    existingEntity.Allocated_Stock_Value != item.Allocated_Stock_Value ||
+        //                    //existingEntity.Net_Qty != item.Net_Qty ||
+        //                    //existingEntity.Net_Value != item.Net_Value ||
+        //                    //existingEntity.Qty_In_Week != item.Qty_In_Week ||
+        //                    //existingEntity.Value_In_Week != item.Value_In_Week ||
+        //                    //existingEntity.Qty_After_Week != item.Qty_After_Week ||
+        //                    //existingEntity.Value_After_Week != item.Value_After_Week ||
+        //                    //existingEntity.Check5 != item.Check5 ||
+        //                    existingEntity.Indent_Status != item.Indent_Status ||
+        //                    //existingEntity.Sales_Call_Point != item.Sales_Call_Point ||
+        //                    //existingEntity.Free_Stock != item.Free_Stock ||
+        //                    //existingEntity.Grn_Qty != item.Grn_Qty ||
+        //                    //existingEntity.Last_Grn_Date != item.Last_Grn_Date ||
+        //                    //existingEntity.Check1 != item.Check1 ||
+        //                    //existingEntity.Delivery_Schedule != item.Delivery_Schedule ||
+        //                    //existingEntity.Readiness_Vendor_Released_Fr_Date != item.Readiness_Vendor_Released_Fr_Date ||
+        //                    //existingEntity.Readiness_Vendor_Released_To_Date != item.Readiness_Vendor_Released_To_Date ||
+        //                    //existingEntity.Readiness_Schedule_Vendor_Released != item.Readiness_Schedule_Vendor_Released ||
+        //                    //existingEntity.Delivery_Schedule_PC_Breakup != item.Delivery_Schedule_PC_Breakup ||
+        //                    //existingEntity.Check2 != item.Check2 ||
+        //                    //existingEntity.Line_Item_Schedule != item.Line_Item_Schedule ||
+        //                    //existingEntity.R_B != item.R_B ||
+        //                    //existingEntity.Schedule_Repeat != item.Schedule_Repeat ||
+        //                    //existingEntity.Internal_Pending_Issue != item.Internal_Pending_Issue ||
+        //                    //existingEntity.Pending_With != item.Pending_With ||
+        //                    //existingEntity.Remark != item.Remark ||
+        //                    //existingEntity.CRD_OverDue != item.CRD_OverDue ||
+        //                    existingEntity.Delivert_Date != item.Delivert_Date ||
+        //                    //existingEntity.Process_Plan_On_Crd != item.Process_Plan_On_Crd ||
+        //                    //existingEntity.Last_Week_PC != item.Last_Week_PC ||
+        //                    existingEntity.Schedule_Line_Qty1 != item.Schedule_Line_Qty1 ||
+        //                    existingEntity.Schedule_Line_Date1 != item.Schedule_Line_Date1 ||
+        //                    existingEntity.Schedule_Line_Qty2 != item.Schedule_Line_Qty2 ||
+        //                    existingEntity.Schedule_Line_Date2 != item.Schedule_Line_Date2 ||
+        //                    existingEntity.Schedule_Line_Qty3 != item.Schedule_Line_Qty3 ||
+        //                    existingEntity.Schedule_Line_Date3 != item.Schedule_Line_Date3;
+        //                //existingEntity.To_Consider != item.To_Consider ||
+        //                //existingEntity.Person_Name != item.Person_Name ||
+        //                //existingEntity.Visibility != item.Visibility;
+
+        //                if (isDifferent)
+        //                {
+        //                    existingEntity.SO_No = item.SO_No;
+        //                    existingEntity.SaleOrder_Type = item.SaleOrder_Type;
+        //                    existingEntity.SO_Date = item.SO_Date;
+        //                    existingEntity.Line_Item = item.Line_Item;
+        //                    existingEntity.Indent_No = item.Indent_No;
+        //                    existingEntity.Indent_Date = item.Indent_Date;
+        //                    //existingEntity.Order_Type = item.Order_Type;
+        //                    //existingEntity.Vertical = item.Vertical;
+        //                    //existingEntity.Region = item.Region;
+        //                    existingEntity.Sales_Group = item.Sales_Group;
+        //                    existingEntity.Sales_Group_desc = item.Sales_Group_desc;
+        //                    existingEntity.Sales_Office = item.Sales_Office;
+        //                    existingEntity.Sales_Office_Desc = item.Sales_Office_Desc;
+        //                    existingEntity.Sale_Person = item.Sale_Person;
+        //                    existingEntity.Project_Name = item.Project_Name;
+        //                    //existingEntity.Project_Name_Tag = item.Project_Name_Tag;
+        //                    //existingEntity.Priority_Tag = item.Priority_Tag;
+        //                    existingEntity.Customer_Code = item.Customer_Code;
+        //                    existingEntity.Customer_Name = item.Customer_Name;
+        //                    //existingEntity.Dealer_Direct = item.Dealer_Direct;
+        //                    //existingEntity.Inspection = item.Inspection;
+        //                    existingEntity.Material = item.Material;
+        //                    existingEntity.Old_Material_No = item.Old_Material_No;
+        //                    existingEntity.Description = item.Description;
+        //                    existingEntity.SO_Qty = item.SO_Qty;
+        //                    existingEntity.SO_Value = item.SO_Value;
+        //                    //existingEntity.Rate = item.Rate;
+        //                    existingEntity.Del_Qty = item.Del_Qty;
+        //                    existingEntity.Open_Sale_Qty = item.Open_Sale_Qty;
+        //                    existingEntity.Opne_Sale_Value = item.Opne_Sale_Value;
+        //                    existingEntity.Plant = item.Plant;
+        //                    existingEntity.Item_Category = item.Item_Category;
+        //                    //existingEntity.Item_Category_Latest = item.Item_Category_Latest;
+        //                    existingEntity.Procurement_Type = item.Procurement_Type;
+        //                    //existingEntity.Vendor_Po_No = item.Vendor_Po_No;
+        //                    //existingEntity.Vendor_Po_Date = item.Vendor_Po_Date;
+        //                    //existingEntity.CPR_Number = item.CPR_Number;
+        //                    //existingEntity.Vendor = item.Vendor;
+        //                    //existingEntity.Planner = item.Planner;
+        //                    existingEntity.Po_Release_Qty = item.Po_Release_Qty;
+        //                    existingEntity.Allocated_Stock_Qty = item.Allocated_Stock_Qty;
+        //                    existingEntity.Allocated_Stock_Value = item.Allocated_Stock_Value;
+        //                    //existingEntity.Net_Qty = item.Net_Qty;
+        //                    //existingEntity.Net_Value = item.Net_Value;
+        //                    //existingEntity.Qty_In_Week = item.Qty_In_Week;
+        //                    //existingEntity.Value_In_Week = item.Value_In_Week;
+        //                    //existingEntity.Qty_After_Week = item.Qty_After_Week;
+        //                    //existingEntity.Value_After_Week = item.Value_After_Week;
+        //                    //existingEntity.Check5 = item.Check5;
+        //                    existingEntity.Indent_Status = item.Indent_Status;
+        //                    //existingEntity.Sales_Call_Point = item.Sales_Call_Point;
+        //                    //existingEntity.Free_Stock = item.Free_Stock;
+        //                    //existingEntity.Grn_Qty = item.Grn_Qty;
+        //                    //existingEntity.Last_Grn_Date = item.Last_Grn_Date;
+        //                    //existingEntity.Check1 = item.Check1;
+        //                    //existingEntity.Delivery_Schedule = item.Delivery_Schedule;
+        //                    //existingEntity.Readiness_Vendor_Released_Fr_Date = item.Readiness_Vendor_Released_Fr_Date;
+        //                    //existingEntity.Readiness_Vendor_Released_To_Date = item.Readiness_Vendor_Released_To_Date;
+        //                    //existingEntity.Readiness_Schedule_Vendor_Released = item.Readiness_Schedule_Vendor_Released;
+        //                    //existingEntity.Delivery_Schedule_PC_Breakup = item.Delivery_Schedule_PC_Breakup;
+        //                    //existingEntity.Check2 = item.Check2;
+        //                    //existingEntity.Line_Item_Schedule = item.Line_Item_Schedule;
+        //                    //existingEntity.R_B = item.R_B;
+        //                    //existingEntity.Schedule_Repeat = item.Schedule_Repeat;
+        //                    //existingEntity.Internal_Pending_Issue = item.Internal_Pending_Issue;
+        //                    //existingEntity.Pending_With = item.Pending_With;
+        //                    //existingEntity.Remark = item.Remark;
+        //                    //existingEntity.CRD_OverDue = item.CRD_OverDue;
+        //                    existingEntity.Delivert_Date = item.Delivert_Date;
+        //                    //existingEntity.Process_Plan_On_Crd = item.Process_Plan_On_Crd;
+        //                    //existingEntity.Last_Week_PC = item.Last_Week_PC;
+        //                    existingEntity.Schedule_Line_Qty1 = item.Schedule_Line_Qty1;
+        //                    existingEntity.Schedule_Line_Date1 = item.Schedule_Line_Date1;
+        //                    existingEntity.Schedule_Line_Qty2 = item.Schedule_Line_Qty2;
+        //                    existingEntity.Schedule_Line_Date2 = item.Schedule_Line_Date2;
+        //                    existingEntity.Schedule_Line_Qty3 = item.Schedule_Line_Qty3;
+        //                    existingEntity.Schedule_Line_Date3 = item.Schedule_Line_Date3;
+        //                    //existingEntity.To_Consider = item.To_Consider;
+        //                    //existingEntity.Person_Name = item.Person_Name;
+        //                    //existingEntity.Visibility = item.Visibility;
+        //                    existingEntity.CreatedBy = uploadedBy;
+        //                    existingEntity.CreatedDate = DateTime.Now;
+        //                }
+        //                else
+        //                {
+        //                    result.FailedRecords.Add((item, "Duplicate in database with no changes"));
+        //                }
+        //            }
+        //            else
+        //            {
+        //                var netQty = item.Open_Sale_Qty - item.Allocated_Stock_Qty;
+        //                var netValue = (item.SO_Qty > 0) ? (item.SO_Value / item.SO_Qty) * netQty : 0;
+
+        //                string readinessMessage = null;
+
+        //                // ✅ Condition 1: All qty allocated
+        //                if (netValue == 0)
+        //                {
+        //                    readinessMessage = $"All qty allocated on {DateTime.Now:dd-MMM-yyyy}";
+        //                }
+        //                // ✅ Condition 2: When SO_Qty - Net_Qty == 0
+        //                else if ((item.SO_Qty - netQty) == 0)
+        //                {
+        //                    readinessMessage = "Refer daily delivery visibility";
+        //                }
+
+        //                var newEntity = new Sales_Order_SCM
+        //                {
+        //                    SO_No = item.SO_No,
+        //                    SaleOrder_Type = item.SaleOrder_Type,
+        //                    SO_Date = item.SO_Date,
+        //                    Line_Item = item.Line_Item,
+        //                    Indent_No = item.Indent_No,
+        //                    Indent_Date = item.Indent_Date,
+        //                    //Order_Type = item.Order_Type,
+        //                    //Vertical = item.Vertical,
+        //                    //Region = item.Region,
+        //                    Sales_Group = item.Sales_Group,
+        //                    Sales_Group_desc = item.Sales_Group_desc,
+        //                    Sales_Office = item.Sales_Office,
+        //                    Sales_Office_Desc = item.Sales_Office_Desc,
+        //                    Sale_Person = item.Sale_Person,
+        //                    Project_Name = item.Project_Name,
+        //                    //Project_Name_Tag = item.Project_Name_Tag,
+        //                    //Priority_Tag = item.Priority_Tag,
+        //                    Customer_Code = item.Customer_Code,
+        //                    Customer_Name = item.Customer_Name,
+        //                    //Dealer_Direct = item.Dealer_Direct,
+        //                    //Inspection = item.Inspection,
+        //                    Material = item.Material,
+        //                    Old_Material_No = item.Old_Material_No,
+        //                    Description = item.Description,
+        //                    SO_Qty = item.SO_Qty,
+        //                    SO_Value = item.SO_Value,
+        //                    //Rate = item.Rate,
+        //                    Del_Qty = item.Del_Qty,
+        //                    Open_Sale_Qty = item.Open_Sale_Qty,
+        //                    Opne_Sale_Value = item.Opne_Sale_Value,
+        //                    Plant = item.Plant,
+        //                    Item_Category = item.Item_Category,
+        //                    //Item_Category_Latest = item.Item_Category_Latest,
+        //                    Procurement_Type = item.Procurement_Type,
+        //                    Vendor_Po_No = item.Vendor_Po_No,
+        //                    Vendor_Po_Date = item.Vendor_Po_Date,
+        //                    //CPR_Number = item.CPR_Number,
+        //                    //Vendor = item.Vendor,
+        //                    //Planner = item.Planner,
+        //                    Po_Release_Qty = item.Po_Release_Qty,
+        //                    Allocated_Stock_Qty = item.Allocated_Stock_Qty,
+        //                    Allocated_Stock_Value = item.Allocated_Stock_Value,
+
+        //                    Net_Qty = netQty,
+        //                    Net_Value = netValue,
+
+        //                    //Qty_In_Week = item.Qty_In_Week,
+        //                    //Value_In_Week = item.Value_In_Week,
+        //                    //Qty_After_Week = item.Qty_After_Week,
+        //                    //Value_After_Week = item.Value_After_Week,
+        //                    //Check5 = item.Check5,
+        //                    Indent_Status = item.Indent_Status,
+        //                    //Sales_Call_Point = item.Sales_Call_Point,
+        //                    //Free_Stock = item.Free_Stock,
+        //                    //Grn_Qty = item.Grn_Qty,
+        //                    //Last_Grn_Date = item.Last_Grn_Date, 
+        //                    //Check1 = item.Check1,
+        //                    Delivery_Schedule = item.Delivery_Schedule,
+        //                    //Readiness_Vendor_Released_Fr_Date = item.Readiness_Vendor_Released_Fr_Date,
+        //                    //Readiness_Vendor_Released_To_Date = item.Readiness_Vendor_Released_To_Date,
+        //                    Readiness_Schedule_Vendor_Released = readinessMessage,
+        //                    //Delivery_Schedule_PC_Breakup = item.Delivery_Schedule_PC_Breakup,
+        //                    //Check2 = item.Check2,
+        //                    //Line_Item_Schedule = item.Line_Item_Schedule,
+        //                    //R_B = item.R_B,
+        //                    //Schedule_Repeat = item.Schedule_Repeat,
+        //                    //Internal_Pending_Issue = item.Internal_Pending_Issue,
+        //                    //Pending_With = item.Pending_With,
+        //                    //Remark = item.Remark,
+        //                    //CRD_OverDue = item.CRD_OverDue,
+        //                    Delivert_Date = item.Delivert_Date,
+        //                    //Process_Plan_On_Crd = item.Process_Plan_On_Crd,
+        //                    //Last_Week_PC = item.Last_Week_PC,
+        //                    Schedule_Line_Qty1 = item.Schedule_Line_Qty1,
+        //                    Schedule_Line_Date1 = item.Schedule_Line_Date1,
+        //                    Schedule_Line_Qty2 = item.Schedule_Line_Qty2,
+        //                    Schedule_Line_Date2 = item.Schedule_Line_Date2,
+        //                    Schedule_Line_Qty3 = item.Schedule_Line_Qty3,
+        //                    Schedule_Line_Date3 = item.Schedule_Line_Date3,
+        //                    //To_Consider = item.To_Consider,
+        //                    //Person_Name = item.Person_Name,
+        //                    //Visibility = item.Visibility,
+        //                    Key = (item.Indent_No ?? string.Empty) + (item.Old_Material_No ?? string.Empty) + (item.Vendor_Po_No ?? string.Empty),
+        //                    Key1 = (item.Indent_No ?? string.Empty) + (item.Old_Material_No ?? string.Empty),
+        //                    CreatedBy = uploadedBy,
+        //                    CreatedDate = DateTime.Now
+        //                };
+        //                _dbContext.Sales_Order.Add(newEntity);
+        //            }
+        //        }
+
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Log the upload
+        //        var importLog = new Open_Po_Log
+        //        {
+        //            FileName = fileName,
+        //            TotalRecords = listOfData.Count,
+        //            ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+        //            FailedRecords = result.FailedRecords.Count,
+        //            UploadedBy = uploadedBy,
+        //            UploadedAt = DateTime.Now,
+        //            FileType = "SO"
+        //        };
+
+        //        _dbContext.OpenPo_Log.Add(importLog);
+        //        await _dbContext.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = true,
+        //            Message = result.FailedRecords.Any()
+        //                ? "Import completed with some skipped records."
+        //                : "All records imported successfully."
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = false,
+        //            Message = "Error during import: " + ex.Message
+        //        };
+        //    }
+
+        //    return result;
+        //}
+
+
+        public async Task<BulkSalesCreateLogResult> BulkSalesCreateAsync(IList<Sales_Order_ViewModel> listOfData, string fileName, string uploadedBy)
         {
             var result = new BulkSalesCreateLogResult();
-            using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            var batchId = Guid.NewGuid();
+            var uploadTs = DateTime.Now; // or DateTime.UtcNow
+
+            var dt = new DataTable();
+            // Column definitions MUST match dbo.SalesOrderImportRow
+            dt.Columns.Add("SO_No", typeof(string));
+            dt.Columns.Add("SaleOrder_Type", typeof(string));
+            dt.Columns.Add("SO_Date", typeof(DateTime));
+            dt.Columns.Add("Line_Item", typeof(int));
+            dt.Columns.Add("Indent_No", typeof(string));
+            dt.Columns.Add("Indent_Date", typeof(DateTime));
+
+            dt.Columns.Add("Sales_Group", typeof(string));
+            dt.Columns.Add("Sales_Group_Desc", typeof(string));
+            dt.Columns.Add("Sales_Office", typeof(string));
+            dt.Columns.Add("Sales_Office_Desc", typeof(string));
+            dt.Columns.Add("Sale_Person", typeof(string));
+            dt.Columns.Add("Project_Name", typeof(string));
+
+            dt.Columns.Add("Customer_Code", typeof(string));
+            dt.Columns.Add("Customer_Name", typeof(string));
+
+            dt.Columns.Add("Material", typeof(string));
+            dt.Columns.Add("Old_Material_No", typeof(string));
+            dt.Columns.Add("Description", typeof(string));
+
+            dt.Columns.Add("SO_Qty", typeof(int));
+            dt.Columns.Add("SO_Value", typeof(decimal));
+
+            dt.Columns.Add("Del_Qty", typeof(int));
+            dt.Columns.Add("Open_Sale_Qty", typeof(int));
+            dt.Columns.Add("Opne_Sale_Value", typeof(decimal));
+
+            dt.Columns.Add("Plant", typeof(string));
+            dt.Columns.Add("Item_Category", typeof(string));
+            dt.Columns.Add("Procurement_Type", typeof(string));
+
+            dt.Columns.Add("Vendor_Po_No", typeof(string));
+            dt.Columns.Add("Vendor_Po_Date", typeof(DateTime));
+
+            dt.Columns.Add("Po_Release_Qty", typeof(int));
+            dt.Columns.Add("Allocated_Stock_Qty", typeof(int));
+            dt.Columns.Add("Allocated_Stock_Value", typeof(decimal));
+
+            dt.Columns.Add("Indent_Status", typeof(string));
+            dt.Columns.Add("Delivert_Date", typeof(DateTime));
+
+            dt.Columns.Add("Schedule_Line_Qty1", typeof(int));
+            dt.Columns.Add("Schedule_Line_Date1", typeof(DateTime));
+            dt.Columns.Add("Schedule_Line_Qty2", typeof(int));
+            dt.Columns.Add("Schedule_Line_Date2", typeof(DateTime));
+            dt.Columns.Add("Schedule_Line_Qty3", typeof(int));
+            dt.Columns.Add("Schedule_Line_Date3", typeof(DateTime));
+
+            foreach (var x in listOfData)
+            {
+                dt.Rows.Add(
+                    (object?)x.SO_No ?? DBNull.Value,
+                    (object?)x.SaleOrder_Type ?? DBNull.Value,
+                    (object?)x.SO_Date ?? DBNull.Value,
+                    (object?)x.Line_Item ?? DBNull.Value,
+
+                    (object?)x.Indent_No ?? DBNull.Value,
+                    (object?)x.Indent_Date ?? DBNull.Value,
+
+                    (object?)x.Sales_Group ?? DBNull.Value,
+                    (object?)x.Sales_Group_desc ?? DBNull.Value,
+                    (object?)x.Sales_Office ?? DBNull.Value,
+                    (object?)x.Sales_Office_Desc ?? DBNull.Value,
+                    (object?)x.Sale_Person ?? DBNull.Value,
+                    (object?)x.Project_Name ?? DBNull.Value,
+
+                    (object?)x.Customer_Code ?? DBNull.Value,
+                    (object?)x.Customer_Name ?? DBNull.Value,
+
+                    (object?)x.Material ?? DBNull.Value,
+                    (object?)x.Old_Material_No ?? DBNull.Value,
+                    (object?)x.Description ?? DBNull.Value,
+
+                    (object?)x.SO_Qty ?? DBNull.Value,
+                    (object?)x.SO_Value ?? DBNull.Value,
+
+                    (object?)x.Del_Qty ?? DBNull.Value,
+                    (object?)x.Open_Sale_Qty ?? DBNull.Value,
+                    (object?)x.Opne_Sale_Value ?? DBNull.Value,
+
+                    (object?)x.Plant ?? DBNull.Value,
+                    (object?)x.Item_Category ?? DBNull.Value,      // may be blank; SP derives if blank
+                    (object?)x.Procurement_Type ?? DBNull.Value,
+
+                    (object?)x.Vendor_Po_No ?? DBNull.Value,
+                    (object?)x.Vendor_Po_Date ?? DBNull.Value,
+
+                    (object?)x.Po_Release_Qty ?? DBNull.Value,
+                    (object?)x.Allocated_Stock_Qty ?? DBNull.Value,
+                    (object?)x.Allocated_Stock_Value ?? DBNull.Value,
+
+                    (object?)x.Indent_Status ?? DBNull.Value,
+                    (object?)x.Delivert_Date ?? DBNull.Value,
+
+                    (object?)x.Schedule_Line_Qty1 ?? DBNull.Value,
+                    (object?)x.Schedule_Line_Date1 ?? DBNull.Value,
+                    (object?)x.Schedule_Line_Qty2 ?? DBNull.Value,
+                    (object?)x.Schedule_Line_Date2 ?? DBNull.Value,
+                    (object?)x.Schedule_Line_Qty3 ?? DBNull.Value,
+                    (object?)x.Schedule_Line_Date3 ?? DBNull.Value
+                );
+            }
+            
+
+            
+                //var connectionString = _dbContext.Database.GetDbConnection();
+                using var conn = _dbContext.Database.GetDbConnection();
+                await conn.OpenAsync();
+                using var tran = conn.BeginTransaction(); // local transaction for safety
 
             try
             {
-                var seenKeys = new HashSet<string>();
+                var dp = new DynamicParameters();
+                dp.Add("@Rows", dt.AsTableValuedParameter("dbo.SalesOrderImportRow"));
+                dp.Add("@FileName", fileName, DbType.String);
+                dp.Add("@UploadedBy", uploadedBy, DbType.String);
+                dp.Add("@BatchId", batchId, DbType.Guid);
+                dp.Add("@UploadTs", uploadTs, DbType.DateTime2);
 
-                var matsNeedingDerive = listOfData
-           .Where(x => string.IsNullOrWhiteSpace(x.Item_Category))
-           .Select(x => (x.Material ?? string.Empty).Trim())
-           .Where(m => !string.IsNullOrEmpty(m))
-           .Distinct(StringComparer.OrdinalIgnoreCase)
-           .ToList();
+                using var multi = await conn.QueryMultipleAsync(
+                    sql: "dbo.sp_SalesOrder_BulkUpsert",
+                    param: dp,
+                    commandType: CommandType.StoredProcedure,
+                    transaction: tran
+                );
 
-                var mtaMaterials = new HashSet<string>(await _dbContext.MTAMaster.Where(m => !m.Deleted && matsNeedingDerive.Contains(m.Material_No)).Select(m => m.Material_No).ToListAsync(),StringComparer.OrdinalIgnoreCase);
+                var summary = await multi.ReadFirstAsync<(int TotalRecords, int ImportedRecords, int FailedRecords)>();
+                result.TotalRecords = summary.TotalRecords;
+                result.ImportedRecords = summary.ImportedRecords;
+                result.FailedCount = summary.FailedRecords;
 
-                foreach (var item in listOfData)
+                // Second result set: per-row failures (Indent_No, Old_Material_No, Reason)
+                var failures = (await multi.ReadAsync<(string Indent_No, string Old_Material_No, string Reason)>()).ToList();
+
+                // Map failures back to a minimal model envelope
+                foreach (var f in failures)
                 {
-                    item.Indent_No = item.Indent_No?.Trim();
-                    item.Old_Material_No = item.Old_Material_No?.Trim();
-                    item.Material = item.Material?.Trim();   // ensure trimmed
-                    item.Item_Category = item.Item_Category?.Trim();
-
-                    if (string.IsNullOrWhiteSpace(item.Item_Category))
+                    var vm = new Sales_Order_ViewModel
                     {
-                        if (!string.IsNullOrEmpty(item.Material) && mtaMaterials.Contains(item.Material))
-                            item.Item_Category = "MTA";
-                        else
-                            item.Item_Category = "MTO";
-                    }
-
-                    var compositeKey = $"{item.Indent_No}|{item.Old_Material_No}";
-
-                    if (string.IsNullOrWhiteSpace(item.Indent_No) || string.IsNullOrWhiteSpace(item.Old_Material_No))
-                    {
-                        result.FailedRecords.Add((item, "Missing Indent_No or Old_Material_No"));
-                        continue;
-                    }
-
-                    if (seenKeys.Contains(compositeKey))
-                    {
-                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
-                        continue;
-                    }
-
-                    seenKeys.Add(compositeKey);
-
-                    var existingEntity = await _dbContext.Sales_Order.FirstOrDefaultAsync(x => x.Indent_No == item.Indent_No && x.Old_Material_No == item.Old_Material_No);
-
-                    if (existingEntity != null)
-                    {
-                        bool isDifferent =
-                            existingEntity.SO_No != item.SO_No ||
-                            existingEntity.SaleOrder_Type != item.SaleOrder_Type ||
-                            existingEntity.SO_Date != item.SO_Date ||
-                            existingEntity.Line_Item != item.Line_Item ||
-                            existingEntity.Indent_No != item.Indent_No ||
-                            existingEntity.Indent_Date != item.Indent_Date ||
-                            //existingEntity.Order_Type != item.Order_Type ||
-                            //existingEntity.Vertical != item.Vertical ||
-                            //existingEntity.Region != item.Region ||
-                            existingEntity.Sales_Group != item.Sales_Group ||
-                            existingEntity.Sales_Group_desc != item.Sales_Group_desc ||
-                            existingEntity.Sales_Office != item.Sales_Office ||
-                            existingEntity.Sales_Office_Desc != item.Sales_Office_Desc ||
-                            existingEntity.Sale_Person != item.Sale_Person ||
-                            existingEntity.Project_Name != item.Project_Name ||
-                            //existingEntity.Project_Name_Tag != item.Project_Name_Tag ||
-                            //existingEntity.Priority_Tag != item.Priority_Tag ||
-                            existingEntity.Customer_Code != item.Customer_Code ||
-                            existingEntity.Customer_Name != item.Customer_Name ||
-                            //existingEntity.Dealer_Direct != item.Dealer_Direct ||
-                            //existingEntity.Inspection != item.Inspection ||
-                            existingEntity.Material != item.Material ||
-                            existingEntity.Old_Material_No != item.Old_Material_No ||
-                            existingEntity.Description != item.Description ||
-                            existingEntity.SO_Qty != item.SO_Qty ||
-                            existingEntity.SO_Value != item.SO_Value ||
-                            //existingEntity.Rate != item.Rate ||
-                            existingEntity.Del_Qty != item.Del_Qty ||
-                            existingEntity.Open_Sale_Qty != item.Open_Sale_Qty ||
-                            existingEntity.Opne_Sale_Value != item.Opne_Sale_Value ||
-                            existingEntity.Plant != item.Plant ||
-                            existingEntity.Item_Category != item.Item_Category ||
-                            //existingEntity.Item_Category_Latest != item.Item_Category_Latest ||
-                            existingEntity.Procurement_Type != item.Procurement_Type ||
-                            existingEntity.Vendor_Po_No != item.Vendor_Po_No ||
-                            existingEntity.Vendor_Po_Date != item.Vendor_Po_Date ||
-                            //existingEntity.CPR_Number != item.CPR_Number ||
-                            //existingEntity.Vendor != item.Vendor ||
-                            //existingEntity.Planner != item.Planner ||
-                            existingEntity.Po_Release_Qty != item.Po_Release_Qty ||
-                            existingEntity.Allocated_Stock_Qty != item.Allocated_Stock_Qty ||
-                            existingEntity.Allocated_Stock_Value != item.Allocated_Stock_Value ||
-                            //existingEntity.Net_Qty != item.Net_Qty ||
-                            //existingEntity.Net_Value != item.Net_Value ||
-                            //existingEntity.Qty_In_Week != item.Qty_In_Week ||
-                            //existingEntity.Value_In_Week != item.Value_In_Week ||
-                            //existingEntity.Qty_After_Week != item.Qty_After_Week ||
-                            //existingEntity.Value_After_Week != item.Value_After_Week ||
-                            //existingEntity.Check5 != item.Check5 ||
-                            existingEntity.Indent_Status != item.Indent_Status ||
-                            //existingEntity.Sales_Call_Point != item.Sales_Call_Point ||
-                            //existingEntity.Free_Stock != item.Free_Stock ||
-                            //existingEntity.Grn_Qty != item.Grn_Qty ||
-                            //existingEntity.Last_Grn_Date != item.Last_Grn_Date ||
-                            //existingEntity.Check1 != item.Check1 ||
-                            //existingEntity.Delivery_Schedule != item.Delivery_Schedule ||
-                            //existingEntity.Readiness_Vendor_Released_Fr_Date != item.Readiness_Vendor_Released_Fr_Date ||
-                            //existingEntity.Readiness_Vendor_Released_To_Date != item.Readiness_Vendor_Released_To_Date ||
-                            //existingEntity.Readiness_Schedule_Vendor_Released != item.Readiness_Schedule_Vendor_Released ||
-                            //existingEntity.Delivery_Schedule_PC_Breakup != item.Delivery_Schedule_PC_Breakup ||
-                            //existingEntity.Check2 != item.Check2 ||
-                            //existingEntity.Line_Item_Schedule != item.Line_Item_Schedule ||
-                            //existingEntity.R_B != item.R_B ||
-                            //existingEntity.Schedule_Repeat != item.Schedule_Repeat ||
-                            //existingEntity.Internal_Pending_Issue != item.Internal_Pending_Issue ||
-                            //existingEntity.Pending_With != item.Pending_With ||
-                            //existingEntity.Remark != item.Remark ||
-                            //existingEntity.CRD_OverDue != item.CRD_OverDue ||
-                            existingEntity.Delivert_Date != item.Delivert_Date ||
-                            //existingEntity.Process_Plan_On_Crd != item.Process_Plan_On_Crd ||
-                            //existingEntity.Last_Week_PC != item.Last_Week_PC ||
-                            existingEntity.Schedule_Line_Qty1 != item.Schedule_Line_Qty1 ||
-                            existingEntity.Schedule_Line_Date1 != item.Schedule_Line_Date1 ||
-                            existingEntity.Schedule_Line_Qty2 != item.Schedule_Line_Qty2 ||
-                            existingEntity.Schedule_Line_Date2 != item.Schedule_Line_Date2 ||
-                            existingEntity.Schedule_Line_Qty3 != item.Schedule_Line_Qty3 ||
-                            existingEntity.Schedule_Line_Date3 != item.Schedule_Line_Date3;
-                        //existingEntity.To_Consider != item.To_Consider ||
-                        //existingEntity.Person_Name != item.Person_Name ||
-                        //existingEntity.Visibility != item.Visibility;
-
-                        if (isDifferent)
-                        {
-                            existingEntity.SO_No = item.SO_No;
-                            existingEntity.SaleOrder_Type = item.SaleOrder_Type;
-                            existingEntity.SO_Date = item.SO_Date;
-                            existingEntity.Line_Item = item.Line_Item;
-                            existingEntity.Indent_No = item.Indent_No;
-                            existingEntity.Indent_Date = item.Indent_Date;
-                            //existingEntity.Order_Type = item.Order_Type;
-                            //existingEntity.Vertical = item.Vertical;
-                            //existingEntity.Region = item.Region;
-                            existingEntity.Sales_Group = item.Sales_Group;
-                            existingEntity.Sales_Group_desc = item.Sales_Group_desc;
-                            existingEntity.Sales_Office = item.Sales_Office;
-                            existingEntity.Sales_Office_Desc = item.Sales_Office_Desc;
-                            existingEntity.Sale_Person = item.Sale_Person;
-                            existingEntity.Project_Name = item.Project_Name;
-                            //existingEntity.Project_Name_Tag = item.Project_Name_Tag;
-                            //existingEntity.Priority_Tag = item.Priority_Tag;
-                            existingEntity.Customer_Code = item.Customer_Code;
-                            existingEntity.Customer_Name = item.Customer_Name;
-                            //existingEntity.Dealer_Direct = item.Dealer_Direct;
-                            //existingEntity.Inspection = item.Inspection;
-                            existingEntity.Material = item.Material;
-                            existingEntity.Old_Material_No = item.Old_Material_No;
-                            existingEntity.Description = item.Description;
-                            existingEntity.SO_Qty = item.SO_Qty;
-                            existingEntity.SO_Value = item.SO_Value;
-                            //existingEntity.Rate = item.Rate;
-                            existingEntity.Del_Qty = item.Del_Qty;
-                            existingEntity.Open_Sale_Qty = item.Open_Sale_Qty;
-                            existingEntity.Opne_Sale_Value = item.Opne_Sale_Value;
-                            existingEntity.Plant = item.Plant;
-                            existingEntity.Item_Category = item.Item_Category;
-                            //existingEntity.Item_Category_Latest = item.Item_Category_Latest;
-                            existingEntity.Procurement_Type = item.Procurement_Type;
-                            //existingEntity.Vendor_Po_No = item.Vendor_Po_No;
-                            //existingEntity.Vendor_Po_Date = item.Vendor_Po_Date;
-                            //existingEntity.CPR_Number = item.CPR_Number;
-                            //existingEntity.Vendor = item.Vendor;
-                            //existingEntity.Planner = item.Planner;
-                            existingEntity.Po_Release_Qty = item.Po_Release_Qty;
-                            existingEntity.Allocated_Stock_Qty = item.Allocated_Stock_Qty;
-                            existingEntity.Allocated_Stock_Value = item.Allocated_Stock_Value;
-                            //existingEntity.Net_Qty = item.Net_Qty;
-                            //existingEntity.Net_Value = item.Net_Value;
-                            //existingEntity.Qty_In_Week = item.Qty_In_Week;
-                            //existingEntity.Value_In_Week = item.Value_In_Week;
-                            //existingEntity.Qty_After_Week = item.Qty_After_Week;
-                            //existingEntity.Value_After_Week = item.Value_After_Week;
-                            //existingEntity.Check5 = item.Check5;
-                            existingEntity.Indent_Status = item.Indent_Status;
-                            //existingEntity.Sales_Call_Point = item.Sales_Call_Point;
-                            //existingEntity.Free_Stock = item.Free_Stock;
-                            //existingEntity.Grn_Qty = item.Grn_Qty;
-                            //existingEntity.Last_Grn_Date = item.Last_Grn_Date;
-                            //existingEntity.Check1 = item.Check1;
-                            //existingEntity.Delivery_Schedule = item.Delivery_Schedule;
-                            //existingEntity.Readiness_Vendor_Released_Fr_Date = item.Readiness_Vendor_Released_Fr_Date;
-                            //existingEntity.Readiness_Vendor_Released_To_Date = item.Readiness_Vendor_Released_To_Date;
-                            //existingEntity.Readiness_Schedule_Vendor_Released = item.Readiness_Schedule_Vendor_Released;
-                            //existingEntity.Delivery_Schedule_PC_Breakup = item.Delivery_Schedule_PC_Breakup;
-                            //existingEntity.Check2 = item.Check2;
-                            //existingEntity.Line_Item_Schedule = item.Line_Item_Schedule;
-                            //existingEntity.R_B = item.R_B;
-                            //existingEntity.Schedule_Repeat = item.Schedule_Repeat;
-                            //existingEntity.Internal_Pending_Issue = item.Internal_Pending_Issue;
-                            //existingEntity.Pending_With = item.Pending_With;
-                            //existingEntity.Remark = item.Remark;
-                            //existingEntity.CRD_OverDue = item.CRD_OverDue;
-                            existingEntity.Delivert_Date = item.Delivert_Date;
-                            //existingEntity.Process_Plan_On_Crd = item.Process_Plan_On_Crd;
-                            //existingEntity.Last_Week_PC = item.Last_Week_PC;
-                            existingEntity.Schedule_Line_Qty1 = item.Schedule_Line_Qty1;
-                            existingEntity.Schedule_Line_Date1 = item.Schedule_Line_Date1;
-                            existingEntity.Schedule_Line_Qty2 = item.Schedule_Line_Qty2;
-                            existingEntity.Schedule_Line_Date2 = item.Schedule_Line_Date2;
-                            existingEntity.Schedule_Line_Qty3 = item.Schedule_Line_Qty3;
-                            existingEntity.Schedule_Line_Date3 = item.Schedule_Line_Date3;
-                            //existingEntity.To_Consider = item.To_Consider;
-                            //existingEntity.Person_Name = item.Person_Name;
-                            //existingEntity.Visibility = item.Visibility;
-                            existingEntity.CreatedBy = uploadedBy;
-                            existingEntity.CreatedDate = DateTime.Now;
-                        }
-                        else
-                        {
-                            result.FailedRecords.Add((item, "Duplicate in database with no changes"));
-                        }
-                    }
-                    else
-                    {
-                        var netQty = item.Open_Sale_Qty - item.Allocated_Stock_Qty;
-                        var netValue = (item.SO_Qty > 0) ? (item.SO_Value / item.SO_Qty) * netQty : 0;
-
-                        string readinessMessage = null;
-
-                        // ✅ Condition 1: All qty allocated
-                        if (netValue == 0)
-                        {
-                            readinessMessage = $"All qty allocated on {DateTime.Now:dd-MMM-yyyy}";
-                        }
-                        // ✅ Condition 2: When SO_Qty - Net_Qty == 0
-                        else if ((item.SO_Qty - netQty) == 0)
-                        {
-                            readinessMessage = "Refer daily delivery visibility";
-                        }
-
-                        var newEntity = new Sales_Order_SCM
-                        {
-                            SO_No = item.SO_No,
-                            SaleOrder_Type = item.SaleOrder_Type,
-                            SO_Date = item.SO_Date,
-                            Line_Item = item.Line_Item,
-                            Indent_No = item.Indent_No,
-                            Indent_Date = item.Indent_Date,
-                            //Order_Type = item.Order_Type,
-                            //Vertical = item.Vertical,
-                            //Region = item.Region,
-                            Sales_Group = item.Sales_Group,
-                            Sales_Group_desc = item.Sales_Group_desc,
-                            Sales_Office = item.Sales_Office,
-                            Sales_Office_Desc = item.Sales_Office_Desc,
-                            Sale_Person = item.Sale_Person,
-                            Project_Name = item.Project_Name,
-                            //Project_Name_Tag = item.Project_Name_Tag,
-                            //Priority_Tag = item.Priority_Tag,
-                            Customer_Code = item.Customer_Code,
-                            Customer_Name = item.Customer_Name,
-                            //Dealer_Direct = item.Dealer_Direct,
-                            //Inspection = item.Inspection,
-                            Material = item.Material,
-                            Old_Material_No = item.Old_Material_No,
-                            Description = item.Description,
-                            SO_Qty = item.SO_Qty,
-                            SO_Value = item.SO_Value,
-                            //Rate = item.Rate,
-                            Del_Qty = item.Del_Qty,
-                            Open_Sale_Qty = item.Open_Sale_Qty,
-                            Opne_Sale_Value = item.Opne_Sale_Value,
-                            Plant = item.Plant,
-                            Item_Category = item.Item_Category,
-                            //Item_Category_Latest = item.Item_Category_Latest,
-                            Procurement_Type = item.Procurement_Type,
-                            Vendor_Po_No = item.Vendor_Po_No,
-                            Vendor_Po_Date = item.Vendor_Po_Date,
-                            //CPR_Number = item.CPR_Number,
-                            //Vendor = item.Vendor,
-                            //Planner = item.Planner,
-                            Po_Release_Qty = item.Po_Release_Qty,
-                            Allocated_Stock_Qty = item.Allocated_Stock_Qty,
-                            Allocated_Stock_Value = item.Allocated_Stock_Value,
-
-                            Net_Qty = netQty,
-                            Net_Value = netValue,
-
-                            //Qty_In_Week = item.Qty_In_Week,
-                            //Value_In_Week = item.Value_In_Week,
-                            //Qty_After_Week = item.Qty_After_Week,
-                            //Value_After_Week = item.Value_After_Week,
-                            //Check5 = item.Check5,
-                            Indent_Status = item.Indent_Status,
-                            //Sales_Call_Point = item.Sales_Call_Point,
-                            //Free_Stock = item.Free_Stock,
-                            //Grn_Qty = item.Grn_Qty,
-                            //Last_Grn_Date = item.Last_Grn_Date, 
-                            //Check1 = item.Check1,
-                            Delivery_Schedule = item.Delivery_Schedule,
-                            //Readiness_Vendor_Released_Fr_Date = item.Readiness_Vendor_Released_Fr_Date,
-                            //Readiness_Vendor_Released_To_Date = item.Readiness_Vendor_Released_To_Date,
-                            Readiness_Schedule_Vendor_Released = readinessMessage,
-                            //Delivery_Schedule_PC_Breakup = item.Delivery_Schedule_PC_Breakup,
-                            //Check2 = item.Check2,
-                            //Line_Item_Schedule = item.Line_Item_Schedule,
-                            //R_B = item.R_B,
-                            //Schedule_Repeat = item.Schedule_Repeat,
-                            //Internal_Pending_Issue = item.Internal_Pending_Issue,
-                            //Pending_With = item.Pending_With,
-                            //Remark = item.Remark,
-                            //CRD_OverDue = item.CRD_OverDue,
-                            Delivert_Date = item.Delivert_Date,
-                            //Process_Plan_On_Crd = item.Process_Plan_On_Crd,
-                            //Last_Week_PC = item.Last_Week_PC,
-                            Schedule_Line_Qty1 = item.Schedule_Line_Qty1,
-                            Schedule_Line_Date1 = item.Schedule_Line_Date1,
-                            Schedule_Line_Qty2 = item.Schedule_Line_Qty2,
-                            Schedule_Line_Date2 = item.Schedule_Line_Date2,
-                            Schedule_Line_Qty3 = item.Schedule_Line_Qty3,
-                            Schedule_Line_Date3 = item.Schedule_Line_Date3,
-                            //To_Consider = item.To_Consider,
-                            //Person_Name = item.Person_Name,
-                            //Visibility = item.Visibility,
-                            Key = (item.Indent_No ?? string.Empty) + (item.Old_Material_No ?? string.Empty) + (item.Vendor_Po_No ?? string.Empty),
-                            Key1 = (item.Indent_No ?? string.Empty) + (item.Old_Material_No ?? string.Empty),
-                            CreatedBy = uploadedBy,
-                            CreatedDate = DateTime.Now
-                        };
-                        _dbContext.Sales_Order.Add(newEntity);
-                    }
+                        Indent_No = f.Indent_No,
+                        Old_Material_No = f.Old_Material_No
+                    };
+                    result.FailedRecords.Add((vm, f.Reason));
                 }
 
-                await _dbContext.SaveChangesAsync();
-
-                // Log the upload
-                var importLog = new Open_Po_Log
-                {
-                    FileName = fileName,
-                    TotalRecords = listOfData.Count,
-                    ImportedRecords = listOfData.Count - result.FailedRecords.Count,
-                    FailedRecords = result.FailedRecords.Count,
-                    UploadedBy = uploadedBy,
-                    UploadedAt = DateTime.Now,
-                    FileType = "SO"
-                };
-
-                _dbContext.OpenPo_Log.Add(importLog);
-                await _dbContext.SaveChangesAsync();
-                await transaction.CommitAsync();
+                await tran.CommitAsync();
 
                 result.Result = new OperationResult
                 {
                     Success = true,
-                    Message = result.FailedRecords.Any()
+                    Message = failures.Any()
                         ? "Import completed with some skipped records."
                         : "All records imported successfully."
                 };
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
+                await tran.RollbackAsync();
                 result.Result = new OperationResult
                 {
                     Success = false,
@@ -1308,6 +1976,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
             return result;
         }
+
 
         public async Task<OperationResult> UpdateAsync(Open_Po updatedRecord, bool returnUpdatedRecord = false)
         {
@@ -1497,7 +2166,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
                     //var result = await connection.QueryAsync<OpenPODetailViewModel>("[dbo].[sp_Get_OpenPO_Delivery_ByMaterial]", new { Material = material, Old_Material_No = oldMaterialNo },commandType: CommandType.StoredProcedure);
 
-                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_Delivery_ByMaterial]", new { Material = material, Old_Material_No = oldMaterialNo , SaleOrder_Id = soId }, commandType: CommandType.StoredProcedure))
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_Delivery_ByMaterial]", new { Material = material, Old_Material_No = oldMaterialNo, SaleOrder_Id = soId }, commandType: CommandType.StoredProcedure))
 
                     {
                         var openPo = (await multi.ReadAsync<OpenPODetailViewModel>()).ToList();
@@ -1567,7 +2236,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
         public async Task SOSaveDeliverySchAsync(So_DeliveryScheduleViewModel model, string updatedBy)
         {
             try
-            { 
+            {
                 // First delete existing records
                 var existing = await _dbContext.So_Deliveries.Where(x => x.SaleOrder_Id == model.SaleOrder_Id).ToListAsync();
                 _dbContext.So_Deliveries.RemoveRange(existing);
@@ -1713,7 +2382,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                             Material_Category = item.Material_Category,
                             CreatedBy = uploadedBy,
                             CreatedDate = DateTime.Now,
-                           
+
                         };
                         _dbContext.MTAMaster.Add(newEntity);
                     }

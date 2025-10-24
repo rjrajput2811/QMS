@@ -72,7 +72,7 @@ namespace QMS.Core.DatabaseContext
         public double? Value_In_Week { get; set; }
         public int? Qty_After_Week { get; set; }
         public double? Value_After_Week { get; set; }
-        public bool Check5 { get; set; }
+        public bool? Check5 { get; set; }
         public string? Indent_Status { get; set; }
         public string? Sales_Call_Point { get; set; }
         public int? Free_Stock { get; set; }

@@ -115,7 +115,7 @@
             overflow: hidden;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
             
-            max-width: 90%;
+       
         }
 
         .card-header {
@@ -268,7 +268,7 @@
 
         </div>
     </div>
- 
+    <div class="card">
     <div class="row align-items-center" style="padding:10px;">
         <!-- Search box on the left -->
         <div class="col-md-4">
@@ -284,7 +284,9 @@
             </button>
         </div>
     </div>
-    <div class="row">
+   
+    <div class="row ">
+       
     <div class="col-md-4">
     <div class="card-body">
         <div class="card-section">
@@ -383,21 +385,37 @@
                             <i class="bi bi-chevron-right icon-right"></i>
                         </li>
 
-                        <li class="list-group-item" onclick="location.href='@Url.Action("PDIAuthSignatory", "PDIAuthSign")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>PDI Authorised Signatory</span>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("ElectricalPerformance", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Electrical  performance</span>
                             <i class="bi bi-chevron-right icon-right"></i>
                         </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("DNTracker", "DNTracker")'">
-                            <span class="label"><i class="bi bi-clipboard-check"></i>Deviation Note</span>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("ElectricalProtection", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-clipboard-check"></i>Electrical Protection, Safety Test & Reliability Test</span>
                             <i class="bi bi-chevron-right icon-right"></i>
                         </li>
 
-                        <li class="list-group-item" onclick="location.href='@Url.Action("CSATComment", "CSATComment")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>CSAT Comment Analysis</span>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("RippleTestReport", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Ripple Test Reports</span>
                             <i class="bi bi-chevron-right icon-right"></i>
                         </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("RMTCTracker", "RMTCTracker")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>RM TC Report</span>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("SURGETestReport", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i> SURGE Test Report</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("TemperatureRiseTest", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Temperature Rise Test ( TRT )</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("Photometry", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Photometry</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("InstallationTrial", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i> Installation Trial</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("DropTestReport", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Drop Test Report</span>
                             <i class="bi bi-chevron-right icon-right"></i>
                         </li>
                     </ul>
@@ -406,128 +424,13 @@
             </div>
         </div>
                 </div>
+                </div>
 
     <div class="content-wrapper">
         @RenderBody()
     </div>
 
-    <!-- CARDS GRID -->
-    @* <div  style="padding:10px;">
-        <div class="d-flex flex-column gap-2">
-            <div class="row g-2" id="cardGrid">
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("BisProjectTracker","BisProjectTrac")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-calendar icon me-3"></i>
-                            <h5 class="mb-0">BIS Project Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("ThirdPartyInspection","ThirdPartyInspection")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred;"></i>
-                            <h5 class="mb-0">Third Party Inspection Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("PaymentTracker","PaymentTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-person-badge icon me-3" style="color:seagreen;"></i>
-                            <h5 class="mb-0">Payment Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("PDITracker","PDITracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:green;"></i>
-                            <h5 class="mb-0">PDI Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("FIFOTracker", "FIFOTrac")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-alipay icon me-3" style="color:chocolate;"></i>
-                            <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-bar-chart-steps icon me-3" style="color:cyan;"></i>
-                            <h5 class="mb-0">Third Party Test Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("KaizenTracker","KaizenTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-amd icon me-3" style="color:blueviolet;"></i>
-                            <h5 class="mb-0">Kaizen Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-arrow-clockwise icon me-3" style="color:red;"></i>
-                            <h5 class="mb-0">Continual Improvement</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("PDIAuthSignatory","PDIAuthSign")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkkhaki;"></i>
-                            <h5 class="mb-0">PDI Authorised Signatory</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("DNTracker", "DNTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-back icon me-3" style="color:blue;"></i>
-                            <h5 class="mb-0">Deviation Note</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("CSATComment", "CSATComment")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-clipboard2-pulse-fill icon me-3" style="color:brown;"></i>
-                            <h5 class="mb-0">
-                                CSAT Comment Analysis
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("RMTCTracker", "RMTCTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-clipboard2-data-fill icon me-3" style="color:darkorange;"></i>
-                            <h5 class="mb-0">
-                                RM TC Report
-
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-             
-            </div>
-        </div>
-    </div> *@
+   
 
 
     <!-- Bootstrap JS -->

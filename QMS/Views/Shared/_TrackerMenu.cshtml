@@ -32,7 +32,7 @@
     <link href="~/css/all.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
    
-    <style>
+   @*  <style>
         
 
         .qms-card {
@@ -96,6 +96,115 @@
 
 
 
+    </style> *@
+    <style>
+        :root {
+            --border: #e4e7eb;
+            --hover-bg: #f8f9fa;
+            --label-color: #222;
+            --pill-radius: 8px;
+            --transition: all 0.25s ease-in-out;
+        }
+
+       
+
+        .card-section {
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            background: #fff;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            
+       
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+                
+            background: #f9fafb;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+            font-size: 18px;
+            color: #111;
+        }
+
+        .list-group {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .list-group-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 24px;
+            border-bottom: 1px dashed var(--border);
+            color: var(--label-color);
+            font-size: 15px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+            .list-group-item:last-child {
+                border-bottom: none;
+            }
+
+            .list-group-item:hover {
+                background: var(--hover-bg);
+                transform: scale(1.01);
+                color: orange;
+            }
+
+        .label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .badge-pill {
+            font-size: 13px;
+            padding: 5px 10px;
+            border-radius: var(--pill-radius);
+            font-weight: 600;
+            letter-spacing: .3px;
+            min-width: 70px;
+            text-align: center;
+            margin-left: auto;
+        }
+
+        .badge-blue {
+            background: #007bff;
+            color: #fff;
+        }
+
+        .badge-gray {
+            background: #6c757d;
+            color: #fff;
+        }
+
+        .badge-green {
+            background: #198754;
+            color: #fff;
+        }
+
+        .badge-cyan {
+            background: #0dcaf0;
+            color: #fff;
+        }
+
+        .badge-light {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .icon-right {
+            color: #aaa;
+            font-size: 16px;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body style="overflow:hidden">
@@ -159,7 +268,7 @@
 
         </div>
     </div>
- 
+    <div class="card">
     <div class="row align-items-center" style="padding:10px;">
         <!-- Search box on the left -->
         <div class="col-md-4">
@@ -175,132 +284,154 @@
             </button>
         </div>
     </div>
-
-
-
-
-    <!-- CARDS GRID -->
-    <div  style="padding:10px;">
-        <div class="d-flex flex-column gap-2">
-            <div class="row g-2" id="cardGrid">
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("BisProjectTracker","BisProjectTrac")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-calendar icon me-3"></i>
-                            <h5 class="mb-0">BIS Project Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("ThirdPartyInspection","ThirdPartyInspection")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred;"></i>
-                            <h5 class="mb-0">Third Party Inspection Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("PaymentTracker","PaymentTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-person-badge icon me-3" style="color:seagreen;"></i>
-                            <h5 class="mb-0">Payment Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("PDITracker","PDITracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-book icon me-3" style="color:green;"></i>
-                            <h5 class="mb-0">PDI Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("FIFOTracker", "FIFOTrac")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-alipay icon me-3" style="color:chocolate;"></i>
-                            <h5 class="mb-0">FIFO Tracker Waluj testing</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("ThirdPartyTestTrac","ThirdPartyTest")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-bar-chart-steps icon me-3" style="color:cyan;"></i>
-                            <h5 class="mb-0">Third Party Test Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("KaizenTracker","KaizenTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-amd icon me-3" style="color:blueviolet;"></i>
-                            <h5 class="mb-0">Kaizen Tracker</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-arrow-clockwise icon me-3" style="color:red;"></i>
-                            <h5 class="mb-0">Continual Improvement</h5>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("PDIAuthSignatory","PDIAuthSign")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkkhaki;"></i>
-                            <h5 class="mb-0">PDI Authorised Signatory</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("DNTracker", "DNTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-back icon me-3" style="color:blue;"></i>
-                            <h5 class="mb-0">Deviation Note</h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("CSATComment", "CSATComment")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-clipboard2-pulse-fill icon me-3" style="color:brown;"></i>
-                            <h5 class="mb-0">
-                                CSAT Comment Analysis
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-2">
-                    <div class="card qms-card" onclick="location.href='@Url.Action("RMTCTracker", "RMTCTracker")'">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-clipboard2-data-fill icon me-3" style="color:darkorange;"></i>
-                            <h5 class="mb-0">
-                                RM TC Report
-
-                            </h5>
-                        </div>
-                    </div>
-                </div>
-             
+   
+    <div class="row ">
+       
+    <div class="col-md-4">
+    <div class="card-body">
+        <div class="card-section">
+            <div class="card-header">
+                <span><i class="bi bi-diagram-3 me-2"></i>Tracker</span>
+                
             </div>
+            <ul class="list-group">
+                <li class="list-group-item" onclick="location.href='@Url.Action("BisProjectTracker", "BisProjectTrac")'">
+                    <span class="label"><i class="bi bi-calendar3"></i> BIS Project Tracker</span>
+                    <span class="badge-pill badge-blue">Check</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action(" ThirdPartyInspection","ThirdPartyInspection")'">
+                    <span class="label"><i class="bi bi-file-earmark-arrow-up"></i> Third Party Inspection Tracker</span>
+                            <span class="badge-pill badge-gray">Check</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("PaymentTracker", "PaymentTracker")'">
+                    <span class="label"><i class="bi bi-people"></i>Payment Tracker</span>
+                            <span class="badge-pill badge-green">Check</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("PDITracker", "PDITracker")'">
+                    <span class="label"><i class="bi bi-calendar2-week"></i> PDI Tracker</span>
+                            <span class="badge-pill badge-cyan">Check</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("FIFOTracker", "FIFOTrac")'">
+                    <span class="label"><i class="bi bi-box-seam"></i> FIFO Tracker Waluj testing</span>
+                            <span class="badge-pill badge-light">Check</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")'">
+                    <span class="label"><i class="bi bi-upload"></i> Third Party Test Tracker</span>
+                            <span class="badge-pill badge-gray">Check</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                <li class="list-group-item" onclick="location.href='@Url.Action("KaizenTracker", "KaizenTracker")'">
+                    <span class="label"><i class="bi bi-journal-text"></i> Kaizen Tracker</span>
+                            <span class="badge-pill badge-gray">Check</span>
+                    <i class="bi bi-chevron-right icon-right"></i>
+                </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'">
+                            <span class="label"><i class="bi bi-clipboard-check"></i>Continual Improvement</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+
+                        <li class="list-group-item" onclick="location.href='@Url.Action("PDIAuthSignatory", "PDIAuthSign")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>PDI Authorised Signatory</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+
+                
+            </ul>
         </div>
     </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card-body">
+            <div class="card-section">
+                <div class="card-header">
+                    <span><i class="bi bi-diagram-3 me-2"></i>Tracker</span>
+                    </div>
+                    <ul class="list-group">
+                       
+                        <li class="list-group-item" onclick="location.href='@Url.Action("DNTracker", "DNTracker")'">
+                            <span class="label"><i class="bi bi-clipboard-check"></i>Deviation Note</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
 
+                        <li class="list-group-item" onclick="location.href='@Url.Action("CSATComment", "CSATComment")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>CSAT Comment Analysis</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("RMTCTracker", "RMTCTracker")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>RM TC Report</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        </ul>
+               
+                </div>
+                </div>
+                </div>
+
+        <div class="col-md-4">
+            <div class="card-body">
+                <div class="card-section">
+                    <div class="card-header">
+                        <span><i class="bi bi-diagram-3 me-2"></i>Product Validation </span>
+                    </div>
+                    <ul class="list-group">
+                        <li class="list-group-item" onclick="location.href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-clipboard-check"></i>PhysicalCheck And Visual Inspection</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+
+                        <li class="list-group-item" onclick="location.href='@Url.Action("ElectricalPerformance", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Electrical  performance</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("ElectricalProtection", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-clipboard-check"></i>Electrical Protection, Safety Test & Reliability Test</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+
+                        <li class="list-group-item" onclick="location.href='@Url.Action("RippleTestReport", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Ripple Test Reports</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("SURGETestReport", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i> SURGE Test Report</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("TemperatureRiseTest", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Temperature Rise Test ( TRT )</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("Photometry", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Photometry</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("InstallationTrial", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i> Installation Trial</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                        <li class="list-group-item" onclick="location.href='@Url.Action("DropTestReport", "ProductValidation")'">
+                            <span class="label"><i class="bi bi-sort-up-alt"></i>Drop Test Report</span>
+                            <i class="bi bi-chevron-right icon-right"></i>
+                        </li>
+                    </ul>
+
+                </div>
+            </div>
+        </div>
+                </div>
+                </div>
 
     <div class="content-wrapper">
         @RenderBody()
     </div>
+
+   
+
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

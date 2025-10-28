@@ -1,0 +1,874 @@
+﻿@using QMS.Core.Models
+
+@model PhysicalCheckAndVisualInspectionViewModel
+
+@{
+    ViewData["Title"] = "Physical Check & Visual Inspection Details";
+}
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+
+<style>
+    .nav-pills .nav-link {
+        text-align: left;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+        font-weight: 500;
+        width: 100%;
+        padding: 12px;
+        background-color: #fff;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: #f4f3f8;
+            border-left: 4px solid #645394;
+            color: #645394;
+            font-weight: bold;
+        }
+
+    .form-control {
+        padding: 0 9px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+        .form-control:disabled, .form-control[readonly] {
+            background-color: #fff !important;
+        }
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+
+    .custome-body {
+        margin-bottom: -17px !important;
+        padding: 0.75rem !important;
+        margin-top: -17px !important;
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 30px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    .calendar-container {
+        cursor: pointer;
+        padding: 10px 15px;
+        width: 100%;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        gap: 8px;
+    }
+
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+            padding-left: 20px;
+        }
+
+        .calendar-container span {
+            color: #4682B4;
+            margin: 0;
+            font-size: 16px;
+        }
+
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
+    .month-item {
+        font-size: 14px;
+    }
+
+    #observationTable {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        #observationTable, #observationTable th, #observationTable td {
+            border: 1px solid black;
+        }
+
+            #observationTable th {
+                text-align: center;
+            }
+
+            #observationTable th {
+                background-color: lightgray;
+            }
+
+            #observationTable td {
+                padding: 5px;
+            }
+
+    .td-text-wrap {
+        width: 150px;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
+    em {
+        color: red;
+        font-weight: 700;
+    }
+
+</style>
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-body text-right">
+                        <div>
+                            <button id="addEelectPerButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="" style="width: 120px; font-size:15px">
+                                <i class="fas fa-save mr-1"></i>Save
+                            </button>
+                            <button id="backButton" class="btn btn-outline-danger" onclick="location.href='@Url.Action("ElectricalPerformance", "ProductValidation")'" style="width: 120px; font-size:15px">
+                                <i class="fas fa-times-circle mr-1"></i>Back
+                            </button>
+                        </div>
+                    </div>
+                    <form id="ElectricalPer-form" method="post" asp-action="InsertUpdateElectricalPerformanceDetails" asp-controller="ProductValidation">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="col-12">
+                                    @Html.HiddenFor(m => m.Id)
+                                    <div class="row form-group align-items-center mb-2">
+                                        <div class="col-3 pe-3 align-items-center">
+                                            <label class="me-3"><b>Report No</b></label><em>*</em>
+                                            @Html.TextBoxFor(m => m.Report_No, new { @class = "form-control" })
+                                        </div>
+                                        <div class="col-3 pe-3 align-items-center">
+                                            <label class="me-3"><b>Report Date</b></label>
+                                            @Html.TextBoxFor(m => m.Report_Date, "{0:dd/MM/yyyy}", new { @class = "form-control", @readonly = "readonly" })
+                                        </div>
+                                        <div class="col-6 pe-3 align-items-center">
+                                            <label class="me-3"><b>Customer/Project Name</b></label><em>*</em>
+                                            @Html.TextBoxFor(m => m.Project_Name, new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group align-items-center mb-2">
+                                        <div class="col-3 pe-3 align-items-center">
+                                            <label class="me-3"><b>Product Cat Ref</b></label>
+                                            @Html.TextBoxFor(m => m.Product_Cat_Ref, new { @class = "form-control" })
+                                        </div>
+                                        <div class="col-6 pe-3 align-items-center">
+                                            <label class="me-3"><b>Product Description</b></label>
+                                            @Html.TextBoxFor(m => m.Product_Description, new { @class = "form-control" })
+                                        </div>
+                                        <div class="col-3 pe-3 align-items-center">
+                                            <label class="me-3"><b>Batch Code</b></label>
+                                            @Html.TextBoxFor(m => m.Batch_Code, new { @class = "form-control" })
+                                        </div>
+                                    </div>
+                                    <div class="row form-group align-items-center mb-2">
+                                        <div class="col-3 pe-3 align-items-center">
+                                            <label class="me-3"><b>PKD</b></label>
+                                            @Html.TextBoxFor(m => m.PKD, new { @class = "form-control" })
+                                        </div>
+                                        <div class="col-3 pe-3 align-items-center">
+                                            <label class="me-3"><b>Quantity</b></label><em>*</em>
+                                            @Html.TextBoxFor(m => m.Quantity, new { @class = "form-control", type = "Number" })
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="col-12">
+                                    <table id="observationTable">
+                                        <thead>
+                                            <tr>
+                                                <th rowspan="2">SL. No.</th>
+                                                <th rowspan="2">Parameter</th>
+                                                <th rowspan="2">Specification</th>
+                                                <th colspan="5">Observations</th>
+                                                <th rowspan="2">Result - Pass/ Fail</th>
+                                            </tr>
+                                            <tr>
+                                                <th>Sample-1</th>
+                                                <th>Sample-2</th>
+                                                <th>Sample-3</th>
+                                                <th>Sample-4</th>
+                                                <th>Sample-5</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-center">1</td>
+                                                <td style="width:300px;">Wipro Branding on Product & Driver , SPD</td>
+                                                <td style="width:200px !important;">As per design docket </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiproBranding_Sample1">
+                                                    @Model.WiproBranding_Sample1
+                                                </td>
+                                                <td contenteditable="true" data-name="WiproBranding_Sample2">
+                                                    @Model.WiproBranding_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiproBranding_Sample3">
+                                                    @Model.WiproBranding_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiproBranding_Sample4">
+                                                    @Model.WiproBranding_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiproBranding_Sample5">
+                                                    @Model.WiproBranding_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiproBranding_Result">
+                                                    @Model.WiproBranding_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">2</td>
+                                                <td style="width:300px;">Product Label/Driver Label / SPD Labels</td>
+                                                <td class="td-text-wrap" style="width:200px !important;">As per BIS , Dockets/ NPI  and readable , Non Erasable, non tearable, or by Laser Sticker should not come out easily.</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="ProductDriverLabels_Sample1">
+                                                    @Model.ProductDriverLabels_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="ProductDriverLabels_Sample2">
+                                                    @Model.ProductDriverLabels_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="ProductDriverLabels_Sample3">
+                                                    @Model.ProductDriverLabels_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="ProductDriverLabels_Sample4">
+                                                    @Model.ProductDriverLabels_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="ProductDriverLabels_Sample5">
+                                                    @Model.ProductDriverLabels_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="ProductDriverLabels_Result">
+                                                    @Model.ProductDriverLabels_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">3</td>
+                                                <td style="width:300px;">Packing Stickers / Dimension / FIFO Sticker </td>
+                                                <td style="width:200px !important;">As per BIS , Dockets/ NPI  and readable , Non Erasable,  Sticker should not come out easily.</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PackingStickers_Sample1">
+                                                    @Model.PackingStickers_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PackingStickers_Sample2">
+                                                    @Model.PackingStickers_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PackingStickers_Sample3">
+                                                    @Model.PackingStickers_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PackingStickers_Sample4">
+                                                    @Model.PackingStickers_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PackingStickers_Sample5">
+                                                    @Model.PackingStickers_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PackingStickers_Result">
+                                                    @Model.PackingStickers_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">4</td>
+                                                <td style="width:300px;">Dimensions</td>
+                                                <td style="width:200px !important;">
+                                                    Length –
+                                                    Breadth –
+                                                    Height -
+                                                    Cut out -
+                                                    Housing Pole ID -
+                                                    Material Thickness-
+                                                    Mounting bracket dimension-
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Dimensions_Sample1">
+                                                    @Model.Dimensions_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Dimensions_Sample2">
+                                                    @Model.Dimensions_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Dimensions_Sample3">
+                                                    @Model.Dimensions_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Dimensions_Sample4">
+                                                    @Model.Dimensions_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Dimensions_Sample5">
+                                                    @Model.Dimensions_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Dimensions_Result">
+                                                    @Model.Dimensions_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td rowspan="2" class="text-center">5</td>
+                                                <td rowspan="2" style="width:300px;">Surface Finish</td>
+                                                <td style="width:200px !important;">Free from Burr, Dent , Sharp Edges, No Powder Coating Peel off, Dust free etc. Colour Shade should match</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinish_Sample1">
+                                                    @Model.SurfaceFinish_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinish_Sample2">
+                                                    @Model.SurfaceFinish_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinish_Sample3">
+                                                    @Model.SurfaceFinish_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinish_Sample4">
+                                                    @Model.SurfaceFinish_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinish_Sample5">
+                                                    @Model.SurfaceFinish_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinish_Result">
+                                                    @Model.SurfaceFinish_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px !important;">LED/COB should be free from dust.</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinishLED_Sample1">
+                                                    @Model.SurfaceFinishLED_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinishLED_Sample2">
+                                                    @Model.SurfaceFinishLED_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinishLED_Sample3">
+                                                    @Model.SurfaceFinishLED_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinishLED_Sample4">
+                                                    @Model.SurfaceFinishLED_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinishLED_Sample5">
+                                                    @Model.SurfaceFinishLED_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SurfaceFinishLED_Result">
+                                                    @Model.SurfaceFinishLED_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">6</td>
+                                                <td style="width:300px;">DFT</td>
+                                                <td style="width:200px !important;">50-120µ</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="DFT_Sample1">
+                                                    @Model.DFT_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="DFT_Sample2">
+                                                    @Model.DFT_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="DFT_Sample3">
+                                                    @Model.DFT_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="DFT_Sample4">
+                                                    @Model.DFT_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="DFT_Sample5">
+                                                    @Model.DFT_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="DFT_Result">
+                                                    @Model.DFT_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td rowspan="2" class="text-center">7</td>
+                                                <td style="width:300px;">Visual</td>
+                                                <td style="width:200px !important;">Free from gaps at Joinery, Edges, In-between Diffuser/Lens and Housing.</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Visual_Sample1">
+                                                    @Model.Visual_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Visual_Sample2">
+                                                    @Model.Visual_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Visual_Sample3">
+                                                    @Model.Visual_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Visual_Sample4">
+                                                    @Model.Visual_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Visual_Sample5">
+                                                    @Model.Visual_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Visual_Result">
+                                                    @Model.Visual_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:300px;">Visual at Lit up Condition</td>
+                                                <td style="width:200px !important;">No Black Spots Visibility, Band, dark patch /Shadow, Uniformity , NO LED Visibility, NO light leakage, NO blinking, flickering </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="VisualLitUp_Sample1">
+                                                    @Model.VisualLitUp_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="VisualLitUp_Sample2">
+                                                    @Model.VisualLitUp_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="VisualLitUp_Sample3">
+                                                    @Model.VisualLitUp_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="VisualLitUp_Sample4">
+                                                    @Model.VisualLitUp_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="VisualLitUp_Sample5">
+                                                    @Model.VisualLitUp_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="VisualLitUp_Result">
+                                                    @Model.VisualLitUp_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td rowspan="5" class="text-center">8</td>
+                                                <td rowspan="5" style="width:300px;">PCB/COB Fitment</td>
+                                                <td style="width:200px !important;">Thermal Paste should not be dry, cover entire surface of PCB mounting area</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitment_Sample1">
+                                                    @Model.PcbCobFitment_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitment_Sample2">
+                                                    @Model.PcbCobFitment_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitment_Sample3">
+                                                    @Model.PcbCobFitment_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitment_Sample4">
+                                                    @Model.PcbCobFitment_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitment_Sample5">
+                                                    @Model.PcbCobFitment_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitment_Result">
+                                                    @Model.PcbCobFitment_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px !important;">No gaps in between Housing and PCB.</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentNoGaps_Sample1">
+                                                    @Model.PcbCobFitmentNoGaps_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentNoGaps_Sample2">
+                                                    @Model.PcbCobFitmentNoGaps_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentNoGaps_Sample3">
+                                                    @Model.PcbCobFitmentNoGaps_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentNoGaps_Sample4">
+                                                    @Model.PcbCobFitmentNoGaps_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentNoGaps_Sample5">
+                                                    @Model.PcbCobFitmentNoGaps_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentNoGaps_Result">
+                                                    @Model.PcbCobFitmentNoGaps_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px !important;">PCB holding screw / Button should be intact.</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentScrew_Sample1">
+                                                    @Model.PcbCobFitmentScrew_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentScrew_Sample2">
+                                                    @Model.PcbCobFitmentScrew_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentScrew_Sample3">
+                                                    @Model.PcbCobFitmentScrew_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentScrew_Sample4">
+                                                    @Model.PcbCobFitmentScrew_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentScrew_Sample5">
+                                                    @Model.PcbCobFitmentScrew_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentScrew_Result">
+                                                    @Model.PcbCobFitmentScrew_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px !important;">screw or washers should not touches LED</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentWasher_Sample1">
+                                                    @Model.PcbCobFitmentWasher_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentWasher_Sample2">
+                                                    @Model.PcbCobFitmentWasher_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentWasher_Sample3">
+                                                    @Model.PcbCobFitmentWasher_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentWasher_Sample4">
+                                                    @Model.PcbCobFitmentWasher_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentWasher_Sample5">
+                                                    @Model.PcbCobFitmentWasher_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentWasher_Result">
+                                                    @Model.PcbCobFitmentWasher_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px !important;">PCB tracks and dimensions as per drawing.</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentDrawing_Sample1">
+                                                    @Model.PcbCobFitmentDrawing_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentDrawing_Sample2">
+                                                    @Model.PcbCobFitmentDrawing_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentDrawing_Sample3">
+                                                    @Model.PcbCobFitmentDrawing_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentDrawing_Sample4">
+                                                    @Model.PcbCobFitmentDrawing_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentDrawing_Sample5">
+                                                    @Model.PcbCobFitmentDrawing_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="PcbCobFitmentDrawing_Result">
+                                                    @Model.PcbCobFitmentDrawing_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td rowspan="3" class="text-center">9</td>
+                                                <td rowspan="3" style="width:300px;">Soldering</td>
+                                                <td style="width:200px !important;">Free from Dry soldering</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Soldering_Sample1">
+                                                    @Model.Soldering_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Soldering_Sample2">
+                                                    @Model.Soldering_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Soldering_Sample3">
+                                                    @Model.Soldering_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Soldering_Sample4">
+                                                    @Model.Soldering_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Soldering_Sample5">
+                                                    @Model.Soldering_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Soldering_Result">
+                                                    @Model.Soldering_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px !important;">Free from Spatter</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingSpatter_Sample1">
+                                                    @Model.SolderingSpatter_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingSpatter_Sample2">
+                                                    @Model.SolderingSpatter_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingSpatter_Sample3">
+                                                    @Model.SolderingSpatter_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingSpatter_Sample4">
+                                                    @Model.SolderingSpatter_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingSpatter_Sample5">
+                                                    @Model.SolderingSpatter_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingSpatter_Result">
+                                                    @Model.SolderingSpatter_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:200px !important;">Globule formation with Shiny finish </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingGlobule_Sample1">
+                                                    @Model.SolderingGlobule_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingGlobule_Sample2">
+                                                    @Model.SolderingGlobule_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingGlobule_Sample3">
+                                                    @Model.SolderingGlobule_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingGlobule_Sample4">
+                                                    @Model.SolderingGlobule_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingGlobule_Sample5">
+                                                    @Model.SolderingGlobule_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="SolderingGlobule_Result">
+                                                    @Model.SolderingGlobule_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">10</td>
+                                                <td style="width:300px;">Wiring & dressing</td>
+                                                <td style="width:200px !important;"></td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiringDressing_Sample1">
+                                                    @Model.WiringDressing_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiringDressing_Sample2">
+                                                    @Model.WiringDressing_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiringDressing_Sample3">
+                                                    @Model.WiringDressing_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiringDressing_Sample4">
+                                                    @Model.WiringDressing_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiringDressing_Sample5">
+                                                    @Model.WiringDressing_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="WiringDressing_Result">
+                                                    @Model.WiringDressing_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">11</td>
+                                                <td style="width:300px;">Mechanical fitment with mating part</td>
+                                                <td style="width:200px !important;"></td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="MechanicalFitment_Sample1">
+                                                    @Model.MechanicalFitment_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="MechanicalFitment_Sample2">
+                                                    @Model.MechanicalFitment_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="MechanicalFitment_Sample3">
+                                                    @Model.MechanicalFitment_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="MechanicalFitment_Sample4">
+                                                    @Model.MechanicalFitment_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="MechanicalFitment_Sample5">
+                                                    @Model.MechanicalFitment_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="MechanicalFitment_Result">
+                                                    @Model.MechanicalFitment_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">12</td>
+                                                <td style="width:300px;">Gap between LED & Lens.</td>
+                                                <td style="width:200px !important;">Gap should be there</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="LedLensGap_Sample1">
+                                                    @Model.LedLensGap_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="LedLensGap_Sample2">
+                                                    @Model.LedLensGap_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="LedLensGap_Sample3">
+                                                    @Model.LedLensGap_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="LedLensGap_Sample4">
+                                                    @Model.LedLensGap_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="LedLensGap_Sample5">
+                                                    @Model.LedLensGap_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="LedLensGap_Result">
+                                                    @Model.LedLensGap_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">13</td>
+                                                <td style="width:300px;">Gasket</td>
+                                                <td style="width:200px !important;">Fitment & Hardness</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Gasket_Sample1">
+                                                    @Model.Gasket_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Gasket_Sample2">
+                                                    @Model.Gasket_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Gasket_Sample3">
+                                                    @Model.Gasket_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Gasket_Sample4">
+                                                    @Model.Gasket_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Gasket_Sample5">
+                                                    @Model.Gasket_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="Gasket_Result">
+                                                    @Model.Gasket_Result
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center">14</td>
+                                                <td style="width:300px;">Fragmentation for toughen glass </td>
+                                                <td style="width:200px !important;">As per design docket</td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="GlassFragmentation_Sample1">
+                                                    @Model.GlassFragmentation_Sample1
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="GlassFragmentation_Sample2">
+                                                    @Model.GlassFragmentation_Sample2
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="GlassFragmentation_Sample3">
+                                                    @Model.GlassFragmentation_Sample3
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="GlassFragmentation_Sample4">
+                                                    @Model.GlassFragmentation_Sample4
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="GlassFragmentation_Sample5">
+                                                    @Model.GlassFragmentation_Sample5
+                                                </td>
+                                                <td class="td-text-wrap" contenteditable="true" data-name="GlassFragmentation_Result">
+                                                    @Model.GlassFragmentation_Result
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row form-group align-items-center mb-2">
+                                    <div class="col-3 pe-3 align-items-center">
+                                        <label class="me-3"><b>Tested By</b></label><em>*</em>
+                                        @Html.TextBoxFor(m => m.TestedBy, new { @class = "form-control" })
+                                    </div>
+                                    <div class="col-3 pe-3 align-items-center">
+                                        <label class="me-3"><b>Verified By</b></label>
+                                        @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+
+    <script>
+        function insertUpdatePhyCheck() {
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'Report_No', name: 'Report No' },
+                { id: 'Project_Name', name: 'Customer/Project Name' },
+                { id: 'Quantity', name: 'Quantity' }
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }
+                else if (field.id === 'Quantity') {
+                    const quantity = Number(value.trim());
+
+                    if (quantity === 0) {
+                        isValid = false;
+                        missingFields.push(field.name + " (cannot be 0)");
+                    }
+                }
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#physicalCheck-form')[0];
+            const formData = new FormData(form);
+
+            $('#observationTable [contenteditable="true"]').each(function() {
+                const dataName = $(this).data('name');
+                const content = $(this).text().trim();
+
+                if (dataName) {
+                    formData.append(dataName, content);
+                }
+            });
+
+            $.ajax({
+                url: $('#physicalCheck-form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+                    if (!response.success) {
+                        var errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg != "") {
+                                showDangerAlert(errorMessg);
+                            }
+                        }
+                        else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    }
+                    else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script>
+}
+
+@section HideSidebar { }

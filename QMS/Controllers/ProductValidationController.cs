@@ -48,6 +48,10 @@ public class ProductValidationController : Controller
         }
             return View(model);
     }
+    public IActionResult ElectricalPerformanceDetails(int Id)
+    {
+        return View(); 
+    }
 
     public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
     {

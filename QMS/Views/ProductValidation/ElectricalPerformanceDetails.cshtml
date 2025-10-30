@@ -1,0 +1,1724 @@
+﻿@using QMS.Core.Models
+
+@model PhysicalCheckAndVisualInspectionViewModel
+
+@{
+    ViewData["Title"] = "Physical Check & Visual Inspection Details";
+}
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+
+<style>
+    .nav-pills .nav-link {
+        text-align: left;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+        font-weight: 500;
+        width: 100%;
+        padding: 12px;
+        background-color: #fff;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: #f4f3f8;
+            border-left: 4px solid #645394;
+            color: #645394;
+            font-weight: bold;
+        }
+
+    .form-control {
+        padding: 0 9px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+        .form-control:disabled, .form-control[readonly] {
+            background-color: #fff !important;
+        }
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+
+    .custome-body {
+        margin-bottom: -17px !important;
+        padding: 0.75rem !important;
+        margin-top: -17px !important;
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 30px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    .calendar-container {
+        cursor: pointer;
+        padding: 10px 15px;
+        width: 100%;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        gap: 8px;
+    }
+
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+            padding-left: 20px;
+        }
+
+        .calendar-container span {
+            color: #4682B4;
+            margin: 0;
+            font-size: 16px;
+        }
+
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
+    .month-item {
+        font-size: 14px;
+    }
+
+    #observationTable {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        #observationTable, #observationTable th, #observationTable td {
+            border: 1px solid black;
+        }
+
+            #observationTable th {
+                text-align: center;
+            }
+
+            #observationTable th {
+                background-color: lightgray;
+            }
+
+            #observationTable td {
+                padding: 5px;
+            }
+
+    .td-text-wrap {
+        width: 150px;
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+
+    em {
+        color: red;
+        font-weight: 700;
+    }
+    /* === Excel-like sheet === */
+    .sheet {
+        border: 1px solid #000;
+        border-radius: 2px;
+        background: #fff;
+        overflow: hidden;
+        font-size: 14px;
+    }
+
+    .row-grid {
+        display: grid;
+        grid-template-columns: 2fr 4fr 2fr 4fr; /* Label | Input | Label | Input */
+        border-top: 1px solid #000;
+       
+    }
+
+        .row-grid:first-child {
+            border-top: 0;
+        }
+
+    .cell {
+        border-left: 1px solid #000;
+        display: flex;
+        align-items: center;
+        padding: 6px 10px;
+        gap: 8px;
+    }
+
+        .cell:first-child {
+            border-left: 0;
+        }
+
+        .cell label {
+            font-weight: 700;
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .cell em {
+            color: #d00;
+            font-style: normal;
+            margin-left: 4px;
+        }
+
+        .cell .form-control {
+            height: 32px;
+            padding: 4px 8px;
+        }
+
+        /* Inputs stretch but keep label tight */
+        .cell .input-wrap {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            min-width: 80px;
+        }
+
+    /* Responsive: stack to 1 label + 1 input per line */
+    @@media (max-width: 992px) {
+        .row-grid
+
+    {
+        grid-template-columns: 2fr 4fr;
+    }
+
+    .row-grid .cell:nth-child(3) {
+        border-left: 0;
+    }
+    /* start new pair cleanly */
+    }
+
+    table.report {
+        width: 100%;
+        border-collapse: collapse; /* ensures no double lines */
+        table-layout: fixed;
+        background: #fff;
+        border: 1px solid #444; /* overall table border */
+    }
+
+    .report th,
+    .report td {
+        border: 1px solid #444; /* add solid border to every cell */
+        padding: 8px 10px;
+        font-size: 14px;
+        vertical-align: middle;
+    }
+
+    /* Header styles */
+    .report thead th {
+        background: #f6f7fb;
+        font-weight: 700;
+        text-align: center;
+        border: 1px solid #444; /* ensure header line continuity */
+    }
+
+    .report thead .group {
+        font-size: 15px;
+        letter-spacing: .3px;
+    }
+
+    .report thead .red {
+        color: #c1121f;
+        white-space: nowrap;
+    }
+
+    Column widths */
+    .w-sample {
+        width: 80px;
+    }
+
+    .w-params {
+        width: 160px;
+    }
+
+    .w-result {
+        width: 150px;
+    }
+
+    .w-narrow {
+        width: 90px;
+    }
+
+    /* Row labels
+    .label {
+        font-weight: 600;
+        text-align: center;
+        color: #4b5563;
+    }
+
+    /* Zebra striping for readability */
+    tbody tr:nth-child(even) td {
+        background: #fafbff;
+    }
+
+    /* Optional: make borders slightly darker on print */
+    @@media print {
+        .report th, .report td
+
+    {
+        border: 1px solid #000;
+    }
+
+    }
+
+</style>
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-right">
+                        <div style="padding-bottom:10px;">
+                            <button id="addEelectPerButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="" >
+                                <i class="fas fa-save mr-1"></i>Save
+                            </button>
+                            <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("ElectricalPerformance", "ProductValidation")'" >
+                                <i class="fas fa-times-circle"></i>Back
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <form id="ElectricalPer-form" method="post" asp-action="InsertUpdateElectricalPerformanceDetails" asp-controller="ProductValidation">
+                        @Html.HiddenFor(m => m.Id)
+
+                        <div class="sheet">
+                            <!-- Row 1 -->
+                            <div class="row-grid">
+                                <div class="cell">
+                                    <label>Product Cat Ref :</label>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                     @*    @Html.TextBoxFor(m => m.Product_Cat_Ref, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+
+                                <div class="cell">
+                                    <label>Product Description :</label>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                    @*     @Html.TextBoxFor(m => m.Product_Description, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <div class="row-grid">
+                                <div class="cell">
+                                    <label>Report No.:</label><em>*</em>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                        @* @Html.TextBoxFor(m => m.Report_No, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+
+                                <div class="cell">
+                                    <label>Date :</label>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                       @*  @Html.TextBoxFor(m => m.Report_Date, "{0:dd/MM/yyyy}", new { @class = "form-control", @readonly = "readonly" }) *@
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Row 3 -->
+                            <div class="row-grid">
+                                <div class="cell">
+                                    <label>Light Source Details :</label><em>*</em>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                        @* free text or dropdown *@
+                                      @*   @Html.TextBoxFor(m => m.LightSourceDetails, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+
+                                <div class="cell">
+                                    <label>Driver Details &amp; Qty :</label>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                       @*  @Html.TextBoxFor(m => m.DriverDetailsQty, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Row 4 -->
+                            <div class="row-grid">
+                                <div class="cell">
+                                    <label>PCB Details &amp; Qty :</label><em>*</em>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                       @*  @Html.TextBoxFor(m => m.PCBDetailsQty, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+
+                                <div class="cell">
+                                    <label>LED Combinations:</label>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                        @* @Html.TextBoxFor(m => m.LedCombinations, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Row 5 -->
+                            <div class="row-grid">
+                                <div class="cell">
+                                    <label>Sensor Details &amp; Qty :</label><em>*</em>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                        @* @Html.TextBoxFor(m => m.SensorDetailsQty, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+
+                                <div class="cell">
+                                    <label>Batch Code:</label>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                        @* @Html.TextBoxFor(m => m.Batch_Code, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Row 6 -->
+                            <div class="row-grid">
+                                <div class="cell">
+                                    <label>Lamp Details</label>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                       @*  @Html.TextBoxFor(m => m.LampDetails, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+
+                                <div class="cell">
+                                    <label>PKD-</label><em>*</em>
+                                </div>
+                                <div class="cell">
+                                    <div class="input-wrap">
+                                       @*  @Html.TextBoxFor(m => m.PKD, new { @class = "form-control" }) *@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                      
+                    </form>
+
+
+                    <div class="row" style="padding-top:10px;">
+            <div class="col-12">
+                <table class="report" aria-label="Electrical Parameters Test Sheet">
+                    <colgroup>
+                        <col class="w-sample">
+                        <col class="w-params">
+                        <!-- input (6) -->
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <!-- output (6) -->
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <col class="w-narrow">
+                        <!-- result -->
+                        <col class="w-result">
+                    </colgroup>
+
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Sample No</th>
+                            <th rowspan="2">Electrical Parameters</th>
+
+                            <!-- INPUT group -->
+                            <th class="group" colspan="6">INPUT Parameter</th>
+
+                            <!-- OUTPUT group -->
+                            <th class="group" colspan="6">OUTPUT Parameter</th>
+
+                            <th class="red" rowspan="2">Result - Pass/ Fail</th>
+                        </tr>
+                        <tr>
+                            <!-- INPUT leaf headers -->
+                            <th>Vac</th>
+                            <th>Iac (A)</th>
+                            <th>Wac</th>
+                            <th>PF</th>
+                            <th>ATHD (%)</th>
+                            <th>Vdc</th>
+
+                            <!-- OUTPUT leaf headers -->
+                            <th>Vdc</th>
+                            <th>Idc (A)</th>
+                            <th>Wdc</th>
+                            <th>Efficiency (%)</th>
+                            <th>No load voltage (Vdc)</th>
+                            <th>Starting voltage (Vac)</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
+                        <tr>
+                            <td rowspan="12" class="label">1</td>
+                            <td rowspan="6" class="label">Before soaking</td>
+
+                            <!-- empty data cells row 1 -->
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <!-- five more empty rows under "Before soaking" -->
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+
+                        <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
+                        <tr>
+                            <td rowspan="6" class="label">After 2 hrs Soaking</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">Sample No</th>
+                                        <th rowspan="2">Electrical Parameters</th>
+
+                                        <!-- INPUT group -->
+                                        <th class="group" colspan="6">INPUT Parameter</th>
+
+                                        <!-- OUTPUT group -->
+                                        <th class="group" colspan="6">OUTPUT Parameter</th>
+
+                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
+                                    </tr>
+                                    <tr>
+                                        <!-- INPUT leaf headers -->
+                                        <th>Vac</th>
+                                        <th>Iac (A)</th>
+                                        <th>Wac</th>
+                                        <th>PF</th>
+                                        <th>ATHD (%)</th>
+                                        <th>Vdc</th>
+
+                                        <!-- OUTPUT leaf headers -->
+                                        <th>Vdc</th>
+                                        <th>Idc (A)</th>
+                                        <th>Wdc</th>
+                                        <th>Efficiency (%)</th>
+                                        <th>No load voltage (Vdc)</th>
+                                        <th>Starting voltage (Vac)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="12" class="label">2</td>
+                                        <td rowspan="6" class="label">Before soaking</td>
+
+                                        <!-- empty data cells row 1 -->
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <!-- five more empty rows under "Before soaking" -->
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">Sample No</th>
+                                        <th rowspan="2">Electrical Parameters</th>
+
+                                        <!-- INPUT group -->
+                                        <th class="group" colspan="6">INPUT Parameter</th>
+
+                                        <!-- OUTPUT group -->
+                                        <th class="group" colspan="6">OUTPUT Parameter</th>
+
+                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
+                                    </tr>
+                                    <tr>
+                                        <!-- INPUT leaf headers -->
+                                        <th>Vac</th>
+                                        <th>Iac (A)</th>
+                                        <th>Wac</th>
+                                        <th>PF</th>
+                                        <th>ATHD (%)</th>
+                                        <th>Vdc</th>
+
+                                        <!-- OUTPUT leaf headers -->
+                                        <th>Vdc</th>
+                                        <th>Idc (A)</th>
+                                        <th>Wdc</th>
+                                        <th>Efficiency (%)</th>
+                                        <th>No load voltage (Vdc)</th>
+                                        <th>Starting voltage (Vac)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="12" class="label">3</td>
+                                        <td rowspan="6" class="label">Before soaking</td>
+
+                                        <!-- empty data cells row 1 -->
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <!-- five more empty rows under "Before soaking" -->
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">Sample No</th>
+                                        <th rowspan="2">Electrical Parameters</th>
+
+                                        <!-- INPUT group -->
+                                        <th class="group" colspan="6">INPUT Parameter</th>
+
+                                        <!-- OUTPUT group -->
+                                        <th class="group" colspan="6">OUTPUT Parameter</th>
+
+                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
+                                    </tr>
+                                    <tr>
+                                        <!-- INPUT leaf headers -->
+                                        <th>Vac</th>
+                                        <th>Iac (A)</th>
+                                        <th>Wac</th>
+                                        <th>PF</th>
+                                        <th>ATHD (%)</th>
+                                        <th>Vdc</th>
+
+                                        <!-- OUTPUT leaf headers -->
+                                        <th>Vdc</th>
+                                        <th>Idc (A)</th>
+                                        <th>Wdc</th>
+                                        <th>Efficiency (%)</th>
+                                        <th>No load voltage (Vdc)</th>
+                                        <th>Starting voltage (Vac)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="12" class="label">4</td>
+                                        <td rowspan="6" class="label">Before soaking</td>
+
+                                        <!-- empty data cells row 1 -->
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <!-- five more empty rows under "Before soaking" -->
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">Sample No</th>
+                                        <th rowspan="2">Electrical Parameters</th>
+
+                                        <!-- INPUT group -->
+                                        <th class="group" colspan="6">INPUT Parameter</th>
+
+                                        <!-- OUTPUT group -->
+                                        <th class="group" colspan="6">OUTPUT Parameter</th>
+
+                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
+                                    </tr>
+                                    <tr>
+                                        <!-- INPUT leaf headers -->
+                                        <th>Vac</th>
+                                        <th>Iac (A)</th>
+                                        <th>Wac</th>
+                                        <th>PF</th>
+                                        <th>ATHD (%)</th>
+                                        <th>Vdc</th>
+
+                                        <!-- OUTPUT leaf headers -->
+                                        <th>Vdc</th>
+                                        <th>Idc (A)</th>
+                                        <th>Wdc</th>
+                                        <th>Efficiency (%)</th>
+                                        <th>No load voltage (Vdc)</th>
+                                        <th>Starting voltage (Vac)</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="12" class="label">5</td>
+                                        <td rowspan="6" class="label">Before soaking</td>
+
+                                        <!-- empty data cells row 1 -->
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <!-- five more empty rows under "Before soaking" -->
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
+                                    <tr>
+                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                    </tr>
+
+                        <!-- ===== Duplicate the above 12-row block for Sample #2, #3, ... if needed ===== -->
+                    </tbody>
+                </table>
+            </div>
+       
+            </div>
+       </div>
+  <div class="card-body">
+            <div class="row form-group align-items-center mb-2">
+                <div class="col-3 pe-3 align-items-center">
+                    <label class="me-3"><b>Tested By</b></label><em>*</em>
+                    @Html.TextBoxFor(m => m.TestedBy, new { @class = "form-control" })
+                </div>
+                <div class="col-3 pe-3 align-items-center">
+                    <label class="me-3"><b>Verified By</b></label>
+                    @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "form-control" })
+                </div>
+                </div>
+            </div>
+    </div>
+    </div>
+</div>
+
+</div>
+
+
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    @* 
+  <script> 
+        function insertUpdatePhyCheck() {
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'Report_No', name: 'Report No' },
+                { id: 'Project_Name', name: 'Customer/Project Name' },
+                { id: 'Quantity', name: 'Quantity' }
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }
+                else if (field.id === 'Quantity') {
+                    const quantity = Number(value.trim());
+
+                    if (quantity === 0) {
+                        isValid = false;
+                        missingFields.push(field.name + " (cannot be 0)");
+                    }
+                }
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#physicalCheck-form')[0];
+            const formData = new FormData(form);
+
+            $('#observationTable [contenteditable="true"]').each(function() {
+                const dataName = $(this).data('name');
+                const content = $(this).text().trim();
+
+                if (dataName) {
+                    formData.append(dataName, content);
+                }
+            });
+
+            $.ajax({
+                url: $('#physicalCheck-form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+                    if (!response.success) {
+                        var errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg != "") {
+                                showDangerAlert(errorMessg);
+                            }
+                        }
+                        else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    }
+                    else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script> *@
+}
+
+@section HideSidebar { }

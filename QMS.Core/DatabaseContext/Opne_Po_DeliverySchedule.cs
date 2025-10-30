@@ -44,6 +44,12 @@ namespace QMS.Core.DatabaseContext
         public int? Comit_Final_Qty { get; set; }
         public string? Key { get; set; }
         public string? Key1 { get; set; }
+        public string? Comit_DateStr { get; set; }
+        public string? Comit_QtyStr { get; set; }
+        public string? Comit_Date1Str { get; set; }
+        public string? Comit_Qty1Str { get; set; }
+        public string? Comit_Final_DateStr { get; set; }
+        public string? Comit_Final_QtyStr { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
     }

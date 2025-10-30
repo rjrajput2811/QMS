@@ -29,6 +29,19 @@ public class ProductValidationController : Controller
     {
         return View();
     }
+    public IActionResult ElectricalPerformance()
+    {
+        return View();
+    }
+    public IActionResult Electricalprotection()
+    {
+        return View();
+    }
+    public IActionResult Electricalprotectiondetails()
+    {
+        return View();
+    }
+
 
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
     {
@@ -42,6 +55,10 @@ public class ProductValidationController : Controller
             model.Report_Date = DateTime.Now;
         }
             return View(model);
+    }
+    public IActionResult ElectricalPerformanceDetails(int Id)
+    {
+        return View(); 
     }
 
     public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()

@@ -1,0 +1,142 @@
+﻿@{
+    ViewData["Title"] = "CSAT Summary Report";
+}
+
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<script src="~/js/tabulator.min.js"></script>
+
+
+<div class="card shadow-sm mb-2">
+    <div class="card-body d-flex justify-content-between align-items-center py-2">
+    
+        <div>
+            <b style="font-size: large; color: #4682B4;">CSAT Summary Report</b>
+        </div>
+
+
+        <div>
+            <button id="saveButton" type="button" class="btn btn-outline-success mr-2"
+                    style="width: 120px; font-size:15px">
+                <i class="fas fa-save mr-2 fa-1x"></i>SAVE
+            </button>
+
+            <button id="exportButton" type="button" class="btn btn-outline-danger mr-2"
+                    style="width: 140px; font-size:15px">
+                <i class="fas fa-file-excel mr-2 fa-1x"></i>EXPORT XL
+            </button>
+
+            <button id="backButton" class="btn btn-outline-primary"
+                    onclick="location.href='@Url.Action("TrackerMenu", "Home")'"
+                    style="width: 120px; font-size:15px">
+                <i class="fas fa-arrow-left mr-1"></i>BACK
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div id="csatTable"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        var tableData = [
+            { quarter: "1", pc: "PC1", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC2", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC3", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "Q1", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+
+            { quarter: "2", pc: "PC4", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC5", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC6", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "Q2", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+
+            { quarter: "3", pc: "PC7", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC8", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC9", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "Q3", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+
+            { quarter: "4", pc: "PC10", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC11", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "PC12", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+            { quarter: "", pc: "Q4", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+
+            { quarter: "YTD", pc: "", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" }
+        ];
+
+        var table = new Tabulator("#csatTable", {
+            data: tableData,
+            layout: "fitColumns",
+            columns: [
+                { title: "Quarter", field: "quarter", hozAlign: "center", width: 100 },
+                { title: "PC", field: "pc", hozAlign: "center", width: 100 },
+                { title: "Request Sent", field: "reqSent", hozAlign: "center", editor: "input" },
+                { title: "Responses Received", field: "resRec", hozAlign: "center", editor: "input" },
+                { title: "Promoters", field: "promoters", hozAlign: "center", editor: "input" },
+                { title: "% Collection", field: "collection", hozAlign: "center", editor: "input" },
+                { title: "Detractors", field: "detractors", hozAlign: "center", editor: "input" },
+                { title: "NPS", field: "nps", hozAlign: "center", editor: "input" },
+                { title: "Detractor Details", field: "detDetails", hozAlign: "center", editor: "input" }
+            ],
+            movableColumns: false,
+            resizableRows: false,
+            height: "auto"
+        });
+
+     
+        document.getElementById("exportButton").addEventListener("click", function () {
+            table.download("xlsx", "CSAT_Summary.xlsx", { sheetName: "CSAT Summary" });
+        });
+
+      
+        document.getElementById("saveButton").addEventListener("click", function () {
+            console.log("Saved Data:", table.getData());
+            alert("Data saved to console (for demo).");
+        });
+    });
+</script>
+
+<style>
+    .tabulator {
+        border: 1px solid #000;
+        font-size: 14px;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .tabulator-header {
+        background: #f1f1f1;
+        font-weight: bold;
+        border-bottom: 1px solid #000;
+        text-align: center;
+    }
+
+    .tabulator-cell {
+        border-right: 1px solid #000;
+        border-bottom: 1px solid #000;
+        white-space: normal;
+        word-wrap: break-word;
+        text-align: center;
+    }
+
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+ 
+    .tabulator-row:nth-child(4n+4) {
+        background-color: #f5f5f5 !important;
+    }
+
+    .tabulator-row:nth-child(4n+1),
+    .tabulator-row:nth-child(4n+2),
+    .tabulator-row:nth-child(4n+3) {
+        background-color: #ffffff !important;
+    }
+</style>
+
+@section HideSidebar { }

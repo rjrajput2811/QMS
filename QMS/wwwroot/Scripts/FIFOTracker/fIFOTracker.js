@@ -517,7 +517,7 @@ Tabulator.extendModule("edit", "editors", {
 
 
 function OnTabGridLoad(response) {
-    debugger;
+  
     Blockloadershow();
 
     tabledata = [];
@@ -545,7 +545,8 @@ function OnTabGridLoad(response) {
                 Responsbility: item.responsbility,
                 Test_Completion_Date: formatDate(item.test_Completion_Date),
                 Report_Release_Date: formatDate(item.report_Release_Date),
-                NABL_Released_Date: formatDate(item.nABL_Released_Date),
+                NABL_Released_Date: formatDate(item.nabL_Released_Date),
+                Current_Status: item.current_Status,
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
                 UpdatedDate: formatDate(item.updatedDate),
@@ -731,6 +732,7 @@ function OnTabGridLoad(response) {
                     Test_Completion_Date: "",
                     Report_Release_Date: "",
                     NABL_Released_Date: "",
+                    Current_Status:"",
                     CreatedBy: "",
                     UpdatedBy: "",
                     UpdatedDate: "",
@@ -1361,7 +1363,7 @@ function delConfirm(recid, element) {
 //}
 
 function InsertUpdateFIFO(rowData) {
-    debugger
+    
     if (!rowData) {
         showDangerAlert("Invalid data provided.");
         return;
@@ -1403,7 +1405,8 @@ function InsertUpdateFIFO(rowData) {
         Responsbility: rowData.Responsbility || null,
         Test_Completion_Date: toIsoDate(rowData.Test_Completion_Date) || null,
         Report_Release_Date: toIsoDate(rowData.Report_Release_Date) || null,
-        NABL_Released_Date: toIsoDate(rowData.NABL_Released_Date) || null
+        NABL_Released_Date: toIsoDate(rowData.NABL_Released_Date) || null,
+        Current_Status: rowData.Current_Status || null ,
     };
 
     const isNew = Model.Id === 0;

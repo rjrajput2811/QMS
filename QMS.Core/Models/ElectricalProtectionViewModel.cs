@@ -10,6 +10,7 @@ namespace QMS.Core.Models
     public class ElectricalProtectionViewModel
     {
         public int Id { get; set; }
+        public string? User { get; set; }
 
         public string? ProductCatRef { get; set; }
         public string? ProductDescription { get; set; }

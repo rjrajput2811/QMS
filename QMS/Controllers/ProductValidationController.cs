@@ -33,6 +33,14 @@ public class ProductValidationController : Controller
     {
         return View();
     }
+    public IActionResult RippleTestReport()
+    {
+        return View();
+    }
+    public IActionResult Rippletestreportdetails()
+    {
+        return View();
+    }
     public IActionResult Electricalprotection()
     {
         return View();

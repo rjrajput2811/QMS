@@ -2,6 +2,7 @@
 using ClosedXML.Excel.Drawings;
 using Microsoft.AspNetCore.Mvc;
 using QMS.Core.Models;
+using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ProductValidationRepo;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -12,13 +13,20 @@ public class ProductValidationController : Controller
 {
     private readonly IPhysicalCheckAndVisualInspectionRepository _physicalCheckAndVisualInspectionRepository;
     private readonly IWebHostEnvironment _hostEnvironment;
+    private readonly IElectricalProtectionRepository _electricalProtectionRepository;
 
-    public ProductValidationController(IPhysicalCheckAndVisualInspectionRepository PhysicalCheckAndVisualInspectionRepository,
-                                       IWebHostEnvironment hostEnvironment)
+
+
+    public ProductValidationController(
+        IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
+        IElectricalProtectionRepository electricalProtectionRepository,
+        IWebHostEnvironment hostEnvironment)
     {
-        _physicalCheckAndVisualInspectionRepository = PhysicalCheckAndVisualInspectionRepository;
+        _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
+        _electricalProtectionRepository = electricalProtectionRepository;
         _hostEnvironment = hostEnvironment;
     }
+   
 
     public IActionResult Index()
     {
@@ -37,10 +45,7 @@ public class ProductValidationController : Controller
     {
         return View();
     }
-    public IActionResult Electricalprotectiondetails()
-    {
-        return View();
-    }
+
 
 
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
@@ -56,6 +61,22 @@ public class ProductValidationController : Controller
         }
             return View(model);
     }
+    public async Task<IActionResult> ElectricalProtectionDetails(int Id)
+    {
+        var model = new ElectricalProtectionViewModel();
+
+        if (Id > 0)
+        {
+            model = await _electricalProtectionRepository.GetElectricalProtectionByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+
+        return View(model);
+    }
+
     public IActionResult ElectricalPerformanceDetails(int Id)
     {
         return View(); 
@@ -100,6 +121,49 @@ public class ProductValidationController : Controller
     public async Task<ActionResult> DeletePhysicalCheckAndVisualInspectionAsync(int Id)
     {
         var result = await _physicalCheckAndVisualInspectionRepository.DeletePhysicalCheckAndVisualInspectionsAsync(Id);
+        return Json(result);
+    }
+    public async Task<ActionResult> GetElectricalProtectionListAsync()
+    {
+        var result = await _electricalProtectionRepository.GetElectricalProtectionsAsync();
+        return Json(result);
+    }
+
+    public async Task<ActionResult> GetElectricalProtectionDetailsAsync(int Id)
+    {
+        var result = await _electricalProtectionRepository.GetElectricalProtectionByIdAsync(Id);
+        return Json(result);
+    }
+    [HttpPost]
+    public async Task<ActionResult> InsertUpdateElectricalProtectionAsync(ElectricalProtectionViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                          .Select(e => e.ErrorMessage)
+                                          .ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _electricalProtectionRepository.UpdateElectricalProtectionAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _electricalProtectionRepository.InsertElectricalProtectionAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DeleteElectricalProtectionAsync(int Id)
+    {
+        var result = await _electricalProtectionRepository.DeleteElectricalProtectionAsync(Id);
         return Json(result);
     }
 

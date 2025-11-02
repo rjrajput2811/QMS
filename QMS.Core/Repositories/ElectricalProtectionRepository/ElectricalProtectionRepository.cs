@@ -13,9 +13,11 @@ namespace QMS.Core.Repositories.ElectricalProtectionRepository
     {
         private new readonly QMSDbContext _dbContext;
         private readonly ISystemLogService _systemLogService;
-        public ElectricalProtectionRepository(QMSDbContext dbContext) : base(dbContext)
+        public ElectricalProtectionRepository(QMSDbContext dbContext, ISystemLogService systemLogService)
+     : base(dbContext)
         {
-
+            _dbContext = dbContext;
+            _systemLogService = systemLogService;
         }
         public async Task<List<ElectricalProtectionViewModel>> GetElectricalProtectionsAsync()
         {
@@ -380,12 +382,149 @@ namespace QMS.Core.Repositories.ElectricalProtectionRepository
             new SqlParameter("@DriverIsolation_Sample5", model.DriverIsolation_Sample5 ?? (object)DBNull.Value),
             new SqlParameter("@DriverIsolation_Result", model.DriverIsolation_Result ?? (object)DBNull.Value),
 
-            new SqlParameter("@HighVoltage_Sample1", model.HighVoltage_Sample1 ?? (object)DBNull.Value),
-            new SqlParameter("@HighVoltage_Sample2", model.HighVoltage_Sample2 ?? (object)DBNull.Value),
-            new SqlParameter("@HighVoltage_Sample3", model.HighVoltage_Sample3 ?? (object)DBNull.Value),
-            new SqlParameter("@HighVoltage_Sample4", model.HighVoltage_Sample4 ?? (object)DBNull.Value),
-            new SqlParameter("@HighVoltage_Sample5", model.HighVoltage_Sample5 ?? (object)DBNull.Value),
-            new SqlParameter("@HighVoltage_Result", model.HighVoltage_Result ?? (object)DBNull.Value),
+    new SqlParameter("@HighVoltage_Sample1", model.HighVoltage_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@HighVoltage_Sample2", model.HighVoltage_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@HighVoltage_Sample3", model.HighVoltage_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@HighVoltage_Sample4", model.HighVoltage_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@HighVoltage_Sample5", model.HighVoltage_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@HighVoltage_Result", model.HighVoltage_Result ?? (object)DBNull.Value),
+
+            // High Voltage Test
+new SqlParameter("@HV_Sample1", model.HV_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@HV_Sample2", model.HV_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@HV_Sample3", model.HV_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@HV_Sample4", model.HV_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@HV_Sample5", model.HV_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@HV_Result", model.HV_Result ?? (object)DBNull.Value),
+
+// Insulation Resistance Test
+new SqlParameter("@InsulationResistance_Sample1", model.InsulationResistance_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@InsulationResistance_Sample2", model.InsulationResistance_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@InsulationResistance_Sample3", model.InsulationResistance_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@InsulationResistance_Sample4", model.InsulationResistance_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@InsulationResistance_Sample5", model.InsulationResistance_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@InsulationResistance_Result", model.InsulationResistance_Result ?? (object)DBNull.Value),
+
+// Earth Continuity Test
+new SqlParameter("@EarthContinuity_Sample1", model.EarthContinuity_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@EarthContinuity_Sample2", model.EarthContinuity_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@EarthContinuity_Sample3", model.EarthContinuity_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@EarthContinuity_Sample4", model.EarthContinuity_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@EarthContinuity_Sample5", model.EarthContinuity_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@EarthContinuity_Result", model.EarthContinuity_Result ?? (object)DBNull.Value),
+
+// SELV Protection Test
+new SqlParameter("@SELVProtection_Sample1", model.SELVProtection_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@SELVProtection_Sample2", model.SELVProtection_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@SELVProtection_Sample3", model.SELVProtection_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@SELVProtection_Sample4", model.SELVProtection_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@SELVProtection_Sample5", model.SELVProtection_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@SELVProtection_Result", model.SELVProtection_Result ?? (object)DBNull.Value),
+
+// Leakage Current Test
+new SqlParameter("@LeakageCurrent_Sample1", model.LeakageCurrent_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@LeakageCurrent_Sample2", model.LeakageCurrent_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@LeakageCurrent_Sample3", model.LeakageCurrent_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@LeakageCurrent_Sample4", model.LeakageCurrent_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@LeakageCurrent_Sample5", model.LeakageCurrent_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@LeakageCurrent_Result", model.LeakageCurrent_Result ?? (object)DBNull.Value),
+
+// Creepage/Clearance Test
+new SqlParameter("@CreepageClearance_Sample1", model.CreepageClearance_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@CreepageClearance_Sample2", model.CreepageClearance_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@CreepageClearance_Sample3", model.CreepageClearance_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@CreepageClearance_Sample4", model.CreepageClearance_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@CreepageClearance_Sample5", model.CreepageClearance_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@CreepageClearance_Result", model.CreepageClearance_Result ?? (object)DBNull.Value),
+
+// HiPot MCPCB Test
+new SqlParameter("@HiPotMCPCB_Sample1", model.HiPotMCPCB_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@HiPotMCPCB_Sample2", model.HiPotMCPCB_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@HiPotMCPCB_Sample3", model.HiPotMCPCB_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@HiPotMCPCB_Sample4", model.HiPotMCPCB_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@HiPotMCPCB_Sample5", model.HiPotMCPCB_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@HiPotMCPCB_Result", model.HiPotMCPCB_Result ?? (object)DBNull.Value),
+
+// On/Off Switching Test
+new SqlParameter("@OnOffSwitching_Sample1", model.OnOffSwitching_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@OnOffSwitching_Sample2", model.OnOffSwitching_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@OnOffSwitching_Sample3", model.OnOffSwitching_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@OnOffSwitching_Sample4", model.OnOffSwitching_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@OnOffSwitching_Sample5", model.OnOffSwitching_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@OnOffSwitching_Result", model.OnOffSwitching_Result ?? (object)DBNull.Value),
+
+// Soaking / Ageing Test
+new SqlParameter("@SoakingAgeing_Sample1", model.SoakingAgeing_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@SoakingAgeing_Sample2", model.SoakingAgeing_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@SoakingAgeing_Sample3", model.SoakingAgeing_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@SoakingAgeing_Sample4", model.SoakingAgeing_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@SoakingAgeing_Sample5", model.SoakingAgeing_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@SoakingAgeing_Result", model.SoakingAgeing_Result ?? (object)DBNull.Value),
+
+// Rolling Endurance Test
+new SqlParameter("@RollingEndurance_Sample1", model.RollingEndurance_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@RollingEndurance_Sample2", model.RollingEndurance_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@RollingEndurance_Sample3", model.RollingEndurance_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@RollingEndurance_Sample4", model.RollingEndurance_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@RollingEndurance_Sample5", model.RollingEndurance_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@RollingEndurance_Result", model.RollingEndurance_Result ?? (object)DBNull.Value),
+
+// Glow test
+new SqlParameter("@GlowTest_Sample1", model.GlowTest_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@GlowTest_Sample2", model.GlowTest_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@GlowTest_Sample3", model.GlowTest_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@GlowTest_Sample4", model.GlowTest_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@GlowTest_Sample5", model.GlowTest_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@GlowTest_Result", model.GlowTest_Result ?? (object)DBNull.Value),
+
+// Lamp Accommodation Test
+new SqlParameter("@LampAccommodation_Sample1", model.LampAccommodation_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@LampAccommodation_Sample2", model.LampAccommodation_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@LampAccommodation_Sample3", model.LampAccommodation_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@LampAccommodation_Sample4", model.LampAccommodation_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@LampAccommodation_Sample5", model.LampAccommodation_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@LampAccommodation_Result", model.LampAccommodation_Result ?? (object)DBNull.Value),
+
+// Dali Function
+new SqlParameter("@DaliFunction_Sample1", model.DaliFunction_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@DaliFunction_Sample2", model.DaliFunction_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@DaliFunction_Sample3", model.DaliFunction_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@DaliFunction_Sample4", model.DaliFunction_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@DaliFunction_Sample5", model.DaliFunction_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@DaliFunction_Result", model.DaliFunction_Result ?? (object)DBNull.Value),
+
+// Tuneable CCT
+new SqlParameter("@TuneableCCT_Sample1", model.TuneableCCT_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@TuneableCCT_Sample2", model.TuneableCCT_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@TuneableCCT_Sample3", model.TuneableCCT_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@TuneableCCT_Sample4", model.TuneableCCT_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@TuneableCCT_Sample5", model.TuneableCCT_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@TuneableCCT_Result", model.TuneableCCT_Result ?? (object)DBNull.Value),
+
+// Battery Backup
+new SqlParameter("@BatteryBackup_Sample1", model.BatteryBackup_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@BatteryBackup_Sample2", model.BatteryBackup_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@BatteryBackup_Sample3", model.BatteryBackup_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@BatteryBackup_Sample4", model.BatteryBackup_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@BatteryBackup_Sample5", model.BatteryBackup_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@BatteryBackup_Result", model.BatteryBackup_Result ?? (object)DBNull.Value),
+
+// Smart Lighting
+new SqlParameter("@SmartLighting_Sample1", model.SmartLighting_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@SmartLighting_Sample2", model.SmartLighting_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@SmartLighting_Sample3", model.SmartLighting_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@SmartLighting_Sample4", model.SmartLighting_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@SmartLighting_Sample5", model.SmartLighting_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@SmartLighting_Result", model.SmartLighting_Result ?? (object)DBNull.Value),
+
+// Sensor Function
+new SqlParameter("@SensorFunction_Sample1", model.SensorFunction_Sample1 ?? (object)DBNull.Value),
+new SqlParameter("@SensorFunction_Sample2", model.SensorFunction_Sample2 ?? (object)DBNull.Value),
+new SqlParameter("@SensorFunction_Sample3", model.SensorFunction_Sample3 ?? (object)DBNull.Value),
+new SqlParameter("@SensorFunction_Sample4", model.SensorFunction_Sample4 ?? (object)DBNull.Value),
+new SqlParameter("@SensorFunction_Sample5", model.SensorFunction_Sample5 ?? (object)DBNull.Value),
+new SqlParameter("@SensorFunction_Result", model.SensorFunction_Result ?? (object)DBNull.Value),
+
 
             new SqlParameter("@OverallReportResult", model.OverallReportResult ?? (object)DBNull.Value),
             new SqlParameter("@TestedByName", model.TestedByName ?? (object)DBNull.Value),
@@ -395,20 +534,35 @@ namespace QMS.Core.Repositories.ElectricalProtectionRepository
         };
 
                 await _dbContext.Database.ExecuteSqlRawAsync("EXEC sp_Insert_ElectricalProtection " +
-                    "@ProductCatRef, @ProductDescription, @ReportNo, @ReportDate, @BatchCode, @PKD, " +
-                    "@LightSourceDetails, @DriverDetailsQty, @PCBDetailsQty, @LEDCombinations, @SensorDetailsQty, @LampDetails, " +
-                    "@UnderVoltage_Sample1, @UnderVoltage_Sample2, @UnderVoltage_Sample3, @UnderVoltage_Sample4, @UnderVoltage_Sample5, @UnderVoltage_Result, " +
-                    "@OverVoltage_Sample1, @OverVoltage_Sample2, @OverVoltage_Sample3, @OverVoltage_Sample4, @OverVoltage_Sample5, @OverVoltage_Result, " +
-                    "@OpenCircuit_Sample1, @OpenCircuit_Sample2, @OpenCircuit_Sample3, @OpenCircuit_Sample4, @OpenCircuit_Sample5, @OpenCircuit_Result, " +
-                    "@ShortCircuit_Sample1, @ShortCircuit_Sample2, @ShortCircuit_Sample3, @ShortCircuit_Sample4, @ShortCircuit_Sample5, @ShortCircuit_Result, " +
-                    "@ReversePolarity_Sample1, @ReversePolarity_Sample2, @ReversePolarity_Sample3, @ReversePolarity_Sample4, @ReversePolarity_Sample5, @ReversePolarity_Result, " +
-                    "@OverLoad_Sample1, @OverLoad_Sample2, @OverLoad_Sample3, @OverLoad_Sample4, @OverLoad_Sample5, @OverLoad_Result, " +
-                    "@OverThermal_Sample1, @OverThermal_Sample2, @OverThermal_Sample3, @OverThermal_Sample4, @OverThermal_Sample5, @OverThermal_Result, " +
-                    "@EarthFault_Sample1, @EarthFault_Sample2, @EarthFault_Sample3, @EarthFault_Sample4, @EarthFault_Sample5, @EarthFault_Result, " +
-                    "@DriverIsolation_Sample1, @DriverIsolation_Sample2, @DriverIsolation_Sample3, @DriverIsolation_Sample4, @DriverIsolation_Sample5, @DriverIsolation_Result, " +
-                    "@HighVoltage_Sample1, @HighVoltage_Sample2, @HighVoltage_Sample3, @HighVoltage_Sample4, @HighVoltage_Sample5, @HighVoltage_Result, " +
-                    "@OverallReportResult, @TestedByName, @VerifiedByName, @AddedBy, @AddedOn",
-                    parameters);
+                 "@ProductCatRef, @ProductDescription, @ReportNo, @ReportDate, @BatchCode, @PKD, " +
+"@LightSourceDetails, @DriverDetailsQty, @PCBDetailsQty, @LEDCombinations, @SensorDetailsQty, @LampDetails, @UnderVoltage_Sample1, @UnderVoltage_Sample2, @UnderVoltage_Sample3, @UnderVoltage_Sample4, @UnderVoltage_Sample5, @UnderVoltage_Result, " +
+"@OverVoltage_Sample1, @OverVoltage_Sample2, @OverVoltage_Sample3, @OverVoltage_Sample4, @OverVoltage_Sample5, @OverVoltage_Result, " +
+"@OpenCircuit_Sample1, @OpenCircuit_Sample2, @OpenCircuit_Sample3, @OpenCircuit_Sample4, @OpenCircuit_Sample5, @OpenCircuit_Result, " +
+"@ShortCircuit_Sample1, @ShortCircuit_Sample2, @ShortCircuit_Sample3, @ShortCircuit_Sample4, @ShortCircuit_Sample5, @ShortCircuit_Result, " +
+"@ReversePolarity_Sample1, @ReversePolarity_Sample2, @ReversePolarity_Sample3, @ReversePolarity_Sample4, @ReversePolarity_Sample5, @ReversePolarity_Result, " +
+"@OverLoad_Sample1, @OverLoad_Sample2, @OverLoad_Sample3, @OverLoad_Sample4, @OverLoad_Sample5, @OverLoad_Result, " +
+"@OverThermal_Sample1, @OverThermal_Sample2, @OverThermal_Sample3, @OverThermal_Sample4, @OverThermal_Sample5, @OverThermal_Result, " +
+"@EarthFault_Sample1, @EarthFault_Sample2, @EarthFault_Sample3, @EarthFault_Sample4, @EarthFault_Sample5, @EarthFault_Result, " +
+"@DriverIsolation_Sample1, @DriverIsolation_Sample2, @DriverIsolation_Sample3, @DriverIsolation_Sample4, @DriverIsolation_Sample5, @DriverIsolation_Result, " +
+"@HighVoltage_Sample1, @HighVoltage_Sample2,@HighVoltage_Sample3,@HighVoltage_Sample4,@HighVoltage_Sample5,@HighVoltage_Result,@HV_Sample1, @HV_Sample2, @HV_Sample3, @HV_Sample4, @HV_Sample5, @HV_Result,@InsulationResistance_Sample1, @InsulationResistance_Sample2, @InsulationResistance_Sample3, @InsulationResistance_Sample4, @InsulationResistance_Sample5, @InsulationResistance_Result, " +
+"@EarthContinuity_Sample1, @EarthContinuity_Sample2, @EarthContinuity_Sample3, @EarthContinuity_Sample4, @EarthContinuity_Sample5, @EarthContinuity_Result, " +
+"@SELVProtection_Sample1, @SELVProtection_Sample2, @SELVProtection_Sample3, @SELVProtection_Sample4, @SELVProtection_Sample5, @SELVProtection_Result, " +
+"@LeakageCurrent_Sample1, @LeakageCurrent_Sample2, @LeakageCurrent_Sample3, @LeakageCurrent_Sample4, @LeakageCurrent_Sample5, @LeakageCurrent_Result, " +
+"@CreepageClearance_Sample1, @CreepageClearance_Sample2, @CreepageClearance_Sample3, @CreepageClearance_Sample4, @CreepageClearance_Sample5, @CreepageClearance_Result, " +
+"@HiPotMCPCB_Sample1, @HiPotMCPCB_Sample2, @HiPotMCPCB_Sample3, @HiPotMCPCB_Sample4, @HiPotMCPCB_Sample5, @HiPotMCPCB_Result, " +
+"@OnOffSwitching_Sample1, @OnOffSwitching_Sample2, @OnOffSwitching_Sample3, @OnOffSwitching_Sample4, @OnOffSwitching_Sample5, @OnOffSwitching_Result, " +
+"@SoakingAgeing_Sample1, @SoakingAgeing_Sample2, @SoakingAgeing_Sample3, @SoakingAgeing_Sample4, @SoakingAgeing_Sample5, @SoakingAgeing_Result, " +
+"@RollingEndurance_Sample1, @RollingEndurance_Sample2, @RollingEndurance_Sample3, @RollingEndurance_Sample4, @RollingEndurance_Sample5, @RollingEndurance_Result, " +
+"@GlowTest_Sample1, @GlowTest_Sample2, @GlowTest_Sample3, @GlowTest_Sample4, @GlowTest_Sample5, @GlowTest_Result, " +
+"@LampAccommodation_Sample1, @LampAccommodation_Sample2, @LampAccommodation_Sample3, @LampAccommodation_Sample4, @LampAccommodation_Sample5, @LampAccommodation_Result, " +
+"@DaliFunction_Sample1, @DaliFunction_Sample2, @DaliFunction_Sample3, @DaliFunction_Sample4, @DaliFunction_Sample5, @DaliFunction_Result, " +
+"@TuneableCCT_Sample1, @TuneableCCT_Sample2, @TuneableCCT_Sample3, @TuneableCCT_Sample4, @TuneableCCT_Sample5, @TuneableCCT_Result, " +
+"@BatteryBackup_Sample1, @BatteryBackup_Sample2, @BatteryBackup_Sample3, @BatteryBackup_Sample4, @BatteryBackup_Sample5, @BatteryBackup_Result, " +
+"@SmartLighting_Sample1, @SmartLighting_Sample2, @SmartLighting_Sample3, @SmartLighting_Sample4, @SmartLighting_Sample5, @SmartLighting_Result, " +
+"@SensorFunction_Sample1, @SensorFunction_Sample2, @SensorFunction_Sample3, @SensorFunction_Sample4, @SensorFunction_Sample5, @SensorFunction_Result, " +
+"@OverallReportResult, @TestedByName, @VerifiedByName, @AddedBy, @AddedOn",
+
+                    parameters) ;
 
                 return new OperationResult { Success = true, Message = "Record inserted successfully." };
             }

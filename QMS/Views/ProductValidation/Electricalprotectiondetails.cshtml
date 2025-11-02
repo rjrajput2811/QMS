@@ -8,8 +8,24 @@
 
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <script src="~/js/tabulator.min.js"></script>
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
 
-<form id="electricalForm" method="post" action="#">
+<form id="electricalForm"
+      method="post"
+      asp-controller="ProductValidation"
+      asp-action="InsertUpdateElectricalProtection">
     <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
         <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
             <div>
@@ -19,9 +35,10 @@
             </div>
 
             <div>
-                <button id="saveButton" type="button" class="btn btn-outline-success mr-2" style="width:120px; font-size:15px">
-                    <i class="fas fa-save mr-2 fa-1x"></i> SAVE
+                <button id="addElectricalButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="insertElectricalProtection()" style="width: 120px; font-size:15px">
+                    <i class="fas fa-save mr-1"></i>Save
                 </button>
+
 
                 <a href='@Url.Action("Electricalprotection","ProductValidation")'
                    class="btn btn-outline-primary"
@@ -31,7 +48,7 @@
             </div>
         </div>
     </div>
-
+    
     <div class="card shadow-sm">
         <div class="card-body">
             <div class="table-responsive">
@@ -451,6 +468,104 @@
                 <td>@Html.TextBoxFor(m => m.OnOffSwitching_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
                 <td>@Html.TextBoxFor(m => m.OnOffSwitching_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
             </tr>
+            <tr>
+                <td>Soaking / Ageing Test</td>
+                <td>No failure</td>
+                <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.SoakingAgeing_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>Rolling Endurance Test</td>
+                <td>No failure</td>
+                <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.RollingEndurance_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>Glow Wire Test</td>
+                <td>No ignition</td>
+                <td>@Html.TextBoxFor(m => m.GlowTest_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.GlowTest_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.GlowTest_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.GlowTest_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.GlowTest_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.GlowTest_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>Lamp Accommodation Test</td>
+                <td>Lamp to be properly fixed</td>
+                <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.LampAccommodation_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>DALI Function Test</td>
+                <td>Should function properly</td>
+                <td>@Html.TextBoxFor(m => m.DaliFunction_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.DaliFunction_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.DaliFunction_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.DaliFunction_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.DaliFunction_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.DaliFunction_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>Tuneable CCT Test</td>
+                <td>Should function properly</td>
+                <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.TuneableCCT_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>Battery Backup Test</td>
+                <td>Should last as per rating</td>
+                <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.BatteryBackup_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>Smart Lighting Test</td>
+                <td>Should function properly</td>
+                <td>@Html.TextBoxFor(m => m.SmartLighting_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.SmartLighting_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.SmartLighting_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.SmartLighting_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.SmartLighting_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.SmartLighting_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
+
+            <tr>
+                <td>Sensor Function Test</td>
+                <td>Should function properly</td>
+                <td>@Html.TextBoxFor(m => m.SensorFunction_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
+                <td>@Html.TextBoxFor(m => m.SensorFunction_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
+                <td>@Html.TextBoxFor(m => m.SensorFunction_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
+                <td>@Html.TextBoxFor(m => m.SensorFunction_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
+                <td>@Html.TextBoxFor(m => m.SensorFunction_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
+                <td>@Html.TextBoxFor(m => m.SensorFunction_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+            </tr>
 
                 </tbody>
             </table>
@@ -498,9 +613,78 @@
 </tr>
 
             </table>
-        </div>
-    </div>
+    
+   
 </form>
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+
+  
+    <script>
+        function insertElectricalProtection() {
+            Blockloadershow();
+
+         
+            const requiredField = $('#ProductCatRef').val();
+            if (!requiredField || requiredField.trim() === "") {
+                showDangerAlert("Please enter Product Cat Ref.");
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#electricalForm')[0];
+            const formData = new FormData(form);
+
+            $.ajax({
+                url: $('#electricalForm').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        var errorMsg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMsg += error + "\n";
+                            }
+                            if (errorMsg != "") {
+                                showDangerAlert(errorMsg);
+                            }
+                        } else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    } else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        } else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+
+                        setTimeout(function () {
+                            window.open('@Url.Action("Electricalprotection", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script>
+}
+}
+
+}
 
 <style>
     .card {

@@ -32,6 +32,7 @@ using QMS.Core.Repositories.PDIAuthSignRepository;
 using QMS.Core.Repositories.ContiImproveRespository;
 using QMS.Core.Repositories.CSATCommentRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
+using QMS.Core.Repositories.ElectricalPerformanceRepo;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -76,6 +77,7 @@ builder.Services.AddTransient<IPDIAuthSignRepository, PDIAuthSignRepository>();
 builder.Services.AddTransient<IContiImproveRespository, ContiImproveRespository>();
 builder.Services.AddTransient<ICSATCommentRepository, CSATCommentRepository>();
 builder.Services.AddTransient<IPhysicalCheckAndVisualInspectionRepository, PhysicalCheckAndVisualInspectionRepository>();
+builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerformanceRepository>();
 builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 
 //

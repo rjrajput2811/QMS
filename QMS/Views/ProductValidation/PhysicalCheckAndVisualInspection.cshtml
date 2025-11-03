@@ -355,6 +355,9 @@
                         Report_No: item.report_No,
                         Report_Date: reportDate,
                         Project_Name: item.project_Name,
+                        Product_Cat_Ref: item.product_Cat_Ref,
+                        Batch_Code: item.batch_Code,
+                        PKD: item.pkd,
                         Quantity: item.quantity,
                         User: item.user
                     });
@@ -382,8 +385,11 @@
                     { title: "Report No", field: "Report_No", responsive: 1, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
                     { title: "Report Date", field: "Report_Date", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
                     { title: "Customer/Project Name", field: "Project_Name", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "Quantity", field: "Quantity", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "User", field: "User", responsive: 5,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Product Cat Ref", field: "Product_Cat_Ref", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Batch Code", field: "Batch_Code", responsive: 5,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "PKD", field: "PKD", responsive: 6,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Quantity", field: "Quantity", responsive: 7,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "User", field: "User", responsive: 8,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                 );
 
                 // // Initialize Tabulator

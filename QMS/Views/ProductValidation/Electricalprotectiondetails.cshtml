@@ -62,7 +62,7 @@
 
                         <tr>
                             <td>
-                                <b>Product Cat Ref :</b>
+                              <label><b>Product Cat Ref</b></label><em style="color:red">*</em>
                                 @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Product Ref" })
                             </td>
                             <td>
@@ -86,7 +86,11 @@
                             </td>
                             <td>
                                 <b>Date :</b>
-                                @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", type = "date" })
+                                @Html.TextBoxFor(
+                                         m => m.ReportDate,
+                                         "{0:dd/MM/yyyy}",
+                                         new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", type = "text" }
+                                         )
                             </td>
                         </tr>
 
@@ -184,125 +188,187 @@
                 </td>
 
                 <td>
-                    @Html.TextBoxFor(m => m.UnderVoltage_Result, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.UnderVoltage_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",    // title only, not an actual value
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
                     </tr>
             <tr>
-                <td>Over Voltage Cut off &amp; auto recovery</td>
+                <td>Over Voltage Cut Off &amp; Auto Recovery</td>
                 <td>As per Design Documents</td>
 
                 <td>
-                    @Html.TextBoxFor(m => m.OverVoltage_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample1,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 1" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverVoltage_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample2,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 2" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverVoltage_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample3,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 3" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverVoltage_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample4,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 4" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverVoltage_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample5,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 5" })
                 </td>
+
                 <td>
-                    @Html.TextBoxFor(m => m.OverallReportResult, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.OverVoltage_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
             </tr>
-
             <tr>
                 <td>Open Circuit Protection</td>
                 <td>Driver goes to shutdown mode</td>
 
                 <td>
-                    @Html.TextBoxFor(m => m.OpenCircuit_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample1,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 1" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OpenCircuit_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample2,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 2" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OpenCircuit_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample3,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 3" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OpenCircuit_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample4,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 4" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OpenCircuit_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample5,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 5" })
                 </td>
+
                 <td>
-                    @Html.TextBoxFor(m => m.OpenCircuit_Result, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.OpenCircuit_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
             </tr>
+
 
             <tr>
                 <td>Short Circuit Protection</td>
                 <td>Driver goes to shutdown mode</td>
 
                 <td>
-                    @Html.TextBoxFor(m => m.ShortCircuit_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample1,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 1" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ShortCircuit_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample2,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 2" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ShortCircuit_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample3,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 3" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ShortCircuit_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample4,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 4" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ShortCircuit_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample5,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 5" })
                 </td>
+
                 <td>
-                    @Html.TextBoxFor(m => m.ShortCircuit_Result, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.ShortCircuit_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
             </tr>
+
             <tr>
                 <td>Reverse Polarity Protection</td>
                 <td>Driver goes to shutdown mode</td>
 
                 <td>
-                    @Html.TextBoxFor(m => m.ReversePolarity_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample1,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 1" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ReversePolarity_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample2,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 2" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ReversePolarity_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample3,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 3" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ReversePolarity_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample4,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 4" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.ReversePolarity_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample5,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 5" })
                 </td>
+
                 <td>
-                    @Html.TextBoxFor(m => m.ReversePolarity_Result, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.ReversePolarity_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
             </tr>
+
 
             <tr>
                 <td>Over Load Protection</td>
                 <td>Driver goes to shutdown mode</td>
 
                 <td>
-                    @Html.TextBoxFor(m => m.OverLoad_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })
+                    @Html.TextBoxFor(m => m.OverLoad_Sample1,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 1" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverLoad_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })
+                    @Html.TextBoxFor(m => m.OverLoad_Sample2,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 2" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverLoad_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })
+                    @Html.TextBoxFor(m => m.OverLoad_Sample3,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 3" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverLoad_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })
+                    @Html.TextBoxFor(m => m.OverLoad_Sample4,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 4" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverLoad_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })
+                    @Html.TextBoxFor(m => m.OverLoad_Sample5,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 5" })
                 </td>
+
                 <td>
-                    @Html.TextBoxFor(m => m.OverLoad_Result, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.OverLoad_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
             </tr>
 
@@ -326,7 +392,12 @@
                     @Html.TextBoxFor(m => m.OverThermal_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.OverThermal_Result, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.OverThermal_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
             </tr>
 
@@ -335,23 +406,35 @@
                 <td>Driver should not fail</td>
 
                 <td>
-                    @Html.TextBoxFor(m => m.EarthFault_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })
+                    @Html.TextBoxFor(m => m.EarthFault_Sample1,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 1" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.EarthFault_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })
+                    @Html.TextBoxFor(m => m.EarthFault_Sample2,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 2" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.EarthFault_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })
+                    @Html.TextBoxFor(m => m.EarthFault_Sample3,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 3" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.EarthFault_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })
+                    @Html.TextBoxFor(m => m.EarthFault_Sample4,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 4" })
                 </td>
                 <td>
-                    @Html.TextBoxFor(m => m.EarthFault_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })
+                    @Html.TextBoxFor(m => m.EarthFault_Sample5,
+                             new { @class = "form-control text-center same-input", placeholder = "Sample 5" })
                 </td>
+
                 <td>
-                    @Html.TextBoxFor(m => m.EarthFault_Result, new { @class = "form-control text-center", placeholder = "Result" })
+                    @Html.DropDownListFor(
+                             m => m.EarthFault_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
                 </td>
+            </tr>
             </tr>
 
             <!-- ============= Electrical Protection (continued) ============= -->
@@ -363,7 +446,14 @@
                 <td>@Html.TextBoxFor(m => m.DriverIsolation_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.DriverIsolation_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.DriverIsolation_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.DriverIsolation_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.DriverIsolation_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -374,7 +464,14 @@
                 <td>@Html.TextBoxFor(m => m.HighVoltage_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.HighVoltage_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.HighVoltage_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.HighVoltage_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.HighVoltage_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <!-- ================= Safety Test (7 rows) ================= -->
@@ -387,7 +484,14 @@
                 <td>@Html.TextBoxFor(m => m.HV_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.HV_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.HV_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.HV_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.HV_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -398,7 +502,14 @@
                 <td>@Html.TextBoxFor(m => m.InsulationResistance_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.InsulationResistance_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.InsulationResistance_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.InsulationResistance_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.InsulationResistance_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -409,8 +520,9 @@
                 <td>@Html.TextBoxFor(m => m.EarthContinuity_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.EarthContinuity_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.EarthContinuity_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.EarthContinuity_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>@Html.DropDownListFor(m => m.EarthContinuity_Result, new SelectList(new[] { "Pass", "Fail" }), "Select", new { @class = "form-control text-center same-input" })</td>
             </tr>
+
 
             <tr>
                 <td>SELV Protection</td>
@@ -420,8 +532,9 @@
                 <td>@Html.TextBoxFor(m => m.SELVProtection_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.SELVProtection_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.SELVProtection_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.SELVProtection_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>@Html.DropDownListFor(m => m.SELVProtection_Result, new SelectList(new[] { "Pass", "Fail" }), "Select", new { @class = "form-control text-center same-input" })</td>
             </tr>
+
 
             <tr>
                 <td>Leakage Current</td>
@@ -431,8 +544,16 @@
                 <td>@Html.TextBoxFor(m => m.LeakageCurrent_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.LeakageCurrent_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.LeakageCurrent_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.LeakageCurrent_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.LeakageCurrent_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
+
 
             <tr>
                 <td>Creepage & Clearance</td>
@@ -442,19 +563,36 @@
                 <td>@Html.TextBoxFor(m => m.CreepageClearance_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.CreepageClearance_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.CreepageClearance_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.CreepageClearance_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.CreepageClearance_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
                 <td>Hi-pot on MCPCB</td>
                 <td>Withstand specified voltages</td>
+
                 <td>@Html.TextBoxFor(m => m.HiPotMCPCB_Sample1, new { @class = "form-control text-center", placeholder = "Sample 1" })</td>
                 <td>@Html.TextBoxFor(m => m.HiPotMCPCB_Sample2, new { @class = "form-control text-center", placeholder = "Sample 2" })</td>
                 <td>@Html.TextBoxFor(m => m.HiPotMCPCB_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.HiPotMCPCB_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.HiPotMCPCB_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.HighVoltage_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.HiPotMCPCB_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
+
 
             <!-- ================= Reliability Test (10 rows) ================= -->
             <tr>
@@ -466,8 +604,16 @@
                 <td>@Html.TextBoxFor(m => m.OnOffSwitching_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.OnOffSwitching_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.OnOffSwitching_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.OnOffSwitching_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.OnOffSwitching_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
+
             <tr>
                 <td>Soaking / Ageing Test</td>
                 <td>No failure</td>
@@ -476,7 +622,14 @@
                 <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.SoakingAgeing_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.SoakingAgeing_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.SoakingAgeing_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -487,7 +640,14 @@
                 <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.RollingEndurance_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.RollingEndurance_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.RollingEndurance_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -498,7 +658,14 @@
                 <td>@Html.TextBoxFor(m => m.GlowTest_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.GlowTest_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.GlowTest_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.GlowTest_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.GlowTest_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -509,7 +676,14 @@
                 <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.LampAccommodation_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.LampAccommodation_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.LampAccommodation_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -520,7 +694,14 @@
                 <td>@Html.TextBoxFor(m => m.DaliFunction_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.DaliFunction_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.DaliFunction_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.DaliFunction_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.DaliFunction_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -531,7 +712,14 @@
                 <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.TuneableCCT_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.TuneableCCT_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.TuneableCCT_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -542,7 +730,14 @@
                 <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.BatteryBackup_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.BatteryBackup_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.BatteryBackup_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -553,7 +748,14 @@
                 <td>@Html.TextBoxFor(m => m.SmartLighting_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.SmartLighting_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.SmartLighting_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.SmartLighting_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.SmartLighting_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
 
             <tr>
@@ -564,8 +766,16 @@
                 <td>@Html.TextBoxFor(m => m.SensorFunction_Sample3, new { @class = "form-control text-center", placeholder = "Sample 3" })</td>
                 <td>@Html.TextBoxFor(m => m.SensorFunction_Sample4, new { @class = "form-control text-center", placeholder = "Sample 4" })</td>
                 <td>@Html.TextBoxFor(m => m.SensorFunction_Sample5, new { @class = "form-control text-center", placeholder = "Sample 5" })</td>
-                <td>@Html.TextBoxFor(m => m.SensorFunction_Result, new { @class = "form-control text-center", placeholder = "Result" })</td>
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.SensorFunction_Result,
+                             new SelectList(new[] { "Pass", "Fail" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
             </tr>
+
 
                 </tbody>
             </table>
@@ -575,20 +785,25 @@
         <tr>
             <th colspan="5" style="color:red; text-align:left;">Result – Pass/Fail</th>
             <th colspan="3">
-                @Html.TextBoxFor(m => m.OverallReportResult, new { @class = "form-control text-center", placeholder = "Overall Result (Pass/Fail)" })
+                @Html.DropDownListFor(
+                         m => m.OverallReportResult,
+                         new SelectList(new[] { "Pass", "Fail" }),
+                         "Select",
+                         new { @class = "form-control text-center same-input" }
+                         )
             </th>
         </tr>
 
-              <tr>
-    <td><b>Tested By</b></td>
-    <td colspan="3">
-        @Html.TextBoxFor(m => m.TestedByName, new { @class = "form-control", placeholder = "Enter Tester" })
-    </td>
-    <td><b>Verified By</b></td>
-    <td colspan="3">
-        @Html.TextBoxFor(m => m.VerifiedByName, new { @class = "form-control", placeholder = "Enter Verifier" })
-    </td>
-</tr>
+     <tr>
+        <tr>
+            <td colspan="4" class="text-center align-middle">
+                <b>Tested By</b>
+            </td>
+
+            <td colspan="4" class="text-center align-middle">
+                <b>Verified By</b>
+            </td>
+        </tr>
 
 <tr>
     <td><b>Name :</b></td>
@@ -604,12 +819,12 @@
 <tr>
     <td><b>Signature</b></td>
     <td colspan="3">
-        @Html.TextBoxFor(m => m.TestedByName, new { @class = "form-control", placeholder = "Tester Signature" })
+                @Html.TextBoxFor(m => m.TestedBySignature, new { @type = "file", @class = "form-control", accept = "image/*" })
     </td>
     <td><b>Signature</b></td>
-    <td colspan="3">
-        @Html.TextBoxFor(m => m.VerifiedByName, new { @class = "form-control", placeholder = "Verifier Signature" })
-    </td>
+            <td colspan="3">
+                @Html.TextBoxFor(m => m.VerifiedBySignature, new { @type = "file", @class = "form-control", accept = "image/*" })
+            </td>
 </tr>
 
             </table>
@@ -639,6 +854,8 @@
 
             const form = $('#electricalForm')[0];
             const formData = new FormData(form);
+            formData.append("TestedBySignature", $("#TestedBySignature").val());
+formData.append("VerifiedBySignature", $("#VerifiedBySignature").val());
 
             $.ajax({
                 url: $('#electricalForm').attr('action'),
@@ -682,11 +899,26 @@
         }
     </script>
 }
-}
 
-}
 
 <style>
+    .same-input {
+        background-color: #f5f7fa;
+        border: none; /* remove all borders */
+        border-bottom: 2px solid #d0d7e6; /* show only bottom line */
+        border-radius: 0; /* remove rounding */
+        padding: 5px;
+        font-size: 13px;
+        color: #495057;
+        text-align: center;
+        border-radius: 6px;
+    }
+
+        .same-input:focus {
+            border-bottom: 2px solid #4a90e2; /* bottom border highlight */
+            box-shadow: none;
+            outline: none;
+        }
     .card {
         border-radius: 8px;
         border: 1px solid #ccc;
@@ -714,6 +946,7 @@
         border: 1px solid #000 !important;
         text-align: left;
     }
+
 
     table.table-bordered b {
         font-weight: 600;

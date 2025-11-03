@@ -189,6 +189,8 @@ namespace QMS.Core.Models
         public string? OverallReportResult { get; set; }
         public string? TestedByName { get; set; }
         public string? VerifiedByName { get; set; }
+        public string? TestedBySignature { get; set; }
+        public string? VerifiedBySignature { get; set; }
         public int AddedBy { get; set; }
         public DateTime AddedOn { get; set; }
         public int? UpdatedBy { get; set; }

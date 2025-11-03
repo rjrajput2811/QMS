@@ -529,6 +529,8 @@ new SqlParameter("@SensorFunction_Result", model.SensorFunction_Result ?? (objec
             new SqlParameter("@OverallReportResult", model.OverallReportResult ?? (object)DBNull.Value),
             new SqlParameter("@TestedByName", model.TestedByName ?? (object)DBNull.Value),
             new SqlParameter("@VerifiedByName", model.VerifiedByName ?? (object)DBNull.Value),
+            new SqlParameter("@TestedBySignature", model.TestedBySignature ?? (object)DBNull.Value),
+            new SqlParameter("@VerifiedBySignature", model.VerifiedBySignature ?? (object)DBNull.Value),
             new SqlParameter("@AddedBy", model.AddedBy),
             new SqlParameter("@AddedOn", model.AddedOn)
         };
@@ -560,7 +562,7 @@ new SqlParameter("@SensorFunction_Result", model.SensorFunction_Result ?? (objec
 "@BatteryBackup_Sample1, @BatteryBackup_Sample2, @BatteryBackup_Sample3, @BatteryBackup_Sample4, @BatteryBackup_Sample5, @BatteryBackup_Result, " +
 "@SmartLighting_Sample1, @SmartLighting_Sample2, @SmartLighting_Sample3, @SmartLighting_Sample4, @SmartLighting_Sample5, @SmartLighting_Result, " +
 "@SensorFunction_Sample1, @SensorFunction_Sample2, @SensorFunction_Sample3, @SensorFunction_Sample4, @SensorFunction_Sample5, @SensorFunction_Result, " +
-"@OverallReportResult, @TestedByName, @VerifiedByName, @AddedBy, @AddedOn",
+"@OverallReportResult, @TestedByName, @VerifiedByName,@TestedBySignature,@VerifiedBySignature, @AddedBy, @AddedOn",
 
                     parameters) ;
 
@@ -668,6 +670,8 @@ new SqlParameter("@SensorFunction_Result", model.SensorFunction_Result ?? (objec
             new SqlParameter("@OverallReportResult", model.OverallReportResult ?? (object)DBNull.Value),
             new SqlParameter("@TestedByName", model.TestedByName ?? (object)DBNull.Value),
             new SqlParameter("@VerifiedByName", model.VerifiedByName ?? (object)DBNull.Value),
+            new SqlParameter("@TestedBySignature", model.TestedBySignature ?? (object)DBNull.Value),
+            new SqlParameter("@VerifiedBySignature", model.VerifiedBySignature ?? (object)DBNull.Value),
 
             new SqlParameter("@UpdatedBy", model.UpdatedBy ?? (object)DBNull.Value),
             new SqlParameter("@UpdatedOn", model.UpdatedOn)
@@ -688,7 +692,7 @@ new SqlParameter("@SensorFunction_Result", model.SensorFunction_Result ?? (objec
                     "@EarthFault_Sample1, @EarthFault_Sample2, @EarthFault_Sample3, @EarthFault_Sample4, @EarthFault_Sample5, @EarthFault_Result, " +
                     "@DriverIsolation_Sample1, @DriverIsolation_Sample2, @DriverIsolation_Sample3, @DriverIsolation_Sample4, @DriverIsolation_Sample5, @DriverIsolation_Result, " +
                     "@HighVoltage_Sample1, @HighVoltage_Sample2, @HighVoltage_Sample3, @HighVoltage_Sample4, @HighVoltage_Sample5, @HighVoltage_Result, " +
-                    "@OverallReportResult, @TestedByName, @VerifiedByName, " +
+                    "@OverallReportResult, @TestedByName, @VerifiedByName,@TestedBySignature, @VerifiedBySignature," +
                     "@UpdatedBy, @UpdatedOn",
                     parameters
                 );

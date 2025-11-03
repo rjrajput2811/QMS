@@ -145,6 +145,37 @@ public class ProductValidationController : Controller
             return Json(new { Success = false, Errors = errors });
         }
 
+        // ✅ Allowed extensions
+        string[] allowedExtensions = { ".png", ".jpg", ".jpeg", ".txt" };
+
+        // ✅ Validate TestedBySignature File Name
+        if (!string.IsNullOrEmpty(model.TestedBySignature))
+        {
+            string fileName = Path.GetFileName(model.TestedBySignature); // <-- Only rxy.png
+            string ext = Path.GetExtension(fileName).ToLower();
+
+            if (!allowedExtensions.Contains(ext))
+            {
+                return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg allowed for Tested By Signature." });
+            }
+            model.TestedBySignature = fileName;
+        }
+
+
+        // ✅ Validate VerifiedBySignature File Name
+        if (!string.IsNullOrEmpty(model.VerifiedBySignature))
+        {
+            string fileName = Path.GetFileName(model.VerifiedBySignature); // <-- Only rxy.png
+            string ext = Path.GetExtension(fileName).ToLower();
+
+            if (!allowedExtensions.Contains(ext))
+            {
+                return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg allowed for Verified By Signature." });
+            }
+            model.VerifiedBySignature = fileName;
+        }
+
+        // ✅ Insert or Update
         if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
@@ -160,6 +191,7 @@ public class ProductValidationController : Controller
             return Json(result);
         }
     }
+
 
     public async Task<ActionResult> DeleteElectricalProtectionAsync(int Id)
     {

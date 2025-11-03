@@ -816,16 +816,17 @@
     </td>
 </tr>
 
-<tr>
-    <td><b>Signature</b></td>
-    <td colspan="3">
-                @Html.TextBoxFor(m => m.TestedBySignature, new { @type = "file", @class = "form-control", accept = "image/*" })
-    </td>
-    <td><b>Signature</b></td>
+        <tr>
+            <td><b>Tested By Signature</b></td>
             <td colspan="3">
-                @Html.TextBoxFor(m => m.VerifiedBySignature, new { @type = "file", @class = "form-control", accept = "image/*" })
+                    @Html.TextBoxFor(m => m.TestedByFile, new { @type = "file", @class = "form-control" })
             </td>
-</tr>
+
+            <td><b>Verified By Signature</b></td>
+            <td colspan="3">
+                    @Html.TextBoxFor(m => m.VerifiedByFile, new { @type = "file", @class = "form-control" })
+            </td>
+        </tr>
 
             </table>
     

@@ -145,34 +145,56 @@ public class ProductValidationController : Controller
             return Json(new { Success = false, Errors = errors });
         }
 
-        // ✅ Allowed extensions
-        string[] allowedExtensions = { ".png", ".jpg", ".jpeg", ".txt" };
+        string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
 
-        // ✅ Validate TestedBySignature File Name
-        if (!string.IsNullOrEmpty(model.TestedBySignature))
+        // Create folder: /wwwroot/ElectricProt_Att/{id}
+        string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ElectricProt_Att", model.Id.ToString());
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+        //
+        // ✅ Save Tested By Signature
+        //
+        if (model.TestedByFile != null)
         {
-            string fileName = Path.GetFileName(model.TestedBySignature); // <-- Only rxy.png
+            string fileName = Path.GetFileName(model.TestedByFile.FileName);
             string ext = Path.GetExtension(fileName).ToLower();
 
             if (!allowedExtensions.Contains(ext))
             {
-                return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg allowed for Tested By Signature." });
+                return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg" });
             }
+
+            // Save file name to DB field
             model.TestedBySignature = fileName;
+
+            string savePath = Path.Combine(folder, fileName);
+            using (var stream = new FileStream(savePath, FileMode.Create))
+            {
+                await model.TestedByFile.CopyToAsync(stream);
+            }
         }
 
-
-        // ✅ Validate VerifiedBySignature File Name
-        if (!string.IsNullOrEmpty(model.VerifiedBySignature))
+        //
+        // ✅ Save Verified By Signature
+        //
+        if (model.VerifiedByFile != null)
         {
-            string fileName = Path.GetFileName(model.VerifiedBySignature); // <-- Only rxy.png
+            string fileName = Path.GetFileName(model.VerifiedByFile.FileName);
             string ext = Path.GetExtension(fileName).ToLower();
 
             if (!allowedExtensions.Contains(ext))
             {
-                return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg allowed for Verified By Signature." });
+                return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg" });
             }
+
             model.VerifiedBySignature = fileName;
+
+            string savePath = Path.Combine(folder, fileName);
+            using (var stream = new FileStream(savePath, FileMode.Create))
+            {
+                await model.VerifiedByFile.CopyToAsync(stream);
+            }
         }
 
         // ✅ Insert or Update

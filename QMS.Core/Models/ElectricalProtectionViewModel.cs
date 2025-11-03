@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -191,6 +192,8 @@ namespace QMS.Core.Models
         public string? VerifiedByName { get; set; }
         public string? TestedBySignature { get; set; }
         public string? VerifiedBySignature { get; set; }
+        public IFormFile? TestedByFile { get; set; }
+        public IFormFile? VerifiedByFile { get; set; }
         public int AddedBy { get; set; }
         public DateTime AddedOn { get; set; }
         public int? UpdatedBy { get; set; }

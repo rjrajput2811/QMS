@@ -3,7 +3,7 @@
 @model ElectricalPerformanceViewModel
 
 @{
-    ViewData["Title"] = "Physical Check & Visual Inspection Details";
+    ViewData["Title"] = "Electrical  Performance Details";
 }
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
@@ -18,8 +18,7 @@
 <script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+
 
 <style>
     .nav-pills .nav-link {
@@ -260,17 +259,18 @@
         white-space: nowrap;
     }
 
-    Column widths */
+/*     Column widths  */
+
     .w-sample {
         width: 80px;
     }
 
     .w-params {
-        width: 160px;
+        width: 150px;
     }
 
     .w-result {
-        width: 150px;
+        width: 130px;
     }
 
     .w-narrow {
@@ -319,7 +319,7 @@
 
 
                     <form id="ElectricalPer-form" method="post" asp-action="InsertUpdateElectricalPerformanceDetails" asp-controller="ProductValidation">
-                        @Html.HiddenFor(m => m.Id)
+                   @*      @Html.HiddenFor(m => m.Id) *@
 
                         <div class="sheet">
                             <!-- Row 1 -->
@@ -516,188 +516,189 @@
                             <td rowspan="6" class="label">Before soaking</td>
 
                             <!-- empty data cells row 1 -->
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        
                         </tr>
                         <!-- five more empty rows under "Before soaking" -->
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
 
                         <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
                         <tr>
                             <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                         <tr>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
+                            <td><input type="text" class="form-control text-center"></td>
                         </tr>
                                 <thead>
                                     <tr>
@@ -738,188 +739,188 @@
                                         <td rowspan="6" class="label">Before soaking</td>
 
                                         <!-- empty data cells row 1 -->
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <!-- five more empty rows under "Before soaking" -->
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
 
                                     <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
                                     <tr>
                                         <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                 <thead>
                                     <tr>
@@ -960,188 +961,188 @@
                                         <td rowspan="6" class="label">Before soaking</td>
 
                                         <!-- empty data cells row 1 -->
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <!-- five more empty rows under "Before soaking" -->
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
 
                                     <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
                                     <tr>
                                         <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                 <thead>
                                     <tr>
@@ -1182,188 +1183,188 @@
                                         <td rowspan="6" class="label">Before soaking</td>
 
                                         <!-- empty data cells row 1 -->
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <!-- five more empty rows under "Before soaking" -->
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
 
                                     <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
                                     <tr>
                                         <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                 <thead>
                                     <tr>
@@ -1404,188 +1405,188 @@
                                         <td rowspan="6" class="label">Before soaking</td>
 
                                         <!-- empty data cells row 1 -->
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <!-- five more empty rows under "Before soaking" -->
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
 
                                     <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
                                     <tr>
                                         <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
                                     <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
+                                        <td><input type="text" class="form-control text-center"></td>
                                     </tr>
 
                         <!-- ===== Duplicate the above 12-row block for Sample #2, #3, ... if needed ===== -->
@@ -1616,11 +1617,8 @@
 
 
 @section Scripts {
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
-    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
-    
+  
+    @* 
   <script> 
         function insertUpdatePhyCheck() {
             Blockloadershow();

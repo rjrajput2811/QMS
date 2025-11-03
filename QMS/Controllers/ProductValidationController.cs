@@ -38,8 +38,23 @@ public class ProductValidationController : Controller
 
     public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
     {
-        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsAsync();
-        return Json(result);
+        return View();
+    }
+    public IActionResult RippleTestReport()
+    {
+        return View();
+    }
+    public IActionResult Rippletestreportdetails()
+    {
+        return View();
+    }
+    public IActionResult Electricalprotection()
+    {
+        return View();
+    }
+    public IActionResult Electricalprotectiondetails()
+    {
+        return View();
     }
 
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)

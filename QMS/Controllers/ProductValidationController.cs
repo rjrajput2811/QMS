@@ -2,6 +2,7 @@
 using ClosedXML.Excel.Drawings;
 using Microsoft.AspNetCore.Mvc;
 using QMS.Core.Models;
+using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ProductValidationRepo;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -11,12 +12,15 @@ namespace QMS.Controllers;
 public class ProductValidationController : Controller
 {
     private readonly IPhysicalCheckAndVisualInspectionRepository _physicalCheckAndVisualInspectionRepository;
+    private readonly IElectricalPerformanceRepository _electricalPerformanceRepository;
     private readonly IWebHostEnvironment _hostEnvironment;
 
     public ProductValidationController(IPhysicalCheckAndVisualInspectionRepository PhysicalCheckAndVisualInspectionRepository,
+                                       IElectricalPerformanceRepository electricalPerformanceRepository,
                                        IWebHostEnvironment hostEnvironment)
     {
         _physicalCheckAndVisualInspectionRepository = PhysicalCheckAndVisualInspectionRepository;
+        _electricalPerformanceRepository = electricalPerformanceRepository;
         _hostEnvironment = hostEnvironment;
     }
 
@@ -25,20 +29,38 @@ public class ProductValidationController : Controller
         return View();
     }
 
+    #region PhysicalCheckAndVisualInspection
+
     public IActionResult PhysicalCheckAndVisualInspection()
     {
         return View();
     }
-    public IActionResult ElectricalPerformance()
+
+    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
+    {
+        return View();
+    }
+    public IActionResult RippleTestReport()
+    {
+        return View();
+    }
+    public IActionResult Rippletestreportdetails()
+    {
+        return View();
+    }
+    public IActionResult Electricalprotection()
+    {
+        return View();
+    }
+    public IActionResult Electricalprotectiondetails()
     {
         return View();
     }
 
- 
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
     {
         var model = new PhysicalCheckAndVisualInspectionViewModel();
-        if(Id > 0)
+        if (Id > 0)
         {
             model = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsByIdAsync(Id);
         }
@@ -46,19 +68,7 @@ public class ProductValidationController : Controller
         {
             model.Report_Date = DateTime.Now;
         }
-            return View(model);
-    }
-
-    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
-    {
-        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsAsync();
-        return Json(result);
-    }
-
-    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionDetailsAsync(int Id)
-    {
-        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsByIdAsync(Id);
-        return Json(result);
+        return View(model);
     }
 
     public async Task<ActionResult> InsertUpdatePhysicalCheckAndVisualInspectionDetailsAsync(PhysicalCheckAndVisualInspectionViewModel model)
@@ -90,6 +100,43 @@ public class ProductValidationController : Controller
         var result = await _physicalCheckAndVisualInspectionRepository.DeletePhysicalCheckAndVisualInspectionsAsync(Id);
         return Json(result);
     }
+
+    #endregion
+
+    #region ElectricalPerformance
+
+    public IActionResult ElectricalPerformance()
+    {
+        return View();
+    }
+
+    public async Task<ActionResult> GetElectricalPerformanceListAsync()
+    {
+        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync();
+        return Json(result);
+    }
+
+    public IActionResult ElectricalPerformanceDetails(int Id)
+    {
+        var model = new ElectricalPerformanceViewModel();
+        return View(model);
+    }
+
+    #endregion
+
+    #region ElectricalProtection
+
+    public IActionResult ElectricalProtection()
+    {
+        return View();
+    }
+
+    public IActionResult ElectricalProtectionDetails()
+    {
+        return View();
+    }
+
+    #endregion
 
     public async Task<ActionResult> ExportPhyCheckToExcelAsync(int Id)
     {

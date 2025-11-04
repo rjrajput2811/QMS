@@ -41,6 +41,9 @@ public class PhysicalCheckAndVisualInspectionRepository : SqlTableRepository, IP
                     Report_No = x.Report_No,
                     Report_Date = x.Report_Date,
                     Project_Name = x.Project_Name,
+                    Product_Cat_Ref = x.Product_Cat_Ref,
+                    Batch_Code = x.Batch_Code,
+                    PKD = x.PKD,
                     Quantity = x.Quantity,
                     AddedBy = x.AddedBy
                 })

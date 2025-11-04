@@ -1,0 +1,202 @@
+﻿@{
+    ViewData["Title"] = "Six Sigma Indices Report";
+}
+
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/tabulator.min.js"></script>
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+
+<div class="card">
+    <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+            <b style="font-size: large; color: #4682B4;">Six Sigma Indices Report</b>
+        </div>
+        <div>
+            <button id="saveButton" type="button" class="btn btn-outline-success mr-2"
+                    style="width: 120px; font-size:15px">
+                <i class="fas fa-save mr-2 fa-1x"></i>SAVE
+            </button>
+            <button id="backButton" class="btn btn-outline-primary"
+                    onclick="location.href='@Url.Action("SEEIndicees", "Indices")'"
+                    style="width: 120px; font-size:15px">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div id="sixSigmaTable"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.addEventListener("load", function () {
+        if (typeof Tabulator === "undefined") {
+            alert("Tabulator failed to load. Check JS file path.");
+            return;
+        }
+
+        var tableData = [
+            // Business Factor 1
+            { id: 1, group: "Business factor 1 - Customer impact", attribute: "OTIF (AS IS - Curr.level) / As IS - Tgt", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 2, group: "Business factor 1 - Customer impact", attribute: "AS IS", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 3, group: "Business factor 1 - Customer impact", attribute: "Closed A Class CSO’s closed in <= 45 days - YTD", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 4, group: "Business factor 1 - Customer impact", attribute: "Total A Class CSO logged in YTD", data: "", target: "", weightage: "", formula: "", score: "" },
+
+            // Business Factor 2
+            { id: 5, group: "Business factor 2 - Process Improvement", attribute: "No of NPDs launched on time, within budget and Qty", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 6, group: "Business factor 2 - Process Improvement", attribute: "Annual Target", data: "", target: "", weightage: "", formula: "", score: "" },
+
+            // Business Factor 3
+            { id: 7, group: "Business factor 3 - Key Result areas", attribute: "Customer Satisfaction index (Net Promoter Score) - (Respondents who have given 5 to the loyalty question - respondents who have given 1 & 2) in % and minimum 30 respondents including Customers 20 and Annual Target", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 8, group: "Business factor 3 - Key Result areas", attribute: "Annual Target", data: "", target: "", weightage: "", formula: "", score: "" },
+
+            // Business Factor 4
+            { id: 9, group: "Business factor 4 - Savings", attribute: "Actual savings realised in C&I YTD", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 10, group: "Business factor 4 - Savings", attribute: "Annual Target", data: "", target: "", weightage: "", formula: "", score: "" },
+
+            // Business Factor 5
+            { id: 11, group: "Business factor 5 - Out going product quality", attribute: "Sigma level of outgoing product (inclusive of performance and appearance, use OFDs) (Curr level - As IS) / (Tgt - As IS) PDA score done by Wipro QA", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 12, group: "Business factor 5 - Out going product quality", attribute: "AS IS", data: "", target: "", weightage: "", formula: "", score: "" },
+
+            // Business Factor 6
+            { id: 13, group: "Business factor 6 - SPM Rating", attribute: "SPM Scores greater than or equal to 3 stars", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 14, group: "Business factor 6 - SPM Rating", attribute: "AS IS", data: "", target: "", weightage: "", formula: "", score: "" },
+
+            // Business Factor 7
+            { id: 15, group: "Business factor 7 - Project Closure", attribute: "Number of projects closed this year", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 16, group: "Business factor 7 - Project Closure", attribute: "Number of projects initiated + Number of projects carried forward from last year (All projects to be planned for the year)", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 17, group: "Business factor 7 - Project Closure", attribute: "No of Turbo projects closed this year", data: "", target: "", weightage: "", formula: "", score: "" },
+            { id: 18, group: "Business factor 7 - Project Closure", attribute: "No of projects planned for the year", data: "", target: "", weightage: "", formula: "", score: "" },
+
+            // Weighted Score Summary
+            { id: 19, group: "Weighted Score Summary", attribute: "Weighted Score Target : 100", data: "", target: "", weightage: "", formula: "Total Weighted Score", score: "" }
+        ];
+
+        var table = new Tabulator("#sixSigmaTable", {
+            data: tableData,
+            layout: "fitColumns",
+            groupBy: "group",
+            groupToggleElement: "none", 
+            groupHeader: function (value) {
+                return "<span style='font-weight:bold; font-size:14px; color:#000;'>" + value + "</span>";
+            },
+            columns: [
+                { title: "Sl No", field: "id", width: 80, hozAlign: "center" },
+                { title: "Attribute", field: "attribute", hozAlign: "left", widthGrow: 2 },
+
+                { title: "Data for PC", field: "data", hozAlign: "center", editor: "input" },
+                { title: "Target", field: "target", hozAlign: "center", editor: "input" },
+                { title: "Weightage", field: "weightage", hozAlign: "center", editor: "input" },
+                { title: "Formula", field: "formula", hozAlign: "center", width: 120, editor: "input" }, // fixed (not editable)
+                { title: "Weighted Score", field: "score", hozAlign: "center", editor: "input" }
+            ],
+            movableColumns: false,
+            resizableRows: true,
+            height: "auto",
+            
+            autoResize: true,
+            variableHeight: true,
+            layoutColumnsOnNewData: true,
+        });
+
+        document.getElementById("saveButton").addEventListener("click", function () {
+            var data = table.getData();
+            console.log("Saved Data:", data);
+            alert("Data saved to console (for demo).");
+        });
+    });
+</script>
+
+<style>
+    .tabulator {
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        border: 1px solid #000;
+        border-collapse: collapse;
+    }
+
+        .tabulator .tabulator-header {
+            background-color: #d3d3d3;
+            color: #000;
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+        }
+
+    .card {
+        margin-bottom: 0 !important;
+    }
+
+        .tabulator .tabulator-cell {
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 6px 8px;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            word-break: break-word !important;
+            line-height: 1.4em;
+
+
+      
+        }
+
+        .tabulator .tabulator-col {
+            text-align: center !important;
+            justify-content: center !important;
+        }
+
+
+    .tabulator-row[data-id="7"],
+    .tabulator-row[data-id="11"],
+    .tabulator-row[data-id="16"] {
+        height: 90px !important; /* increase if text still gets cut off */
+    }
+
+        .tabulator .tabulator-group {
+            background-color: #f0f0f0 !important;
+            font-weight: bold;
+            color: #000;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 6px;
+        }
+
+    .tabulator .tabulator-group {
+        text-align: center !important;
+    }
+
+    .tabulator-group .tabulator-arrow {
+        display: none !important;
+    }
+    .tabulator-row:nth-child(even) {
+        background-color: #fafafa;
+    }
+
+    .tabulator-cell[tabulator-field='target'],
+    .tabulator-cell[tabulator-field='weightage'],
+    .tabulator-cell[tabulator-field='score'] {
+        background-color: #fff8dc;
+    }
+
+    .tabulator-row.tabulator-selectable:hover {
+        background-color: #f5f5f5 !important;
+    }
+
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .card-body {
+        padding: 1rem 1.5rem;
+    }
+</style>
+
+@section HideSidebar { }

@@ -44,6 +44,23 @@ namespace QMS.Core.DatabaseContext
         public DbSet<RM_TC_Tracker> RM_TC_Tracker { get; set; }
         public DbSet<CSAT_Comment> CSAT_Comment { get; set; }
         public DbSet<PhysicalCheckAndVisualInspection> PhysicalCheckAndVisualInspections { get; set; }
+        public DbSet<ElectricalPerformance> ElectricalPerformances { get; set; }
+        public DbSet<ElectricalProtection> ElectricalProtections { get; set; }
+        public DbSet<RippleTestReport> RippleTestReports { get; set; }
+        public DbSet<SurgeTestReport> SurgeTestReports { get; set; }
+        public DbSet<TemperatureRiseTest> TemperatureRiseTests { get; set; }
+        public DbSet<Photometry> Photometries { get; set; }
+        public DbSet<InstallationTrial> InstallationTrials { get; set; }
+        public DbSet<DropTestReport> DropTestReports { get; set; }
+        public DbSet<ImpectTestReport> ImpectTestReports { get; set; }
+        public DbSet<IngressProtectionTestReport> IngressProtectionTestReports { get; set; }
+        public DbSet<LegalRegulatoryReport> LegalRegulatoryReports { get; set; }
+        public DbSet<GlowWireTestReport> GlowWireTestReports { get; set; }
+        public DbSet<HydraulicTestReport> HydraulicTestReports { get; set; }
+        public DbSet<GeneralObservationReport> GeneralObservationReports { get; set; }
+        public DbSet<NeedleFlameTestReport> NeedleFlameTestReports { get; set; }
+        public DbSet<MainValidationReport> MainValidationReports { get; set; }
+        public DbSet<ValidationClosureReport> ValidationClosureReports { get; set; }
 
 
 

@@ -4,12 +4,7 @@ using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace QMS.Core.Repositories.ElectricalPerformanceRepo;
 
@@ -674,8 +669,8 @@ public class ElectricalPerformanceRepository : SqlTableRepository, IElectricalPe
                 new SqlParameter("@OverallResult", model.OverallResult ?? (object)DBNull.Value),
                 new SqlParameter("@TestedByName", model.TestedByName ?? (object)DBNull.Value),
                 new SqlParameter("@VerifiedByName", model.VerifiedByName ?? (object)DBNull.Value),
-                new SqlParameter("@AddedBy", model.AddedBy),
-                new SqlParameter("@AddedOn", model.AddedOn)
+                new SqlParameter("@UpdatedBy", model.UpdatedBy ?? (object)DBNull.Value),
+                new SqlParameter("@UpdatedOn", model.UpdatedOn ?? (object)DBNull.Value)
             };
 
             await _dbContext.Database.ExecuteSqlRawAsync(

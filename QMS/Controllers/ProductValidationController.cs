@@ -1,6 +1,8 @@
 ﻿using ClosedXML.Excel;
 using ClosedXML.Excel.Drawings;
+
 using Microsoft.AspNetCore.Mvc;
+
 using QMS.Core.Models;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ProductValidationRepo;
@@ -68,6 +70,7 @@ public class ProductValidationController : Controller
         if (Id > 0)
         {
             model = await _electricalProtectionRepository.GetElectricalProtectionByIdAsync(Id);
+       
         }
         else
         {
@@ -147,14 +150,12 @@ public class ProductValidationController : Controller
 
         string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
 
-        // Create folder: /wwwroot/ElectricProt_Att/{id}
-        string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ElectricProt_Att", model.Id.ToString());
+ 
+        string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ElectricProt_Att", model.ReportNo.ToString());
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
-        //
-        // ✅ Save Tested By Signature
-        //
+       
         if (model.TestedByFile != null)
         {
             string fileName = Path.GetFileName(model.TestedByFile.FileName);
@@ -165,7 +166,7 @@ public class ProductValidationController : Controller
                 return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg" });
             }
 
-            // Save file name to DB field
+     
             model.TestedBySignature = fileName;
 
             string savePath = Path.Combine(folder, fileName);
@@ -175,9 +176,7 @@ public class ProductValidationController : Controller
             }
         }
 
-        //
-        // ✅ Save Verified By Signature
-        //
+    
         if (model.VerifiedByFile != null)
         {
             string fileName = Path.GetFileName(model.VerifiedByFile.FileName);
@@ -197,7 +196,7 @@ public class ProductValidationController : Controller
             }
         }
 
-        // ✅ Insert or Update
+      
         if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
@@ -213,6 +212,7 @@ public class ProductValidationController : Controller
             return Json(result);
         }
     }
+  
 
 
     public async Task<ActionResult> DeleteElectricalProtectionAsync(int Id)

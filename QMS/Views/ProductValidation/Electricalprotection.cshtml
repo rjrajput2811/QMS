@@ -231,7 +231,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="chart-container">
-                        <div id="electrical_table_wrapper" style="overflow-x: auto; width:60%; float:left;">
+                        <div id="electrical_table_wrapper" style="overflow-x: auto; width:100%; float:left;">
                             <div id="electrical_table"></div>
                         </div>
 
@@ -327,6 +327,13 @@
                         Report_No: item.reportNo,
                         Report_Date: reportDate,
                         BatchCode: item.batchCode,
+                        PKD: item.pkd,
+                        LightSourceDetails: item.lightSourceDetails,
+                        DriverDetailsQty: item.driverDetailsQty,
+                        PCBDetailsQty: item.pcbDetailsQty,
+                        LEDCombinations: item.ledCombinations,
+                        SensorDetailsQty: item.sensorDetailsQty,
+                        LampDetails: item.lampDetails
                     });
                 });
 
@@ -334,7 +341,7 @@
                     {
                         title: "Action",
                         field: "Action",
-                        width: 90,
+                        width: 125,
                         headerMenu: headerMenu,
                         hozAlign: "center",
                         formatter: function (cell) {
@@ -345,12 +352,29 @@
                                     `;
                         }
                     },
-                    { title: "SNo", field: "Sr_No", width: 60, sorter: "number", headerMenu: headerMenu, hozAlign: "center" },
-                    { title: "Product Category Ref", field: "ProductCatRef", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
-                    { title: "Product Description", field: "ProductDescription", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
-                    { title: "Report No", field: "Report_No", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center" },
-                    { title: "Report Date", field: "Report_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center" },
-                    { title: "Batch Code", field: "BatchCode", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" }
+                    { title: "SNo", field: "Sr_No", width: 100, sorter: "number", headerMenu: headerMenu, hozAlign: "center" },
+              
+
+                    { title: "Product Category Ref", field: "ProductCatRef", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+                    { title: "Product Description", field: "ProductDescription", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+
+                    { title: "Report No", field: "Report_No", width: 150, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center" },
+                    { title: "Report Date", field: "Report_Date", width: 130, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center" },
+                    { title: "Batch Code", field: "BatchCode", width: 150, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+
+                    { title: "Light Source Details", field: "LightSourceDetails", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+                    { title: "Driver Details & Qty", field: "DriverDetailsQty", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+                    { title: "PCB Details & Qty", field: "PCBDetailsQty", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+                    { title: "LED Combinations", field: "LEDCombinations", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+                    { title: "Sensor Details & Qty", field: "SensorDetailsQty", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+                    { title: "Lamp Details", field: "LampDetails", width: 200, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left" },
+
+                    { title: "PKD", field: "PKD", width: 120, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center" },
+
+
+
+
+
                 ];
 
            
@@ -359,12 +383,13 @@
                     layout: "fitColumns",
                     movableColumns: true,
                     pagination: "local",
-                    paginationSize: 100000, // show all rows
+                    paginationSize: 10, // show all rows
                     paginationSizeSelector: [10, 50, 100, 500, { label: "All", value: true }],
+                    paginationCounter: "rows",
                     columns: columns
                 });
 
-             
+              debugger
                 table.on("cellClick", function (e, cell) {
                     if (cell.getColumn().getField() !== "Action") {
                         let id = cell.getRow().getData().Id;

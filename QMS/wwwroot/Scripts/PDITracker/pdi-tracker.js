@@ -162,18 +162,14 @@ var headerMenu = function () {
 function loadData() {
     Blockloadershow();
 
-    // Step 1: Load vendor data
-
-
-    // Step 2: Load Nat Project data
     $.ajax({
         url: '/PDITracker/GetBatchCodeDropdown',
         type: 'GET'
-    }).done(function (lab) {
+    }).done(function (batchCode) {
         //let natProjectOptions = {};
 
-        if (Array.isArray(lab)) {
-            batchCodeOptions = lab.reduce((acc, v) => {
+        if (Array.isArray(batchCode)) {
+            batchCodeOptions = batchCode.reduce((acc, v) => {
                 acc[v.value] = v.label;
                 return acc;
             }, {});
@@ -1221,6 +1217,15 @@ function OnTabGridLoad(response) {
     Blockloaderhide();
 }
 
+
+function renumberSrNo() {
+    const rows = table.getRows("active");
+    $.each(rows, function (i, r) {
+        const d = r.getData();
+        if (d.Sr_No !== i + 1) { r.update({ Sr_No: i + 1 }); }
+    });
+}
+
 $('#pdi_table').on('change', '.pdi-upload', function () {
     const input = this;
     const file = input.files[0];
@@ -1454,6 +1459,45 @@ function delConfirm(recid, element) {
 //});
 
 Tabulator.extendModule("edit", "editors", {
+    select2Test: function (cell, onRendered, success, cancel, editorParams) {
+        const values = editorParams.values || {};
+        const select = document.createElement("select");
+        select.style.width = "100%";
+
+        if (Array.isArray(values)) {
+            values.forEach(function (item) {
+                let option = document.createElement("option");
+                option.value = item.value;
+                option.text = item.label;
+                if (item.value === cell.getValue()) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+        else {
+
+            for (let val in values) {
+                let option = document.createElement("option");
+                option.value = val;
+                option.text = values[val];
+                if (val === cell.getValue()) option.selected = true;
+                select.appendChild(option);
+            }
+        }
+        onRendered(function () {
+            $(select).select2({
+                dropdownParent: document.body,
+                width: 'resolve',
+                placeholder: "Select value"
+            }).on("change", function () {
+                success(select.value);
+            });
+        });
+
+        return select;
+    }
+});
+
+Tabulator.extendModule("edit", "editors", {
     select2: function (cell, onRendered, success, cancel, editorParams) {
         const fieldName = cell.getField(); // column field
         const values = editorParams.values || {};
@@ -1473,7 +1517,7 @@ Tabulator.extendModule("edit", "editors", {
         if (fieldName === "BatchCodeVendor") {
             let addOption = document.createElement("option");
             addOption.value = "__add_new__";
-            addOption.text = "➕ Add New Batch-Code";
+            addOption.text = "➕ Add New Batch Code";
             select.appendChild(addOption);
         }
 
@@ -1510,6 +1554,88 @@ Tabulator.extendModule("edit", "editors", {
     }
 });
 
+//Tabulator.extendModule("edit", "editors", {
+//    select2: function (cell, onRendered, success, cancel, editorParams) {
+//        const fieldName = cell.getField(); // column field
+//        const values = editorParams.values || {};
+//        const select = document.createElement("select");
+//        select.style.width = "100%";
+
+//        // Build options
+//        for (let val in values) {
+//            let option = document.createElement("option");
+//            option.value = val;
+//            option.text = values[val];
+//            if (val === cell.getValue()) option.selected = true;
+//            select.appendChild(option);
+//        }
+
+//        // Add sentinel only for BatchCodeVendor
+//        if (fieldName === "BatchCodeVendor") {
+//            let addOption = document.createElement("option");
+//            addOption.value = "__add_new__";
+//            addOption.text = "➕ Add New Batch Code";
+//            select.appendChild(addOption);
+//        }
+
+//        onRendered(function () {
+//            $(select).select2({
+//                dropdownParent: document.body,
+//                width: 'resolve',
+//                placeholder: "Select value",
+//                templateResult: function (data) {
+//                    if (data.id === "__add_new__") {
+//                        return $('<span style="color: blue;"><i class="fas fa-plus-circle"></i> ' + data.text + '</span>');
+//                    }
+//                    return data.text;
+//                },
+//                templateSelection: function (data) {
+//                    // IMPORTANT: do not try values[__add_new__]; just show its own label
+//                    if (data?.id === "__add_new__") return data.text;
+//                    return values[data?.id] || data?.text || "";
+//                }
+//            }).on("select2:select", function () {
+//                const selectedVal = select.value;
+
+//                if (selectedVal === "__add_new__") {
+//                    // close the dropdown, clear UI value
+//                    $(select).val(null).trigger("change.select2");
+//                    $(select).select2('close');
+
+//                    // capture cell for re-focus later
+//                    selectedBatchCodeCell = cell;
+
+//                    // Defer cancel + modal open to next tick to avoid racing the editor teardown
+//                    setTimeout(() => {
+//                        try { cancel(); } catch (e) { }
+
+//                        const $m = $("#batchCodePDIModel");
+//                        if (!$m.length) {
+//                            console.error("Missing #batchCodePDIModel");
+//                            showDangerAlert("Batch Code popup not found.");
+//                            return;
+//                        }
+
+//                        // Open modal (BS4 vs BS5 safe)
+//                        if (typeof $.fn.modal === "function") {
+//                            $m.modal({ backdrop: "static", keyboard: false, show: true });
+//                        } else if (window.bootstrap?.Modal) {
+//                            const modal = new bootstrap.Modal($m[0], { backdrop: "static", keyboard: false });
+//                            modal.show();
+//                        }
+
+//                        // Load Batch Code grid in the modal
+//                        loadBatchCodeData?.();
+//                    }, 0);
+//                } else {
+//                    success(selectedVal);
+//                }
+//            });
+//        });
+
+//        return select;
+//    }
+//});
 
 //function saveEditedPDIRow(rowData) {
 //    debugger
@@ -1594,6 +1720,24 @@ Tabulator.extendModule("edit", "editors", {
 
 function saveEditedPDIRow(rowData) {
     debugger
+
+    var errorMsg = "";
+    var fields = "";
+
+    if (rowData.DispatchDate == '' || rowData.DispatchDate == null || rowData.DispatchDate == undefined) {
+        fields += " - Dispatch Date" + "<br>";
+    }
+
+    if (fields != "") {
+        errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
+    }
+
+    if (errorMsg != "") {
+        //Blockloaderhide();
+        showDangerAlert(errorMsg);
+        return false;
+    }
+
     // ----- helpers -----
     const toStrOrNull = (v) => {
         if (v === undefined || v === null) return null;
@@ -1792,12 +1936,13 @@ function OnBatchCodeGridLoad(response) {
         {
             title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
         },
-        editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
+        editableColumn("Vendor", "Vendor", "select2Test", "center", "input", {}, {
             values: vendorBatchCodeOptions
         }, function (cell) {
             const val = cell.getValue();
             return vendorBatchCodeOptions[val] || val;
         }, null),
+        editableColumn("Vendor", "Vendor", true),
         editableColumn("Batch Code", "Batch_Code", true),
         { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
@@ -1839,6 +1984,10 @@ function OnBatchCodeGridLoad(response) {
 
     Blockloaderhide();
 }
+
+$("#closebtn").on("click", function () {
+    $('#batchCodePDIModel').modal('hide');
+});
 
 function InsertUpdateBatchCode(rowData) {
     debugger

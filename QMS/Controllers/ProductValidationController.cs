@@ -205,8 +205,8 @@ public class ProductValidationController : Controller
             imageRange.Style.Border.SetBottomBorder(XLBorderStyleValues.Medium);
             imageRange.Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
 
-            currentRow ++; // Row 2
-                           // Report No.
+            currentRow++; // Row 2
+                          // Report No.
             worksheet.Range(currentRow, 1, currentRow, 6).Merge();
             worksheet.Range(currentRow, 1, currentRow, 6).Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
             worksheet.Range(currentRow, 1, currentRow, 6).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
@@ -241,7 +241,7 @@ public class ProductValidationController : Controller
             worksheet.Row(currentRow + 1).Height = 19.80;
 
             currentRow += 2; // Row 5
-                          // Product Details
+                             // Product Details
             worksheet.Range(currentRow, 1, currentRow, 2).Merge();
             worksheet.Range(currentRow, 1, currentRow, 2).Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
             worksheet.Range(currentRow, 1, currentRow, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
@@ -590,4 +590,5 @@ public class ProductValidationController : Controller
             return Json(exc);
         }
     }
+
 }

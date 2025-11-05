@@ -42,9 +42,9 @@ namespace QMS.Core.Repositories.PDITrackerRepository
                 if (startDate.HasValue && endDate.HasValue)
                 {
                     result = result
-                        .Where(x => x.CreatedDate.HasValue &&
-                                    x.CreatedDate.Value.Date >= startDate.Value.Date &&
-                                    x.CreatedDate.Value.Date <= endDate.Value.Date)
+                        .Where(x => x.DispatchDate.HasValue &&
+                                    x.DispatchDate.Value.Date >= startDate.Value.Date &&
+                                    x.DispatchDate.Value.Date <= endDate.Value.Date)
                         .ToList();
                 }
                 return result.Select(data => new PDITrackerViewModel

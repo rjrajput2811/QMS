@@ -192,7 +192,7 @@ var headerMenu = function () {
             ? raw
             : String(raw || "").split(joinWith).map(s => s.trim()).filter(Boolean);
 
-        // find the description text in the row (e.g. ProductDescription / ProdDesc)
+        // find the description text in the row (e.g. ProductDescription / Sample_Desc)
         const row = cell.getRow().getData();
         let descText = "";
         if (Array.isArray(descFieldParam)) {
@@ -200,7 +200,7 @@ var headerMenu = function () {
         } else if (typeof descFieldParam === "string") {
             descText = row?.[descFieldParam] || "";
         } else {
-            descText = row?.ProductDescription || row?.ProdDesc || "";
+            descText = row?.ProductDescription || row?.Sample_Desc || "";
         }
 
         const map = parsePairs(descText, pairSeparator, pairJoinWith);
@@ -273,14 +273,14 @@ Tabulator.extendModule("edit", "editors", {
             debounce: 250,
 
             valueField: 'oldPart_No',
-            valueFieldCandidates: ['oldPart_No', 'code', 'Code', 'productCode', 'ProductCode'],
+            valueFieldCandidates: ['oldPart_No', 'code', 'Code', 'sample_Cat_Ref', 'Sample_Cat_Ref'],
             labelField: 'oldPart_No',
-            labelFieldCandidates: ['label', 'name', 'text', 'oldPart_No', 'productCode', 'ProductCode'],
+            labelFieldCandidates: ['label', 'name', 'text', 'oldPart_No', 'sample_Cat_Ref', 'Sample_Cat_Ref'],
             descItemField: 'description',
-            descItemFieldCandidates: ['description', 'desc', 'productDescription', 'ProductDescription', 'prodDesc', 'ProdDesc'],
+            descItemFieldCandidates: ['description', 'desc', 'productDescription', 'ProductDescription', 'sample_Desc', 'Sample_Desc'],
 
             // Linked row description field(s) to update
-            descField: ['ProdDesc', 'ProductDescription'], // can be string or array
+            descField: ['Sample_Desc', 'ProductDescription'], // can be string or array
             descAsArray: false,              // store descs as array or as joined string
             descJoinWith: ' | ',             // joiner for desc-only format
 
@@ -545,11 +545,12 @@ function OnTabGridLoad(response) {
                 Responsbility: item.responsbility,
                 Test_Completion_Date: formatDate(item.test_Completion_Date),
                 Report_Release_Date: formatDate(item.report_Release_Date),
-                NABL_Released_Date: formatDate(item.nABL_Released_Date),
+                NABL_Released_Date: formatDate(item.nabL_Released_Date),
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
                 UpdatedDate: formatDate(item.updatedDate),
-                CreatedDate: formatDate(item.createdDate)
+                CreatedDate: formatDate(item.createdDate),
+                Current_Status: item.current_Status
             });
         });
     }
@@ -585,7 +586,7 @@ function OnTabGridLoad(response) {
 
         {
             title: "Sample Cat Ref.",
-            field: "ProductCode",
+            field: "Sample_Cat_Ref",
             editor: "autocomplete_ajax_multi",
             headerSort: false,
             headerMenu: headerMenu,
@@ -595,7 +596,7 @@ function OnTabGridLoad(response) {
             formatterParams: {
                 joinWith: ", ",
                 // where to read the combined desc text from (tries in order)
-                descField: ["ProductDescription", "ProdDesc"],
+                descField: "",
                 // how your description field is stored:
                 pairSeparator: " — ",   // use " - " if you want a hyphen
                 pairJoinWith: " | "
@@ -609,7 +610,7 @@ function OnTabGridLoad(response) {
                 labelField: "oldPart_No",
 
                 // keep these to ensure the row description is maintained as pairs:
-                descField: ["ProdDesc", "ProductDescription"],
+                descField: "",
                 descFormat: "pair",
                 descPairSeparator: " — ",
                 descPairJoinWith: " | ",
@@ -621,7 +622,7 @@ function OnTabGridLoad(response) {
             widthGrow: 2
         },
 
-        { title: "Sample Description", field: "ProdDesc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
+        { title: "Sample Description", field: "Sample_Desc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
 
         editableColumn("Vendor.Requestor", "Vendor", "select2", "center", "input", {}, {
             values: vendorOptions
@@ -731,6 +732,7 @@ function OnTabGridLoad(response) {
                     Test_Completion_Date: "",
                     Report_Release_Date: "",
                     NABL_Released_Date: "",
+                    Current_Status : "",
                     CreatedBy: "",
                     UpdatedBy: "",
                     UpdatedDate: "",
@@ -1391,11 +1393,22 @@ function InsertUpdateFIFO(rowData) {
         return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
     }
 
+    function normalizeMultiToString(val, joinWith) {
+        if (val == null) return "";
+        if (Array.isArray(val)) {
+            return val
+                .map(v => String(v ?? "").trim())
+                .filter(v => v !== "")
+                .join(joinWith);
+        }
+        return String(val).trim();
+    }
+
     var Model = {
         Id: rowData.Id || 0,
         Sample_Recv_Date: toIsoDate(rowData.Sample_Recv_Date) || null,
-        Sample_Cat_Ref: rowData.Sample_Cat_Ref || null,
-        Sample_Desc: rowData.Sample_Desc || null,
+        Sample_Cat_Ref: normalizeMultiToString(rowData.Sample_Cat_Ref, ", "),
+        Sample_Desc: normalizeMultiToString(rowData.Sample_Desc, " | "),
         Vendor: rowData.Vendor || null,
         Sample_Qty: rowData.Sample_Qty || null,
         Test_Req: rowData.Test_Req || null,
@@ -1403,7 +1416,8 @@ function InsertUpdateFIFO(rowData) {
         Responsbility: rowData.Responsbility || null,
         Test_Completion_Date: toIsoDate(rowData.Test_Completion_Date) || null,
         Report_Release_Date: toIsoDate(rowData.Report_Release_Date) || null,
-        NABL_Released_Date: toIsoDate(rowData.NABL_Released_Date) || null
+        NABL_Released_Date: toIsoDate(rowData.NABL_Released_Date) || null,
+        Current_Status: rowData.Current_Status || null
     };
 
     const isNew = Model.Id === 0;

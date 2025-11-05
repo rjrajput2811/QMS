@@ -23,6 +23,7 @@ namespace QMS.Core.Models
         public DateTime? Report_Release_Date { get; set; }
         public DateTime? NABL_Released_Date { get; set; }
         public string? Final_Report { get; set; }
+        public string? Current_Status { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }

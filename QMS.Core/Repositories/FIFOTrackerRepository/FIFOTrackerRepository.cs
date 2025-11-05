@@ -56,6 +56,7 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     Report_Release_Date = data.Report_Release_Date,
                     NABL_Released_Date = data.NABL_Released_Date,
                     Final_Report = data.Final_Report,
+                    Current_Status = data.Current_Status,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -89,13 +90,14 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     new SqlParameter("@Test_Completion_Date", newRecord.Test_Completion_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Report_Release_Date", newRecord.Report_Release_Date ?? (object)DBNull.Value),
                     new SqlParameter("@NABL_Released_Date", newRecord.NABL_Released_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Current_Status", newRecord.Current_Status ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Report", newRecord.Final_Report ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", newRecord.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", newRecord.Deleted),
                 };
 
                 var sql = @"EXEC sp_Insert_FifoTrac @Sample_Recv_Date,@Sample_Cat_Ref,@Sample_Desc,@Vendor,@Sample_Qty,@Test_Req,@Test_Status,@Responsbility,@Test_Completion_Date,
-                        @Report_Release_Date,@NABL_Released_Date,@Final_Report,@CreatedBy,@IsDeleted";
+                        @Report_Release_Date,@NABL_Released_Date,@Current_Status,@Final_Report,@CreatedBy,@IsDeleted";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -134,12 +136,13 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     new SqlParameter("@Test_Completion_Date", updatedRecord.Test_Completion_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Report_Release_Date", updatedRecord.Report_Release_Date ?? (object)DBNull.Value),
                     new SqlParameter("@NABL_Released_Date", updatedRecord.NABL_Released_Date ?? (object)DBNull.Value),
+                    new SqlParameter("@Current_Status", updatedRecord.Current_Status ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Report", updatedRecord.Final_Report ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 var sql = @"EXEC sp_Update_FifoTrac @FifoTrac_Id,@Sample_Recv_Date,@Sample_Cat_Ref,@Sample_Desc,@Vendor,@Sample_Qty,@Test_Req,@Test_Status,@Responsbility,@Test_Completion_Date,
-                        @Report_Release_Date,@NABL_Released_Date,@Final_Report,@UpdatedBy";
+                        @Report_Release_Date,@NABL_Released_Date,@Current_Status,@Final_Report,@UpdatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -201,6 +204,7 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     Report_Release_Date = data.Report_Release_Date,
                     NABL_Released_Date = data.NABL_Released_Date,
                     Final_Report = data.Final_Report,
+                    Current_Status = data.Current_Status,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,

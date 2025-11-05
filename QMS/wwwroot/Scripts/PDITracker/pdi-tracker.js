@@ -162,10 +162,6 @@ var headerMenu = function () {
 function loadData() {
     Blockloadershow();
 
-    // Step 1: Load vendor data
-
-
-    // Step 2: Load Nat Project data
     $.ajax({
         url: '/PDITracker/GetBatchCodeDropdown',
         type: 'GET'
@@ -1463,6 +1459,45 @@ function delConfirm(recid, element) {
 //});
 
 Tabulator.extendModule("edit", "editors", {
+    select2Test: function (cell, onRendered, success, cancel, editorParams) {
+        const values = editorParams.values || {};
+        const select = document.createElement("select");
+        select.style.width = "100%";
+
+        if (Array.isArray(values)) {
+            values.forEach(function (item) {
+                let option = document.createElement("option");
+                option.value = item.value;
+                option.text = item.label;
+                if (item.value === cell.getValue()) option.selected = true;
+                select.appendChild(option);
+            });
+        }
+        else {
+
+            for (let val in values) {
+                let option = document.createElement("option");
+                option.value = val;
+                option.text = values[val];
+                if (val === cell.getValue()) option.selected = true;
+                select.appendChild(option);
+            }
+        }
+        onRendered(function () {
+            $(select).select2({
+                dropdownParent: document.body,
+                width: 'resolve',
+                placeholder: "Select value"
+            }).on("change", function () {
+                success(select.value);
+            });
+        });
+
+        return select;
+    }
+});
+
+Tabulator.extendModule("edit", "editors", {
     select2: function (cell, onRendered, success, cancel, editorParams) {
         const fieldName = cell.getField(); // column field
         const values = editorParams.values || {};
@@ -1504,7 +1539,6 @@ Tabulator.extendModule("edit", "editors", {
                 const selectedVal = select.value;
 
                 if (selectedVal === "__add_new__") {
-                    debugger
                     $(select).select2('close');
                     cancel(); // cancel cell edit
                     selectedBatchCodeCell = cell; // store the cell
@@ -1686,6 +1720,24 @@ Tabulator.extendModule("edit", "editors", {
 
 function saveEditedPDIRow(rowData) {
     debugger
+
+    var errorMsg = "";
+    var fields = "";
+
+    if (rowData.DispatchDate == '' || rowData.DispatchDate == null || rowData.DispatchDate == undefined) {
+        fields += " - Dispatch Date" + "<br>";
+    }
+
+    if (fields != "") {
+        errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
+    }
+
+    if (errorMsg != "") {
+        //Blockloaderhide();
+        showDangerAlert(errorMsg);
+        return false;
+    }
+
     // ----- helpers -----
     const toStrOrNull = (v) => {
         if (v === undefined || v === null) return null;
@@ -1884,12 +1936,13 @@ function OnBatchCodeGridLoad(response) {
         {
             title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
         },
-        editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
+        editableColumn("Vendor", "Vendor", "select2Test", "center", "input", {}, {
             values: vendorBatchCodeOptions
         }, function (cell) {
             const val = cell.getValue();
             return vendorBatchCodeOptions[val] || val;
         }, null),
+        editableColumn("Vendor", "Vendor", true),
         editableColumn("Batch Code", "Batch_Code", true),
         { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },

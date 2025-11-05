@@ -38,23 +38,8 @@ public class ProductValidationController : Controller
 
     public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
     {
-        return View();
-    }
-    public IActionResult RippleTestReport()
-    {
-        return View();
-    }
-    public IActionResult Rippletestreportdetails()
-    {
-        return View();
-    }
-    public IActionResult Electricalprotection()
-    {
-        return View();
-    }
-    public IActionResult Electricalprotectiondetails()
-    {
-        return View();
+        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsAsync();
+        return Json(result);
     }
 
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
@@ -125,13 +110,25 @@ public class ProductValidationController : Controller
     #endregion
 
     #region ElectricalProtection
-
-    public IActionResult ElectricalProtection()
+    public IActionResult Electricalprotection()
+    {
+        return View();
+    }
+    public IActionResult Electricalprotectiondetails()
     {
         return View();
     }
 
-    public IActionResult ElectricalProtectionDetails()
+    #endregion
+
+    #region RippleTest
+
+    public IActionResult RippleTestReport()
+    {
+        return View();
+    }
+
+    public IActionResult Rippletestreportdetails()
     {
         return View();
     }

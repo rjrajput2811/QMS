@@ -56,6 +56,8 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     Report_Release_Date = data.Report_Release_Date,
                     NABL_Released_Date = data.NABL_Released_Date,
                     Final_Report = data.Final_Report,
+                    Remark  = data.Remark,
+                    Delayed_Days = data.Delayed_Days,
                     Current_Status = data.Current_Status,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
@@ -92,12 +94,14 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     new SqlParameter("@NABL_Released_Date", newRecord.NABL_Released_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Current_Status", newRecord.Current_Status ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Report", newRecord.Final_Report ?? (object)DBNull.Value),
+                    new SqlParameter("@Remark", newRecord.Remark ?? (object)DBNull.Value),
+                    new SqlParameter("@Delayed_Days", newRecord.Delayed_Days ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", newRecord.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", newRecord.Deleted),
                 };
 
                 var sql = @"EXEC sp_Insert_FifoTrac @Sample_Recv_Date,@Sample_Cat_Ref,@Sample_Desc,@Vendor,@Sample_Qty,@Test_Req,@Test_Status,@Responsbility,@Test_Completion_Date,
-                        @Report_Release_Date,@NABL_Released_Date,@Current_Status,@Final_Report,@CreatedBy,@IsDeleted";
+                        @Report_Release_Date,@NABL_Released_Date,@Current_Status,@Final_Report,@Remark,@Delayed_Days,@CreatedBy,@IsDeleted";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -138,11 +142,13 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     new SqlParameter("@NABL_Released_Date", updatedRecord.NABL_Released_Date ?? (object)DBNull.Value),
                     new SqlParameter("@Current_Status", updatedRecord.Current_Status ?? (object)DBNull.Value),
                     new SqlParameter("@Final_Report", updatedRecord.Final_Report ?? (object)DBNull.Value),
+                    new SqlParameter("@Remark", updatedRecord.Remark ?? (object)DBNull.Value),
+                    new SqlParameter("@Delayed_Days", updatedRecord.Delayed_Days ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value)
                 };
 
                 var sql = @"EXEC sp_Update_FifoTrac @FifoTrac_Id,@Sample_Recv_Date,@Sample_Cat_Ref,@Sample_Desc,@Vendor,@Sample_Qty,@Test_Req,@Test_Status,@Responsbility,@Test_Completion_Date,
-                        @Report_Release_Date,@NABL_Released_Date,@Current_Status,@Final_Report,@UpdatedBy";
+                        @Report_Release_Date,@NABL_Released_Date,@Current_Status,@Final_Report,@Remark,@Delayed_Days,@UpdatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -204,6 +210,8 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                     Report_Release_Date = data.Report_Release_Date,
                     NABL_Released_Date = data.NABL_Released_Date,
                     Final_Report = data.Final_Report,
+                    Remark = data.Remark,
+                    Delayed_Days = data.Delayed_Days,
                     Current_Status = data.Current_Status,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
@@ -286,5 +294,143 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
                 throw;
             }
         }
+
+        public async Task<List<TestReqFIFOViewModel>> GetTestReqFIFOAsync()
+        {
+            try
+            {
+                var result = await (from pr in _dbContext.TestReq_FIFO
+                                    where pr.Deleted == false // Add this condition
+                                    select new TestReqFIFOViewModel
+                                    {
+                                        Id = pr.Id,
+                                        Test = pr.Test,
+                                        CreatedBy = pr.CreatedBy,
+                                        CreatedDate = pr.CreatedDate,
+                                        UpdatedBy = pr.UpdatedBy,
+                                        UpdatedDate = pr.UpdatedDate
+                                    }).ToListAsync();
+                return result;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<BatchCode_PDI?> GetTestReqFIFOByIdAsync(int Id)
+        {
+            try
+            {
+                var result = await base.GetByIdAsync<BatchCode_PDI>(Id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> CreateTestReqFIFOAsync(TestReqFIFOViewModel newNatProjectRecord, bool returnCreatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = new TestReq_FIFO();
+                natToCreate.Test = newNatProjectRecord.Test;
+                natToCreate.CreatedBy = newNatProjectRecord.CreatedBy;
+                natToCreate.CreatedDate = DateTime.Now;
+                return await base.CreateAsync<TestReq_FIFO>(natToCreate, returnCreatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> UpdateTestReqFIFOAsync(TestReqFIFOViewModel updateNatProjectRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = await base.GetByIdAsync<TestReq_FIFO>(updateNatProjectRecord.Id);
+                natToCreate.Test = updateNatProjectRecord.Test;
+                natToCreate.UpdatedBy = updateNatProjectRecord.UpdatedBy;
+                natToCreate.UpdatedDate = DateTime.Now;
+                return await base.UpdateAsync<TestReq_FIFO>(natToCreate, returnUpdatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<OperationResult> DeleteTestReqFIFOAsync(int Id)
+        {
+            try
+            {
+                return await base.DeleteAsync<TestReq_FIFO>(Id);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckTestReqFIFODuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.TestReq_FIFO
+                    .Where(x => x.Deleted == false && x.Test == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.TestReq_FIFO
+                        .Where(x => x.Deleted == false &&
+                               x.Test == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<DropdownOptionViewModel>> GetTestReqDropdownAsync()
+        {
+            return await _dbContext.TestReq_FIFO
+                .Where(v => !v.Deleted)
+                .Select(v => new DropdownOptionViewModel
+                {
+                    Label = v.Test,
+                    Value = v.Test
+                })
+                .Distinct()
+                .ToListAsync();
+        }
+
     }
 }

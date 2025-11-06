@@ -49,6 +49,7 @@ namespace QMS.Core.Repositories.KaizenTrackerRepository
                     Kaizen_Attch = data.Kaizen_Attch,
                     Remark = data.Remark,
                     FY = data.FY,
+                    Categorised_Scope = data.Categorised_Scope,
                     CreatedDate = data.CreatedDate,
                     UpdatedDate = data.UpdatedDate,
                     CreatedBy = data.CreatedBy,
@@ -85,6 +86,7 @@ namespace QMS.Core.Repositories.KaizenTrackerRepository
                     Kaizen_Attch = data.Kaizen_Attch,
                     Remark = data.Remark,
                     FY = data.FY,
+                    Categorised_Scope = data.Categorised_Scope,
                     CreatedDate = data.CreatedDate,
                     UpdatedDate = data.UpdatedDate,
                     CreatedBy = data.CreatedBy,
@@ -115,12 +117,13 @@ namespace QMS.Core.Repositories.KaizenTrackerRepository
                     new SqlParameter("@Kaizen_Attch", kaizen.Kaizen_Attch ?? (object)DBNull.Value),
                     new SqlParameter("@Remark", kaizen.Remark ?? (object)DBNull.Value),
                     new SqlParameter("@FY", kaizen.FY ?? (object)DBNull.Value),
+                    new SqlParameter("@Categorised_Scope", kaizen.Categorised_Scope ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", kaizen.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", kaizen.Deleted)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Insert_KaizenTracker @Vendor, @Kaizen_Theme, @Month, @Team, @Kaizen_Attch, @Remark, @FY, @CreatedBy, @IsDeleted",
+                    "EXEC sp_Insert_KaizenTracker @Vendor, @Kaizen_Theme, @Month, @Team, @Kaizen_Attch, @Remark, @FY, @Categorised_Scope, @CreatedBy, @IsDeleted",
                     parameters);
 
                 return new OperationResult { Success = true };
@@ -146,12 +149,13 @@ namespace QMS.Core.Repositories.KaizenTrackerRepository
                     new SqlParameter("@Kaizen_Attch", kaizen.Kaizen_Attch ?? (object)DBNull.Value),
                     new SqlParameter("@Remark", kaizen.Remark ?? (object)DBNull.Value),
                     new SqlParameter("@FY", kaizen.FY ?? (object)DBNull.Value),
+                    new SqlParameter("@Categorised_Scope", kaizen.Categorised_Scope ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", kaizen.UpdatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", kaizen.Deleted)
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Update_KaizenTracker @Kaizen_Id, @Vendor, @Kaizen_Theme, @Month, @Team, @Kaizen_Attch, @Remark, @FY, @UpdatedBy, @IsDeleted",parameters);
+                    "EXEC sp_Update_KaizenTracker @Kaizen_Id, @Vendor, @Kaizen_Theme, @Month, @Team, @Kaizen_Attch, @Remark, @FY, @Categorised_Scope,@UpdatedBy, @IsDeleted", parameters);
 
                 return new OperationResult { Success = true };
             }

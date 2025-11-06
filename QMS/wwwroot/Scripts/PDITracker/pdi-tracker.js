@@ -1987,6 +1987,7 @@ function OnBatchCodeGridLoad(response) {
 
 $("#closebtn").on("click", function () {
     $('#batchCodePDIModel').modal('hide');
+    loadData();
 });
 
 function InsertUpdateBatchCode(rowData) {
@@ -2050,7 +2051,7 @@ function InsertUpdateBatchCode(rowData) {
 }
 
 $('#batchCodePDIModel').on('hidden.bs.modal', function () {
-    loadBatchCodeData(); // uncomment if you want full reload
+    loadData(); // uncomment if you want full reload
 });
 
 

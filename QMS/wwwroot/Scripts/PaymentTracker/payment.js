@@ -1332,7 +1332,7 @@ function InsertUpdateLab(rowData) {
 }
 
 $('#labPaymentModel').on('hidden.bs.modal', function () {
-    loadLabData(); // uncomment if you want full reload
+    loadData(); // uncomment if you want full reload
 });
 
 

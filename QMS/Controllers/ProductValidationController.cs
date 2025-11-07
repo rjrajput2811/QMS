@@ -1121,7 +1121,7 @@ public class ProductValidationController : Controller
 
     #endregion
 
-    #region SuregTestReport
+    #region TemperatureRiseTestOfLuminaire
     public IActionResult TemperatureRiseTestOfLuminaire()
     {
 
@@ -1131,9 +1131,24 @@ public class ProductValidationController : Controller
     {
         return View();
     }
+    #endregion
+
+    #region PhotometryTestReport 
+    public IActionResult PhotometryTestReport()
+    {
+
+        return View();
+    }
+    public IActionResult PhotometryTestReportDetails()
+    {
+        return View();
+    }
+
+    #endregion
+    #region 
+  
+    #endregion
 
 
 
-
-    # endregion
 }

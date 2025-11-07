@@ -1,0 +1,547 @@
+﻿
+
+@{
+    ViewData["Title"] = "Photometry Test Report";
+}
+
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<script src="~/js/tabulator.min.js"></script>
+<style>
+    .req {
+        color: #d00;
+        font-style: normal;
+    }
+    /* thin full-width spacer row (yellow) */
+    .pv-table .spacer-row td {
+        background: #fff; /* soft yellow */
+        height: 14px; /* tweak as needed */
+        padding: 0; /* no padding so it stays thin */
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+    }
+
+    /* make the sign-off row taller with extra space for signatures */
+   .pv-table .sign-row td {
+    vertical-align: top;
+    padding: 6px 10px 25px 10px; /* small signature space */
+}
+
+    /* underline-only input style (reuse) */
+    .same-input {
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        outline: none;
+        font-size: 14px;
+        width: 70%;
+        padding: 2px 4px;
+        transition: border-color .2s ease-in-out;
+    }
+
+        .same-input:focus {
+            border-bottom-color: #4682B4;
+        }
+
+        .same-input::placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+
+    .header-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        border: 1px solid #000;
+    }
+
+        .header-table td {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+    .field-label {
+        font-weight: 600;
+        color: #000;
+        margin-right: 6px;
+    }
+
+    /* Inline underline-style inputs */
+    .inline-input,
+    .inline-date {
+        display: inline-block;
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        width: 60%;
+        font-size: 14px;
+        padding: 2px 4px;
+        outline: none;
+        box-shadow: none;
+        transition: border-color 0.2s ease-in-out;
+        vertical-align: baseline;
+    }
+
+        .inline-input:focus,
+        .inline-date:focus {
+            border-bottom-color: #4682B4;
+        }
+
+        /* Keep native calendar icon visible and styled */
+        .inline-date::-webkit-calendar-picker-indicator {
+            opacity: 1;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+
+        .inline-date::-ms-clear,
+        .inline-date::-webkit-clear-button {
+            display: none;
+        }
+
+    .header-table {
+        margin-bottom: 5px !important; /* increase for more space (try 16–24px) */
+    }
+
+        .header-table + hr {
+            margin-top: 0 !important; /* ensures the hr doesn’t add extra space */
+        }
+    .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        
+        margin-top: 0px;
+    }
+
+        .pv-table th,
+        .pv-table td {
+            border: 1px solid #000;
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+
+        .pv-table thead th {
+            background: #f8f9fa;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .pv-table .subhead {
+            background: #eef2f7;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .pv-table .result-header {
+            color: #d00;
+            text-align: center;
+        }
+
+        .pv-table .group-cell {
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            background: #fff;
+        }
+
+        .pv-table td[contenteditable="true"] {
+            background: #fff;
+            min-height: 28px;
+            cursor: text;
+        }
+
+            .pv-table td[contenteditable="true"]:focus {
+                outline: 2px solid rgba(70, 130, 180, 0.35);
+                background: #f5faff;
+            }
+
+    .pretty-select {
+        width: 100%;
+        background-color: #f8fafc;
+        border: 1px solid #cfd8dc;
+        border-radius: 6px;
+        padding: 6px 28px 6px 10px; /* extra right padding for arrow space */
+        font-size: 14px;
+        color: #000;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        /* keep the native dropdown arrow visible */
+        appearance: auto;
+        -webkit-appearance: menulist;
+        -moz-appearance: menulist;
+    }
+
+        .pretty-select:focus {
+            border-color: #4682B4;
+            box-shadow: 0 0 0 2px rgba(70, 130, 180, 0.25);
+        }
+
+        .pretty-select option {
+            background: #fff;
+            color: #000;
+        }
+
+</style>
+
+<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+    <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+
+        <!-- Title -->
+        <div>
+            <b style="font-size:x-large; color:#4682B4;">
+                Photometry Test Report
+            </b>
+        </div>
+
+        <!-- Buttons -->
+        <div>
+            <button id="savePhotometryButton"
+                    type="button"
+                    class="btn btn-outline-success legitRipple mr-2"
+                    onclick="savePhotometryTest()"
+                    style="width:120px; font-size:15px;">
+                <i class="fas fa-save mr-1"></i>Save
+            </button>
+
+            <a href='@Url.Action("PhotometryTestReport", "ProductValidation")'
+               class="btn btn-outline-primary"
+               style="width:120px; font-size:15px;">
+                <i class="fas fa-arrow-left"></i> BACK
+            </a>
+        </div>
+    </div>
+</div>
+<!-- 🔹 Product Information (User Input Enabled) -->
+<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="header-table">
+                <colgroup>
+                    <col style="width:33%;">
+                    <col style="width:34%;">
+                    <col style="width:33%;">
+                </colgroup>
+                <tbody>
+                    <!-- Row 1 -->
+                    <tr>
+                        <td>
+                            <span class="field-label">Product Cat Ref :</span><em class="req">*</em>
+                            <input type="text" name="ProductCatRef" class="inline-input"
+                                   placeholder="Enter Product Reference" required />
+                        </td>
+                        <td>
+                            <span class="field-label">Product Description :</span><em class="req">*</em>
+                            <input type="text" name="ProductDescription" class="inline-input"
+                                   placeholder="Enter Product Description" required />
+                        </td>
+                        <td>
+                            <span class="field-label">Report No. :</span><em class="req">*</em>
+                            <input type="text" name="ReportNo" class="inline-input"
+                                   placeholder="Enter Report Number" required />
+                        </td>
+                    </tr>
+
+                    <!-- Row 2 -->
+                    <tr>
+                        <td>
+                            <span class="field-label">Driver :</span><em class="req">*</em>
+                            <input type="text" name="Driver" class="inline-input"
+                                   placeholder="Enter Driver Details" required />
+                        </td>
+                        <td>
+                            <span class="field-label">LED Details :</span><em class="req">*</em>
+                            <input type="text" name="LEDDetails" class="inline-input"
+                                   placeholder="Enter LED Details" required />
+                        </td>
+                        <td>
+                            <span class="field-label">Date :</span><em class="req">*</em>
+                            <input type="date" name="ReportDate" class="inline-date"
+                                   placeholder="Select Date" required />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+       
+
+<div class="card-body">
+    <div class="table-responsive">
+        <table class="pv-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="width:10%"></th>
+                    <th rowspan="2" style="width:22%">Parameter</th>
+                    <th rowspan="2" style="width:18%">Specification</th>
+                    <th colspan="5" class="subhead">Measured Values</th>
+                    <th rowspan="2" style="width:18%" class="result-header">
+                        Result ( Pass / Fail / Not Applicable )
+                    </th>
+                </tr>
+                <tr>
+                    <th style="width:8%">Sample-1</th>
+                    <th style="width:8%">Sample-2</th>
+                    <th style="width:8%">Sample-3</th>
+                    <th style="width:8%">Sample-4</th>
+                    <th style="width:8%">Sample-5</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <!-- with Sphere -->
+                <tr>
+                    <td class="group-cell" rowspan="5">with<br>Sphere</td>
+                    <td contenteditable="true">Input Wattage (W)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Luminous Flux (lm)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">CCT (K)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">CRI</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">System Efficacy (lm/W)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+
+                <!-- With Gonio -->
+                <tr>
+                    <td class="group-cell" rowspan="9">With<br>Gonio</td>
+                    <td contenteditable="true">Input Wattage (W)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Luminous Flux (lm)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">CCT (K)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">CRI</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">System Efficacy (lm/W)</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">UGR Value</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">Distribution</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">NABL 79 Report</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                <tr>
+                    <td contenteditable="true">NABL 79 Report of Other Cat Ref as per PPS</td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                            <td>
+                                <select class="pretty-select">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                </tr>
+                        <tr class="spacer-row">
+                            <td colspan="12"></td>
+                        </tr>
+
+                        <!-- taller sign-off row -->
+                        <tr class="sign-row">
+                            <td colspan="4" style="font-weight:bold; border:1px solid #000;">
+                                Tested By:&nbsp;
+                                <input type="text" name="checkedBy" class="same-input" placeholder="" />
+                            </td>
+                            <td colspan="5" style="font-weight:bold; border:1px solid #000;">
+                                Verified By:&nbsp;
+                                <input type="text" name="verifiedBy" class="same-input" placeholder="" />
+                            </td>
+                        </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+        
+
+
+
+@section HideSidebar { }

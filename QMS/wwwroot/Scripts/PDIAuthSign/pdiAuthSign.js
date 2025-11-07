@@ -1,5 +1,6 @@
 ﻿var table = null;
 let vendorOptions = {};
+let vendorDetails = {};
 let filterStartPDIAuthDate = moment().startOf('month').format('YYYY-MM-DD');
 let filterEndPDIAuthDate = moment().endOf('month').format('YYYY-MM-DD');
 
@@ -65,12 +66,20 @@ function loadData() {
     Blockloadershow();
 
     $.ajax({
-        url: '/Service/GetVendor',
+        url: '/PDIAuthSign/GetVendor',
         type: 'GET'
     }).done(function (vendorData) {
         if (Array.isArray(vendorData)) {
             vendorOptions = vendorData.reduce((acc, v) => {
                 acc[v.value] = v.label;
+                return acc;
+            }, {});
+
+            vendorDetails = vendorData.reduce((acc, v) => {
+                acc[v.value] = {
+                    label: v.label,
+                    address: v.address ?? v.Address ?? ""
+                };
                 return acc;
             }, {});
         }
@@ -292,7 +301,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="~/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
@@ -315,7 +324,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="~/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
@@ -332,7 +341,8 @@ function OnTabGridLoad(response) {
 
         { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false }
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
+        { title: "Id", field: "Id", visible: false }
     );
 
     // // Initialize Tabulator
@@ -345,10 +355,23 @@ function OnTabGridLoad(response) {
         paginationSizeSelector: [50, 100, 500, 1500, 2000],
         paginationCounter: "rows",
         dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-        columns: columns
+        columns: columns,
+        index: "Id"
     });
 
     table.on("cellEdited", function (cell) {
+
+        const field = cell.getField();
+
+        // Auto-fill address when vendor changes
+        if (field === "Vendor") {
+            const vendorId = String(cell.getValue() ?? "");
+            const info = vendorDetails[vendorId];
+            if (info && info.address) {
+                cell.getRow().update({ Address: info.address });
+            }
+        }
+
         InsertUpdatePDIAuth(cell.getRow().getData());
     });
 
@@ -660,6 +683,7 @@ $('#pdiAuth_table').on('change', '.bis-upload', function () {
         $(this).val(""); // reset the input
         return;
     }
+    const type = $(this).data("type");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -676,8 +700,29 @@ $('#pdiAuth_table').on('change', '.bis-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessNewAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                if (type == 'Photo') {
+                    row.update({ Photo_Inspector: fileName });   // triggers reformat for that cell
+                }
+                else {
+                    row.update({ Specimen_Sign: fileName }); 
+                }
+            } else {
+
+                if (type == 'Photo') {
+                    table.updateOrAddData([{ Id: id, Photo_Inspector: fileName }], "Id");
+
+                }
+                else {
+                    table.updateOrAddData([{ Id: id, Specimen_Sign: fileName }], "Id");
+
+                }
+            }
+            //table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }

@@ -141,5 +141,20 @@ namespace QMS.Controllers
                 throw;
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetVendor()
+        {
+            try
+            {
+                var vendorList = await _pdiAuthSignRepository.GetVendorDropdownAsync();
+                return Json(vendorList);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return StatusCode(500, "Error retrieving vendor dropdown.");
+            }
+        }
     }
 }

@@ -33,7 +33,7 @@ namespace QMS.Controllers
             catch (Exception ex)
             {
                 _systemLogService.WriteLog(ex.Message);
-                return Json(new { success = false, message = "Error fetching RMTC details." });
+                return Json(new { success = false, message = "Error fetching Csat Comment details." });
             }
         }
 

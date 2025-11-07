@@ -39,7 +39,6 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        [Route("DNTracker/CreateAsync")]
         public async Task<JsonResult> CreateAsync([FromBody] DNTracker model)
         {
             try
@@ -75,7 +74,6 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        [Route("DNTracker/UpdateAsync")]
         public async Task<JsonResult> UpdateAsync([FromBody] DNTracker model)
         {
             try

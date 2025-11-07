@@ -648,7 +648,7 @@ function OnTabGridLoad(response) {
         $.each(response, function (index, item) {
             tabledata.push({
                 Sr_No: index + 1,
-                DNoteId: item.id,
+                Id: item.id,
                 DNoteNumber: item.dNoteNumber || "",
                 DNoteCategory: item.dNoteCategory || "",
                 ProductCode: item.productCode || "",
@@ -673,7 +673,7 @@ function OnTabGridLoad(response) {
             headerMenu: headerMenu,
             formatter: function (cell) {
                 const rowData = cell.getRow().getData();
-                return `<i onclick="delConfirm(${rowData.DNoteId})" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
+                return `<i onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
             }
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width:90 },
@@ -746,7 +746,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="/PDITrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="/DNTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
@@ -791,7 +791,8 @@ function OnTabGridLoad(response) {
             headerMenu: headerMenu,
             width: 100,
             visible: false
-        }
+        },
+        { title: "Id", field: "Id", visible: false }
     ];
 
     if (table) {
@@ -806,7 +807,8 @@ function OnTabGridLoad(response) {
             paginationSizeSelector: [10, 50, 100, 500],
             paginationCounter: "rows",
             placeholder: "No data available",
-            columns: columns
+            columns: columns,
+            index: "Id"
         });
 
         table.on("cellEdited", function (cell) {
@@ -1096,6 +1098,14 @@ function OnTabGridLoad(response) {
     Blockloaderhide();
 }
 
+function renumberSrNo() {
+    const rows = table.getRows("active");
+    $.each(rows, function (i, r) {
+        const d = r.getData();
+        if (d.Sr_No !== i + 1) { r.update({ Sr_No: i + 1 }); }
+    });
+}
+
 $('#dn_table').on('change', '.pdi-upload', function () {
     const input = this;
     const file = input.files[0];
@@ -1131,8 +1141,17 @@ $('#dn_table').on('change', '.pdi-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                row.update({ Remark: fileName });   // triggers reformat for that cell
+            } else {
+                // fallback: add/update by explicit key
+                table.updateOrAddData([{ Id: id, Remark: fileName }], "Id");
+            }
+            //table.updateData([{ Id: response.id, Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }
@@ -1286,6 +1305,8 @@ Tabulator.extendModule("edit", "editors", {
 
 
 function saveEditedRow(rowData) {
+    debugger
+
     function emptyToNull(value) {
         return value === "" ? null : value;
     }
@@ -1302,12 +1323,11 @@ function saveEditedRow(rowData) {
     }
 
     const cleanedData = {
-        Id: rowData.DNoteId || 0,
+        Id: rowData.Id || 0,
         DNoteNumber: rowData.DNoteNumber || "",
         DNoteCategory: rowData.DNoteCategory || null,
         ProductCode: normalizeMultiToString(rowData.ProductCode, ", "),
-        // Read desc from either ProdDesc or ProductDescription (editor updates both)
-        ProductDescription: normalizeMultiToString(rowData.ProdDesc ?? rowData.ProductDescription, " | "),
+        ProdDesc: normalizeMultiToString(rowData.ProdDesc ?? rowData.ProductDescription, " | "),
         Wattage: rowData.Wattage || null,
         DQty: emptyToNull(rowData.DQty),
         DRequisitionBy: rowData.DRequisitionBy || null,

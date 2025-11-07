@@ -1,0 +1,920 @@
+﻿@{
+    ViewData["Title"] = "Electrical Protection";
+}
+
+<!-- CSS files -->
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+
+<style>
+    /* 🔹 Enhanced underline input style */
+    .underline-input {
+        border: 0;
+        border-bottom: 1.5px solid #666;
+        border-radius: 0;
+        background: transparent;
+        width: 65%; /* slightly wider */
+        font-size: 15px; /* increased text size */
+        padding: 2px 6px;
+        outline: none;
+        box-shadow: none;
+        vertical-align: middle;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+        .underline-input:focus {
+            border-bottom: 1.5px solid #4682B4;
+        }
+
+    .ce-field {
+        width: 100%;
+        min-height: 28px;
+        border-bottom: 1px solid #333;
+        padding: 6px 8px;
+        font-size: 15px; /* ⬅️ Increased from 13px to 15px */
+        line-height: 1.4; /* ⬅️ Makes text more readable */
+        outline: none;
+        display: block;
+    }
+
+        .ce-field:focus {
+            border-bottom: 1px solid #007bff;
+            background-color: #f9f9f9;
+        }
+
+
+    .req {
+        color: #d00;
+        font-style: normal;
+        margin-left: 2px;
+    }
+
+    td {
+        white-space: nowrap;
+        padding: 8px 10px;
+        vertical-align: middle;
+    }
+
+    b {
+        font-size: 15px;
+        color: #000;
+    }
+
+
+    /* ========== GENERAL STYLES ========== */
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .header-title {
+        font-size: x-large;
+        color: #4682B4;
+        font-weight: 600;
+    }
+
+    .header-btn {
+        width: 120px;
+        font-size: 15px;
+        border-radius: 6px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .header-btn:hover {
+            transform: scale(1.05);
+        }
+
+    .form-control {
+        border: none;
+        border-bottom: 1px solid #999;
+        background: transparent;
+        outline: none;
+        box-shadow: none;
+        border-radius: 0;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+        .form-control:focus {
+            border-bottom: 1px solid #4682B4;
+        }
+
+    table.table-bordered th,
+    table.table-bordered td {
+        border: 1px solid #000 !important;
+        vertical-align: middle;
+        padding: 8px;
+    }
+
+    table.table-bordered {
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+</style>
+
+<body class="bg-light">
+    <!-- 🔹 Top Header Card -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+            <div>
+                <b style="font-size:x-large; color:#4682B4;">
+                    Temperature Rise Test of Luminaire (TRT)
+                </b>
+            </div>
+
+            <div>
+                <button id="addTemperatureButton"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2"
+                        onclick="insertTemperatureTest()"
+                        style="width:120px; font-size:15px;">
+                    <i class="fas fa-save mr-1"></i>Save
+                </button>
+
+                <a href='@Url.Action("TemperatureRiseTestOfLuminaire", "ProductValidation")'
+                   class="btn btn-outline-primary"
+                   style="width:120px; font-size:15px;">
+                    <i class="fas fa-arrow-left"></i> BACK
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- ========== TRT: Pre-Test Details (3 columns layout) ========== -->
+    
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+
+
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:13px;">
+                    <colgroup>
+                        <col style="width:25%;">
+                        <col style="width:25%;">
+                        <col style="width:25%;">
+                        <col style="width:25%;">
+                    </colgroup>
+                    <tbody>
+                        <!-- Row 1 -->
+                        <tr>
+                            <td>
+                                <b>Testing Location :</b> <em class="req">*</em>
+                                <input type="text" name="TestingLocation"
+                                       class="underline-input"
+                                       placeholder="Enter location" required />
+                            </td>
+
+                            <td>
+                                <b>Report No. :</b> <em class="req">*</em>
+                                <input type="text" name="ReportNo"
+                                       inputmode="numeric" pattern="\d*"
+                                       class="underline-input"
+                                       placeholder="Enter Report No" required />
+                            </td>
+
+                            <td>
+                                <b>Date :</b> <em class="req">*</em>
+                                <input type="text" name="ReportDate"
+                                       class="underline-input"
+                                       placeholder="dd-mm-yyyy"
+                                       pattern="\d{2}-\d{2}-\d{4}"
+                                       title="Enter date as dd-mm-yyyy"
+                                       required />
+                            </td>
+
+                            <td><span style="opacity:.6;">&nbsp;</span></td>
+                        </tr>
+
+                        <!-- Row 2 -->
+                        <tr>
+                            <td>
+                                <b>Product Cat Ref. :</b> <em class="req">*</em>
+                                <input type="text" name="ProductCatRef"
+                                       class="underline-input"
+                                       placeholder="Enter Product Ref" required />
+                            </td>
+
+                            <td>
+                                <b>Product Description :</b> <em class="req">*</em>
+                                <input type="text" name="ProductDescription"
+                                       class="underline-input"
+                                       placeholder="Enter Description" required />
+                            </td>
+
+                            <td>
+                                <b>Batch Code :</b> <em class="req">*</em>
+                                <input type="text" name="BatchCode"
+                                       class="underline-input"
+                                       placeholder="Enter Batch Code" required />
+                            </td>
+
+                            <td>
+                                <b>PKD :</b> <em class="req">*</em>
+                                <input type="text" name="PKD"
+                                       class="underline-input"
+                                       placeholder="Enter PKD" required />
+                            </td>
+                        </tr>
+
+                        <!-- Row 3 -->
+                        <tr>
+                            <td colspan="2" style="vertical-align:middle;">
+                                <b>Heat sink material -</b> <em class="req">*</em>
+                                <input type="text" name="HeatSinkMaterial"
+                                       class="underline-input"
+                                       placeholder="e.g., Aluminum" required />
+                            </td>
+
+                            <td colspan="2" style="vertical-align:middle;">
+                                <b>Heat sink material Weight -</b> <em class="req">*</em>
+                                <input type="text" name="HeatSinkWeight"
+                                       class="underline-input"
+                                       placeholder="e.g., 320 g" required />
+                            </td>
+                        </tr>
+
+                        <!-- Row 4 -->
+                        <tr>
+                            <td colspan="2">
+                                <b>LENS details :</b> <em class="req">*</em>
+                                <input type="text" name="LensDetails"
+                                       class="underline-input"
+                                       placeholder="Enter lens details" required />
+                            </td>
+
+                            <td colspan="2">
+                                <b>Thermal paste Details -</b> <em class="req">*</em>
+                                <input type="text" name="ThermalPasteDetailsRow2"
+                                       class="underline-input"
+                                       placeholder="Enter thermal paste details" required />
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+
+
+        <!-- PART II + PART III with NOMINAL OPERATING VOLTAGE heading on top -->
+        <div class="card-body">
+            <!-- Top Title Row -->
+            <div class="d-flex justify-content-end align-items-center mb-3">
+                <b style="font-size:15px; color:#000;">NOMINAL OPERATING VOLTAGE&nbsp;</b>
+                <input type="text"
+                       name="NominalOperatingVoltage"
+                       class="underline-input"
+                       style="width:200px; font-size:14px;"
+                       placeholder="" />
+            </div>
+
+            <!-- Combined Two-Column Table -->
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr>
+                                <th colspan="3" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                    PART II: DRIVER / PCB DETAILS
+                                </th>
+                                <th colspan="3" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                    PART III: LED DETAILS
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="width:38px; text-align:center;">1</td>
+                                <td>Driver Used</td>
+                                <td><input type="text" class="underline-input" placeholder="" /></td>
+
+                                <td style="width:38px; text-align:center;">1</td>
+                                <td>LED Used</td>
+                                <td><input type="text" class="underline-input" placeholder="" /></td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">2</td>
+                                <td>No. of Drivers</td>
+                                <td><input type="text" class="underline-input" /></td>
+
+                                <td style="text-align:center;">2</td>
+                                <td>No. of LEDs</td>
+                                <td><input type="text" class="underline-input" /></td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">3</td>
+                                <td>Driver O/P Voltage</td>
+                                <td><input type="text" class="underline-input" /></td>
+
+                                <td style="text-align:center;">3</td>
+                                <td>No. of LEDs in Series</td>
+                                <td><input type="text" class="underline-input" /></td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">4</td>
+                                <td>Driver O/P Current (A)</td>
+                                <td><input type="text" class="underline-input" /></td>
+
+                                <td style="text-align:center;">4</td>
+                                <td>No. of LEDs in Parallel</td>
+                                <td><input type="text" class="underline-input" /></td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">5</td>
+                                <td>Driver Allowable Tc</td>
+                                <td><input type="text" class="underline-input" /></td>
+
+                                <td style="text-align:center;">5</td>
+                                <td>LED RθJH (°C/W)*</td>
+                                <td><input type="text" class="underline-input" /></td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">6</td>
+                                <td>Driver Allowable Ta</td>
+                                <td><input type="text" class="underline-input" /></td>
+
+                                <td style="text-align:center;">6</td>
+                                <td>Vf (V)</td>
+                                <td><input type="text" class="underline-input" /></td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">7</td>
+                                <td>PCB Material / Make</td>
+                                <td><input type="text" class="underline-input" /></td>
+
+                                <td style="text-align:center;">7</td>
+                                <td>If (A)</td>
+                                <td><input type="text" class="underline-input" /></td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">8</td>
+                                <td>PCB Size & Qty</td>
+                                <td><input type="text" class="underline-input" /></td>
+
+                                <td style="text-align:center;">8</td>
+                                <td>W(dc) = Vf × If</td>
+                                <td><input type="text" class="underline-input" /></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+    <!-- ====== PART IV: PROBE PLACEMENT DETAILS ====== -->
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr>
+                                <th colspan="4" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                    PART IV: PROBE PLACEMENT DETAILS
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <!-- Left half: T1–T9 -->
+                                <td style="width:50%; vertical-align:top; border-right:2px solid #000;">
+                                    <table class="table table-bordered mb-0" style="width:100%; border-collapse:collapse; font-size:14px;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width:65px; background:#e9ecef; font-weight:600; text-align:center;">T1</td>
+                                                <td><input type="text" name="T1" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T2</td>
+                                                <td><input type="text" name="T2" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T3</td>
+                                                <td><input type="text" name="T3" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T4</td>
+                                                <td><input type="text" name="T4" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T5</td>
+                                                <td><input type="text" name="T5" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T6</td>
+                                                <td><input type="text" name="T6" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T7</td>
+                                                <td><input type="text" name="T7" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T8</td>
+                                                <td><input type="text" name="T8" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T9</td>
+                                                <td><input type="text" name="T9" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+
+                                <!-- Right half: T10–T16 -->
+                                <td style="width:50%; vertical-align:top;">
+                                    <table class="table table-bordered mb-0" style="width:100%; border-collapse:collapse; font-size:14px;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width:65px; background:#e9ecef; font-weight:600; text-align:center;">T10</td>
+                                                <td><input type="text" name="T10" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T11</td>
+                                                <td><input type="text" name="T11" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T12</td>
+                                                <td><input type="text" name="T12" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T13</td>
+                                                <td><input type="text" name="T13" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T14</td>
+                                                <td><input type="text" name="T14" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T15</td>
+                                                <td><input type="text" name="T15" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T16</td>
+                                                <td><input type="text" name="T16" class="form-control underline-input" placeholder="" /></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <!-- ====== PART V & VI: THERMAL / ELECTRICAL READINGS ====== -->
+    <div class="card-body">
+        <div class="table-responsive">
+                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:13px; text-align:center;">
+                    <thead>
+                        <!-- Header band titles -->
+                        <tr>
+                            <th colspan="17" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                PART V: THERMAL READINGS:
+                            </th>
+                            <th colspan="4" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                PART VI: ELEC. READINGS:
+                            </th>
+                        </tr>
+
+                        <!-- Column headers -->
+                        <tr style="background:#e9ecef; font-weight:600;">
+                            <th style="min-width:90px;">Time (Hrs)</th>
+                            <th>T1 (°C)</th>
+                            <th>T2 (°C)</th>
+                            <th>T3 (°C)</th>
+                            <th>T4 (°C)</th>
+                            <th>T5 (°C)</th>
+                            <th>T6 (°C)</th>
+                            <th>T7 (°C)</th>
+                            <th>T8 (°C)</th>
+                            <th>T9 (°C)</th>
+                            <th>T10 (°C)</th>
+                            <th>T11 (°C)</th>
+                            <th>T12 (°C)</th>
+                            <th>T13 (°C)</th>
+                            <th>T14 (°C)</th>
+                            <th>T15 (°C)</th>
+                            <th>T16 (°C)</th>
+                            <th>VIN (V)</th>
+                            <th>IIN (A)</th>
+                            <th>PIN (W)</th>
+                            <th>TJ</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Example data rows (unchanged) -->
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                              <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                              <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+
+                        </tr>
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <!-- Repeat rows as needed ... -->
+                        <!-- Editable Maximum Values row -->
+                        <tr style="background:#f1f3f5; font-weight:600;">
+                            <td style="text-align:center;">Maximum<br />Values</td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                 <td style="white-space:nowrap; text-align:left; padding-left:10px;">
+    <b></b>
+    <input type="text" class="underline-input" 
+           style="width:40px; margin-left:8px; border-bottom:none;" 
+           placeholder="" />
+</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+        </div>
+    </div>
+    <!-- ====== PART VII: CONCLUSIONS / REMARKS + SIGN-OFF ====== -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered"
+                       style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px; text-align:left;">
+                    <thead>
+                        <tr>
+                            <th colspan="5" style="background:#f8f9fa; font-weight:700;">
+                                PART VII: CONCLUSIONS / REMARKS
+                            </th>
+                        </tr>
+                        <tr style="background:#e9ecef; font-weight:600;">
+                            <th style="width:60px;">Sr No.</th>
+                            <th style="width:35%;">Parameter</th>
+                            <th style="width:20%;">Measured</th>
+                            <th style="width:25%;">Allowable / Remark</th>
+                            <th style="width:20%;">Value / Unit</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Row 1 -->
+                        <tr>
+                            <td>1</td>
+                            <td>Maximum Recorded TJ</td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                            <td><b>*</b> Maximum Allowable TJ from Data Sheet</td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                        </tr>
+
+                        <!-- Row 2 -->
+                        <tr>
+                            <td>2</td>
+                            <td>Maximum Recorded Driver Tc / Tx</td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                            <td>Maximum Allowable Tc from Data Sheet</td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                        </tr>
+
+                        <!-- Row 3 -->
+                        <tr>
+                            <td>3</td>
+                            <td>Maximum Recorded Lens Temperature</td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                     
+                        </tr>
+
+                        <!-- Row 4 -->
+                        <tr>
+                            <td>4</td>
+                            <td>Over Thermal Cut-Off / Fold Back</td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                       
+                        </tr>
+
+                        <!-- Row 5 -->
+                        <tr>
+                            <td>5</td>
+                            <td colspan="4" style="font-weight:700; color:red;">
+                                Result ( Pass / Fail ) :
+                                <select class="form-select d-inline-block"
+                                        style="margin-left:8px; width:120px; background:#f8fafc; border:1px solid #cfd8dc; border-radius:6px; padding:4px 10px;">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Signature / Approval blocks -->
+        <div class="card-body">
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered"
+                       style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px; text-align:left;">
+                    <colgroup>
+                        <col style="width:33.33%;">
+                        <col style="width:33.33%;">
+                        <col style="width:33.33%;">
+                    </colgroup>
+
+                    <thead>
+                        <tr style="background:#f8f9fa; font-weight:700; text-align:left;">
+                            <th>CONDUCTED BY:</th>
+                            <th>WITNESSED BY:</th>
+                            <th>APPROVED BY:</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Row 1: Name / Signature -->
+                        <tr>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                        </tr>
+
+                        <!-- Row 2: Designation / Date -->
+                        <tr>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                            <td><input type="text" class="underline-input" placeholder="" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        <!-- Helper CSS for underline-only inputs + red asterisk -->
+      
+
+
+    <script>
+        // Auto-calc W(dc) = Vf * If
+        (function () {
+            function calcW() {
+                var vf = parseFloat(document.getElementById('LED_Vf').value) || 0;
+                var i = parseFloat(document.getElementById('LED_If').value) || 0;
+                var w = vf * i;
+                document.getElementById('LED_Wdc').value = w ? w.toFixed(3) : '';
+            }
+            document.getElementById('LED_Vf').addEventListener('input', calcW);
+            document.getElementById('LED_If').addEventListener('input', calcW);
+        })();
+    </script>
+
+</body>
+</html>
+
+@section HideSidebar { }

@@ -1,0 +1,892 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Surge Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+
+</head>
+<body class="bg-light">
+
+    <!-- Top Bar -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+            <div>
+                <b style="font-size:x-large; color:#4682B4;">
+                    Surge Test Report
+                </b>
+            </div>
+
+            <div>
+                <button id="addSurgeButton"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2"
+                        onclick="insertSurgeTest()"
+                        style="width:120px; font-size:15px;">
+                    <i class="fas fa-save mr-1"></i>Save
+                </button>
+
+                <a href='@Url.Action("SuregTestReport", "ProductValidation")'
+                   class="btn btn-outline-primary"
+                   style="width:120px; font-size:15px;">
+                    <i class="fas fa-arrow-left"></i> BACK
+                </a>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Body -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+
+                <!-- Product Information -->
+                <table class="table table-bordered" style="width:100%;">
+                    <tbody>
+                        <tr>
+                            <!-- Row 1 -->
+                            <td>
+                                <b>Report Date :</b> <em>*</em>
+                                <input type="text"
+                                       name="ReportDate"
+                                       class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="dd-mm-yyyy"
+                                       pattern="\d{2}-\d{2}-\d{4}"
+                                       title="Enter date as dd-mm-yyyy"
+                                       required />
+                            </td>
+
+
+                            <td>
+                                <b>Report No. :</b> <em>*</em>
+                                <input type="text" name="ReportNo" inputmode="numeric" pattern="\d*"
+                                       class="form-control d-inline-block" style="width:60%; font-size:13px;"
+                                       placeholder="Enter Report No" required />
+                            </td>
+
+                            <td>
+                                <b>Batch Code :</b> <em>*</em>
+                                <input type="text" name="BatchCode" class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="Enter Batch Code" required />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <!-- Row 2 -->
+                            <td>
+                                <b>Product Cat Ref :</b> <em>*</em>
+                                <input type="text" name="ProductCatRef" class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="Enter Product Ref" required />
+                            </td>
+
+                            <td>
+                                <b>Product Description :</b> <em>*</em>
+                                <input type="text" name="ProductDescription" class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="Enter Description" required />
+                            </td>
+
+                            <td>
+                                <b>Driver Code :</b> <em>*</em>
+                                <input type="text" name="DriverCode" class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="Enter Driver Code" required />
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <!-- Row 3 -->
+                            <td>
+                                <b>SPD Code :</b> <em>*</em>
+                                <input type="text" name="SPDCode" class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="Enter SPD Code" required />
+                            </td>
+
+                            <td>
+                                <b>LED Configuration :</b> <em>*</em>
+                                <input type="text" name="LEDConfiguration" class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="Enter LED Configuration" required />
+                            </td>
+
+                            <td>
+                                <b>PKD Code :</b> <em>*</em>
+                                <input type="text" name="PKDCode" class="form-control d-inline-block"
+                                       style="width:60%; font-size:13px;"
+                                       placeholder="Enter PKD Code" required />
+                            </td>
+                        </tr>
+
+
+                        <tr class="no-divider">
+                            <td colspan="3">
+                                <b>Reference Standard for Testing :</b>
+                                <input type="text" name="ReferenceStandard"
+                                       class="form-control d-inline-block"
+                                       style="width:50%; font-size:13px;"
+                                       placeholder="Enter Standard (e.g. IEC 61000)" required />
+                            </td>
+                        </tr>
+
+                        <tr class="no-divider-next">
+                            <td colspan="3">
+                                <b>Acceptance Norm :</b>
+                                <input type="text" name="AcceptanceNorm"
+                                       class="form-control d-inline-block"
+                                       style="width:50%; font-size:13px;"
+                                       placeholder="Enter Norm (e.g. As per TDS)" required />
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            
+
+
+
+                <!-- Surge Driver without SPD -->
+                <h5 class="text-center mb-3 mt-4" style="font-weight:bold; text-decoration:underline;">Surge Driver without SPD</h5>
+                <table class="table table-bordered text-center align-middle" style="width:100%;">
+                    <thead>
+                        <!-- 🔹 First Header Row -->
+                        <tr>
+                            <th colspan="6" style="width:30%;">
+                                <span class="hdr-title">Time between each surge –</span>
+                                <span class="hdr-value">60 Sec</span>
+                            </th>
+                            <th colspan="5" style="width:55%;">
+                                <span class="hdr-title">No of Cycles –</span>
+                                <span class="hdr-value">5</span>
+                            </th>
+                            <th style="width:15%;">
+                                <span class="hdr-title">Observation</span>
+                            </th>
+                        </tr>
+
+                        <!-- 🔹 Second Header Row -->
+                        <tr>
+                            <th rowspan="2" style="min-width:160px;">Voltage (kV)</th>
+
+                            <!-- ✅ Mode (top cell) -->
+                            <th style="min-width:140px;">Mode</th>
+
+                            <th colspan="3">Line - Neutral (L-N) DM</th>
+                            <th colspan="3">Line - Earth (L-E) CM</th>
+                            <th colspan="3">Neutral - Earth (N-E) CM</th>
+                            <th rowspan="2"></th>
+                        </tr>
+
+                        <!-- 🔹 Third Header Row -->
+                        <tr>
+                            <!-- ✅ Phase Angle (bottom cell) -->
+                            <th style="min-width:140px;">Phase Angle</th>
+
+                            <th>±90°</th>
+                            <th>±180°</th>
+                            <th>±270°</th>
+                            <th>±0°</th>
+                            <th>±90°</th>
+                            <th>±180°</th>
+                            <th>±270°</th>
+                            <th>±0°</th>
+                            <th>±90°</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Six editable rows -->
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+
+                        <!-- Final result row (labels red, dropdowns neutral & underline-only) -->
+                        <tr style="text-align:center; font-weight:bold; font-size:18px;">
+                            <!-- Result -->
+                            <td colspan="4">
+                                <label for="spd_result" style="color:red; margin-right:8px;">Result:</label>
+                                <select id="spd_result"
+                                        class="clean-select text-center">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+
+                            <!-- SPD -->
+                            <td colspan="4">
+                                <label for="spd_status" style="color:red; margin-right:8px;">SPD:</label>
+                                <select id="spd_status"
+                                        class="clean-select text-center">
+                                    <option value="">Select</option>
+                                    <option value="OK">OK</option>
+                                    <option value="Not OK">Not OK</option>
+                                </select>
+                            </td>
+
+                            <!-- Driver / LED PCB -->
+                            <td colspan="4">
+                                <label for="spd_driver_led" style="color:red; margin-right:8px;">Driver / LED PCB:</label>
+                                <select id="spd_driver_led"
+                                        class="clean-select text-center">
+                                    <option value="">Select</option>
+                                    <option value="OK">OK</option>
+                                    <option value="Not OK">Not OK</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        </tr>
+
+                    </tbody>
+                </table>
+
+
+                <hr style="border:1px solid #000; margin:30px 0;" />
+
+                <!-- Surge with SPD -->
+                <h5 class="text-center mb-3" style="font-weight:bold; text-decoration:underline;">Surge with SPD</h5>
+
+                <table class="table table-bordered text-center align-middle" style="width:100%;">
+                    <thead>
+                        <!-- 🔹 First Header Row -->
+                        <tr>
+                            <th colspan="6" style="width:30%;">
+                                <span class="hdr-title">Time between each surge –</span>
+                                <span class="hdr-value">60 Sec</span>
+                            </th>
+                            <th colspan="5" style="width:55%;">
+                                <span class="hdr-title">No of Cycles –</span>
+                                <span class="hdr-value">5</span>
+                            </th>
+                            <th style="width:15%;">
+                                <span class="hdr-title">Observation</span>
+                            </th>
+                        </tr>
+
+                        <!-- 🔹 Second Header Row -->
+                        <tr>
+                            <th rowspan="2" style="min-width:160px;">Voltage (kV)</th>
+
+                            <!-- ✅ Mode (top cell) -->
+                            <th style="min-width:140px;">Mode</th>
+
+                            <th colspan="3">Line - Neutral (L-N) DM</th>
+                            <th colspan="3">Line - Earth (L-E) CM</th>
+                            <th colspan="3">Neutral - Earth (N-E) CM</th>
+                            <th rowspan="2"></th>
+                        </tr>
+
+                        <!-- 🔹 Third Header Row -->
+                        <tr>
+                            <!-- ✅ Phase Angle (bottom cell) -->
+                            <th style="min-width:140px;">Phase Angle</th>
+
+                            <th>±90°</th>
+                            <th>±180°</th>
+                            <th>±270°</th>
+                            <th>±0°</th>
+                            <th>±90°</th>
+                            <th>±180°</th>
+                            <th>±270°</th>
+                            <th>±0°</th>
+                            <th>±90°</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Six editable rows -->
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+                        <tr>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                            <td contenteditable="true" class="text-center"></td>
+                        </tr>
+
+                        <!-- Final result row (labels red, dropdowns neutral & underline-only) -->
+                        <tr style="text-align:center; font-weight:bold; font-size:18px;">
+                            <!-- Result -->
+                            <td colspan="4">
+                                <label for="spd_result" style="color:red; margin-right:8px;">Result:</label>
+                                <select id="spd_result"
+                                        class="clean-select text-center">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                </select>
+                            </td>
+
+                            <!-- SPD -->
+                            <td colspan="4">
+                                <label for="spd_status" style="color:red; margin-right:8px;">SPD:</label>
+                                <select id="spd_status"
+                                        class="clean-select text-center">
+                                    <option value="">Select</option>
+                                    <option value="OK">OK</option>
+                                    <option value="Not OK">Not OK</option>
+                                </select>
+                            </td>
+
+                            <!-- Driver / LED PCB -->
+                            <td colspan="4">
+                                <label for="spd_driver_led" style="color:red; margin-right:8px;">Driver / LED PCB:</label>
+                                <select id="spd_driver_led"
+                                        class="clean-select text-center">
+                                    <option value="">Select</option>
+                                    <option value="OK">OK</option>
+                                    <option value="Not OK">Not OK</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        </tr>
+
+                    </tbody>
+                </table>
+
+
+                <hr style="border:1px solid #000; margin:30px 0;" />
+
+                <!-- Photo + Verification -->
+                <table class="table table-bordered" style="width:100%;">
+                    <tr style="height:150px;">
+                        <td colspan="2" class="text-center align-middle" style="font-weight:bold;">
+                            <label for="photoUpload"
+                                   style="display:block; color:#000; font-weight:bold; margin-bottom:10px;">
+                                Space for Photo :   
+                            </label>
+
+                            <div style="display:flex; justify-content:center; align-items:center;">
+                                <input type="file"
+                                       id="photoUpload"
+                                       name="photoUpload"
+                                       accept="image/*"
+                                       class="form-control"
+                                       style="width:auto; background-color:#f5f7fa; border:none; border-bottom:2px solid #d0d7e6; border-radius:6px; font-size:14px; padding:4px 6px; text-align:center;" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="width:50%; font-weight:bold;">
+                            Checked By:&nbsp;
+                            <input type="text"
+                                   name="checkedBy"
+                                   class="form-control d-inline-block same-input"
+                                   style="width:70%; font-weight:normal;"
+                                   placeholder="Enter name" />
+                        </td>
+
+                        <td style="width:50%; font-weight:bold;">
+                            Verified By:&nbsp;
+                            <input type="text"
+                                   name="verifiedBy"
+                                   class="form-control d-inline-block same-input"
+                                   style="width:70%; font-weight:normal;"
+                                   placeholder="Enter name" />
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+        </div>
+    </div>
+    <style>
+        /* ===========================
+             HEADERS
+          ============================*/
+        .hdr-title {
+            font-weight: 600;
+            color: #000;
+            font-size: 14px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .hdr-value {
+            margin-left: 6px;
+            color: #555;
+            font-style: italic;
+            font-size: 13px;
+        }
+        
+
+        /* Stacked header like "Mode" (row 2) / "Phase Angle" (row 3) */
+        .hdr-split-title {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.2;
+        }
+
+            .hdr-split-title span {
+                font-weight: 600;
+                color: #000;
+                font-size: 14px;
+            }
+
+        input.form-control {
+            border: none;
+            border-bottom: 1px solid #999;
+            background: transparent;
+            outline: none;
+            box-shadow: none;
+            border-radius: 0;
+            transition: border-color 0.2s ease-in-out;
+            padding-left: 0;
+            padding-right: 0;
+        }
+        /* 🔹 Clean, subtle dropdown design */
+        .clean-select {
+            background-color: #f8fafc; /* soft light gray-blue background */
+            border: 1px solid #cfd8dc; /* light border */
+            border-radius: 6px; /* gentle round corners */
+            padding: 6px 10px;
+            font-size: 15px;
+            color: #000;
+            text-align: center;
+            width: 120px;
+            outline: none;
+            transition: all 0.2s ease-in-out;
+        }
+
+            /* Focus/hover highlight effect */
+            .clean-select:focus,
+            .clean-select:hover {
+                border-color: #4682B4; /* steel blue border */
+                box-shadow: 0 0 0 3px rgba(70,130,180,0.15);
+                background-color: #fff; /* brighten when active */
+            }
+
+            /* Optional center text alignment for options */
+            .clean-select option {
+                text-align: center;
+            }
+
+
+            input.form-control:focus {
+                border-bottom: 1px solid #4682B4;
+            }
+
+        /* Header inputs (editable labels) */
+        .hdr-input {
+            display: inline-block;
+            width: 140px;
+            border: none;
+            border-bottom: 1px solid #999;
+            background: transparent;
+            outline: none;
+            box-shadow: none;
+            font-size: 13px;
+            margin-left: 6px;
+            text-align: left;
+        }
+
+            .hdr-input:focus {
+                border-bottom: 1px solid #4682B4;
+            }
+
+            .hdr-input.text-center {
+                text-align: center;
+            }
+
+        /* Table look */
+        .table {
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+            .table th, .table td {
+                border: 1px solid #000 !important;
+                padding: 6px 8px !important;
+                vertical-align: middle !important;
+            }
+
+            .table th {
+                background-color: #f8f9fa;
+                font-weight: 600;
+            }
+
+        em {
+            color: red;
+            font-style: normal;
+        }
+
+        .card {
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        .hdr-divider {
+            width: 60%;
+            height: 2px;
+            background-color: #000;
+            margin: 4px 0;
+        }
+        /* 🔹 Header Card Styling (for consistency across forms) */
+        .header-card {
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        /* 🔹 Title text inside header */
+        .header-title {
+            font-size: x-large;
+            color: #4682B4;
+            font-weight: 600;
+        }
+
+        /* 🔹 Buttons (Save / Back) */
+        .header-btn {
+            width: 120px;
+            font-size: 15px;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+        }
+
+            /* Add a small hover zoom effect */
+            .header-btn:hover {
+                transform: scale(1.05);
+            }
+
+        /* Maintain spacing between buttons */
+        .mr-2 {
+            margin-right: 8px !important;
+        }
+
+
+        /* Editable header inputs (top row) */
+        .hdr-input {
+            border: none;
+            border-bottom: 1px solid #999;
+            background: transparent;
+            outline: none;
+            font-size: 13px;
+            width: 100%;
+            text-align: center;
+        }
+
+            .hdr-input:focus {
+                border-bottom: 1px solid #4682B4;
+            }
+
+        /* ===========================
+             TABLE / BORDER BASE
+          ============================*/
+        /* Use this class on your surge tables (with/without SPD) */
+        .surge-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+        }
+
+            .surge-table th,
+            .surge-table td {
+                border: 1px solid #000 !important;
+                padding: 6px;
+                vertical-align: middle;
+            }
+
+            .surge-table thead th {
+                background-color: #f8f9fa;
+                font-weight: 700;
+            }
+
+        /* If you keep Bootstrap's table-bordered, ensure single borders */
+        .table-bordered {
+            border-collapse: separate !important;
+            border-spacing: 0;
+        }
+
+        /* Fix collapsed double-border between specific rows if needed */
+        .no-divider td {
+            border-bottom: 0 !important;
+        }
+
+        .no-divider-next td {
+            border-top: 0 !important;
+        }
+
+        /* Wrapper if you need horizontal scroll on small screens */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* ===========================
+             EDITABLE CELLS
+          ============================*/
+        .editable-cell,
+        td[contenteditable="true"] {
+            background-color: #fff;
+            min-height: 30px;
+            padding: 6px;
+            text-align: center;
+        }
+
+            /* Focus cue for contenteditable cells */
+            td[contenteditable="true"]:focus {
+                outline: 2px solid #4a90e2;
+                background-color: #eaf4ff;
+            }
+
+            /* Optional placeholder hint for empty editable cells */
+            td[contenteditable="true"]:empty::before {
+                content: attr(data-placeholder);
+                opacity: 0.5;
+            }
+
+        /* ===========================
+             RESULT ROW (BOTTOM)
+          ============================*/
+        /* Apply this to the <tr> of your final result row */
+        .result-row {
+            font-weight: 700;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        body {
+            background-color: #e7f1fb;
+        }
+        /* Red labels inside the result row (only labels, not select text) */
+        .label-red {
+            color: red;
+            margin-right: 8px;
+            font-weight: 700;
+        }
+
+        /* Underline-only dropdowns (neutral look) */
+        .underline-select {
+            font-size: 18px;
+            font-weight: normal;
+            color: #000;
+            background-color: #f5f7fa;
+            border: none;
+            border-bottom: 2px solid #d0d7e6;
+            border-radius: 0;
+            padding: 4px 10px;
+            outline: none;
+            text-align: center;
+            /* Flatten native appearance + add simple chevron */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, #6c757d 50%), linear-gradient(135deg, #6c757d 50%, transparent 50%);
+            background-position: calc(100% - 18px) calc(50% - 3px), calc(100% - 12px) calc(50% - 3px);
+            background-size: 6px 6px, 6px 6px;
+            background-repeat: no-repeat;
+        }
+
+            .underline-select:focus {
+                border-bottom-color: #4a90e2;
+            }
+
+            /* Center align options (browser support varies) */
+            .underline-select option {
+                text-align: center;
+            }
+
+        /* ===========================
+             UTILITIES (optional)
+          ============================*/
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-2 {
+            margin-top: .5rem;
+        }
+
+        .mb-2 {
+            margin-bottom: .5rem;
+        }
+
+        .mt-3 {
+            margin-top: 1rem;
+        }
+
+        .mb-3 {
+            margin-bottom: 1rem;
+        }
+
+        .mt-4 {
+            margin-top: 1.5rem;
+        }
+
+        .mb-4 {
+            margin-bottom: 1.5rem;
+        }
+    </style>
+
+    <!-- Optional JS (only for the Save button demo) -->
+ 
+
+</body>
+</html>
+@section HideSidebar { }

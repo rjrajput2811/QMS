@@ -2,7 +2,7 @@
     ViewData["Title"] = "Photometry Test Report";
 }
 
-<!-- CSS: matches Surge Test & Electrical Protection header design -->
+<!-- CSS: Matches Surge Test & Electrical Protection header design -->
 <style>
     .header-card {
         border-radius: 8px;
@@ -11,7 +11,7 @@
     }
 
     .header-title {
-        font-size: x-large; /* more readable and consistent with Electrical Protection */
+        font-size: large; /* smaller, consistent with Electrical Protection */
         color: #4682B4;
         font-weight: 700;
     }
@@ -20,7 +20,12 @@
         width: 140px;
         font-size: 15px;
         border-radius: 6px;
+        transition: all 0.2s ease-in-out;
     }
+
+        .header-btn:hover {
+            transform: scale(1.05);
+        }
 
     .mr-2 {
         margin-right: 8px;
@@ -61,6 +66,9 @@
             <div class="table-responsive">
                 <!-- Add your Photometry table or Tabulator grid here -->
 </div>
- 
+        </div>
+    </div>
+    -->
+</div>
 
 @section HideSidebar { }

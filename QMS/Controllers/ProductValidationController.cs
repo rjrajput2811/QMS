@@ -1145,8 +1145,19 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-    #region 
-  
+    #region InstallationTrial
+
+    public IActionResult InstallationTrialReport()
+    {
+
+        return View();
+    }
+    public IActionResult InstallationTrialReportDetails()
+    {
+        return View();
+    }
+
+
     #endregion
 
 

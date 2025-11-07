@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@{
+    ViewData["Title"] = "SurgeTestReport";
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -9,7 +13,7 @@
 
 
 </head>
-<body class="bg-light">
+<body>
 
     <!-- Top Bar -->
     <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
@@ -604,31 +608,40 @@
         }
         /* 🔹 Clean, subtle dropdown design */
         .clean-select {
-            background-color: #f8fafc; /* soft light gray-blue background */
-            border: 1px solid #cfd8dc; /* light border */
-            border-radius: 6px; /* gentle round corners */
-            padding: 6px 10px;
-            font-size: 15px;
+            width: 180px; /* balanced width */
+            padding: 6px 25px 6px 10px;
+            border: none; /* remove box borders */
+            border-bottom: 1.5px solid #cbd5e1; /* thin underline */
+            border-radius: 6px; /* subtle curved shape */
+            background-color: #fff; /* pure white background */
+            font-size: 14px;
             color: #000;
             text-align: center;
-            width: 120px;
-            outline: none;
-            transition: all 0.2s ease-in-out;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 20 20' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.486 4.484-4.486L16 8.548l-6 6-6-6z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            cursor: pointer;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.05); /* faint depth */
         }
 
-            /* Focus/hover highlight effect */
-            .clean-select:focus,
+            .clean-select:focus {
+                outline: none;
+                border-bottom-color: #4a90e2; /* blue underline when focused */
+                box-shadow: 0 2px 4px rgba(70, 130, 180, 0.25); /* soft glow */
+            }
+
             .clean-select:hover {
-                border-color: #4682B4; /* steel blue border */
-                box-shadow: 0 0 0 3px rgba(70,130,180,0.15);
-                background-color: #fff; /* brighten when active */
+                border-bottom-color: #93b4d8; /* subtle hover tint */
             }
 
-            /* Optional center text alignment for options */
             .clean-select option {
-                text-align: center;
+                background: #fff;
+                color: #000;
             }
-
 
             input.form-control:focus {
                 border-bottom: 1px solid #4682B4;

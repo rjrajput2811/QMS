@@ -2,7 +2,7 @@
     ViewData["Title"] = "Surge Test";
 }
 
-<!-- CSS: Consistent with Photometry & Electrical headers -->
+<!-- CSS: Consistent with Electrical, Photometry & Installation headers -->
 <style>
     .header-card {
         border-radius: 8px;
@@ -11,7 +11,7 @@
     }
 
     .header-title {
-        font-size: x-large; /* upgraded from 'large' for consistency */
+        font-size: large; /* ✅ same as Electrical Protection */
         color: #4682B4;
         font-weight: 700;
     }
@@ -20,7 +20,7 @@
         width: 140px;
         font-size: 15px;
         border-radius: 6px;
-        transition: transform 0.15s ease-in-out;
+        transition: all 0.2s ease-in-out;
     }
 
         .header-btn:hover {
@@ -36,13 +36,11 @@
     <!-- Header Card -->
     <div class="card shadow-sm mb-3 header-card">
         <div class="card-body d-flex justify-content-between align-items-center">
-            <!-- Title -->
             <div>
                 <b class="header-title">Surge Test</b>
             </div>
-
-            <!-- Buttons -->
             <div>
+                <!-- Add Button -->
                 <button id="addSurgeButton"
                         type="button"
                         class="btn btn-outline-success legitRipple mr-2 header-btn"
@@ -50,6 +48,7 @@
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
 
+                <!-- Back Button -->
                 <button id="backButton"
                         type="button"
                         class="btn btn-outline-primary header-btn"
@@ -60,12 +59,12 @@
         </div>
     </div>
 
-    <!-- Optional: Surge Test data table or grid -->
+    <!-- Optional Surge Test Data Placeholder -->
     <!--
     <div class="card">
         <div class="card-body">
             <div class="table-responsive">
-                <!-- Add your Surge Test list/grid here -->
+                <!-- Add Surge Test table/grid here -->
 </div>
         </div>
     </div>

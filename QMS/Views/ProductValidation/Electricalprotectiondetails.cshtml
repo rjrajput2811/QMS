@@ -213,7 +213,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.UnderVoltage_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",    // title only, not an actual value
                              new { @class = "form-control text-center same-input" }
                              )
@@ -264,7 +264,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.OverVoltage_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail","NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -312,7 +312,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.OpenCircuit_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -363,7 +363,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.ShortCircuit_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -413,7 +413,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.ReversePolarity_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                             new SelectList(new[] { "Pass", "Fail","NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -464,7 +464,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.OverLoad_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -513,7 +513,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.OverThermal_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -563,7 +563,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.EarthFault_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -613,7 +613,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.DriverIsolation_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -661,7 +661,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.HighVoltage_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -711,7 +711,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.HV_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -759,7 +759,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.InsulationResistance_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -804,7 +804,7 @@
                     @Html.TextBoxFor(m => m.EarthContinuity_Sample5, new { id = "EarthContinuity_Sample5" })
                 </td>
 
-                <td>@Html.DropDownListFor(m => m.EarthContinuity_Result, new SelectList(new[] { "Pass", "Fail" }), "Select", new { @class = "form-control text-center same-input" })</td>
+                        <td>@Html.DropDownListFor(m => m.EarthContinuity_Result, new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }), "Select", new { @class = "form-control text-center same-input" })</td>
             </tr>
 
 
@@ -846,7 +846,7 @@
                     @Html.TextBoxFor(m => m.SELVProtection_Sample5, new { id = "SELVProtection_Sample5" })
                 </td>
 
-                <td>@Html.DropDownListFor(m => m.SELVProtection_Result, new SelectList(new[] { "Pass", "Fail" }), "Select", new { @class = "form-control text-center same-input" })</td>
+                        <td>@Html.DropDownListFor(m => m.SELVProtection_Result, new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }), "Select", new { @class = "form-control text-center same-input" })</td>
             </tr>
 
 
@@ -891,7 +891,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.LeakageCurrent_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -940,7 +940,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.CreepageClearance_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -989,7 +989,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.HiPotMCPCB_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1040,7 +1040,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.OnOffSwitching_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1088,7 +1088,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.SoakingAgeing_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1136,7 +1136,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.RollingEndurance_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1184,7 +1184,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.GlowTest_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1232,7 +1232,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.LampAccommodation_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1281,7 +1281,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.DaliFunction_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1330,7 +1330,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.TuneableCCT_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1378,7 +1378,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.BatteryBackup_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1426,7 +1426,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.SmartLighting_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1474,7 +1474,7 @@
                 <td>
                     @Html.DropDownListFor(
                              m => m.SensorFunction_Result,
-                             new SelectList(new[] { "Pass", "Fail" }),
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
                              "Select",
                              new { @class = "form-control text-center same-input" }
                              )
@@ -1492,7 +1492,7 @@
             <th colspan="3">
                 @Html.DropDownListFor(
                          m => m.OverallReportResult,
-                         new SelectList(new[] { "Pass", "Fail" }),
+                                 new SelectList(new[] { "Pass", "Fail" }),
                          "Select",
                          new { @class = "form-control text-center same-input" }
                          )
@@ -1723,7 +1723,7 @@
 
 <style>
     .same-input {
-        background-color: #f5f7fa;
+        /* background-color: #f5f7fa; */
         border: none; /* remove all borders */
         border-bottom: 2px solid #d0d7e6; /* show only bottom line */
         border-radius: 0; /* remove rounding */

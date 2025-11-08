@@ -38,7 +38,7 @@ namespace QMS.Core.DatabaseContext
         public string? Final_Report {get; set;}
         public string? Remark {get; set;}
         public string? Delayed_Days { get; set;}
-        public string? Current_Status { get; set;}
+       
         public string? CreatedBy {get; set;}
         public DateTime? CreatedDate {get; set;}
         public string? UpdatedBy {get; set;}

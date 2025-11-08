@@ -1159,6 +1159,20 @@ public class ProductValidationController : Controller
 
 
     #endregion
+    #region Impact test
+
+    public IActionResult Impacttest()
+    {
+
+        return View();
+    }
+    public IActionResult ImpactTestDetails()
+    {
+        return View();
+    }
+
+
+    #endregion
 
 
 

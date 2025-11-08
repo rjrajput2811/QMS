@@ -6,6 +6,7 @@ using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ProductValidationRepo;
+using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using System.Drawing;
 using System.Threading.Tasks;
 
@@ -29,7 +30,7 @@ public class ProductValidationController : Controller
         _electricalProtectionRepository = electricalProtectionRepository;
         _hostEnvironment = hostEnvironment;
     }
-   
+
 
     public IActionResult Index()
     {
@@ -43,10 +44,10 @@ public class ProductValidationController : Controller
         return View();
     }
 
-    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
-    {
-        return View();
-    }
+    //public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
+    //{
+    //    return View();
+    //}
     public IActionResult Electricalprotection()
     {
         return View();
@@ -74,7 +75,7 @@ public class ProductValidationController : Controller
         if (Id > 0)
         {
             model = await _electricalProtectionRepository.GetElectricalProtectionByIdAsync(Id);
-       
+
         }
         else
         {
@@ -86,7 +87,7 @@ public class ProductValidationController : Controller
 
     public IActionResult ElectricalPerformanceDetails(int Id)
     {
-        return View(); 
+        return View();
     }
 
     public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
@@ -148,12 +149,12 @@ public class ProductValidationController : Controller
 
         string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
 
- 
+
         string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ElectricProt_Att", model.ReportNo.ToString());
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
-       
+
         if (model.TestedByFile != null)
         {
             string fileName = Path.GetFileName(model.TestedByFile.FileName);
@@ -164,7 +165,7 @@ public class ProductValidationController : Controller
                 return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg" });
             }
 
-     
+
             model.TestedBySignature = fileName;
 
             string savePath = Path.Combine(folder, fileName);
@@ -174,7 +175,7 @@ public class ProductValidationController : Controller
             }
         }
 
-    
+
         if (model.VerifiedByFile != null)
         {
             string fileName = Path.GetFileName(model.VerifiedByFile.FileName);
@@ -194,7 +195,7 @@ public class ProductValidationController : Controller
             }
         }
 
-      
+
         if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
@@ -210,7 +211,7 @@ public class ProductValidationController : Controller
             return Json(result);
         }
     }
-    
+
 
 
 
@@ -254,11 +255,11 @@ public class ProductValidationController : Controller
             // --- Header Generation (Rows 1-6) ---
             int currentRow = 1;
 
-          
-            const int COL_IMAGE = 9;
-            const int COL_TITLE_END = COL_RESULT - 1; 
 
-          
+            const int COL_IMAGE = 9;
+            const int COL_TITLE_END = COL_RESULT - 1;
+
+
             worksheet.Row(currentRow).Height = 73.20;
             var titleRange = worksheet.Range(currentRow, 1, currentRow, COL_TITLE_END);
             titleRange.Merge();
@@ -271,15 +272,15 @@ public class ProductValidationController : Controller
 
 
 
-            var webRootPath = _hostEnvironment.WebRootPath; 
-            var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png"); 
-            if (System.IO.File.Exists(imagePath)) 
+            var webRootPath = _hostEnvironment.WebRootPath;
+            var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png");
+            if (System.IO.File.Exists(imagePath))
             { var picture = worksheet.AddPicture(imagePath).MoveTo(worksheet.Cell(currentRow, COL_IMAGE), 45, 12).WithPlacement(XLPicturePlacement.Move).Scale(0.9); }
 
-            var imageRange = worksheet.Range(currentRow, 9, currentRow, 9); 
-            imageRange.Style.Border.SetInsideBorder(XLBorderStyleValues.Medium); 
-            imageRange.Style.Border.SetRightBorder(XLBorderStyleValues.Medium); 
-            imageRange.Style.Border.SetBottomBorder(XLBorderStyleValues.Medium); 
+            var imageRange = worksheet.Range(currentRow, 9, currentRow, 9);
+            imageRange.Style.Border.SetInsideBorder(XLBorderStyleValues.Medium);
+            imageRange.Style.Border.SetRightBorder(XLBorderStyleValues.Medium);
+            imageRange.Style.Border.SetBottomBorder(XLBorderStyleValues.Medium);
             imageRange.Style.Border.SetLeftBorder(XLBorderStyleValues.Thin); currentRow++;
 
 
@@ -1156,8 +1157,11 @@ public class ProductValidationController : Controller
     }
 
 
+
     #endregion
-
-
-
+    #endregion
 }
+
+
+
+

@@ -78,7 +78,7 @@ builder.Services.AddTransient<IPDIAuthSignRepository, PDIAuthSignRepository>();
 builder.Services.AddTransient<IContiImproveRespository, ContiImproveRespository>();
 builder.Services.AddTransient<ICSATCommentRepository, CSATCommentRepository>();
 builder.Services.AddTransient<IPhysicalCheckAndVisualInspectionRepository, PhysicalCheckAndVisualInspectionRepository>();
-builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerformanceRepository>();
+//builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerformanceRepository>();
 builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 builder.Services.AddScoped<IElectricalProtectionRepository, ElectricalProtectionRepository>();
 

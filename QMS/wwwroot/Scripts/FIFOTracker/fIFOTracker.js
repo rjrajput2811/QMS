@@ -1,11 +1,11 @@
 ﻿var tabledata = [];
 var table = null;
-var tabledataNatProject = [];
-var tableNatProject = '';
 const searchTerms = {};
 let vendorOptions = {};
-let natProjectOptions = {};
-let selectedNatProjectCell = null;
+var tableTestReq = '';
+var tabledataTestReq = [];
+let testReqOptions = {};
+let selectedTestReqCell = null;
 let filterStartFIFODate = moment().startOf('month').format('YYYY-MM-DD');
 let filterEndFIFODate = moment().endOf('month').format('YYYY-MM-DD');
 
@@ -80,28 +80,47 @@ function loadData() {
                 return acc;
             }, {});
         }
-        // Step 3: Load grid data
+
         $.ajax({
-            url: '/FIFOTrac/GetAll',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                startDate: filterStartFIFODate,
-                endDate: filterEndFIFODate
-            },
-            success: function (data) {
-                Blockloaderhide();
-                if (data && Array.isArray(data)) {
-                    OnTabGridLoad(data);
-                } else {
-                    showDangerAlert('No data available to load.');
-                }
-            },
-            error: function (xhr, status, error) {
-                Blockloaderhide();
-                showDangerAlert('Error retrieving data: ' + error);
+            url: '/FIFOTrac/GetTestReqDropdown',
+            type: 'GET'
+        }).done(function (test) {
+
+            if (Array.isArray(test)) {
+                testReqOptions = test.reduce((acc, v) => {
+                    acc[v.value] = v.label;
+                    return acc;
+                }, {});
             }
+
+            // Step 3: Load grid data
+            $.ajax({
+                url: '/FIFOTrac/GetAll',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartFIFODate,
+                    endDate: filterEndFIFODate
+                },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnTabGridLoad(data);
+                    } else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error retrieving data: ' + error);
+                }
+            });
+
+        }).fail(function () {
+            Blockloaderhide();
+            showDangerAlert('Failed to load Nat Project data.');
         });
+
     }).fail(function () {
         Blockloaderhide();
         showDangerAlert('Failed to load vendor data.');
@@ -192,7 +211,7 @@ var headerMenu = function () {
             ? raw
             : String(raw || "").split(joinWith).map(s => s.trim()).filter(Boolean);
 
-        // find the description text in the row (e.g. ProductDescription / ProdDesc)
+        // find the description text in the row (e.g. ProductDescription / Sample_Desc)
         const row = cell.getRow().getData();
         let descText = "";
         if (Array.isArray(descFieldParam)) {
@@ -200,7 +219,7 @@ var headerMenu = function () {
         } else if (typeof descFieldParam === "string") {
             descText = row?.[descFieldParam] || "";
         } else {
-            descText = row?.ProductDescription || row?.ProdDesc || "";
+            descText = row?.ProductDescription || row?.Sample_Desc || "";
         }
 
         const map = parsePairs(descText, pairSeparator, pairJoinWith);
@@ -273,14 +292,14 @@ Tabulator.extendModule("edit", "editors", {
             debounce: 250,
 
             valueField: 'oldPart_No',
-            valueFieldCandidates: ['oldPart_No', 'code', 'Code', 'productCode', 'ProductCode'],
+            valueFieldCandidates: ['oldPart_No', 'code', 'Code', 'sample_Cat_Ref', 'Sample_Cat_Ref'],
             labelField: 'oldPart_No',
-            labelFieldCandidates: ['label', 'name', 'text', 'oldPart_No', 'productCode', 'ProductCode'],
+            labelFieldCandidates: ['label', 'name', 'text', 'oldPart_No', 'sample_Cat_Ref', 'Sample_Cat_Ref'],
             descItemField: 'description',
-            descItemFieldCandidates: ['description', 'desc', 'productDescription', 'ProductDescription', 'prodDesc', 'ProdDesc'],
+            descItemFieldCandidates: ['description', 'desc', 'productDescription', 'ProductDescription', 'sample_Desc', 'Sample_Desc'],
 
             // Linked row description field(s) to update
-            descField: ['ProdDesc', 'ProductDescription'], // can be string or array
+            descField: ['Sample_Desc', 'ProductDescription'], // can be string or array
             descAsArray: false,              // store descs as array or as joined string
             descJoinWith: ' | ',             // joiner for desc-only format
 
@@ -515,7 +534,6 @@ Tabulator.extendModule("edit", "editors", {
     }
 });
 
-
 function OnTabGridLoad(response) {
   
     Blockloadershow();
@@ -546,11 +564,13 @@ function OnTabGridLoad(response) {
                 Test_Completion_Date: formatDate(item.test_Completion_Date),
                 Report_Release_Date: formatDate(item.report_Release_Date),
                 NABL_Released_Date: formatDate(item.nabL_Released_Date),
-                Current_Status: item.current_Status,
+                Remark: item.remark,
+                Delayed_Days: item.delayed_Days,
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
                 UpdatedDate: formatDate(item.updatedDate),
-                CreatedDate: formatDate(item.createdDate)
+                CreatedDate: formatDate(item.createdDate),
+                Current_Status: item.current_Status
             });
         });
     }
@@ -586,7 +606,7 @@ function OnTabGridLoad(response) {
 
         {
             title: "Sample Cat Ref.",
-            field: "ProductCode",
+            field: "Sample_Cat_Ref",
             editor: "autocomplete_ajax_multi",
             headerSort: false,
             headerMenu: headerMenu,
@@ -596,7 +616,7 @@ function OnTabGridLoad(response) {
             formatterParams: {
                 joinWith: ", ",
                 // where to read the combined desc text from (tries in order)
-                descField: ["ProductDescription", "ProdDesc"],
+                descField: "",
                 // how your description field is stored:
                 pairSeparator: " — ",   // use " - " if you want a hyphen
                 pairJoinWith: " | "
@@ -610,7 +630,7 @@ function OnTabGridLoad(response) {
                 labelField: "oldPart_No",
 
                 // keep these to ensure the row description is maintained as pairs:
-                descField: ["ProdDesc", "ProductDescription"],
+                descField: ["ProdDesc", "Sample_Desc"],
                 descFormat: "pair",
                 descPairSeparator: " — ",
                 descPairJoinWith: " | ",
@@ -622,8 +642,8 @@ function OnTabGridLoad(response) {
             widthGrow: 2
         },
 
-        { title: "Sample Description", field: "ProdDesc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
-
+        { title: "Sample Description", field: "Sample_Desc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
+        
         editableColumn("Vendor.Requestor", "Vendor", "select2", "center", "input", {}, {
             values: vendorOptions
         }, function (cell) {
@@ -632,14 +652,36 @@ function OnTabGridLoad(response) {
         }, 130),
 
         editableColumn("Sample Qty", "Sample_Qty", true),
-        editableColumn("Test Required", "Test_Req", true),
+        //editableColumn("Test Required", "Test_Req", true),
+        editableColumn("Test Required", "Test_Req", "select2", "center", "input", {}, {
+            values: testReqOptions
+        }, function (cell) {
+            const val = cell.getValue();
+            return testReqOptions[val] || val;
+        }, 170),
         editableColumn("Testing Status", "Test_Status", true),
+        editableColumn("Responsbility", "Responsbility", true),
 
         editableColumn("Test Completion Date", "Test_Completion_Date", "date", "center"),
+        {
+            title: "Delayed Days",
+            field: "Delayed_Days",
+            mutator: function (value, data) {
+                const start = parseDate(data.Sample_Recv_Date);
+                const end = parseDate(data.Test_Completion_Date);
+                if (start && end) return Math.floor((end - start) / (1000 * 60 * 60 * 24));
+                return "";
+            },
+            headerMenu: headerMenu,
+            headerFilter: "input",
+            hozAlign: "center",
+            headerHozAlign: "center"
+        },
         editableColumn("Report Release Date", "Report_Release_Date", "date", "center"),
         editableColumn("NABL Released Date", "NABL_Released_Date", "date", "center"),
-        
+
         editableColumn("Current Status", "Current_Status", true),
+        editableColumn("Remark", "Remark", true),
         {
             title: "Final Report",
             field: "Final_Report",
@@ -682,27 +724,20 @@ function OnTabGridLoad(response) {
     });
 
     table.on("cellEdited", function (cell) {
-        //const field = cell.getField();
-        //const row = cell.getRow();
-        //const data = row.getData();
+        const field = cell.getField();
+        const row = cell.getRow();
+        const data = row.getData();
 
-        //if (["Test_Duration", "Bis_Duration"].includes(field)) {
-        //    return;
-        //}
+        if (["Delayed_Days"].includes(field)) {
+            return;
+        }
 
-        //if (["Start_Date", "Comp_Date"].includes(field)) {
-        //    const start = parseDate(data.Start_Date);
-        //    const end = parseDate(data.Comp_Date);
-        //    const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
-        //    row.update({ Test_Duration: diff.toString() });
-        //}
-
-        //if (["Ven_Sample_Sub_Date", "Received_Date"].includes(field)) {
-        //    const sub = parseDate(data.Ven_Sample_Sub_Date);
-        //    const rec = parseDate(data.Received_Date);
-        //    const diff = sub && rec ? Math.floor((rec - sub) / (1000 * 60 * 60 * 24)) : "";
-        //    row.update({ Bis_Duration: diff.toString() });
-        //}
+        if (["Sample_Recv_Date", "Test_Completion_Date"].includes(field)) {
+            const start = parseDate(data.Sample_Recv_Date);
+            const end = parseDate(data.Test_Completion_Date);
+            const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
+            row.update({ Delayed_Days: diff.toString() });
+        }
 
         InsertUpdateFIFO(cell.getRow().getData());
     });
@@ -732,7 +767,8 @@ function OnTabGridLoad(response) {
                     Test_Completion_Date: "",
                     Report_Release_Date: "",
                     NABL_Released_Date: "",
-                    Current_Status:"",
+                    Current_Status: "",
+                    Remark: "",
                     CreatedBy: "",
                     UpdatedBy: "",
                     UpdatedDate: "",
@@ -1052,8 +1088,17 @@ $('#fifoTrac_Table').on('change', '.bis-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessNewAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                row.update({ Final_Report: fileName });   // triggers reformat for that cell
+            } else {
+                // fallback: add/update by explicit key
+                table.updateOrAddData([{ Id: id, Final_Report: fileName }], "Id");
+            }
+            //table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }
@@ -1165,10 +1210,10 @@ Tabulator.extendModule("edit", "editors", {
         }
 
         // Add "Add New" option only for Nat_Project
-        if (fieldName === "Nat_Project") {
+        if (fieldName === "Test_Req") {
             let addOption = document.createElement("option");
             addOption.value = "__add_new__";
-            addOption.text = "➕ Add New Project Type";
+            addOption.text = "➕ Add New Test";
             select.appendChild(addOption);
         }
 
@@ -1193,8 +1238,8 @@ Tabulator.extendModule("edit", "editors", {
                     $(select).select2('close');
                     cancel(); // cancel cell edit
                     selectedNatProjectCell = cell; // store the cell
-                    $('#natProjectModel').modal('show');
-                    loadNatProjectData();
+                    $('#testFifoModel').modal('show');
+                    loadTestReqData();
                 } else {
                     success(selectedVal);
                 }
@@ -1393,11 +1438,22 @@ function InsertUpdateFIFO(rowData) {
         return isNaN(parsed.getTime()) ? null : parsed.toISOString().substring(0, 10);
     }
 
+    function normalizeMultiToString(val, joinWith) {
+        if (val == null) return "";
+        if (Array.isArray(val)) {
+            return val
+                .map(v => String(v ?? "").trim())
+                .filter(v => v !== "")
+                .join(joinWith);
+        }
+        return String(val).trim();
+    }
+
     var Model = {
         Id: rowData.Id || 0,
         Sample_Recv_Date: toIsoDate(rowData.Sample_Recv_Date) || null,
-        Sample_Cat_Ref: rowData.Sample_Cat_Ref || null,
-        Sample_Desc: rowData.Sample_Desc || null,
+        Sample_Cat_Ref: normalizeMultiToString(rowData.Sample_Cat_Ref, ", "),
+        Sample_Desc: normalizeMultiToString(rowData.Sample_Desc, " | "),
         Vendor: rowData.Vendor || null,
         Sample_Qty: rowData.Sample_Qty || null,
         Test_Req: rowData.Test_Req || null,
@@ -1406,7 +1462,9 @@ function InsertUpdateFIFO(rowData) {
         Test_Completion_Date: toIsoDate(rowData.Test_Completion_Date) || null,
         Report_Release_Date: toIsoDate(rowData.Report_Release_Date) || null,
         NABL_Released_Date: toIsoDate(rowData.NABL_Released_Date) || null,
-        Current_Status: rowData.Current_Status || null ,
+        Current_Status: rowData.Current_Status || null,
+        Delayed_Days: rowData.Delayed_Days.toString() || null,
+        Remark: rowData.Remark || null
     };
 
     const isNew = Model.Id === 0;
@@ -1448,238 +1506,236 @@ function InsertUpdateFIFO(rowData) {
 }
 
 
-//function loadNatProjectData() {
-//    Blockloadershow();
-//    $.ajax({
-//        url: '/BisProjectTrac/GetNatProject',
-//        type: 'GET',
-//        success: function (data) {
-//            Blockloaderhide();
-//            if (data && Array.isArray(data)) {
-//                OnNatProjectTabGridLoad(data);
-//            } else {
-//                showDangerAlert('No data available to load.');
-//            }
-//        },
-//        error: function (xhr, status, error) {
-//            Blockloaderhide();
-//            showDangerAlert('Error retrieving data: ' + error);
-//        }
-//    });
-//}
+function loadTestReqData() {
+    Blockloadershow();
+    $.ajax({
+        url: '/FIFOTrac/GetTestReqFIFO',
+        type: 'GET',
+        success: function (data) {
+            Blockloaderhide();
+            if (data && Array.isArray(data)) {
+                OnTestReqTabGridLoad(data);
+            } else {
+                showDangerAlert('No data available to load.');
+            }
+        },
+        error: function (xhr, status, error) {
+            Blockloaderhide();
+            showDangerAlert('Error retrieving data: ' + error);
+        }
+    });
+}
 
-//function OnNatProjectTabGridLoad(response) {
-//    debugger;
-//    Blockloadershow();
+function OnTestReqTabGridLoad(response) {
+    debugger;
+    Blockloadershow();
 
-//    tabledataNatProject = [];
-//    let columns = [];
+    tabledataTestReq = [];
+    let columns = [];
 
-//    // Map the response to the table format
-//    if (response.length > 0) {
-//        $.each(response, function (index, item) {
+    // Map the response to the table format
+    if (response.length > 0) {
+        $.each(response, function (index, item) {
 
-//            function formatDate(value) {
-//                return value ? new Date(value).toLocaleDateString("en-GB") : "";
-//            }
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+            }
 
-//            tabledataNatProject.push({
-//                Sr_No: index + 1,
-//                Id: item.id,
-//                Nat_Project: item.nat_Project,
-//                CreatedBy: item.createdBy,
-//                UpdatedBy: item.updatedBy,
-//                UpdatedDate: formatDate(item.updatedDate),
-//                CreatedDate: formatDate(item.createdDate),
-//            });
-//        });
-//    }
+            tabledataTestReq.push({
+                Sr_No: index + 1,
+                Id: item.id,
+                Test: item.test,
+                CreatedBy: item.createdBy,
+                UpdatedBy: item.updatedBy,
+                UpdatedDate: formatDate(item.updatedDate),
+                CreatedDate: formatDate(item.createdDate),
+            });
+        });
+    }
 
-//    if (tabledataNatProject.length === 0 && tableNatProject) {
-//        tableNatProject.clearData();
-//        Blockloaderhide();
-//        return;
-//    }
+    if (tabledataTestReq.length === 0 && tableTestReq) {
+        tableTestReq.clearData();
+        Blockloaderhide();
+        return;
+    }
 
-//    columns.push(
-//        {
-//            title: "Action",
-//            field: "Action",
-//            width: 46,
-//            hozAlign: "center",
-//            headerHozAlign: "center",
-//            formatter: function (cell, formatterParams) {
-//                const rowData = cell.getRow().getData();
-//                let actionButtons = "";
+    columns.push(
+        {
+            title: "Action",
+            field: "Action",
+            width: 46,
+            hozAlign: "center",
+            headerHozAlign: "center",
+            formatter: function (cell, formatterParams) {
+                const rowData = cell.getRow().getData();
+                let actionButtons = "";
 
-//                actionButtons += `<i onclick="delNatProjectConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+                actionButtons += `<i onclick="delTestReqConfirm(${rowData.Id},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
 
-//                return actionButtons;
-//            }
-//        },
-//        {
-//            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
-//        },
-//        editableColumn("Nature of Project", "Nat_Project", true),
-//        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-//        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-//        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-//        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-//    );
+                return actionButtons;
+            }
+        },
+        {
+            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
+        },
+        editableColumn("Test", "Test", true),
+        { title: "CreatedBy", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+    );
 
-//    // // Initialize Tabulator
-//    tableNatProject = new Tabulator("#natProject_Table", {
-//        data: tabledataNatProject,
-//        renderHorizontal: "virtual",
-//        movableColumns: true,
-//        pagination: "local",
-//        paginationSize: 10,
-//        paginationSizeSelector: [50, 100, 500, 1500, 2000],
-//        paginationCounter: "rows",
-//        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-//        columns: columns
-//    });
+    // // Initialize Tabulator
+    tableTestReq = new Tabulator("#test_Table", {
+        data: tabledataTestReq,
+        renderHorizontal: "virtual",
+        movableColumns: true,
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+        paginationCounter: "rows",
+        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+        columns: columns
+    });
 
-//    tableNatProject.on("cellEdited", function (cell) {
-//        InsertUpdateNatProject(cell.getRow().getData());
-//    });
+    tableTestReq.on("cellEdited", function (cell) {
+        InsertUpdateTestReq(cell.getRow().getData());
+    });
 
-//    $("#addNatProjectBtn").on("click", function () {
-//        const newRow1 = {
-//            Sr_No: tableNatProject.getDataCount() + 1,
-//            Id: 0,
-//            Nat_Project: "",
-//            CreatedBy: "",
-//            UpdatedBy: "",
-//            UpdatedDate: "",
-//            CreatedDate: ""
-//        };
-//        tableNatProject.addRow(newRow1, false);
-//    });
+    $("#addTestBtn").on("click", function () {
+        const newRow1 = {
+            Sr_No: tableTestReq.getDataCount() + 1,
+            Id: 0,
+            Test: "",
+            CreatedBy: "",
+            UpdatedBy: "",
+            UpdatedDate: "",
+            CreatedDate: ""
+        };
+        tableTestReq.addRow(newRow1, false);
+    });
 
+    Blockloaderhide();
+}
 
+function InsertUpdateTestReq(rowData) {
+    debugger
+    if (!rowData) {
+        showDangerAlert("Invalid data provided.");
+        return;
+    }
 
-//    Blockloaderhide();
-//}
+    Blockloadershow();
+    var errorMsg = "";
 
-//function InsertUpdateNatProject(rowData) {
-//    debugger
-//    if (!rowData) {
-//        showDangerAlert("Invalid data provided.");
-//        return;
-//    }
+    if (errorMsg !== "") {
+        Blockloaderhide();
+        showDangerAlert(errorMsg);
+        return false;
+    }
 
-//    Blockloadershow();
-//    var errorMsg = "";
+    var Model = {
+        Id: rowData.Id || 0,
+        Test: rowData.Test || null,
+    };
 
-//    if (errorMsg !== "") {
-//        Blockloaderhide();
-//        showDangerAlert(errorMsg);
-//        return false;
-//    }
+    var ajaxUrl = Model.Id === 0 ? '/FIFOTrac/CreateTestReqFIFO' : '/FIFOTrac/UpdateTestReqFIFO';
 
-//    var Model = {
-//        Id: rowData.Id || 0,
-//        Nat_Project: rowData.Nat_Project || null,
-//    };
+    $.ajax({
+        url: ajaxUrl,
+        type: "POST",
+        data: JSON.stringify(Model),
+        contentType: 'application/json',
+        success: function (response) {
+            Blockloaderhide();
+            if (response.success) {
+                const msg = Model.Id != 0
+                    ? "Test updated successfully!"
+                    : "Test saved successfully!";
+                showSuccessAlert(msg);
+                loadTestReqData();
+            }
+            else if (response.message === "Exist") {
+                showDangerAlert("Test already exists.");
+            }
+            else {
+                var errorMessg = "";
+                if (response.errors) {
+                    for (var error in response.errors) {
+                        if (response.errors.hasOwnProperty(error)) {
+                            errorMessg += `${response.errors[error]}\n`;
+                        }
+                    }
+                }
+                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
+            }
+        },
+        error: function (xhr, status, error) {
+            Blockloaderhide();
+            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
+        }
+    });
+}
 
-//    var ajaxUrl = Model.Id === 0 ? '/BisProjectTrac/CreateNatProject' : '/BisProjectTrac/UpdateNatProject';
+$('#testFifoModel').on('hidden.bs.modal', function () {
+    loadData(); // uncomment if you want full reload
+});
 
-//    $.ajax({
-//        url: ajaxUrl,
-//        type: "POST",
-//        data: JSON.stringify(Model),
-//        contentType: 'application/json',
-//        success: function (response) {
-//            Blockloaderhide();
-//            if (response.success) {
-//                const msg = Model.Id != 0
-//                    ? "Nature of Project updated successfully!"
-//                    : "Nature of Project saved successfully!";
-//                showSuccessAlert(msg);
-//                loadNatProjectData();
-//            }
-//            else if (response.message === "Exist") {
-//                showDangerAlert("Nature of Project already exists.");
-//            }
-//            else {
-//                var errorMessg = "";
-//                if (response.errors) {
-//                    for (var error in response.errors) {
-//                        if (response.errors.hasOwnProperty(error)) {
-//                            errorMessg += `${response.errors[error]}\n`;
-//                        }
-//                    }
-//                }
-//                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
-//            }
-//        },
-//        error: function (xhr, status, error) {
-//            Blockloaderhide();
-//            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
-//        }
-//    });
-//}
+function delTestReqConfirm(recid, element) {
+    debugger;
 
-//$('#natProjectModel').on('hidden.bs.modal', function () {
-//    loadData(); // uncomment if you want full reload
-//});
+    if (!recid || recid <= 0) {
+        const rowEl = $(element).closest(".tabulator-row")[0];
+        const row = tableTestReq.getRow(rowEl);
+        if (row) {
+            row.delete();
+        }
+        return;
+    }
 
-//function delNatProjectConfirm(recid, element) {
-//    debugger;
-
-//    if (!recid || recid <= 0) {
-//        const rowEl = $(element).closest(".tabulator-row")[0];
-//        const row = tableNatProject.getRow(rowEl);
-//        if (row) {
-//            row.delete();
-//        }
-//        return;
-//    }
-
-//    PNotify.prototype.options.styling = "bootstrap3";
-//    (new PNotify({
-//        title: 'Confirmation Needed',
-//        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
-//        icon: 'glyphicon glyphicon-question-sign',
-//        hide: false,
-//        confirm: {
-//            confirm: true
-//        },
-//        buttons: {
-//            closer: false,
-//            sticker: false
-//        },
-//        history: {
-//            history: false
-//        },
-//    })).get().on('pnotify.confirm', function () {
-//        $.ajax({
-//            url: '/BisProjectTrac/DeleteNatProjectAsync',
-//            type: 'POST',
-//            data: { id: recid },
-//            success: function (data) {
-//                if (data.success == true) {
-//                    showSuccessNewAlert("Nature of Project Deleted successfully.");
-//                    setTimeout(function () {
-//                        window.location.reload();
-//                    }, 2500);
-//                }
-//                else if (data.success == false && data.message == "Not_Deleted") {
-//                    showDangerAlert("Record is used in QMS Log transactions.");
-//                }
-//                else {
-//                    showDangerAlert(data.message);
-//                }
-//            },
-//            error: function () {
-//                showDangerAlert('Error retrieving data.');
-//            }
-//        });
-//    }).on('pnotify.cancel', function () {
-//        loadNatProjectData();
-//    });
-//}
+    PNotify.prototype.options.styling = "bootstrap3";
+    (new PNotify({
+        title: 'Confirmation Needed',
+        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+        icon: 'glyphicon glyphicon-question-sign',
+        hide: false,
+        confirm: {
+            confirm: true
+        },
+        buttons: {
+            closer: false,
+            sticker: false
+        },
+        history: {
+            history: false
+        },
+    })).get().on('pnotify.confirm', function () {
+        $.ajax({
+            url: '/FIFOTrac/DeleteTestReqFIFO',
+            type: 'POST',
+            data: { id: recid },
+            success: function (data) {
+                if (data.success == true) {
+                    showSuccessNewAlert("Test Deleted successfully.");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2500);
+                }
+                else if (data.success == false && data.message == "Not_Deleted") {
+                    showDangerAlert("Record is used in QMS Log transactions.");
+                }
+                else {
+                    showDangerAlert(data.message);
+                }
+            },
+            error: function () {
+                showDangerAlert('Error retrieving data.');
+            }
+        });
+    }).on('pnotify.cancel', function () {
+        loadTestReqData();
+    });
+}
 
 //function clearForm() {
 //    // Clear all input fields

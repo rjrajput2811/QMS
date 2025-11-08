@@ -17,5 +17,13 @@ namespace QMS.Core.Repositories.FIFOTrackerRepository
         Task<FIFOTrackerViewModel?> GetByIdAsync(int id);
         Task<bool> CheckDuplicate(string searchText, int id);
         Task<bool> UpdateAttachmentAsync(int id, string fileName);
+
+        Task<List<TestReqFIFOViewModel>> GetTestReqFIFOAsync();
+        Task<BatchCode_PDI?> GetTestReqFIFOByIdAsync(int Id);
+        Task<OperationResult> CreateTestReqFIFOAsync(TestReqFIFOViewModel newNatProjectRecord, bool returnCreatedRecord = false);
+        Task<OperationResult> UpdateTestReqFIFOAsync(TestReqFIFOViewModel updateNatProjectRecord, bool returnUpdatedRecord = false);
+        Task<OperationResult> DeleteTestReqFIFOAsync(int Id);
+        Task<bool> CheckTestReqFIFODuplicate(string searchText, int Id);
+        Task<List<DropdownOptionViewModel>> GetTestReqDropdownAsync();
     }
 }

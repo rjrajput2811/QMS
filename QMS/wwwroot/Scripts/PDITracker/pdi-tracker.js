@@ -1261,8 +1261,17 @@ $('#pdi_table').on('change', '.pdi-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                row.update({ Attachment: fileName });   // triggers reformat for that cell
+            } else {
+                // fallback: add/update by explicit key
+                table.updateOrAddData([{ Id: id, Attachment: fileName }], "Id");
+            }
+            //table.updateData([{ Id: response.id, Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }
@@ -1987,6 +1996,7 @@ function OnBatchCodeGridLoad(response) {
 
 $("#closebtn").on("click", function () {
     $('#batchCodePDIModel').modal('hide');
+    loadData();
 });
 
 function InsertUpdateBatchCode(rowData) {
@@ -2050,7 +2060,7 @@ function InsertUpdateBatchCode(rowData) {
 }
 
 $('#batchCodePDIModel').on('hidden.bs.modal', function () {
-    loadBatchCodeData(); // uncomment if you want full reload
+    loadData(); // uncomment if you want full reload
 });
 
 

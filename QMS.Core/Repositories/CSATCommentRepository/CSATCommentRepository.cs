@@ -30,7 +30,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
             try
             {
                 var result = await _dbContext.CSAT_Comment
-                    .FromSqlRaw("EXEC sp_Get_RM_TC_Tracker")
+                    .FromSqlRaw("EXEC sp_Get_CSAT_Comments")
                     .ToListAsync();
 
                 // Apply optional date filtering based on RMTCDate
@@ -203,7 +203,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
                 };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Update_RM_TCTracker " +
+                    "EXEC sp_Update_CSAT_Comment " +
                     "@Csat_Id, @Quarter, @Organisation, @Region, @Q1, @Q2, @Q3, " +
                     "@Q4, @Q5, @Q6, @Q7, @Q8, @Q9, " +
                     "@Q10, @Q11, @Q12, @Q13,@Cust_Critical_Aspect, @Comment, @UpdatedBy, @IsDeleted",

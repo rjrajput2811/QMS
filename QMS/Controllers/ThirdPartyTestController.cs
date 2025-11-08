@@ -64,7 +64,7 @@ namespace QMS.Controllers
             {
 
                 if (model == null)
-                    return Json(new { success = false, message = "Invalid Bis Project Tracker data." });
+                    return Json(new { success = false, message = "Invalid Third Party Test Tracker data." });
 
 
                 model.CreatedDate = DateTime.Now;
@@ -73,10 +73,10 @@ namespace QMS.Controllers
 
                 if (result.Success)
                 {
-                    return Json(new { success = true, message = "Bis Project Detail saved successfully." });
+                    return Json(new { success = true, message = "Third Party Test Detail saved successfully." });
                 }
 
-                return Json(new { success = false, message = "Failed to save bis project detail.", id = 0 });
+                return Json(new { success = false, message = "Failed to save third party test detail.", id = 0 });
 
             }
             catch (Exception ex)

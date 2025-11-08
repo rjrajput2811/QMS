@@ -913,8 +913,17 @@ $('#bisProject_Table').on('change', '.bis-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessNewAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                row.update({ BIS_Attachment: fileName });   // triggers reformat for that cell
+            } else {
+                // fallback: add/update by explicit key
+                table.updateOrAddData([{ Id: id, BIS_Attachment: fileName }], "Id");
+            }
+            //table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }

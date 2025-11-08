@@ -94,6 +94,7 @@ namespace QMS.Core.Models
     {
         public string? Label { get; set; }  // Display text
         public string? Value { get; set; }  // Underlying value
+        public string? Address { get; set; } // <-- NEW
     }
 
 }

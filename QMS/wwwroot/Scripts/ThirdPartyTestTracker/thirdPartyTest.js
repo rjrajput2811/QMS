@@ -251,6 +251,7 @@ function OnTabGridLoad(response) {
                 Lab: item.lab,
                 Sample_Status: item.sample_Status,
                 Testing_Status: item.testing_Status,
+                Project_Initiator: item.project_Initiator,
                 Lab_Contact_Person: item.lab_Contact_Person,
                 Contact_Number: item.contact_Number,
                 Email_Id: item.email_Id,
@@ -299,7 +300,7 @@ function OnTabGridLoad(response) {
         editableColumn("Wipro Product Code", "Wipro_Product_Code", true),
         editableColumn("Sample Qty", "Sample_Qty", true),
         editableColumn("Test Detail", "Test_Detail", true),
-        //editableColumn("Manufacturing Location", "Manuf_Location", true),
+        editableColumn("Project Initiator", "Project_Initiator", true),
         editableColumn("Vendor", "Vendor", "select2", "center", "input", {}, {
             values: vendorOptions
         }, function (cell) {
@@ -315,7 +316,7 @@ function OnTabGridLoad(response) {
             return labOptions[val] || val;
         }, 170),
         //editableColumn("Sample Status", "Sample_Status", true),
-        editableColumn("Sample Status", "Sample_Status", "select2Test", "left", "input", {}, {
+        editableColumn("Sample Status", "Sample_Status", "list", "left", "input", {}, {
             values: [
                 { label: "Not received in lab", value: "Not received in lab" },
                 { label: "Received in lab", value: "Received in lab" },
@@ -325,7 +326,7 @@ function OnTabGridLoad(response) {
             ]
         }),
         //editableColumn("Testing Status", "Testing_Status", true),
-        editableColumn("Testing Status", "Testing_Status", "select2Test", "center", "input", {}, {
+        editableColumn("Testing Status", "Testing_Status", "list", "center", "input", {}, {
             values: [
                 { label: "Completed", value: "Completed" },
                 { label: "Not Completed", value: "Not Completed" }
@@ -347,7 +348,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="~/ThirdParTestTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="/ThirdParTestTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
@@ -362,7 +363,8 @@ function OnTabGridLoad(response) {
 
         { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false }
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
+        { title: "Id", field: "Id", visible: false }
     );
 
     // // Initialize Tabulator
@@ -375,7 +377,8 @@ function OnTabGridLoad(response) {
         paginationSizeSelector: [50, 100, 500, 1500, 2000],
         paginationCounter: "rows",
         dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-        columns: columns
+        columns: columns,
+        index: "Id"
     });
 
     table.on("cellEdited", function (cell) {
@@ -396,7 +399,7 @@ function OnTabGridLoad(response) {
             $btn.data("busy", true).prop("disabled", true);
 
             try {
-                
+
 
                 const newRow = {
                     Sr_No: 1,               // will renumber after insert
@@ -407,6 +410,7 @@ function OnTabGridLoad(response) {
                     Wipro_Product_Code: "",
                     Sample_Qty: "",
                     Test_Detail: "",
+                    Project_Initiator : "",
                     Vendor: "",
                     Lab: "",
                     Sample_Status: "",
@@ -736,8 +740,16 @@ $('#thirdPartyTest_Table').on('change', '.bis-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessNewAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                row.update({ Report: fileName });   // triggers reformat for that cell
+            } else {
+                table.updateOrAddData([{ Id: id, Report: fileName }], "Id");
+            }
+            //table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }
@@ -1107,12 +1119,17 @@ function InsertUpdateThirdParTest(rowData) {
         Wipro_Product_Code: rowData.Wipro_Product_Code || null,
         Sample_Qty: rowData.Sample_Qty || 0,
         Test_Detail: rowData.Test_Detail || null,
+        Project_Initiator: rowData.Project_Initiator || null,
         Vendor: rowData.Vendor || null,
+        Lab: rowData.Lab || null,
+        Sample_Status: rowData.Sample_Status || null,
+        Testing_Status: rowData.Testing_Status || null,
         Lab_Contact_Person: rowData.Lab_Contact_Person || null,
         Contact_Number: rowData.Contact_Number || null,
         Email_Id: rowData.Email_Id || null,
         Testing_Charge_offer: rowData.Testing_Charge_offer || null,
-        Final_Testing_Charge: rowData.Final_Testing_Charge || null
+        Final_Testing_Charge: rowData.Final_Testing_Charge || null,
+        Report: rowData.Report || null
     };
 
     const isNew = Model.Id === 0;

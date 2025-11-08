@@ -206,5 +206,21 @@ namespace QMS.Core.Repositories.PDIAuthSignRepository
                 throw;
             }
         }
+
+        public async Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync()
+        {
+            return await _dbContext.Vendor
+                .Where(v => !v.Deleted)
+                .Select(v => new DropdownOptionViewModel
+                {
+                    Label = v.Name,
+                    Value = v.Vendor_Code,
+                    Address = v.Address ?? ""   // map directly
+                })
+                .Distinct()
+                .ToListAsync();
+        }
+
+
     }
 }

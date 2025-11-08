@@ -36,9 +36,33 @@ namespace QMS.Core.DatabaseContext
         public DateTime? Report_Release_Date {get; set;}
         public DateTime? NABL_Released_Date {get; set;}
         public string? Final_Report {get; set;}
+        public string? Remark {get; set;}
+        public string? Delayed_Days { get; set;}
+        public string? Current_Status { get; set;}
         public string? CreatedBy {get; set;}
         public DateTime? CreatedDate {get; set;}
         public string? UpdatedBy {get; set;}
         public DateTime? UpdatedDate {get; set;}
+    }
+
+    [Table("tbl_TestReq_FIFO")]
+    public class TestReq_FIFO : SqlTable
+    {
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("TestReq_Id")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+
+        public string? Test { get; set; }
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
     }
 }

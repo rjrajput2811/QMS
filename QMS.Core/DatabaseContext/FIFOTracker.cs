@@ -37,7 +37,7 @@ namespace QMS.Core.DatabaseContext
         public DateTime? NABL_Released_Date {get; set;}
         public string? Final_Report {get; set;}
         public string? Remark {get; set;}
-        public string? Delayed_Days { get; set;}
+        public int? Delayed_Days { get; set;}
        
         public string? CreatedBy {get; set;}
         public DateTime? CreatedDate {get; set;}

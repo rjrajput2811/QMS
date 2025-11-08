@@ -85,7 +85,23 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
+    public IActionResult ElectricalPerformance()
+    {
+        return View();
+    }
+
     public IActionResult ElectricalPerformanceDetails(int Id)
+    {
+        return View();
+    }
+
+
+    public IActionResult RippleTestReport()
+    {
+        return View();
+    }
+
+    public IActionResult Rippletestreportdetails(int Id)
     {
         return View();
     }

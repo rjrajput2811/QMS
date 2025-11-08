@@ -19,6 +19,7 @@ namespace QMS.Core.Models
         public string? Test_Req { get; set; }
         public string? Test_Status { get; set; }
         public string? Responsbility { get; set; }
+        public string? Current_Status { get; set; }
         public DateTime? Test_Completion_Date { get; set; }
         public DateTime? Report_Release_Date { get; set; }
         public DateTime? NABL_Released_Date { get; set; }

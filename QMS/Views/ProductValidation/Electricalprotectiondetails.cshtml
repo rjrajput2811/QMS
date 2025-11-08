@@ -1,11 +1,32 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model ElectricalProtectionViewModel
+
+@{
     ViewData["Title"] = "Electrical Protection, Safety Test & Reliability Test";
 }
 
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <script src="~/js/tabulator.min.js"></script>
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
 
-<form id="electricalForm" method="post" action="#">
+<form id="electricalForm"
+      method="post"
+      asp-controller="ProductValidation"
+      asp-action="InsertUpdateElectricalProtection">
+    @Html.HiddenFor(m => m.Id)
     <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
         <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
             <div>
@@ -15,9 +36,10 @@
             </div>
 
             <div>
-                <button id="saveButton" type="button" class="btn btn-outline-success mr-2" style="width:120px; font-size:15px">
-                    <i class="fas fa-save mr-2 fa-1x"></i> SAVE
+                <button id="addElectricalButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="insertElectricalProtection()" style="width: 120px; font-size:15px">
+                    <i class="fas fa-save mr-1"></i>Save
                 </button>
+
 
                 <a href='@Url.Action("Electricalprotection","ProductValidation")'
                    class="btn btn-outline-primary"
@@ -30,7 +52,6 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <!-- Top meta table (unchanged) -->
             <div class="table-responsive">
                 <table class="table table-bordered" style="font-size:14px; border:1px solid #000; width:100%; border-collapse:collapse;">
                     <colgroup>
@@ -39,65 +60,83 @@
                         <col style="width:33.33%;">
                     </colgroup>
                     <tbody>
+
                         <tr>
                             <td>
-                                <b>Product Cat Ref :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Product Ref">
+                                <label><b>Product Cat Ref</b></label><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Product Ref", required = "required" })
                             </td>
                             <td>
-                                <b>Product Description :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Description">
+                                <b>Product Description :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.ProductDescription, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Description", required = "required" })
                             </td>
                             <td>
-                                <b>Report No. :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Report No">
+                                <b>Report No. :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.ReportNo, new
+                                    {
+                                        @class = "form-control d-inline-block float-end",
+                                        style = "width:60%; font-size:13px;",
+                                        placeholder = "Enter Report No",
+                                        required = "required",
+                                        type = "number",
+                                        onkeypress = "return event.charCode >= 48 && event.charCode <= 57"
+                                    })
                             </td>
                         </tr>
+
                         <tr>
                             <td>
-                                <b>Light Source Details :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Details">
+                                <b>Light Source Details :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.LightSourceDetails, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Details", required = "required" })
                             </td>
                             <td>
-                                <b>Driver Details &amp; Qty :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Driver Info">
+                                <b>Driver Details & Qty :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.DriverDetailsQty, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Driver Info", required = "required" })
                             </td>
                             <td>
-                                <b>Date :</b>
-                                <input type="date" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;">
+                                <b>Report Date :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(
+                                         m => m.ReportDate,
+                                         "{0:dd/MM/yyyy}",
+                                         new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", type = "text", required = "required" }
+                                         )
                             </td>
                         </tr>
+
                         <tr>
                             <td>
-                                <b>PCB Details &amp; Qty :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter PCB Info">
+                                <b>PCB Details & Qty :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.PCBDetailsQty, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter PCB Info", required = "required" })
                             </td>
                             <td>
-                                <b>LED Combinations :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter LED Combo">
+                                <b>LED Combinations :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.LEDCombinations, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter LED Combo", required = "required" })
                             </td>
                             <td>
-                                <b>Batch Code :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Batch Code">
+                                <b>Batch Code :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.BatchCode, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Batch Code", required = "required" })
                             </td>
                         </tr>
+
                         <tr>
                             <td>
-                                <b>Sensor Details &amp; Qty :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Sensor Info">
+                                <b>Sensor Details & Qty :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.SensorDetailsQty, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Sensor Info", required = "required" })
                             </td>
                             <td>
-                                <b>Lamp Details :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter Lamp Info">
+                                <b>Lamp Details :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.LampDetails, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter Lamp Info", required = "required" })
                             </td>
                             <td>
-                                <b>PKD :</b>
-                                <input type="text" class="form-control d-inline-block float-end" style="width:60%; font-size:13px;" placeholder="Enter PKD">
+                                <b>PKD :</b><em style="color:red">*</em>
+                                @Html.TextBoxFor(m => m.PKD, new { @class = "form-control d-inline-block float-end", style = "width:60%; font-size:13px;", placeholder = "Enter PKD", required = "required" })
                             </td>
                         </tr>
+
                     </tbody>
                 </table>
             </div>
+        
 
             <!-- Main Results Table (expanded with Safety & Reliability) -->
             <table class="table table-bordered mt-2" style="font-size:13px; border:1px solid #000; text-align:center; vertical-align:middle; width:100%; border-collapse:collapse;">
@@ -124,7 +163,7 @@
                     <tr>
                         <th>Sample-1</th>
                         <th>Sample-2</th>
-                        <th>Sample-3</th>
+                        <th>Sample-3</th>   
                         <th>Sample-4</th>
                         <th>Sample-5</th>
                     </tr>
@@ -136,335 +175,1575 @@
                         <th rowspan="10" style="text-align:left;">Electrical Protection Test</th>
                         <td>Under Voltage Cut off &amp; auto recovery</td>
                         <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Over Voltage Cut off &amp; auto recovery</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Open Circuit Protection</td>
-                        <td>Driver goes to shutdown mode</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Short Circuit Protection</td>
-                        <td>Driver goes to shutdown mode</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Reverse polarity protection</td>
-                        <td>Driver goes to shutdown mode</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Over Load Protection</td>
-                        <td>Driver goes to shutdown mode</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Over Thermal cut off</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Earth fault protection</td>
-                        <td>Driver should not failed</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Driver Isolation - Input - Output</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>High Voltage - 440 V / 320V / 350 V etc.</td>
-                        <td>Should pass as per Driver data sheet</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
+                <td contenteditable="true" data-name="UnderVoltage_Sample1">
+                    @Model.UnderVoltage_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.UnderVoltage_Sample1, new { id = "UnderVoltage_Sample1" })
+                </td>
 
-                    <!-- ================= Safety Test (7 rows) ================= -->
-                    <tr>
-                        <th rowspan="7" style="text-align:left;">Safety Test</th>
-                        <td>HV</td>
-                        <td>a) Class 1:- 1.5 kV for a period of 1 Min<br>b) Class 2:- 3.72 kV for a period of 1 Min</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Insulation Resistance</td>
-                        <td>&gt; 2 MΩ</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Earth continuity</td>
-                        <td>Continuity</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>SELV protection</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Leakage Current</td>
-                        <td>&lt; 1 Milli Amp</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Creepage &amp; Clearance</td>
-                        <td>As per IS 10322</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Hi-pot on MCPCB</td>
-                        <td>Withstand specified voltages</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
+                <td contenteditable="true" data-name="UnderVoltage_Sample2">
+                    @Model.UnderVoltage_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.UnderVoltage_Sample2, new { id = "UnderVoltage_Sample2" })
+                </td>
 
-                    <!-- ================= Reliability Test (10 rows) ================= -->
-                    <tr>
-                        <th rowspan="10" style="text-align:left;">Reliability Test</th>
-                        <td>On/off (5 Sec On / 5 Sec Off) switching for 4 hrs at 50&deg;C at 240V AC</td>
-                        <td>Driver / PCB should not failed</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
+                <td contenteditable="true" data-name="UnderVoltage_Sample3">
+                    @Model.UnderVoltage_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.UnderVoltage_Sample3, new { id = "UnderVoltage_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="UnderVoltage_Sample4">
+                    @Model.UnderVoltage_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.UnderVoltage_Sample4, new { id = "UnderVoltage_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="UnderVoltage_Sample5">
+                    @Model.UnderVoltage_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.UnderVoltage_Sample5, new { id = "UnderVoltage_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.UnderVoltage_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",    // title only, not an actual value
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
                     </tr>
-                    <tr>
-                        <td>Soaking / Ageing at Room temperature</td>
-                        <td>
-                            At 240V AC, 60 Min: Burning<br>
-                            At 240V AC, 30 Min: 10 Sec on/off<br>
-                            At 270V AC, 45 Min: Burning<br>
-                            At 140V AC, 45 Min: Burning<br>
-                            At 240V AC, 60 Min: Burning
-                        </td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Rolling Test/Endurance Test - Continuous glow at least 24&times;7 days (Minimum 2 fixtures) at Room temperature.</td>
-                        <td>Daily observations to be taken. (PCB &amp; driver should not failed. Check burning of SPDs, LED lens, wires, plastic parts etc.)</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Glow Test</td>
-                        <td>Should Lit Up</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Lamp Accommodation (for Tube)</td>
-                        <td>No Looseness or Tight</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Dali Function</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Tuneable CCT</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Battery back up</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Smart Lighting (POE, BLE, RF - NEMA etc.)</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
-                    <tr>
-                        <td>Sensor function</td>
-                        <td>As per Design Documents</td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                        <td><input type="text" class="form-control text-center"></td>
-                    </tr>
+            <tr>
+                <td>Over Voltage Cut Off &amp; Auto Recovery</td>
+                <td>As per Design Documents</td>
+
+                <!-- OverVoltage Sample 1 -->
+                <td contenteditable="true" data-name="OverVoltage_Sample1">
+                    @Model.OverVoltage_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample1, new { id = "OverVoltage_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="OverVoltage_Sample2">
+                    @Model.OverVoltage_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample2, new { id = "OverVoltage_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="OverVoltage_Sample3">
+                    @Model.OverVoltage_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample3, new { id = "OverVoltage_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="OverVoltage_Sample4">
+                    @Model.OverVoltage_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample4, new { id = "OverVoltage_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="OverVoltage_Sample5">
+                    @Model.OverVoltage_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverVoltage_Sample5, new { id = "OverVoltage_Sample5" })
+                </td>
+
+
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.OverVoltage_Result,
+                                     new SelectList(new[] { "Pass", "Fail","NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+            <tr>
+                <td>Open Circuit Protection</td>
+                <td>Driver goes to shutdown mode</td>
+                <td contenteditable="true" data-name="OpenCircuit_Sample1">
+                    @Model.OpenCircuit_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample1, new { id = "OpenCircuit_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="OpenCircuit_Sample2">
+                    @Model.OpenCircuit_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample2, new { id = "OpenCircuit_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="OpenCircuit_Sample3">
+                    @Model.OpenCircuit_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample3, new { id = "OpenCircuit_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="OpenCircuit_Sample4">
+                    @Model.OpenCircuit_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample4, new { id = "OpenCircuit_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="OpenCircuit_Sample5">
+                    @Model.OpenCircuit_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OpenCircuit_Sample5, new { id = "OpenCircuit_Sample5" })
+                </td>
+
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.OpenCircuit_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+
+            <tr>
+                <td>Short Circuit Protection</td>
+                <td>Driver goes to shutdown mode</td>
+
+                <td contenteditable="true" data-name="ShortCircuit_Sample1">
+                    @Model.ShortCircuit_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample1, new { id = "ShortCircuit_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="ShortCircuit_Sample2">
+                    @Model.ShortCircuit_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample2, new { id = "ShortCircuit_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="ShortCircuit_Sample3">
+                    @Model.ShortCircuit_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample3, new { id = "ShortCircuit_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="ShortCircuit_Sample4">
+                    @Model.ShortCircuit_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample4, new { id = "ShortCircuit_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="ShortCircuit_Sample5">
+                    @Model.ShortCircuit_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ShortCircuit_Sample5, new { id = "ShortCircuit_Sample5" })
+                </td>
+
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.ShortCircuit_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Reverse Polarity Protection</td>
+                <td>Driver goes to shutdown mode</td>
+
+                <td contenteditable="true" data-name="ReversePolarity_Sample1">
+                    @Model.ReversePolarity_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample1, new { id = "ReversePolarity_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="ReversePolarity_Sample2">
+                    @Model.ReversePolarity_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample2, new { id = "ReversePolarity_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="ReversePolarity_Sample3">
+                    @Model.ReversePolarity_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample3, new { id = "ReversePolarity_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="ReversePolarity_Sample4">
+                    @Model.ReversePolarity_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample4, new { id = "ReversePolarity_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="ReversePolarity_Sample5">
+                    @Model.ReversePolarity_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.ReversePolarity_Sample5, new { id = "ReversePolarity_Sample5" })
+                </td>
+
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.ReversePolarity_Result,
+                             new SelectList(new[] { "Pass", "Fail","NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+
+            <tr>
+                <td>Over Load Protection</td>
+                <td>Driver goes to shutdown mode</td>
+
+                <td contenteditable="true" data-name="OverLoad_Sample1">
+                    @Model.OverLoad_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverLoad_Sample1, new { id = "OverLoad_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="OverLoad_Sample2">
+                    @Model.OverLoad_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverLoad_Sample2, new { id = "OverLoad_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="OverLoad_Sample3">
+                    @Model.OverLoad_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverLoad_Sample3, new { id = "OverLoad_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="OverLoad_Sample4">
+                    @Model.OverLoad_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverLoad_Sample4, new { id = "OverLoad_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="OverLoad_Sample5">
+                    @Model.OverLoad_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverLoad_Sample5, new { id = "OverLoad_Sample5" })
+                </td>
+
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.OverLoad_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Over Thermal Cut Off</td>
+                <td>As per Design Documents</td>
+
+                <td contenteditable="true" data-name="OverThermal_Sample1">
+                    @Model.OverThermal_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverThermal_Sample1, new { id = "OverThermal_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="OverThermal_Sample2">
+                    @Model.OverThermal_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverThermal_Sample2, new { id = "OverThermal_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="OverThermal_Sample3">
+                    @Model.OverThermal_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverThermal_Sample3, new { id = "OverThermal_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="OverThermal_Sample4">
+                    @Model.OverThermal_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverThermal_Sample4, new { id = "OverThermal_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="OverThermal_Sample5">
+                    @Model.OverThermal_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OverThermal_Sample5, new { id = "OverThermal_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.OverThermal_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Earth Fault Protection</td>
+                <td>Driver should not fail</td>
+
+                <td contenteditable="true" data-name="EarthFault_Sample1">
+                    @Model.EarthFault_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthFault_Sample1, new { id = "EarthFault_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthFault_Sample2">
+                    @Model.EarthFault_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthFault_Sample2, new { id = "EarthFault_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthFault_Sample3">
+                    @Model.EarthFault_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthFault_Sample3, new { id = "EarthFault_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthFault_Sample4">
+                    @Model.EarthFault_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthFault_Sample4, new { id = "EarthFault_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthFault_Sample5">
+                    @Model.EarthFault_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthFault_Sample5, new { id = "EarthFault_Sample5" })
+                </td>
+
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.EarthFault_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+            </tr>
+
+            <!-- ============= Electrical Protection (continued) ============= -->
+            <tr>
+                <td>Driver Isolation - Input - Output</td>
+                <td>As per Design Documents</td>
+                <td contenteditable="true" data-name="DriverIsolation_Sample1">
+                    @Model.DriverIsolation_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DriverIsolation_Sample1, new { id = "DriverIsolation_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="DriverIsolation_Sample2">
+                    @Model.DriverIsolation_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DriverIsolation_Sample2, new { id = "DriverIsolation_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="DriverIsolation_Sample3">
+                    @Model.DriverIsolation_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DriverIsolation_Sample3, new { id = "DriverIsolation_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="DriverIsolation_Sample4">
+                    @Model.DriverIsolation_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DriverIsolation_Sample4, new { id = "DriverIsolation_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="DriverIsolation_Sample5">
+                    @Model.DriverIsolation_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DriverIsolation_Sample5, new { id = "DriverIsolation_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.DriverIsolation_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>High Voltage - 440 V / 320V / 350 V etc.</td>
+                <td>Should pass as per Driver data sheet</td>
+                <td contenteditable="true" data-name="HighVoltage_Sample1">
+                    @Model.HighVoltage_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HighVoltage_Sample1, new { id = "HighVoltage_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="HighVoltage_Sample2">
+                    @Model.HighVoltage_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HighVoltage_Sample2, new { id = "HighVoltage_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="HighVoltage_Sample3">
+                    @Model.HighVoltage_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HighVoltage_Sample3, new { id = "HighVoltage_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="HighVoltage_Sample4">
+                    @Model.HighVoltage_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HighVoltage_Sample4, new { id = "HighVoltage_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="HighVoltage_Sample5">
+                    @Model.HighVoltage_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HighVoltage_Sample5, new { id = "HighVoltage_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.HighVoltage_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <!-- ================= Safety Test (7 rows) ================= -->
+            <tr>
+                <th rowspan="7" style="text-align:left;">Safety Test</th>
+                <td>HV</td>
+                <td>a) Class 1:- 1.5 kV for a period of 1 Min<br>b) Class 2:- 3.72 kV for a period of 1 Min</td>
+                <td contenteditable="true" data-name="HV_Sample1">
+                    @Model.HV_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HV_Sample1, new { id = "HV_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="HV_Sample2">
+                    @Model.HV_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HV_Sample2, new { id = "HV_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="HV_Sample3">
+                    @Model.HV_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HV_Sample3, new { id = "HV_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="HV_Sample4">
+                    @Model.HV_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HV_Sample4, new { id = "HV_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="HV_Sample5">
+                    @Model.HV_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HV_Sample5, new { id = "HV_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.HV_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Insulation Resistance</td>
+                <td>&gt; 2 MΩ</td>
+                <td contenteditable="true" data-name="InsulationResistance_Sample1">
+                    @Model.InsulationResistance_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.InsulationResistance_Sample1, new { id = "InsulationResistance_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="InsulationResistance_Sample2">
+                    @Model.InsulationResistance_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.InsulationResistance_Sample2, new { id = "InsulationResistance_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="InsulationResistance_Sample3">
+                    @Model.InsulationResistance_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.InsulationResistance_Sample3, new { id = "InsulationResistance_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="InsulationResistance_Sample4">
+                    @Model.InsulationResistance_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.InsulationResistance_Sample4, new { id = "InsulationResistance_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="InsulationResistance_Sample5">
+                    @Model.InsulationResistance_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.InsulationResistance_Sample5, new { id = "InsulationResistance_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.InsulationResistance_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Earth Continuity</td>
+                <td>Continuity</td>
+                <td contenteditable="true" data-name="EarthContinuity_Sample1">
+                    @Model.EarthContinuity_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthContinuity_Sample1, new { id = "EarthContinuity_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthContinuity_Sample2">
+                    @Model.EarthContinuity_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthContinuity_Sample2, new { id = "EarthContinuity_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthContinuity_Sample3">
+                    @Model.EarthContinuity_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthContinuity_Sample3, new { id = "EarthContinuity_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthContinuity_Sample4">
+                    @Model.EarthContinuity_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthContinuity_Sample4, new { id = "EarthContinuity_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="EarthContinuity_Sample5">
+                    @Model.EarthContinuity_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.EarthContinuity_Sample5, new { id = "EarthContinuity_Sample5" })
+                </td>
+
+                        <td>@Html.DropDownListFor(m => m.EarthContinuity_Result, new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }), "Select", new { @class = "form-control text-center same-input" })</td>
+            </tr>
+
+
+            <tr>
+                <td>SELV Protection</td>
+                <td>As per Design Documents</td>
+                <td contenteditable="true" data-name="SELVProtection_Sample1">
+                    @Model.SELVProtection_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SELVProtection_Sample1, new { id = "SELVProtection_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="SELVProtection_Sample2">
+                    @Model.SELVProtection_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SELVProtection_Sample2, new { id = "SELVProtection_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="SELVProtection_Sample3">
+                    @Model.SELVProtection_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SELVProtection_Sample3, new { id = "SELVProtection_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="SELVProtection_Sample4">
+                    @Model.SELVProtection_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SELVProtection_Sample4, new { id = "SELVProtection_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="SELVProtection_Sample5">
+                    @Model.SELVProtection_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SELVProtection_Sample5, new { id = "SELVProtection_Sample5" })
+                </td>
+
+                        <td>@Html.DropDownListFor(m => m.SELVProtection_Result, new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }), "Select", new { @class = "form-control text-center same-input" })</td>
+            </tr>
+
+
+            <tr>
+                <td>Leakage Current</td>
+                <td>&lt; 1 Milli Amp</td>
+                <td contenteditable="true" data-name="LeakageCurrent_Sample1">
+                    @Model.LeakageCurrent_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LeakageCurrent_Sample1, new { id = "LeakageCurrent_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="LeakageCurrent_Sample2">
+                    @Model.LeakageCurrent_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LeakageCurrent_Sample2, new { id = "LeakageCurrent_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="LeakageCurrent_Sample3">
+                    @Model.LeakageCurrent_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LeakageCurrent_Sample3, new { id = "LeakageCurrent_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="LeakageCurrent_Sample4">
+                    @Model.LeakageCurrent_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LeakageCurrent_Sample4, new { id = "LeakageCurrent_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="LeakageCurrent_Sample5">
+                    @Model.LeakageCurrent_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LeakageCurrent_Sample5, new { id = "LeakageCurrent_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.LeakageCurrent_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+
+            <tr>
+                <td>Creepage & Clearance</td>
+                <td>As per IS 10322</td>
+                <td contenteditable="true" data-name="CreepageClearance_Sample1">
+                    @Model.CreepageClearance_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.CreepageClearance_Sample1, new { id = "CreepageClearance_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="CreepageClearance_Sample2">
+                    @Model.CreepageClearance_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.CreepageClearance_Sample2, new { id = "CreepageClearance_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="CreepageClearance_Sample3">
+                    @Model.CreepageClearance_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.CreepageClearance_Sample3, new { id = "CreepageClearance_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="CreepageClearance_Sample4">
+                    @Model.CreepageClearance_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.CreepageClearance_Sample4, new { id = "CreepageClearance_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="CreepageClearance_Sample5">
+                    @Model.CreepageClearance_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.CreepageClearance_Sample5, new { id = "CreepageClearance_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.CreepageClearance_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Hi-pot on MCPCB</td>
+                <td>Withstand specified voltages</td>
+
+                <td contenteditable="true" data-name="HiPotMCPCB_Sample1">
+                    @Model.HiPotMCPCB_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HiPotMCPCB_Sample1, new { id = "HiPotMCPCB_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="HiPotMCPCB_Sample2">
+                    @Model.HiPotMCPCB_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HiPotMCPCB_Sample2, new { id = "HiPotMCPCB_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="HiPotMCPCB_Sample3">
+                    @Model.HiPotMCPCB_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HiPotMCPCB_Sample3, new { id = "HiPotMCPCB_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="HiPotMCPCB_Sample4">
+                    @Model.HiPotMCPCB_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HiPotMCPCB_Sample4, new { id = "HiPotMCPCB_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="HiPotMCPCB_Sample5">
+                    @Model.HiPotMCPCB_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.HiPotMCPCB_Sample5, new { id = "HiPotMCPCB_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.HiPotMCPCB_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+
+            <!-- ================= Reliability Test (10 rows) ================= -->
+            <tr>
+                <th rowspan="10" style="text-align:left;">Reliability Test</th>
+                <td>On/off (5 Sec On / 5 Sec Off) switching for 4 hrs at 50°C at 240V AC</td>
+                <td>Driver / PCB should not fail</td>
+                <td contenteditable="true" data-name="OnOffSwitching_Sample1">
+                    @Model.OnOffSwitching_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OnOffSwitching_Sample1, new { id = "OnOffSwitching_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="OnOffSwitching_Sample2">
+                    @Model.OnOffSwitching_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OnOffSwitching_Sample2, new { id = "OnOffSwitching_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="OnOffSwitching_Sample3">
+                    @Model.OnOffSwitching_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OnOffSwitching_Sample3, new { id = "OnOffSwitching_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="OnOffSwitching_Sample4">
+                    @Model.OnOffSwitching_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OnOffSwitching_Sample4, new { id = "OnOffSwitching_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="OnOffSwitching_Sample5">
+                    @Model.OnOffSwitching_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.OnOffSwitching_Sample5, new { id = "OnOffSwitching_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.OnOffSwitching_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Soaking / Ageing Test</td>
+                <td>No failure</td>
+                <td contenteditable="true" data-name="SoakingAgeing_Sample1">
+                    @Model.SoakingAgeing_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SoakingAgeing_Sample1, new { id = "SoakingAgeing_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="SoakingAgeing_Sample2">
+                    @Model.SoakingAgeing_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SoakingAgeing_Sample2, new { id = "SoakingAgeing_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="SoakingAgeing_Sample3">
+                    @Model.SoakingAgeing_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SoakingAgeing_Sample3, new { id = "SoakingAgeing_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="SoakingAgeing_Sample4">
+                    @Model.SoakingAgeing_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SoakingAgeing_Sample4, new { id = "SoakingAgeing_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="SoakingAgeing_Sample5">
+                    @Model.SoakingAgeing_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SoakingAgeing_Sample5, new { id = "SoakingAgeing_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.SoakingAgeing_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Rolling Endurance Test</td>
+                <td>No failure</td>
+                <td contenteditable="true" data-name="RollingEndurance_Sample1">
+                    @Model.RollingEndurance_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.RollingEndurance_Sample1, new { id = "RollingEndurance_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="RollingEndurance_Sample2">
+                    @Model.RollingEndurance_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.RollingEndurance_Sample2, new { id = "RollingEndurance_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="RollingEndurance_Sample3">
+                    @Model.RollingEndurance_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.RollingEndurance_Sample3, new { id = "RollingEndurance_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="RollingEndurance_Sample4">
+                    @Model.RollingEndurance_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.RollingEndurance_Sample4, new { id = "RollingEndurance_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="RollingEndurance_Sample5">
+                    @Model.RollingEndurance_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.RollingEndurance_Sample5, new { id = "RollingEndurance_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.RollingEndurance_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Glow Wire Test</td>
+                <td>No ignition</td>
+                <td contenteditable="true" data-name="GlowTest_Sample1">
+                    @Model.GlowTest_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.GlowTest_Sample1, new { id = "GlowTest_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="GlowTest_Sample2">
+                    @Model.GlowTest_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.GlowTest_Sample2, new { id = "GlowTest_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="GlowTest_Sample3">
+                    @Model.GlowTest_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.GlowTest_Sample3, new { id = "GlowTest_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="GlowTest_Sample4">
+                    @Model.GlowTest_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.GlowTest_Sample4, new { id = "GlowTest_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="GlowTest_Sample5">
+                    @Model.GlowTest_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.GlowTest_Sample5, new { id = "GlowTest_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.GlowTest_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Lamp Accommodation Test</td>
+                <td>Lamp to be properly fixed</td>
+                <td contenteditable="true" data-name="LampAccommodation_Sample1">
+                    @Model.LampAccommodation_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LampAccommodation_Sample1, new { id = "LampAccommodation_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="LampAccommodation_Sample2">
+                    @Model.LampAccommodation_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LampAccommodation_Sample2, new { id = "LampAccommodation_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="LampAccommodation_Sample3">
+                    @Model.LampAccommodation_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LampAccommodation_Sample3, new { id = "LampAccommodation_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="LampAccommodation_Sample4">
+                    @Model.LampAccommodation_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LampAccommodation_Sample4, new { id = "LampAccommodation_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="LampAccommodation_Sample5">
+                    @Model.LampAccommodation_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.LampAccommodation_Sample5, new { id = "LampAccommodation_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.LampAccommodation_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>DALI Function Test</td>
+                <td>Should function properly</td>
+
+                <td contenteditable="true" data-name="DaliFunction_Sample1">
+                    @Model.DaliFunction_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DaliFunction_Sample1, new { id = "DaliFunction_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="DaliFunction_Sample2">
+                    @Model.DaliFunction_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DaliFunction_Sample2, new { id = "DaliFunction_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="DaliFunction_Sample3">
+                    @Model.DaliFunction_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DaliFunction_Sample3, new { id = "DaliFunction_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="DaliFunction_Sample4">
+                    @Model.DaliFunction_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DaliFunction_Sample4, new { id = "DaliFunction_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="DaliFunction_Sample5">
+                    @Model.DaliFunction_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.DaliFunction_Sample5, new { id = "DaliFunction_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.DaliFunction_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Tuneable CCT Test</td>
+                <td>Should function properly</td>
+
+                <td contenteditable="true" data-name="TuneableCCT_Sample1">
+                    @Model.TuneableCCT_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.TuneableCCT_Sample1, new { id = "TuneableCCT_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="TuneableCCT_Sample2">
+                    @Model.TuneableCCT_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.TuneableCCT_Sample2, new { id = "TuneableCCT_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="TuneableCCT_Sample3">
+                    @Model.TuneableCCT_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.TuneableCCT_Sample3, new { id = "TuneableCCT_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="TuneableCCT_Sample4">
+                    @Model.TuneableCCT_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.TuneableCCT_Sample4, new { id = "TuneableCCT_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="TuneableCCT_Sample5">
+                    @Model.TuneableCCT_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.TuneableCCT_Sample5, new { id = "TuneableCCT_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.TuneableCCT_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Battery Backup Test</td>
+                <td>Should last as per rating</td>
+                <td contenteditable="true" data-name="BatteryBackup_Sample1">
+                    @Model.BatteryBackup_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.BatteryBackup_Sample1, new { id = "BatteryBackup_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="BatteryBackup_Sample2">
+                    @Model.BatteryBackup_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.BatteryBackup_Sample2, new { id = "BatteryBackup_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="BatteryBackup_Sample3">
+                    @Model.BatteryBackup_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.BatteryBackup_Sample3, new { id = "BatteryBackup_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="BatteryBackup_Sample4">
+                    @Model.BatteryBackup_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.BatteryBackup_Sample4, new { id = "BatteryBackup_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="BatteryBackup_Sample5">
+                    @Model.BatteryBackup_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.BatteryBackup_Sample5, new { id = "BatteryBackup_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.BatteryBackup_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Smart Lighting Test</td>
+                <td>Should function properly</td>
+                <td contenteditable="true" data-name="SmartLighting_Sample1">
+                    @Model.SmartLighting_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SmartLighting_Sample1, new { id = "SmartLighting_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="SmartLighting_Sample2">
+                    @Model.SmartLighting_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SmartLighting_Sample2, new { id = "SmartLighting_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="SmartLighting_Sample3">
+                    @Model.SmartLighting_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SmartLighting_Sample3, new { id = "SmartLighting_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="SmartLighting_Sample4">
+                    @Model.SmartLighting_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SmartLighting_Sample4, new { id = "SmartLighting_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="SmartLighting_Sample5">
+                    @Model.SmartLighting_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SmartLighting_Sample5, new { id = "SmartLighting_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.SmartLighting_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+            <tr>
+                <td>Sensor Function Test</td>
+                <td>Should function properly</td>
+                <td contenteditable="true" data-name="SensorFunction_Sample1">
+                    @Model.SensorFunction_Sample1
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SensorFunction_Sample1, new { id = "SensorFunction_Sample1" })
+                </td>
+
+                <td contenteditable="true" data-name="SensorFunction_Sample2">
+                    @Model.SensorFunction_Sample2
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SensorFunction_Sample2, new { id = "SensorFunction_Sample2" })
+                </td>
+
+                <td contenteditable="true" data-name="SensorFunction_Sample3">
+                    @Model.SensorFunction_Sample3
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SensorFunction_Sample3, new { id = "SensorFunction_Sample3" })
+                </td>
+
+                <td contenteditable="true" data-name="SensorFunction_Sample4">
+                    @Model.SensorFunction_Sample4
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SensorFunction_Sample4, new { id = "SensorFunction_Sample4" })
+                </td>
+
+                <td contenteditable="true" data-name="SensorFunction_Sample5">
+                    @Model.SensorFunction_Sample5
+                </td>
+                <td style="display:none">
+                    @Html.TextBoxFor(m => m.SensorFunction_Sample5, new { id = "SensorFunction_Sample5" })
+                </td>
+
+                <td>
+                    @Html.DropDownListFor(
+                             m => m.SensorFunction_Result,
+                                     new SelectList(new[] { "Pass", "Fail", "NA", "Pending" }),
+                             "Select",
+                             new { @class = "form-control text-center same-input" }
+                             )
+                </td>
+            </tr>
+
+
                 </tbody>
             </table>
 
             <!-- Bottom result/sign-off (unchanged) -->
             <table class="table table-bordered result-table" style="border:1px solid #000; font-size:14px;">
-                <tr>
-                    <th colspan="5" style="color:red; text-align:left;">Result – Pass/Fail</th>
-                    <th colspan="3">
-                        <input type="text" class="form-control" placeholder="Overall Result (Pass/Fail)">
-                    </th>
-                </tr>
+        <tr>
+            <th colspan="5" style="color:red; text-align:left;">Result – Pass/Fail</th>
+            <th colspan="3">
+                @Html.DropDownListFor(
+                         m => m.OverallReportResult,
+                                 new SelectList(new[] { "Pass", "Fail" }),
+                         "Select",
+                         new { @class = "form-control text-center same-input" }
+                         )
+            </th>
+        </tr>
 
-                <tr>
-                    <td><b>Tested By</b></td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" placeholder="Enter Tester">
-                    </td>
-                    <td><b>Verified By</b></td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" placeholder="Enter Verifier">
-                    </td>
-                </tr>
+     <tr>
+        <tr>
+            <td colspan="4" class="text-center align-middle">
+                <b>Tested By</b>
+            </td>
 
-                <tr>
-                    <td><b>Name :</b></td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" placeholder="Tester Name">
-                    </td>
-                    <td><b>Name :</b></td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" placeholder="Verifier Name">
-                    </td>
-                </tr>
+            <td colspan="4" class="text-center align-middle">
+                <b>Verified By</b>
+            </td>
+        </tr>
 
-                <tr>
-                    <td><b>Signature</b></td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" placeholder="Tester Signature">
-                    </td>
-                    <td><b>Signature</b></td>
-                    <td colspan="3">
-                        <input type="text" class="form-control" placeholder="Verifier Signature">
-                    </td>
-                </tr>
+        <tr>
+            <td><b>Name :</b></td>
+
+            <!-- Tested By Name -->
+            <td colspan="3" contenteditable="true" data-name="TestedByName" class="editable-cell">
+                    @Model.TestedByName
+            </td>
+                @Html.HiddenFor(m => m.TestedByName, new { id = "TestedByName" })
+
+            <td><b>Name :</b></td>
+
+            <!-- Verified By Name -->
+            <td colspan="3" contenteditable="true" data-name="VerifiedByName" class="editable-cell">
+                    @Model.VerifiedByName
+            </td>
+                @Html.HiddenFor(m => m.VerifiedByName, new { id = "VerifiedByName" })
+        </tr>
+
+
+        <tr>
+            <td><b>Tested By Signature</b></td>
+         <td colspan="3">
+    @Html.TextBoxFor(m => m.TestedByFile, new { @type = "file", @class = "form-control", id = "TestedByFile", accept = "image/*" })
+
+                    @Html.HiddenFor(m => m.TestedBySignature, new { id = "TestedBySignature" })
+
+                <img id="TestedByPreview"
+                     style="width:250px;height:250px;display:none;margin-left:10px;margin-top:8px;border:1px solid #000;object-fit:contain;" />
+</td>
+
+            <td><b>Verified By Signature</b></td>
+            <td colspan="3">
+                    @Html.TextBoxFor(m => m.VerifiedByFile, new { @type = "file", @class = "form-control", id = "VerifiedByFile", accept = "image/*" })
+
+                    @Html.HiddenFor(m => m.VerifiedBySignature, new { id = "VerifiedBySignature" })
+
+                <img id="VerifiedByPreview"
+                     style="width:250px;height:250px;display:none;margin-left:10px;margin-top:8px;border:1px solid #000;object-fit:contain;" />
+            </td>
+        </tr>
+
             </table>
+
         </div>
     </div>
+
+    
+   
 </form>
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+
+
+    <script>
+
+        const basePath = "/ElectricProt_Att/";
+
+
+        $(document).on("blur", "td[contenteditable='true']", function () {
+            let inputId = $(this).data("name");
+            $("#" + inputId).val($(this).text().trim());
+        });
+
+        $(document).on("blur", "[data-name]", function () {
+            var field = $(this).data("name");
+            $("#" + field).val($(this).text());
+        });
+
+        function previewImage(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+
+            input.addEventListener("change", function (event) {
+                const file = event.target.files[0];
+                if (!file) {
+                    preview.style.display = "none";
+                    preview.src = "";
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                    preview.style.display = "inline-block";
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function loadExistingPreview(hiddenInputId, previewId) {
+            const value = document.getElementById(hiddenInputId)?.value;
+            const preview = document.getElementById(previewId);
+
+            if (value && value.trim() !== "") {
+                let imgPath = value;
+
+                // If DB has only "2/file.png", add folder path
+                if (!value.startsWith("/ElectricProt_Att")) {
+                    imgPath = basePath + value;
+                }
+
+                preview.src = imgPath;
+                preview.style.display = "inline-block";
+            } else {
+                preview.style.display = "none";
+            }
+        }
+
+        previewImage("TestedByFile", "TestedByPreview");
+        previewImage("VerifiedByFile", "VerifiedByPreview");
+
+        loadExistingPreview("TestedBySignature", "TestedByPreview");
+        loadExistingPreview("VerifiedBySignature", "VerifiedByPreview");
+
+        function insertElectricalProtection() {
+          
+            Blockloadershow();
+
+            const requiredFields = [
+                { id: "ProductCatRef", name: "Product Category Reference" },
+                { id: "ProductDescription", name: "Product Description" },
+                { id: "ReportNo", name: "Report No" },
+                { id: "LightSourceDetails", name: "Light Source Details" },
+                { id: "DriverDetailsQty", name: "Driver Details Qty" },
+                { id: "ReportDate", name: "Report Date" },
+                { id: "PCBDetailsQty", name: "PCB Details Qty" },
+                { id: "LEDCombinations", name: "LED Combinations" },
+                { id: "BatchCode", name: "Batch Code" },
+                { id: "SensorDetailsQty", name: "Sensor Details Qty" },
+                { id: "LampDetails", name: "Lamp Details" },
+                { id: "PKD", name: "PKD" }
+            ];
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const value = $("#" + field.id).val();
+                if (!value || value.trim() === "") {
+                    missingFields.push(field.name);
+                }
+            });
+
+            if (missingFields.length > 0) {
+                const listHTML = missingFields.map(f => `<li>${f}</li>`).join("");
+                showDangerAlert(`
+                    <p>Please fill out the following required field(s):</p>
+                    <ul>${listHTML}</ul>
+                `);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+      
+            const form = $('#electricalForm')[0];
+            const formData = new FormData(form);
+            formData.append("TestedBySignature", $("#TestedBySignature").val());
+            formData.append("VerifiedBySignature", $("#VerifiedBySignature").val());
+
+            $.ajax({
+                url: $('#electricalForm').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        var errorMsg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMsg += error + "\n";
+                            }
+                            if (errorMsg != "") {
+                                showDangerAlert(errorMsg);
+                            }
+                        } else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    } else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        } else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+
+                        setTimeout(function () {
+                            window.open('@Url.Action("Electricalprotection", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script>
+
+
+}
+
 
 <style>
+    .same-input {
+        /* background-color: #f5f7fa; */
+        border: none; /* remove all borders */
+        border-bottom: 2px solid #d0d7e6; /* show only bottom line */
+        border-radius: 0; /* remove rounding */
+        padding: 5px;
+        font-size: 13px;
+        color: #495057;
+        text-align: center;
+        border-radius: 6px;
+    }
+
+    .editable-cell {
+        border: 1px solid #ccc;
+        padding: 6px;
+        min-height: 34px;
+    }
+        .same-input:focus {
+            border-bottom: 2px solid #4a90e2; /* bottom border highlight */
+            box-shadow: none;
+            outline: none;
+        }
     .card {
         border-radius: 8px;
         border: 1px solid #ccc;
@@ -492,6 +1771,7 @@
         border: 1px solid #000 !important;
         text-align: left;
     }
+
 
     table.table-bordered b {
         font-weight: 600;

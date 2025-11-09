@@ -1,0 +1,600 @@
+﻿@{
+    ViewData["Title"] = "Ingress Protection (IP) Test Report";
+}
+
+<style>
+    /* keep consistent with Impact Test */
+    .underline-input {
+        border: 0;
+        border-bottom: 1.5px solid #666;
+        border-radius: 0;
+        background: transparent;
+        width: 50%;
+        font-size: 15px;
+        padding: 2px 6px;
+        outline: none;
+        box-shadow: none;
+        vertical-align: middle;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+        .underline-input:focus {
+            border-bottom: 1.5px solid #4682B4;
+        }
+    /* Unified dropdown styling — paste this after your existing CSS */
+    .form-control,
+    .result-dropdown {
+        display: inline-block;
+        vertical-align: middle;
+        width: 140px; /* adjust width if needed */
+        padding: 6px 26px 6px 10px; /* right padding leaves space for chevron */
+        font-size: 14px;
+        color: #000;
+        background-color: #fff;
+        border: none; /* no outer border */
+        border-bottom: 1.5px solid #cbd5e1; /* underline style */
+        border-radius: 6px; /* small corner to match inputs */
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 20 20' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.486 4.484-4.486L16 8.548l-6 6-6-6z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+        cursor: pointer;
+        transition: all 0.18s ease-in-out;
+    }
+
+        /* slightly smaller footprint for compact contexts (override inline width when needed) */
+        .form-control.pill {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            display: inline-block;
+            min-width: 180px; /* adjust as needed */
+            padding: 10px 36px 10px 12px; /* roomy vertical padding, space for chevron */
+            font-size: 16px;
+            line-height: 1.2;
+            color: #111;
+            background-color: #fff;
+            border-radius: 10px; /* rounded corners */
+            border: 1px solid #e6eef6; /* subtle light border */
+            box-shadow: 0 2px 0 rgba(0,0,0,0.03); /* tiny lift */
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 5 5-5' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+            transition: box-shadow .16s ease, border-color .16s ease, transform .08s;
+            cursor: pointer;
+            vertical-align: middle;
+        }
+
+            /* slightly smaller variant */
+            .form-control.pill.small {
+                min-width: 120px;
+                padding: 8px 34px 8px 10px;
+                font-size: 14px;
+                border-radius: 8px;
+            }
+
+            /* hover & focus */
+            .form-control.pill:hover {
+                border-color: #d6e8fb;
+            }
+
+            .form-control.pill:focus {
+                outline: none;
+                border-color: #4a90e2;
+                box-shadow: 0 6px 18px rgba(74,144,226,0.12);
+                transform: translateY(-1px);
+            }
+
+    /* remove IE/Edge native arrow */
+    select.form-control.pill::-ms-expand {
+        display: none;
+    }
+    /* Pill-style select (overrides existing .form-control) */
+    select.form-control {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        display: inline-block;
+        min-width: 160px; /* adjust width if you need narrower */
+        padding: 10px 40px 10px 12px; /* room for chevron on the right */
+        font-size: 15px;
+        line-height: 1.1;
+        color: #111;
+        background-color: #fff;
+        border-radius: 10px; /* rounded corners like the screenshot */
+        border: 1px solid #e6eef6; /* subtle light border */
+        box-shadow: 0 2px 0 rgba(0,0,0,0.03);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 5 5-5' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        background-size: 12px;
+        transition: box-shadow .16s ease, border-color .16s ease, transform .08s;
+        cursor: pointer;
+        vertical-align: middle;
+        margin-left: 10px; /* keep alignment with other inputs in table cells */
+        box-sizing: border-box;
+    }
+
+        /* slightly smaller option where needed */
+        select.form-control.small {
+            min-width: 120px;
+            padding: 8px 36px 8px 10px;
+            font-size: 14px;
+            border-radius: 8px;
+        }
+
+        /* hover & focus */
+        select.form-control:hover {
+            border-color: #d6e8fb;
+        }
+
+        select.form-control:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 6px 18px rgba(74,144,226,0.12);
+            transform: translateY(-1px);
+        }
+
+        /* hide native IE/Edge arrow */
+        select.form-control::-ms-expand {
+            display: none;
+        }
+
+    /* ensure inside tables it doesn't stretch rows awkwardly */
+    .table select.form-control {
+        margin-left: 10px;
+        height: auto;
+        line-height: 1.1;
+    }
+
+
+    /* ensure it doesn't stretch table rows awkwardly */
+    .table .form-control.pill {
+        box-sizing: border-box;
+        margin-left: 10px; /* keeps alignment with underline inputs */
+    }
+    /* ensure selects inside table cells don't stretch cell height */
+    .table .form-control,
+    .table .result-dropdown {
+        line-height: 1.4;
+        box-sizing: border-box;
+        margin-left: 10px; /* matches other inputs in your layout */
+    }
+
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background: #fff;
+    }
+
+    .header-title {
+        font-size: x-large;
+        color: #4682B4;
+        font-weight: 600;
+        text-align: center;
+        width: 100%;
+    }
+
+    .header-btn {
+        width: 120px;
+        font-size: 15px;
+        border-radius: 6px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .table th,
+    .table td {
+        border: 1.5px solid #000 !important;
+    }
+
+    .table {
+        border: 1.5px solid #000 !important;
+        border-collapse: collapse;
+    }
+
+
+        .header-btn:hover {
+            transform: scale(1.05);
+        }
+
+</style>
+
+<body>
+    <!-- Title Card (same format as Impact Test) -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px; padding-left:25px; padding-right:25px;">
+
+            <!-- LEFT: Bold Title -->
+            <div style="flex:1; text-align:left;">
+                <b style="font-size:x-large; color:#4682B4; font-weight:700;">
+                    Ingress Protection (IP) Test Report
+                </b>
+            </div>
+
+            <!-- RIGHT: Buttons -->
+            <div style="display:flex; gap:10px;">
+                <button id="addIPButton"
+                        type="button"
+                        class="btn btn-outline-success legitRipple"
+                        onclick="insertIPTest()"
+                        style="width:120px; font-size:15px; border-radius:6px;">
+                    <i class="fas fa-save mr-1"></i>Save
+                </button>
+
+                <a href='@Url.Action("IngressProtetction", "ProductValidation")'
+                   class="btn btn-outline-primary"
+                   style="width:120px; font-size:15px; border-radius:6px;">
+                    <i class="fas fa-arrow-left"></i> BACK
+                </a>
+            </div>
+        </div>
+    </div>
+    <!-- Card wrapper -->
+    <!-- Card wrapper -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1.5px solid #000;">
+        <div class="card-body" style="padding:16px 18px;">
+            <div class="table-responsive">
+                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px; border:1.5px solid #000;">
+                    <thead>
+                        <tr>
+                            <th colspan="4"
+                                style="white-space:nowrap; text-align:center; font-weight:700; padding:10px; border:1.5px solid #000; color:#000;">
+                                Resistance to Dust and Moisture: As per IS10322
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Row 1: Report No -->
+                        <tr>
+                            <td colspan="2" style="border:1.5px solid #000;"></td>
+                            <td colspan="2" style="vertical-align:top; padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:#000;">Report No :</span>
+                                <input type="text" class="underline-input" style="width:70%; margin-left:10px;" placeholder="Enter report number" />
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Customer + Date -->
+                        <tr>
+                            <td colspan="3" style="vertical-align:top; padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:#000;">Customer/Project Name :</span>
+                                <input type="text" class="underline-input" style="width:60%; margin-left:10px;" placeholder="Enter customer or project name" />
+                            </td>
+                            <td colspan="2" style="vertical-align:top; padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:#000;">Date :</span>
+                                <input type="text" class="underline-input" style="width:40%; margin-left:10px;" placeholder="dd-mm-yyyy" />
+                            </td>
+                        </tr>
+
+                        <!-- Row 3: Product details -->
+                        <tr>
+                            <td style="padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:#000;">Product Cat Ref :</span>
+                                <input type="text" class="underline-input" placeholder="Enter product reference"
+                                       style="width:180px; margin-left:10px; border:none; border-bottom:1.5px solid #000; background:transparent; outline:none; font-size:15px; color:#000;" />
+                            </td>
+                            <td style="padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:#000;">Product Description :</span>
+                                <input type="text" class="underline-input" placeholder="Enter description"
+                                       style="width:180px; margin-left:10px; border:none; border-bottom:1.5px solid #000; background:transparent; outline:none; font-size:15px; color:#000;" />
+                            </td>
+                            <td style="padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:#000;">Batch Code :</span>
+                                <input type="text" class="underline-input" style="width:60%; margin-left:10px;" placeholder="Batch" />
+                            </td>
+                            <td style="padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:#000;">Quantity :</span>
+                                <input type="text" class="underline-input" style="width:60%; margin-left:10px;" placeholder="Qty" />
+                            </td>
+                        </tr>
+
+                        <!-- Row 4: IP Rating + PKD -->
+                        <tr>
+                            <td colspan="3" style="padding:10px; border:1.5px solid #000;">
+                                <span style="font-weight:700; color:red;">IP Rating -</span>
+                                <select id="ipRating" class="form-control small">
+                                    <option value="">Select</option>
+                                    <option value="20">20</option>
+                                    <option value="40">40</option>
+                                    <option value="44">44</option>
+                                    <option value="54">54</option>
+                                    <option value="65">65</option>
+                                    <option value="66">66</option>
+                                    <option value="67">67</option>
+                                    <option value="68">68</option>
+                                </select>
+                            </td>
+                            <td style="padding:10px; border:1.5px solid #000;">
+                                <b style="font-weight:700; color:#000;">PKD -</b>
+                                <input type="text" class="underline-input" style="width:70%; margin-left:8px;" placeholder="Enter PKD" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- IP Test Table -->
+            <div class="table-responsive" style="margin-top:0px;">
+                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px; border:1.5px solid #000; text-align:center;">
+                    <thead>
+                        <tr>
+                            <th rowspan="2" style="width:5%; vertical-align:middle; font-weight:700; border:1.5px solid #000;">Sr. No.</th>
+                            <th rowspan="2" style="width:20%; vertical-align:middle; font-weight:700; border:1.5px solid #000;">Description</th>
+                            <th colspan="2" style="width:40%; vertical-align:middle; font-weight:700; border:1.5px solid #000;">Test Photos</th>
+                            <th rowspan="2" style="width:20%; vertical-align:middle; font-weight:700; border:1.5px solid #000;">Observation</th>
+                            <th rowspan="2" style="width:10%; vertical-align:middle; font-weight:700; border:1.5px solid #000; color:red;">Result (Pass / Fail / N/A)</th>
+                        </tr>
+                        <tr>
+                            <th style="width:20%; border:1.5px solid #000;">Photo During Testing</th>
+                            <th style="width:20%; border:1.5px solid #000;">Photo After Testing</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Row A -->
+                        <tr>
+                            <td style="border:1.5px solid #000;">A</td>
+                            <td style="border:1.5px solid #000;">IP for first digit</td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoBeforeInputA" accept="image/*" style="display:none">
+                                <div id="photoBeforeContainerA"
+                                     onclick="document.getElementById('photoBeforeInputA').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewBeforeA" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderBeforeA" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(During testing)</span></div>
+                                </div>
+                            </td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoAfterInputA" accept="image/*" style="display:none">
+                                <div id="photoAfterContainerA"
+                                     onclick="document.getElementById('photoAfterInputA').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewAfterA" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderAfterA" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(After testing)</span></div>
+                                </div>
+                            </td>
+                            <td contenteditable="true" style="border:1.5px solid #000; text-align:left;"></td>
+                            <td style="border:1.5px solid #000;">
+                                <select id="ipTestResultA" class="form-control small" style="width:95%;">
+                                    <option value="">Select</option>
+                                    <option>Pass</option>
+                                    <option>Fail</option>
+                                    <option>Not Applicable</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- Row B -->
+                        <tr>
+                            <td style="border:1.5px solid #000;">B</td>
+                            <td style="border:1.5px solid #000;">IP for second digit</td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoBeforeInputB" accept="image/*" style="display:none">
+                                <div id="photoBeforeContainerB"
+                                     onclick="document.getElementById('photoBeforeInputB').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewBeforeB" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderBeforeB" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(During testing)</span></div>
+                                </div>
+                            </td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoAfterInputB" accept="image/*" style="display:none">
+                                <div id="photoAfterContainerB"
+                                     onclick="document.getElementById('photoAfterInputB').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewAfterB" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderAfterB" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(After testing)</span></div>
+                                </div>
+                            </td>
+                            <td contenteditable="true" style="border:1.5px solid #000; text-align:left;"></td>
+                            <td style="border:1.5px solid #000;">
+                                <select id="ipTestResultB" class="form-control small" style="width:95%;">
+                                    <option value="">Select</option>
+                                    <option>Pass</option>
+                                    <option>Fail</option>
+                                    <option>Not Applicable</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- Row C (Glow Test) -->
+                        <tr>
+                            <td style="border:1.5px solid #000;">C</td>
+                            <td style="border:1.5px solid #000;">Glow Test</td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoBeforeInputC" accept="image/*" style="display:none">
+                                <div id="photoBeforeContainerC"
+                                     onclick="document.getElementById('photoBeforeInputC').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewBeforeC" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderBeforeC" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(During testing)</span></div>
+                                </div>
+                            </td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoAfterInputC" accept="image/*" style="display:none">
+                                <div id="photoAfterContainerC"
+                                     onclick="document.getElementById('photoAfterInputC').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewAfterC" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderAfterC" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(After testing)</span></div>
+                                </div>
+                            </td>
+                            <td contenteditable="true" style="border:1.5px solid #000; text-align:left;"></td>
+                            <td style="border:1.5px solid #000;">
+                                <select id="ipTestResultC" class="form-control small" style="width:95%;">
+                                    <option value="">Select</option>
+                                    <option>Pass</option>
+                                    <option>Fail</option>
+                                    <option>Not Applicable</option>
+                                </select>
+                            </td>
+                        </tr>
+
+                        <!-- Row D (HV & IR) -->
+                        <tr>
+                            <td style="border:1.5px solid #000;">D</td>
+                            <td style="border:1.5px solid #000;">HV &amp; IR</td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoBeforeInputD" accept="image/*" style="display:none">
+                                <div id="photoBeforeContainerD"
+                                     onclick="document.getElementById('photoBeforeInputD').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewBeforeD" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderBeforeD" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(During testing)</span></div>
+                                </div>
+                            </td>
+                            <td style="border:1.5px solid #000; height:180px;">
+                                <input type="file" id="photoAfterInputD" accept="image/*" style="display:none">
+                                <div id="photoAfterContainerD"
+                                     onclick="document.getElementById('photoAfterInputD').click()"
+                                     style="height:160px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; flex-direction:column; cursor:pointer; background:#fafafa;">
+                                    <img id="previewAfterD" style="max-width:100%; max-height:100%; display:none; object-fit:contain;">
+                                    <div id="placeholderAfterD" style="text-align:center; color:#666;">Click to upload<br><span style="color:#999;">(After testing)</span></div>
+                                </div>
+                            </td>
+                            <td contenteditable="true" style="border:1.5px solid #000; text-align:left;"></td>
+                            <td style="border:1.5px solid #000;">
+                                <select id="ipTestResultD" class="form-control small" style="width:95%;">
+                                    <option value="">Select</option>
+                                    <option>Pass</option>
+                                    <option>Fail</option>
+                                    <option>Not Applicable</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="6" style="border:1.5px solid #000; text-align:left; padding:12px;">
+                                <span style="font-weight:700; color:red;">Test Result -</span>
+                                <select id="finalTestResult" class="form-control small" style="display:inline-block; width:180px; margin-left:10px;">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                    <option value="NotApplicable">Not Applicable</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <!-- Final Row: Tested By & Verified By (Aligned Left, Equal Width) -->
+                        <tr>
+                            <!-- Tested By -->
+                            <td colspan="3" style="border:1.5px solid #000; padding:12px; text-align:left; width:50%;">
+                                <span style="font-weight:700; color:#000;">Tested By :</span>
+                                <input type="text"
+                                       class="underline-input"
+                                       placeholder="Enter name"
+                                       style="width:65%; margin-left:10px; border:none; border-bottom:1.5px solid #000; background:transparent; outline:none; font-size:15px; color:#000;" />
+                            </td>
+
+                            <!-- Verified By -->
+                            <td colspan="3" style="border:1.5px solid #000; padding:12px; text-align:left; width:50%;">
+                                <span style="font-weight:700; color:#000;">Verified By :</span>
+                                <input type="text"
+                                       class="underline-input"
+                                       placeholder="Enter name"
+                                       style="width:65%; margin-left:10px; border:none; border-bottom:1.5px solid #000; background:transparent; outline:none; font-size:15px; color:#000;" />
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <script>
+                function setupPhotoUpload(inputId, previewId, placeholderId, containerId) {
+                    const input = document.getElementById(inputId);
+                    const preview = document.getElementById(previewId);
+                    const placeholder = document.getElementById(placeholderId);
+                    const container = document.getElementById(containerId);
+                    if (!input) return;
+
+                    input.addEventListener("change", e => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+                        const reader = new FileReader();
+                        reader.onload = ev => {
+                            preview.src = ev.target.result;
+                            preview.style.display = "block";
+                            placeholder.style.display = "none";
+                        };
+                        reader.readAsDataURL(file);
+                    });
+                }
+                ["A", "B", "C", "D"].forEach(id => {
+                    setupPhotoUpload(`photoBeforeInput${id}`, `previewBefore${id}`, `placeholderBefore${id}`, `photoBeforeContainer${id}`);
+                    setupPhotoUpload(`photoAfterInput${id}`, `previewAfter${id}`, `placeholderAfter${id}`, `photoAfterContainer${id}`);
+                });
+            </script>
+
+
+            <script>
+                function setupPhotoUpload(inputId, previewId, placeholderId, containerId) {
+                    const input = document.getElementById(inputId);
+                    const preview = document.getElementById(previewId);
+                    const placeholder = document.getElementById(placeholderId);
+                    const container = document.getElementById(containerId);
+
+                    input.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+
+                        const maxBytes = 5 * 1024 * 1024;
+                        if (file.size > maxBytes) {
+                            alert('File is too large (max 5 MB)');
+                            input.value = '';
+                            return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function (ev) {
+                            preview.src = ev.target.result;
+                            preview.style.display = 'block';
+                            placeholder.style.display = 'none';
+                        };
+                        reader.readAsDataURL(file);
+                    });
+
+                    // Drag & Drop
+                    container.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        container.style.borderColor = '#4a90e2';
+                        container.style.background = '#eef6ff';
+                    });
+                    container.addEventListener('dragleave', (e) => {
+                        e.preventDefault();
+                        container.style.borderColor = '#ccc';
+                        container.style.background = '#fafafa';
+                    });
+                    container.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        container.style.borderColor = '#ccc';
+                        container.style.background = '#fafafa';
+                        const file = e.dataTransfer.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = function (ev) {
+                                preview.src = ev.target.result;
+                                preview.style.display = 'block';
+                                placeholder.style.display = 'none';
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+
+                setupPhotoUpload('photoBeforeInput', 'previewBefore', 'placeholderBefore', 'photoBeforeContainer');
+                setupPhotoUpload('photoAfterInput', 'previewAfter', 'placeholderAfter', 'photoAfterContainer');
+            </script>
+
+
+
+
+
+
+
+
+</body>
+
+@section HideSidebar { }

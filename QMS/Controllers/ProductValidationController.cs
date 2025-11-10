@@ -19,16 +19,16 @@ public class ProductValidationController : Controller
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly IElectricalProtectionRepository _electricalProtectionRepository;
 
-
-
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
         IElectricalProtectionRepository electricalProtectionRepository,
-        IWebHostEnvironment hostEnvironment)
+        IWebHostEnvironment hostEnvironment,
+        IElectricalProtectionRepository electricalProtectionRepository1)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalProtectionRepository = electricalProtectionRepository;
         _hostEnvironment = hostEnvironment;
+        _electricalProtectionRepository = electricalProtectionRepository;
     }
 
 
@@ -44,17 +44,16 @@ public class ProductValidationController : Controller
         return View();
     }
 
-    //public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
-    //{
-    //    return View();
-    //}
+    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
+    {
+        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsAsync();
+        return Json(result);
+    }
+
     public IActionResult Electricalprotection()
     {
         return View();
     }
-
-
-
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
     {
         var model = new PhysicalCheckAndVisualInspectionViewModel();
@@ -90,11 +89,22 @@ public class ProductValidationController : Controller
         return View();
     }
 
-    public IActionResult ElectricalPerformanceDetails(int Id)
+    public async Task<IActionResult> ElectricalPerformanceDetails(int Id)
     {
-        return View();
-    }
+        var model = new ElectricalPerformanceViewModel();
 
+        if (Id > 0)
+        {
+            model = await _electricalPerformanceRepository.GetElectricalPerformancesByIdAsync(Id);
+
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+
+        return View(model);
+    }
 
     public IActionResult RippleTestReport()
     {
@@ -104,12 +114,6 @@ public class ProductValidationController : Controller
     public IActionResult Rippletestreportdetails(int Id)
     {
         return View();
-    }
-
-    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
-    {
-        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsAsync();
-        return Json(result);
     }
 
     public async Task<ActionResult> InsertUpdatePhysicalCheckAndVisualInspectionDetailsAsync(PhysicalCheckAndVisualInspectionViewModel model)

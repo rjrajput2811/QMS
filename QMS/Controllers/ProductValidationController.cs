@@ -1187,6 +1187,19 @@ public class ProductValidationController : Controller
 
 
     #endregion
+    #region Regulatory
+    public IActionResult RegulatoryRequirements()
+    {
+
+        return View();
+    }
+    public IActionResult RegulatoryRequirementsDetails()
+    {
+        return View();
+    }
+
+
+#endregion
 
 
 

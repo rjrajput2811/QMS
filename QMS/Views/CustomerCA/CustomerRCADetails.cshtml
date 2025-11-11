@@ -1,0 +1,209 @@
+﻿@{
+    ViewData["Title"] = "Customer RCA";
+}
+
+<!-- Font Awesome (for icons) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- ✅ Header Card -->
+<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+    <div class="card-body d-flex justify-between align-center" style="padding:18px;">
+        <!-- Left: Page Title -->
+        <div style="flex:1; text-align:left;">
+            <span class="header-title" style="font-size:x-large; color:#4682B4; font-weight:700;">
+                Customer RCA
+            </span>
+        </div>
+
+        <!-- Right: Buttons -->
+        <div style="display:flex; gap:10px;">
+            <!-- Save Button -->
+            <button id="saveBtn" class="btn btn-outline-success"
+                    style="width:120px; font-size:15px; border-radius:6px;">
+                <i class="fas fa-save" aria-hidden="true"></i> Save
+            </button>
+
+            <!-- Back Button -->
+            <a href="@Url.Action("CAFormatee","CAFormate")"
+               class="btn btn-outline-primary"
+               style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
+            </a>
+        </div>
+    </div>
+</div>
+<!-- Complaint No, Date, and Category Card -->
+<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+    <div class="card-body" style="padding:16px;">
+
+        <!-- Complaint No & Date -->
+        <div class="table-responsive" style="margin-bottom:0;">
+            <table class="table table-bordered"
+                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-bottom:0;">
+                <thead>
+                    <tr style="background-color:#ffffff;">
+                        <!-- Complaint No -->
+                        <th colspan="2"
+                            style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                            Complaint No:
+                            <input type="text"
+                                   placeholder="Enter Complaint No"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
+                        </th>
+
+                        <!-- Date -->
+                        <th colspan="2"
+                            style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                            Date:
+                            <input type="date"
+                                   id="complaintDate"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;">
+                        </th>
+                    </tr>
+                </thead>
+
+                <!-- Checkboxes -->
+                <tbody>
+                    <tr>
+                        <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
+                            <label style="font-weight:600;">
+                                <input type="checkbox" style="margin-right:6px;" />
+                                Customer Complaints
+                            </label>
+                        </td>
+                        <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
+                            <label style="font-weight:600;">
+                                <input type="checkbox" style="margin-right:6px;" />
+                                NPI Validations
+                            </label>
+                        </td>
+                        <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
+                            <label style="font-weight:600;">
+                                <input type="checkbox" style="margin-right:6px;" />
+                                PDI Observations
+                            </label>
+                        </td>
+                        <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
+                            <label style="font-weight:600;">
+                                <input type="checkbox" style="margin-right:6px;" />
+                                System / Process Improvements
+                            </label>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Customer Details -->
+        <div class="table-responsive" style="margin-top:0;">
+            <table class="table table-bordered"
+                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
+                <tbody>
+                    <!-- Customer Name -->
+                    <tr>
+                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                            Customer Name and Location:
+                            <input type="text"
+                                   placeholder="Enter customer name and location"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:8px;">
+                        </td>
+                    </tr>
+
+                    <!-- Source -->
+                    <tr>
+                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                            Source of Complaint:
+                            <input type="text"
+                                   placeholder="Enter source of complaint"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:8px;">
+                        </td>
+                    </tr>
+
+                    <!-- Product -->
+                    <tr>
+                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                            Product Code and Description:
+                            <input type="text"
+                                   placeholder="Enter product code and description"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:8px;">
+                        </td>
+                    </tr>
+
+                    <!-- Description of Complaint -->
+                    <tr>
+                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                            Description of Complaint:
+                            <input type="text"
+                                   placeholder="Enter complaint description"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:8px;">
+                        </td>
+                    </tr>
+
+                    <!-- Batch Code + PKD -->
+                    <tr>
+                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                            Batch Code:
+                            <input type="text"
+                                   placeholder="Enter batch code"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
+                        </td>
+                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                            PKD:
+                            <input type="text"
+                                   placeholder="Enter PKD"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
+                        </td>
+                    </tr>
+
+                    <!-- Supplied + Failure Qty -->
+                    <tr>
+                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                            Supplied Qty:
+                            <input type="text"
+                                   placeholder="Enter supplied quantity"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
+                        </td>
+                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                            Failure Qty:
+                            <input type="text"
+                                   placeholder="Enter failure quantity"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
+                        </td>
+                    </tr>
+
+                    <!-- % Failure + Age -->
+                    <tr>
+                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                            % Failure:
+                            <input type="text"
+                                   placeholder="Enter failure percentage"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
+                        </td>
+                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                            Age of Installation:
+                            <input type="text"
+                                   placeholder="Enter age of installation"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
+                        </td>
+                    </tr>
+
+                    <!-- Description -->
+                    <tr>
+                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                            Description:
+                            <input type="text"
+                                   placeholder="Enter description"
+                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:85%; margin-left:8px;">
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+<!-- Optional Script: Auto Date -->
+
+
+@section HideSidebar { }

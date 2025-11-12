@@ -529,12 +529,12 @@
             function addRow() {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                        <td class="sr-cell"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                                 <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align:center;"></td
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                    `;
+                <td class="sr-cell"></td>
+                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
+                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+            `;
                 tableBody.appendChild(tr);
                 bindTestReqCell(tr.querySelector('.test-req-cell'));
                 renumberRows();

@@ -423,21 +423,11 @@
                                 <td colspan="5" style="border:1.5px solid #000; padding:10px 16px; font-weight:600;">
                                     <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
 
-                                        <!-- Created / Prepared By -->
-                                        <div style="flex:1; text-align:left;">
-                                            Prepared By:
-                                            <input type="text"
-                                                   name="CreatedBy"
-                                                   value="@Model.CreatedBy"
-                                                   placeholder="Enter name"
-                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:200px; height:20px; margin-left:8px; font-size:14px; padding:2px 4px;" />
-                                        </div>
-
-                                        <!-- Tested By -->
+                                        
                                         <div style="flex:1; text-align:right;">
-                                            Tested By:
+                                            Prepared & Tested By:
                                             <input type="text"
-                                                   name="TestedBy"
+                                                   name="Prepared & TestedBy"
                                                    value="@Model.TestedBy"
                                                    placeholder="Enter name"
                                                    style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:200px; height:20px; margin-left:8px; font-size:14px; padding:2px 4px;" />
@@ -542,7 +532,7 @@
                         <td class="sr-cell"></td>
                         <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
                         <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                        <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
+                                 <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align:center;"></td
                         <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
                     `;
                 tableBody.appendChild(tr);

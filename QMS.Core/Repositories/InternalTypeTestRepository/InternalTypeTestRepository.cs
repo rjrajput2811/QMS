@@ -54,18 +54,18 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                     new SqlParameter("@TestedBy", SqlDbType.NVarChar, 500) { Value = model.TestedBy ?? (object)DBNull.Value },
                     new SqlParameter("@CreatedBy", SqlDbType.NVarChar, 500) { Value = model.CreatedBy ?? (object)DBNull.Value },
 
-                    // TVP parameter
-                    //new SqlParameter("@Details", SqlDbType.Structured)
-                    //{
-                    //    TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
-                    //    Value = detailsTvp
-                    //}
+                   // TVP parameter
+                   new SqlParameter("@Details", SqlDbType.Structured)
+                   {
+                       TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
+                       Value = detailsTvp
+                    }
                 };
 
                 // Execute stored procedure
                 var sql = "EXEC sp_Insert_InternalTypeTest " +
                           "@Report_No, @Date, @Cust_Name, @Samp_Identi_Lab, @Samp_Desc, " +
-                          "@Prod_Cat_Code, @Input_Voltage, @Ref_Standard, @TestedBy, @CreatedBy";
+                          "@Prod_Cat_Code, @Input_Voltage, @Ref_Standard, @TestedBy, @CreatedBy, @Details";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 

@@ -380,16 +380,36 @@
 
                         <tbody id="testTableBody">
                             <!-- initial single row - more rows will be added by script -->
-                            <tr style="height:120px;">
+                        @*     <tr style="height:120px;">
                                 <td class="sr-cell">
                                     1
                                     <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
                                 </td>
-                                <td contenteditable="true" style="vertical-align:top;"></td>
-                                <td contenteditable="true" style="vertical-align:top;"></td>
-                                <td class="test-req-cell" contenteditable="true"></td>
-                                <td contenteditable="true" style="vertical-align:top;"></td>
-                            </tr>
+
+                                <!-- Particular Of Test -->
+                                <td contenteditable="true" style="vertical-align:top;"
+                                    data-name="Perticular_Test">
+                                    @Model.Details?.FirstOrDefault()?.Perticular_Test
+                                </td>
+
+                                <!-- Test Method -->
+                                <td contenteditable="true" style="vertical-align:top;"
+                                    data-name="Test_Method">
+                                    @Model.Details?.FirstOrDefault()?.Test_Method
+                                </td>
+
+                                <!-- Test Requirement -->
+                                <td class="test-req-cell" contenteditable="true"
+                                    data-name="Test_Requirement">
+                                    @Html.Raw(Model.Details?.FirstOrDefault()?.Test_Requirement)
+                                </td>
+
+                                <!-- Test Result -->
+                                <td contenteditable="true" style="vertical-align:top;"
+                                    data-name="Test_Result">
+                                    @Model.Details?.FirstOrDefault()?.Test_Result
+                                </td>
+                            </tr> *@
                         </tbody>
 
                         <tfoot>
@@ -399,7 +419,7 @@
 
                                         <!-- Created / Prepared By -->
                                         <div style="flex:1; text-align:left;">
-                                            Created / Prepared By:
+                                            Prepared By:
                                             <input type="text"
                                                    name="CreatedBy"
                                                    value="@Model.CreatedBy"
@@ -429,7 +449,6 @@
     </form> <!-- END form -->
 
     <script>
-        // ================= existing table editing code (unchanged) =================
         document.addEventListener('DOMContentLoaded', () => {
             const toolbar = document.getElementById('testReqToolbar');
             const addBtn = document.getElementById('addRowBtn');
@@ -437,29 +456,21 @@
             let currentCell = null;
             let savedRange = null;
 
-            // Prevent toolbar buttons from stealing selection on mousedown
-            toolbar.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('mousedown', (ev) => {
-                    ev.preventDefault();
+            // tolerate if toolbar missing
+            if (toolbar) {
+                toolbar.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('mousedown', (ev) => ev.preventDefault());
                 });
-            });
+            }
 
-            // Utility: bind behaviour to a single test-req cell
             function bindTestReqCell(cell) {
                 if (!cell) return;
                 cell.setAttribute('tabindex', '0');
-
-                // If user presses mouse down inside cell we want it to become active immediately
                 cell.addEventListener('mousedown', () => { currentCell = cell; });
-
                 cell.addEventListener('focus', () => currentCell = cell);
                 cell.addEventListener('click', () => currentCell = cell);
-
-                // Save selection when user selects inside the cell
                 cell.addEventListener('mouseup', saveSelection);
                 cell.addEventListener('keyup', saveSelection);
-
-                // Handle Enter for new lines
                 cell.addEventListener('keydown', e => {
                     if (e.key === 'Enter') {
                         document.execCommand('insertHTML', false, '<br><br>');
@@ -468,131 +479,101 @@
                 });
             }
 
-            // Bind existing test-req cells
             document.querySelectorAll('.test-req-cell').forEach(bindTestReqCell);
 
-            // Also update savedRange whenever the browser selection changes (covers drag selections)
             document.addEventListener('selectionchange', () => {
                 try { saveSelection(); } catch (err) { /* ignore */ }
             });
 
-            // Keep currentCell to null when clicking outside
             document.addEventListener('click', (e) => {
                 if (!e.target.closest('.test-req-cell') && !e.target.closest('#testReqToolbar')) {
                     currentCell = null;
                 }
             });
 
-            // Save the user's current selection inside the active cell
             function saveSelection() {
                 const sel = window.getSelection();
                 if (!sel || sel.rangeCount === 0) return;
                 const range = sel.getRangeAt(0);
-
-                // walk up from text nodes
                 let container = range.commonAncestorContainer;
                 if (container.nodeType === 3) container = container.parentNode;
-
-                // if currentCell is not set but selection is inside a .test-req-cell, set it
                 if (!currentCell) {
                     const maybeCell = container && container.closest && container.closest('.test-req-cell');
                     if (maybeCell) currentCell = maybeCell;
                 }
-
                 if (currentCell && currentCell.contains(range.commonAncestorContainer)) {
                     savedRange = range.cloneRange();
                 }
             }
 
-            // Restore saved selection so execCommand applies correctly
             function restoreSelection() {
                 const sel = window.getSelection();
                 sel.removeAllRanges();
-                if (savedRange) {
-                    sel.addRange(savedRange);
-                }
+                if (savedRange) sel.addRange(savedRange);
             }
 
-            // Format buttons (bold / italic / underline / justifyLeft/Center/Right)
-            toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (!currentCell) return;
-                    // restore selection before applying
-                    restoreSelection();
-                    const cmd = btn.getAttribute('data-cmd');
-                    document.execCommand(cmd, false, null);
-                    // update savedRange after command
-                    saveSelection();
-                    // keep focus in the cell
-                    currentCell.focus();
+            if (toolbar) {
+                toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (!currentCell) return;
+                        restoreSelection();
+                        const cmd = btn.getAttribute('data-cmd');
+                        document.execCommand(cmd, false, null);
+                        saveSelection();
+                        currentCell.focus();
+                    });
                 });
-            });
+            }
 
             // Add row
-            addBtn.addEventListener('click', () => {
-                addRow();
-            });
+            if (addBtn) {
+                addBtn.addEventListener('click', addRow);
+            }
 
-            // Add Row helper
             function addRow() {
                 const tr = document.createElement('tr');
-
                 tr.innerHTML = `
-                        <td class="sr-cell"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                        <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                    `;
+                    <td class="sr-cell"></td>
+                    <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                    <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                    <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
+                    <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                `;
                 tableBody.appendChild(tr);
-
-                // bind the new test-req cell
-                const newTestReq = tr.querySelector('.test-req-cell');
-                bindTestReqCell(newTestReq);
-
+                bindTestReqCell(tr.querySelector('.test-req-cell'));
                 renumberRows();
             }
 
-            // Delete row via event delegation (trash buttons)
             tableBody.addEventListener('click', (e) => {
                 const btn = e.target.closest('.row-del-btn');
                 if (btn) {
                     const row = btn.closest('tr');
                     if (!row) return;
-                    // prevent deleting if only one row left? (optional)
-                    // if (tableBody.rows.length === 1) return;
                     row.remove();
                     renumberRows();
                 }
             });
 
-            // create delete button HTML for SR cell
             function createDeleteButton() {
                 const btn = document.createElement('button');
                 btn.className = 'row-del-btn';
                 btn.title = 'Delete row';
                 btn.innerHTML = '<i class="fa fa-trash"></i>';
-                // mousedown prevention to keep selection intact in toolbar logic
                 btn.addEventListener('mousedown', ev => ev.preventDefault());
                 return btn;
             }
 
-            // Renumber SR column and add delete button
             function renumberRows() {
                 const rows = Array.from(tableBody.querySelectorAll('tr'));
                 rows.forEach((row, index) => {
                     const srCell = row.querySelector('.sr-cell');
                     if (srCell) {
-                        // clear then insert number + delete button
                         srCell.innerHTML = '';
                         const numText = document.createElement('span');
                         numText.textContent = (index + 1);
                         srCell.appendChild(numText);
-
-                        const delBtn = createDeleteButton();
-                        srCell.appendChild(delBtn);
+                        srCell.appendChild(createDeleteButton());
                     } else {
-                        // in case older rows didn't have sr-cell class: try first cell
                         const firstCell = row.cells[0];
                         if (firstCell) {
                             firstCell.innerHTML = '';
@@ -606,23 +587,20 @@
                 });
             }
 
-            // init numbering on existing rows
             renumberRows();
-        });
+        }); // end DOMContentLoaded
 
         // ================= NEW: Save function for AJAX FormData submit =================
         async function saveLuminaireTypeTest() {
             const saveBtn = document.getElementById('saveBtn');
             if (!saveBtn) return;
 
-            // Quick client-side validation
             const reportNo = document.querySelector('[name="Report_No"]')?.value?.trim();
             if (!reportNo) {
                 showDangerAlert('Please enter Report No.');
                 return;
             }
 
-            // UI: disable + spinner + global blocker
             const origHTML = saveBtn.innerHTML;
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin spinner-inline"></i> Saving...';
@@ -634,28 +612,37 @@
 
                 const formData = new FormData(form);
 
-                // Build Details array from table rows (#testTableBody)
+                // Collect rows into details array FIRST
                 const details = [];
                 const rows = Array.from(document.querySelectorAll('#testTableBody tr'));
                 rows.forEach((row, idx) => {
                     const cells = row.querySelectorAll('td');
-                    // expected: [sr-cell, particular, method, requirement, result]
                     if (!cells || cells.length < 5) return;
 
                     details.push({
                         SeqNo: idx + 1,
                         Perticular_Test: (cells[1].innerText || '').trim(),
                         Test_Method: (cells[2].innerText || '').trim(),
-                        // preserve HTML markup for rich content; change to innerText if you want plain text
-                        Test_Requirement: (cells[3].innerHTML || '').trim(),
-                        Test_Result: (cells[4].innerText || '').trim()
+                        Test_Requirement: (cells[3].innerHTML || '').trim(), // keep formatting
+                        Test_Result: (cells[4].innerText || '').trim(),
+                        IsDeleted: false
                     });
                 });
 
-                // Append details as JSON (controller must read DetailsJson)
+                // Append each field as Details[i].Property so default model binder can bind collection
+                details.forEach((d, i) => {
+                    formData.append(`Details[${i}].SeqNo`, d.SeqNo != null ? d.SeqNo.toString() : '');
+                    formData.append(`Details[${i}].Perticular_Test`, d.Perticular_Test || '');
+                    formData.append(`Details[${i}].Test_Method`, d.Test_Method || '');
+                    formData.append(`Details[${i}].Test_Requirement`, d.Test_Requirement || '');
+                    formData.append(`Details[${i}].Test_Result`, d.Test_Result || '');
+                    formData.append(`Details[${i}].IsDeleted`, d.IsDeleted ? 'true' : 'false');
+                });
+
+                // Also include JSON backup (controller can read and deserialize if you prefer)
                 formData.set('DetailsJson', JSON.stringify(details));
 
-                // Send (antiforgery token already included by @Html.AntiForgeryToken() in form)
+                // send
                 const response = await fetch(form.action, {
                     method: 'POST',
                     body: formData,
@@ -663,59 +650,37 @@
                 });
 
                 const raw = await response.text();
-                console.log('Server raw response:', raw);
-                console.log('HTTP status:', response.status);
-
-                // attempt to parse JSON
                 let payload = null;
                 try { payload = raw && raw.length ? JSON.parse(raw) : null; } catch (e) { payload = null; }
 
-                // HTTP error handling
                 if (!response.ok) {
                     if (payload) {
-                        // check common shapes
-                        if (Array.isArray(payload.errors) && payload.errors.length) {
-                            showDangerAlert(payload.errors.join('<br/>'));
-                        } else if (Array.isArray(payload.Errors) && payload.Errors.length) {
-                            showDangerAlert(payload.Errors.join('<br/>'));
-                        } else if (payload.Message || payload.message) {
-                            showDangerAlert(payload.Message || payload.message);
-                        } else {
-                            showDangerAlert('Server returned error: HTTP ' + response.status);
-                        }
+                        if (Array.isArray(payload.errors) && payload.errors.length) showDangerAlert(payload.errors.join('<br/>'));
+                        else if (Array.isArray(payload.Errors) && payload.Errors.length) showDangerAlert(payload.Errors.join('<br/>'));
+                        else if (payload.Message || payload.message) showDangerAlert(payload.Message || payload.message);
+                        else showDangerAlert('Server returned error: HTTP ' + response.status);
                     } else {
-                        // no JSON payload
                         showDangerAlert('Server error: HTTP ' + response.status + ' — ' + raw);
                     }
                     return;
                 }
 
-                // Success (HTTP 200/201) — interpret JSON payload
                 const json = payload || {};
-
                 if (json && (json.Success === true || json.success === true)) {
                     showSuccessAlert(json.Message || 'Saved successfully.');
-                    // optional redirect if controller returned RedirectUrl
-                    if (json.RedirectUrl) {
-                        setTimeout(() => window.location.href = json.RedirectUrl, 800);
-                    }
+                    if (json.RedirectUrl) setTimeout(() => window.location.href = json.RedirectUrl, 800);
                     return;
                 }
 
-                // If server responded 200 but indicates failure or returned validation errors
                 if (json) {
-                    if (Array.isArray(json.errors) && json.errors.length) {
-                        showDangerAlert(json.errors.join('<br/>'));
-                    } else if (Array.isArray(json.Errors) && json.Errors.length) {
-                        showDangerAlert(json.Errors.join('<br/>'));
-                    } else if (json.Message || json.message) {
-                        showDangerAlert(json.Message || json.message);
-                    } else {
-                        console.error('Unexpected successful HTTP response but payload indicates failure:', json);
+                    if (Array.isArray(json.errors) && json.errors.length) showDangerAlert(json.errors.join('<br/>'));
+                    else if (Array.isArray(json.Errors) && json.Errors.length) showDangerAlert(json.Errors.join('<br/>'));
+                    else if (json.Message || json.message) showDangerAlert(json.Message || json.message);
+                    else {
+                        console.error('Unexpected server response:', json);
                         showDangerAlert('Save failed — see console for details.');
                     }
                 } else {
-                    // unparseable/empty response
                     showDangerAlert('Unexpected server response. See console for details.');
                     console.log('Raw response:', raw);
                 }
@@ -724,8 +689,10 @@
                 showDangerAlert('Error saving data: ' + (err && err.message ? err.message : err));
             } finally {
                 Blockloaderhide();
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = origHTML;
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHTML;
+                }
             }
         }
     </script>

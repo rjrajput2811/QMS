@@ -34,6 +34,8 @@ using QMS.Core.Repositories.CSATCommentRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepository;
+using QMS.Core.Repositories.InternalTypeTestRepo;
+using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -80,6 +82,8 @@ builder.Services.AddTransient<ICSATCommentRepository, CSATCommentRepository>();
 builder.Services.AddTransient<IPhysicalCheckAndVisualInspectionRepository, PhysicalCheckAndVisualInspectionRepository>();
 builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 builder.Services.AddScoped<IElectricalProtectionRepository, ElectricalProtectionRepository>();
+builder.Services.AddScoped<IInternalTypeTestRepository, InternalTypeTestRepository>();
+
 
 //
 

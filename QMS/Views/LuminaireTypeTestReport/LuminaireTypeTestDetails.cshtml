@@ -1,0 +1,560 @@
+﻿@{
+    ViewData["Title"] = "Luminaire Type Test Report";
+}
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <style>
+        /* ==========================
+                   Global / Re-used styles
+                   ========================== */
+        .card {
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+            margin-bottom: 16px;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .align-center {
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: x-large;
+            color: #4682B4;
+            font-weight: 700;
+        }
+
+        .btn-outline-success, .btn-outline-primary {
+            transition: all 0.18s ease-in-out;
+        }
+
+            .btn-outline-success:hover, .btn-outline-primary:hover {
+                transform: scale(1.05);
+            }
+
+        /* toolbar style (keeps compact) */
+        .inline-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            width: max-content;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+        }
+
+        /* equal sized toolbar buttons */
+        #testReqToolbar .fmt-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f8f8;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+
+            #testReqToolbar .fmt-btn:hover {
+                background: #e6eef6;
+                border-color: #a5c0e6;
+            }
+
+            #testReqToolbar .fmt-btn i {
+                font-size: 16px;
+                color: #333;
+            }
+
+            #testReqToolbar .fmt-btn:active {
+                background: #d9e7f7;
+                border-color: #7da2d6;
+            }
+
+        /* table baseline */
+        .table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+        }
+
+            .table th, .table td {
+                border: 1.5px solid #000;
+                padding: 6px 8px;
+                vertical-align: middle;
+                box-sizing: border-box;
+            }
+
+            .table thead th {
+                background: #f4f4f4;
+                font-weight: 700;
+                text-align: center;
+            }
+
+        /* test requirement column cells align left for text */
+        .test-req-cell {
+            text-align: left;
+            padding: 12px;
+            vertical-align: top;
+            min-height: 120px; /* taller by default */
+            overflow-wrap: break-word;
+        }
+
+        .sr-cell span {
+            font-weight: normal;
+        }
+
+        /* subtle focus style for editable cells */
+        [contenteditable="true"]:focus {
+            outline: 2px solid #cde4ff;
+        }
+        /* make contenteditable cells maintain height */
+        #testTableBody td[contenteditable] {
+            /* use min-height rather than forcing tr height */
+            min-height: 120px;
+            padding: 8px;
+            vertical-align: top; /* keep text at top */
+            box-sizing: border-box; /* include padding in height calc */
+            white-space: pre-wrap; /* preserve line breaks inserted with execCommand */
+        }
+
+        /* sr-cell: show number + delete button full height and vertically centered */
+        .sr-cell {
+            min-height: 120px;
+            padding: 8px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center; /* vertical center */
+            justify-content: space-between;
+        }
+
+            /* optional: ensure the delete button doesn't shrink layout */
+            .sr-cell .row-del-btn {
+                margin-left: 6px;
+                height: 26px; /* suitable button size */
+            }
+        .row-del-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: red;
+            font-size: 14px;
+            margin-left: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .row-del-btn:hover {
+                color: darkred;
+                transform: scale(1.05);
+            }
+
+        /* SR cell layout */
+        .sr-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Header Card -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+        <div class="card-body d-flex justify-between align-center" style="padding:18px;">
+            <!-- Title -->
+            <div style="flex:1; text-align:left;">
+                <span class="header-title">Luminaire Type Test Report</span>
+            </div>
+
+            <!-- Buttons -->
+            <div style="display:flex; gap:10px;">
+                <!-- Save Button -->
+                <button id="saveBtn" class="btn btn-outline-success"
+                        style="width:120px; font-size:15px; border-radius:6px;">
+                    <i class="fas fa-save" aria-hidden="true"></i> Save
+                </button>
+
+                <!-- Back Button -->
+                <a href="@Url.Action("LuminaireTypeTest", "TypeTest")"
+                   class="btn btn-outline-primary"
+                   style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card for Report Details -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0;">
+        <div class="card-body" style="padding:16px;">
+
+            <div class="table-responsive">
+                <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;">
+                    <tbody>
+                        <!-- Report No -->
+                        <tr>
+                            <td colspan="4" style="padding:8px;">
+                                <strong>Report No:</strong>
+                                <input type="text"
+                                       placeholder="Enter Report No"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                            </td>
+                        </tr>
+
+                        <!-- Customer Name & Address / Date -->
+                        <tr>
+                            <td colspan="3" style="padding:8px;">
+                                <strong>Customer Name & Address:</strong>
+                                <input type="text"
+                                       placeholder="Enter Customer Name & Address"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                            </td>
+                            <td style="width:25%; padding:8px;">
+                                <strong>Date:</strong>
+                                <input type="date"
+                                       placeholder="Select Date"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                            </td>
+                        </tr>
+
+                        <!-- Sample Description + Product CAT Code / Sample Identification -->
+                        <tr>
+                            <td colspan="3" style="padding:8px; vertical-align:top;">
+                                <strong>Sample Description:</strong>
+                                <input type="text"
+                                       placeholder="Enter Sample Description"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                                <br><br>
+                                <strong>Product CAT Code:</strong>
+                                <input type="text"
+                                       placeholder="Enter Product CAT Code"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                                <br><br>
+                                <strong>Input Voltage:</strong>
+                                <input type="text"
+                                       placeholder="Enter Product CAT Code"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                            </td>
+
+                            <td style="width:25%; padding:8px; vertical-align:top;">
+                                <strong>Sample Identification For Lab:</strong>
+                                <input type="text"
+                                       placeholder="Sample Id"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:90%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                    <tbody>
+                        <tr>
+                            <td colspan="6" style="padding:12px; text-align:left;">
+                                <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table with Test Requirement column — toolbar embedded in header -->
+            <div class="table-responsive" style="margin-top:0px;">
+                <table id="mainTestTable" class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
+                    <thead>
+                        <!-- Reference header -->
+                        <tr>
+                            <th colspan="5" style="background-color:#ffffff; font-weight:normal; text-align:center; padding:8px; vertical-align:top;">
+                                <span style="font-weight:normal;">Reference Standard :</span>
+                                <input type="text"
+                                       placeholder="Reference Standard"
+                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:10%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                            </th>
+                        </tr>
+
+                        <!-- Column Titles: toolbar placed inside the Test Requirement header -->
+                        <tr>
+                            <th style="width:5%;">Sr. No.</th>
+
+                            <th style="width:25%;">Particular Of Test And Specification No.</th>
+
+                            <th style="width:20%;">Test Method</th>
+
+                            <th style="width:35%;">
+                                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                    <span style="font-weight:700;">Test Requirement</span>
+
+                                    <!-- Inline toolbar (only targets test-req cells) -->
+                                    <div id="testReqToolbar" class="inline-toolbar" title="Formatting for Test Requirement column"
+                                         style="display:flex; align-items:center; gap:6px; padding:6px 8px; background:#fff; border:1px solid #ccc; border-radius:6px; width:max-content; margin-left:8px;">
+
+                                        <!-- Text style buttons -->
+                                        <button type="button" class="fmt-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+                                        <button type="button" class="fmt-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+                                        <button type="button" class="fmt-btn" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+
+                                        <!-- Divider -->
+                                        <div style="width:1px; height:22px; background:#ccc; margin:0 4px;"></div>
+
+                                        <!-- Alignment buttons -->
+                                        <button type="button" class="fmt-btn" data-cmd="justifyLeft" title="Align left">
+                                            <i class="fas fa-align-left" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="fmt-btn" data-cmd="justifyCenter" title="Center">
+                                            <i class="fas fa-align-center" aria-hidden="true"></i>
+                                        </button>
+                                        <button type="button" class="fmt-btn" data-cmd="justifyRight" title="Align right">
+                                            <i class="fas fa-align-right" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </th>
+
+                            <th style="width:15%;">Test Result</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="testTableBody">
+                        <!-- initial single row - more rows will be added by script -->
+                        <tr style="height:120px;">
+                            <td class="sr-cell">
+                                1
+                                <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
+                            </td>
+                            <td contenteditable="true" style="vertical-align:top;"></td>
+                            <td contenteditable="true" style="vertical-align:top;"></td>
+                            <td class="test-req-cell" contenteditable="true"></td>
+                            <td contenteditable="true" style="vertical-align:top;"></td>
+                        </tr>
+                    </tbody>
+
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" style="border:1.5px solid #000; text-align:right; padding:10px 16px; font-weight:600;">
+                                Prepared & Tested By:
+                                <span style="display:inline-block; border-bottom:1px solid #000; width:25%; height:20px; margin-left:8px;"></span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toolbar = document.getElementById('testReqToolbar');
+            const addBtn = document.getElementById('addRowBtn');
+            const tableBody = document.getElementById('testTableBody');
+            let currentCell = null;
+            let savedRange = null;
+
+            // Prevent toolbar buttons from stealing selection on mousedown
+            toolbar.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('mousedown', (ev) => {
+                    ev.preventDefault();
+                });
+            });
+
+            // Utility: bind behaviour to a single test-req cell
+            function bindTestReqCell(cell) {
+                if (!cell) return;
+                cell.setAttribute('tabindex', '0');
+
+                // If user presses mouse down inside cell we want it to become active immediately
+                cell.addEventListener('mousedown', () => { currentCell = cell; });
+
+                cell.addEventListener('focus', () => currentCell = cell);
+                cell.addEventListener('click', () => currentCell = cell);
+
+                // Save selection when user selects inside the cell
+                cell.addEventListener('mouseup', saveSelection);
+                cell.addEventListener('keyup', saveSelection);
+
+                // Handle Enter for new lines
+                cell.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        document.execCommand('insertHTML', false, '<br><br>');
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            // Bind existing test-req cells
+            document.querySelectorAll('.test-req-cell').forEach(bindTestReqCell);
+
+            // Also update savedRange whenever the browser selection changes (covers drag selections)
+            document.addEventListener('selectionchange', () => {
+                try { saveSelection(); } catch (err) { /* ignore */ }
+            });
+
+            // Keep currentCell to null when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.test-req-cell') && !e.target.closest('#testReqToolbar')) {
+                    currentCell = null;
+                }
+            });
+
+            // Save the user's current selection inside the active cell
+            function saveSelection() {
+                const sel = window.getSelection();
+                if (!sel || sel.rangeCount === 0) return;
+                const range = sel.getRangeAt(0);
+
+                // walk up from text nodes
+                let container = range.commonAncestorContainer;
+                if (container.nodeType === 3) container = container.parentNode;
+
+                // if currentCell is not set but selection is inside a .test-req-cell, set it
+                if (!currentCell) {
+                    const maybeCell = container && container.closest && container.closest('.test-req-cell');
+                    if (maybeCell) currentCell = maybeCell;
+                }
+
+                if (currentCell && currentCell.contains(range.commonAncestorContainer)) {
+                    savedRange = range.cloneRange();
+                }
+            }
+
+            // Restore saved selection so execCommand applies correctly
+            function restoreSelection() {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                if (savedRange) {
+                    sel.addRange(savedRange);
+                }
+            }
+
+            // Format buttons (bold / italic / underline / justifyLeft/Center/Right)
+            toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!currentCell) return;
+                    // restore selection before applying
+                    restoreSelection();
+                    const cmd = btn.getAttribute('data-cmd');
+                    document.execCommand(cmd, false, null);
+                    // update savedRange after command
+                    saveSelection();
+                    // keep focus in the cell
+                    currentCell.focus();
+                });
+            });
+
+            // Add row
+            addBtn.addEventListener('click', () => {
+                addRow();
+            });
+
+            // Add Row helper
+            function addRow() {
+                const tr = document.createElement('tr');
+
+                tr.innerHTML = `
+                <td class="sr-cell"></td>
+                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
+                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+            `;
+                tableBody.appendChild(tr);
+
+                // bind the new test-req cell
+                const newTestReq = tr.querySelector('.test-req-cell');
+                bindTestReqCell(newTestReq);
+
+                renumberRows();
+            }
+
+            // Delete row via event delegation (trash buttons)
+            tableBody.addEventListener('click', (e) => {
+                const btn = e.target.closest('.row-del-btn');
+                if (btn) {
+                    const row = btn.closest('tr');
+                    if (!row) return;
+                    // prevent deleting if only one row left? (optional)
+                    // if (tableBody.rows.length === 1) return;
+                    row.remove();
+                    renumberRows();
+                }
+            });
+
+            // create delete button HTML for SR cell
+            function createDeleteButton() {
+                const btn = document.createElement('button');
+                btn.className = 'row-del-btn';
+                btn.title = 'Delete row';
+                btn.innerHTML = '<i class="fa fa-trash"></i>';
+                // mousedown prevention to keep selection intact in toolbar logic
+                btn.addEventListener('mousedown', ev => ev.preventDefault());
+                return btn;
+            }
+
+            // Renumber SR column and add delete button
+            function renumberRows() {
+                const rows = Array.from(tableBody.querySelectorAll('tr'));
+                rows.forEach((row, index) => {
+                    const srCell = row.querySelector('.sr-cell');
+                    if (srCell) {
+                        // clear then insert number + delete button
+                        srCell.innerHTML = '';
+                        const numText = document.createElement('span');
+                        numText.textContent = (index + 1);
+                        srCell.appendChild(numText);
+
+                        const delBtn = createDeleteButton();
+                        srCell.appendChild(delBtn);
+                    } else {
+                        // in case older rows didn't have sr-cell class: try first cell
+                        const firstCell = row.cells[0];
+                        if (firstCell) {
+                            firstCell.innerHTML = '';
+                            firstCell.classList.add('sr-cell');
+                            const numText = document.createElement('span');
+                            numText.textContent = (index + 1);
+                            firstCell.appendChild(numText);
+                            firstCell.appendChild(createDeleteButton());
+                        }
+                    }
+                });
+            }
+
+            // init numbering on existing rows
+            renumberRows();
+        });
+    </script>
+
+</body>
+</html>
+
+@section HideSidebar { }

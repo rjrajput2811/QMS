@@ -55,17 +55,17 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                     new SqlParameter("@CreatedBy", SqlDbType.NVarChar, 500) { Value = model.CreatedBy ?? (object)DBNull.Value },
 
                     // TVP parameter
-                    new SqlParameter("@Details", SqlDbType.Structured)
-                    {
-                        TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
-                        Value = detailsTvp
-                    }
+                    //new SqlParameter("@Details", SqlDbType.Structured)
+                    //{
+                    //    TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
+                    //    Value = detailsTvp
+                    //}
                 };
 
                 // Execute stored procedure
                 var sql = "EXEC sp_Insert_InternalTypeTest " +
                           "@Report_No, @Date, @Cust_Name, @Samp_Identi_Lab, @Samp_Desc, " +
-                          "@Prod_Cat_Code, @Input_Voltage, @Ref_Standard, @TestedBy, @CreatedBy, @Details";
+                          "@Prod_Cat_Code, @Input_Voltage, @Ref_Standard, @TestedBy, @CreatedBy";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -94,6 +94,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
         private static DataTable BuildDetailsDataTable(System.Collections.Generic.IEnumerable<InternalTypeTestDetailViewModel>? details)
         {
             var dt = new DataTable();
+            dt.Columns.Add("InternalType_DetId", typeof(int));
             dt.Columns.Add("SeqNo", typeof(int));
             dt.Columns.Add("Perticular_Test", typeof(string));
             dt.Columns.Add("Test_Method", typeof(string));
@@ -107,6 +108,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
             foreach (var d in details)
             {
                 var row = dt.NewRow();
+                row["InternalType_DetId"] = d.InternalType_DetId > 0 ? d.InternalType_DetId : DBNull.Value;
                 row["SeqNo"] = d.SeqNo.HasValue ? (object)d.SeqNo.Value : DBNull.Value;
                 row["Perticular_Test"] = string.IsNullOrEmpty(d.Perticular_Test) ? (object)DBNull.Value : d.Perticular_Test!;
                 row["Test_Method"] = string.IsNullOrEmpty(d.Test_Method) ? (object)DBNull.Value : d.Test_Method!;

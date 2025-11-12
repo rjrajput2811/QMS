@@ -1,4 +1,5 @@
-﻿@{
+﻿@model QMS.Core.ViewModels.InternalTypeTestViewModel
+@{
     ViewData["Title"] = "Luminaire Type Test Report";
 }
 <!-- Font Awesome CDN -->
@@ -13,8 +14,8 @@
 
     <style>
         /* ==========================
-                   Global / Re-used styles
-                   ========================== */
+                           Global / Re-used styles
+                           ========================== */
         .card {
             border-radius: 8px;
             border: 1px solid #ccc;
@@ -155,6 +156,7 @@
                 margin-left: 6px;
                 height: 26px; /* suitable button size */
             }
+
         .row-del-btn {
             background: transparent;
             border: none;
@@ -180,199 +182,254 @@
             gap: 6px;
         }
 
+        /* small helper */
+        .spinner-inline {
+            margin-left: 6px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header Card -->
-    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-        <div class="card-body d-flex justify-between align-center" style="padding:18px;">
-            <!-- Title -->
-            <div style="flex:1; text-align:left;">
-                <span class="header-title">Luminaire Type Test Report</span>
-            </div>
+    <!-- START: Form wrapper (new) -->
+    <form id="luminaireForm"
+          method="post"
+          enctype="multipart/form-data"
+          asp-controller="LuminaireTypeTestReport"
+          asp-action="InsertInternalTypeTest">
+        @Html.AntiForgeryToken()
+        @Html.HiddenFor(m => m.Internal_TypeId)
 
-            <!-- Buttons -->
-            <div style="display:flex; gap:10px;">
-                <!-- Save Button -->
-                <button id="saveBtn" class="btn btn-outline-success"
-                        style="width:120px; font-size:15px; border-radius:6px;">
-                    <i class="fas fa-save" aria-hidden="true"></i> Save
-                </button>
+        <!-- Header Card -->
+        <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+            <div class="card-body d-flex justify-between align-center" style="padding:18px;">
+                <!-- Title -->
+                <div style="flex:1; text-align:left;">
+                    <span class="header-title">Luminaire Type Test Report</span>
+                </div>
 
-                <!-- Back Button -->
-                <a href="@Url.Action("LuminaireTypeTest", "TypeTest")"
-                   class="btn btn-outline-primary"
-                   style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
-                </a>
+                <!-- Buttons -->
+                <div style="display:flex; gap:10px;">
+                    <!-- Save Button -->
+                    <button id="saveBtn" type="button" class="btn btn-outline-success"
+                            style="width:120px; font-size:15px; border-radius:6px;" onclick="saveLuminaireTypeTest()">
+                        <i class="fas fa-save" aria-hidden="true"></i> Save
+                    </button>
+
+                    <!-- Back Button -->
+                    <a href="@Url.Action("LuminaireTypeTest", "TypeTest")"
+                       class="btn btn-outline-primary"
+                       style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Card for Report Details -->
-    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0;">
-        <div class="card-body" style="padding:16px;">
+        <!-- Card for Report Details -->
+        <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0;">
+            <div class="card-body" style="padding:16px;">
 
-            <div class="table-responsive">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;">
-                    <tbody>
-                        <!-- Report No -->
-                        <tr>
-                            <td colspan="4" style="padding:8px;">
-                                <strong>Report No:</strong>
-                                <input type="text"
-                                       placeholder="Enter Report No"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                            </td>
-                        </tr>
+                <div class="table-responsive">
+                    <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;">
+                        <tbody>
+                            <!-- Report No -->
+                            <tr>
+                                <td colspan="4" style="padding:8px;">
+                                    <strong>Report No:</strong>
+                                    <input type="text"
+                                           name="Report_No"
+                                           value="@Model.Report_No"
+                                           placeholder="Enter Report No"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                </td>
+                            </tr>
 
-                        <!-- Customer Name & Address / Date -->
-                        <tr>
-                            <td colspan="3" style="padding:8px;">
-                                <strong>Customer Name & Address:</strong>
-                                <input type="text"
-                                       placeholder="Enter Customer Name & Address"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                            </td>
-                            <td style="width:25%; padding:8px;">
-                                <strong>Date:</strong>
-                                <input type="date"
-                                       placeholder="Select Date"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                            </td>
-                        </tr>
+                            <!-- Customer Name & Address / Date -->
+                            <tr>
+                                <td colspan="3" style="padding:8px;">
+                                    <strong>Customer Name & Address:</strong>
+                                    <input type="text"
+                                           name="Cust_Name"
+                                           value="@Model.Cust_Name"
+                                           placeholder="Enter Customer Name & Address"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                </td>
 
-                        <!-- Sample Description + Product CAT Code / Sample Identification -->
-                        <tr>
-                            <td colspan="3" style="padding:8px; vertical-align:top;">
-                                <strong>Sample Description:</strong>
-                                <input type="text"
-                                       placeholder="Enter Sample Description"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                                <br><br>
-                                <strong>Product CAT Code:</strong>
-                                <input type="text"
-                                       placeholder="Enter Product CAT Code"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                                <br><br>
-                                <strong>Input Voltage:</strong>
-                                <input type="text"
-                                       placeholder="Enter Product CAT Code"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                            </td>
+                                <td style="width:25%; padding:8px;">
+                                    <strong>Date:</strong>
+                                    <input type="date"
+                                           name="Date"
+                                           value="@(Model.Date.HasValue ? Model.Date.Value.ToString("yyyy-MM-dd") : "")"
+                                           placeholder="Select Date"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                </td>
+                            </tr>
 
-                            <td style="width:25%; padding:8px; vertical-align:top;">
-                                <strong>Sample Identification For Lab:</strong>
-                                <input type="text"
-                                       placeholder="Sample Id"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:90%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            <!-- Sample Description + Product CAT Code / Sample Identification -->
+                            <tr>
+                                <td colspan="3" style="padding:8px; vertical-align:top;">
+                                    <strong>Sample Description:</strong>
+                                    <input type="text"
+                                           name="Samp_Desc"
+                                           value="@Model.Samp_Desc"
+                                           placeholder="Enter Sample Description"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                    <br><br>
 
-            <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
-                    <tbody>
-                        <tr>
-                            <td colspan="6" style="padding:12px; text-align:left;">
-                                <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                                    <i class="fas fa-plus"></i> Add
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                                    <strong>Product CAT Code:</strong>
+                                    <input type="text"
+                                           name="Prod_Cat_Code"
+                                           value="@Model.Prod_Cat_Code"
+                                           placeholder="Enter Product CAT Code"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                    <br><br>
 
-            <!-- Table with Test Requirement column — toolbar embedded in header -->
-            <div class="table-responsive" style="margin-top:0px;">
-                <table id="mainTestTable" class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
-                    <thead>
-                        <!-- Reference header -->
-                        <tr>
-                            <th colspan="5" style="background-color:#ffffff; font-weight:normal; text-align:center; padding:8px; vertical-align:top;">
-                                <span style="font-weight:normal;">Reference Standard :</span>
-                                <input type="text"
-                                       placeholder="Reference Standard"
-                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:10%; margin-left:6px; padding:2px 4px; font-size:14px;">
-                            </th>
-                        </tr>
+                                    <strong>Input Voltage:</strong>
+                                    <input type="text"
+                                           name="Input_Voltage"
+                                           value="@Model.Input_Voltage"
+                                           placeholder="Enter Input Voltage"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                </td>
 
-                        <!-- Column Titles: toolbar placed inside the Test Requirement header -->
-                        <tr>
-                            <th style="width:5%;">Sr. No.</th>
+                                <td style="width:25%; padding:8px; vertical-align:top;">
+                                    <strong>Sample Identification For Lab:</strong>
+                                    <input type="text"
+                                           name="Samp_Identi_Lab"
+                                           value="@Model.Samp_Identi_Lab"
+                                           placeholder="Sample Id"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:90%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                            <th style="width:25%;">Particular Of Test And Specification No.</th>
+                <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                    <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                        <tbody>
+                            <tr>
+                                <td colspan="6" style="padding:12px; text-align:left;">
+                                    <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                            <th style="width:20%;">Test Method</th>
+                <!-- Table with Test Requirement column — toolbar embedded in header -->
+                <div class="table-responsive" style="margin-top:0px;">
+                    <table id="mainTestTable" class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
+                        <thead>
+                            <!-- Reference header -->
+                            <tr>
+                                <th colspan="5" style="background-color:#ffffff; font-weight:normal; text-align:center; padding:8px; vertical-align:top;">
+                                    <span style="font-weight:normal;">Reference Standard :</span>
+                                    <input type="text"
+                                           name="Ref_Standard"
+                                           placeholder="Reference Standard"
+                                           value="@Model.Ref_Standard"
+                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:20%; margin-left:6px; padding:2px 4px; font-size:14px;">
+                                </th>
+                            </tr>
 
-                            <th style="width:35%;">
-                                <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                                    <span style="font-weight:700;">Test Requirement</span>
+                            <!-- Column Titles: toolbar placed inside the Test Requirement header -->
+                            <tr>
+                                <th style="width:5%;">Sr. No.</th>
 
-                                    <!-- Inline toolbar (only targets test-req cells) -->
-                                    <div id="testReqToolbar" class="inline-toolbar" title="Formatting for Test Requirement column"
-                                         style="display:flex; align-items:center; gap:6px; padding:6px 8px; background:#fff; border:1px solid #ccc; border-radius:6px; width:max-content; margin-left:8px;">
+                                <th style="width:25%;">Particular Of Test And Specification No.</th>
 
-                                        <!-- Text style buttons -->
-                                        <button type="button" class="fmt-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-                                        <button type="button" class="fmt-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-                                        <button type="button" class="fmt-btn" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+                                <th style="width:20%;">Test Method</th>
 
-                                        <!-- Divider -->
-                                        <div style="width:1px; height:22px; background:#ccc; margin:0 4px;"></div>
+                                <th style="width:35%;">
+                                    <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                        <span style="font-weight:700;">Test Requirement</span>
 
-                                        <!-- Alignment buttons -->
-                                        <button type="button" class="fmt-btn" data-cmd="justifyLeft" title="Align left">
-                                            <i class="fas fa-align-left" aria-hidden="true"></i>
-                                        </button>
-                                        <button type="button" class="fmt-btn" data-cmd="justifyCenter" title="Center">
-                                            <i class="fas fa-align-center" aria-hidden="true"></i>
-                                        </button>
-                                        <button type="button" class="fmt-btn" data-cmd="justifyRight" title="Align right">
-                                            <i class="fas fa-align-right" aria-hidden="true"></i>
-                                        </button>
+                                        <!-- Inline toolbar (only targets test-req cells) -->
+                                        <div id="testReqToolbar" class="inline-toolbar" title="Formatting for Test Requirement column"
+                                             style="display:flex; align-items:center; gap:6px; padding:6px 8px; background:#fff; border:1px solid #ccc; border-radius:6px; width:max-content; margin-left:8px;">
+
+                                            <!-- Text style buttons -->
+                                            <button type="button" class="fmt-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+                                            <button type="button" class="fmt-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+                                            <button type="button" class="fmt-btn" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+
+                                            <!-- Divider -->
+                                            <div style="width:1px; height:22px; background:#ccc; margin:0 4px;"></div>
+
+                                            <!-- Alignment buttons -->
+                                            <button type="button" class="fmt-btn" data-cmd="justifyLeft" title="Align left">
+                                                <i class="fas fa-align-left" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="fmt-btn" data-cmd="justifyCenter" title="Center">
+                                                <i class="fas fa-align-center" aria-hidden="true"></i>
+                                            </button>
+                                            <button type="button" class="fmt-btn" data-cmd="justifyRight" title="Align right">
+                                                <i class="fas fa-align-right" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+
                                     </div>
+                                </th>
 
-                                </div>
-                            </th>
+                                <th style="width:15%;">Test Result</th>
+                            </tr>
+                        </thead>
 
-                            <th style="width:15%;">Test Result</th>
-                        </tr>
-                    </thead>
+                        <tbody id="testTableBody">
+                            <!-- initial single row - more rows will be added by script -->
+                            <tr style="height:120px;">
+                                <td class="sr-cell">
+                                    1
+                                    <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
+                                </td>
+                                <td contenteditable="true" style="vertical-align:top;"></td>
+                                <td contenteditable="true" style="vertical-align:top;"></td>
+                                <td class="test-req-cell" contenteditable="true"></td>
+                                <td contenteditable="true" style="vertical-align:top;"></td>
+                            </tr>
+                        </tbody>
 
-                    <tbody id="testTableBody">
-                        <!-- initial single row - more rows will be added by script -->
-                        <tr style="height:120px;">
-                            <td class="sr-cell">
-                                1
-                                <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
-                            </td>
-                            <td contenteditable="true" style="vertical-align:top;"></td>
-                            <td contenteditable="true" style="vertical-align:top;"></td>
-                            <td class="test-req-cell" contenteditable="true"></td>
-                            <td contenteditable="true" style="vertical-align:top;"></td>
-                        </tr>
-                    </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="border:1.5px solid #000; padding:10px 16px; font-weight:600;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
 
-                    <tfoot>
-                        <tr>
-                            <td colspan="5" style="border:1.5px solid #000; text-align:right; padding:10px 16px; font-weight:600;">
-                                Prepared & Tested By:
-                                <span style="display:inline-block; border-bottom:1px solid #000; width:25%; height:20px; margin-left:8px;"></span>
-                            </td>
-                        </tr>
-                    </tfoot>
-                </table>
+                                        <!-- Created / Prepared By -->
+                                        <div style="flex:1; text-align:left;">
+                                            Created / Prepared By:
+                                            <input type="text"
+                                                   name="CreatedBy"
+                                                   value="@Model.CreatedBy"
+                                                   placeholder="Enter name"
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:200px; height:20px; margin-left:8px; font-size:14px; padding:2px 4px;" />
+                                        </div>
+
+                                        <!-- Tested By -->
+                                        <div style="flex:1; text-align:right;">
+                                            Tested By:
+                                            <input type="text"
+                                                   name="TestedBy"
+                                                   value="@Model.TestedBy"
+                                                   placeholder="Enter name"
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:200px; height:20px; margin-left:8px; font-size:14px; padding:2px 4px;" />
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
             </div>
-
         </div>
-    </div>
+
+    </form> <!-- END form -->
 
     <script>
+        // ================= existing table editing code (unchanged) =================
         document.addEventListener('DOMContentLoaded', () => {
             const toolbar = document.getElementById('testReqToolbar');
             const addBtn = document.getElementById('addRowBtn');
@@ -481,12 +538,12 @@
                 const tr = document.createElement('tr');
 
                 tr.innerHTML = `
-                <td class="sr-cell"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-            `;
+                        <td class="sr-cell"></td>
+                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                        <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
+                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                    `;
                 tableBody.appendChild(tr);
 
                 // bind the new test-req cell
@@ -552,6 +609,125 @@
             // init numbering on existing rows
             renumberRows();
         });
+
+        // ================= NEW: Save function for AJAX FormData submit =================
+        async function saveLuminaireTypeTest() {
+            const saveBtn = document.getElementById('saveBtn');
+            if (!saveBtn) return;
+
+            // Quick client-side validation
+            const reportNo = document.querySelector('[name="Report_No"]')?.value?.trim();
+            if (!reportNo) {
+                showDangerAlert('Please enter Report No.');
+                return;
+            }
+
+            // UI: disable + spinner + global blocker
+            const origHTML = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin spinner-inline"></i> Saving...';
+            Blockloadershow();
+
+            try {
+                const form = document.getElementById('luminaireForm');
+                if (!form) throw new Error('Form element not found (id="luminaireForm").');
+
+                const formData = new FormData(form);
+
+                // Build Details array from table rows (#testTableBody)
+                const details = [];
+                const rows = Array.from(document.querySelectorAll('#testTableBody tr'));
+                rows.forEach((row, idx) => {
+                    const cells = row.querySelectorAll('td');
+                    // expected: [sr-cell, particular, method, requirement, result]
+                    if (!cells || cells.length < 5) return;
+
+                    details.push({
+                        SeqNo: idx + 1,
+                        Perticular_Test: (cells[1].innerText || '').trim(),
+                        Test_Method: (cells[2].innerText || '').trim(),
+                        // preserve HTML markup for rich content; change to innerText if you want plain text
+                        Test_Requirement: (cells[3].innerHTML || '').trim(),
+                        Test_Result: (cells[4].innerText || '').trim()
+                    });
+                });
+
+                // Append details as JSON (controller must read DetailsJson)
+                formData.set('DetailsJson', JSON.stringify(details));
+
+                // Send (antiforgery token already included by @Html.AntiForgeryToken() in form)
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                const raw = await response.text();
+                console.log('Server raw response:', raw);
+                console.log('HTTP status:', response.status);
+
+                // attempt to parse JSON
+                let payload = null;
+                try { payload = raw && raw.length ? JSON.parse(raw) : null; } catch (e) { payload = null; }
+
+                // HTTP error handling
+                if (!response.ok) {
+                    if (payload) {
+                        // check common shapes
+                        if (Array.isArray(payload.errors) && payload.errors.length) {
+                            showDangerAlert(payload.errors.join('<br/>'));
+                        } else if (Array.isArray(payload.Errors) && payload.Errors.length) {
+                            showDangerAlert(payload.Errors.join('<br/>'));
+                        } else if (payload.Message || payload.message) {
+                            showDangerAlert(payload.Message || payload.message);
+                        } else {
+                            showDangerAlert('Server returned error: HTTP ' + response.status);
+                        }
+                    } else {
+                        // no JSON payload
+                        showDangerAlert('Server error: HTTP ' + response.status + ' — ' + raw);
+                    }
+                    return;
+                }
+
+                // Success (HTTP 200/201) — interpret JSON payload
+                const json = payload || {};
+
+                if (json && (json.Success === true || json.success === true)) {
+                    showSuccessAlert(json.Message || 'Saved successfully.');
+                    // optional redirect if controller returned RedirectUrl
+                    if (json.RedirectUrl) {
+                        setTimeout(() => window.location.href = json.RedirectUrl, 800);
+                    }
+                    return;
+                }
+
+                // If server responded 200 but indicates failure or returned validation errors
+                if (json) {
+                    if (Array.isArray(json.errors) && json.errors.length) {
+                        showDangerAlert(json.errors.join('<br/>'));
+                    } else if (Array.isArray(json.Errors) && json.Errors.length) {
+                        showDangerAlert(json.Errors.join('<br/>'));
+                    } else if (json.Message || json.message) {
+                        showDangerAlert(json.Message || json.message);
+                    } else {
+                        console.error('Unexpected successful HTTP response but payload indicates failure:', json);
+                        showDangerAlert('Save failed — see console for details.');
+                    }
+                } else {
+                    // unparseable/empty response
+                    showDangerAlert('Unexpected server response. See console for details.');
+                    console.log('Raw response:', raw);
+                }
+            } catch (err) {
+                console.error('Save error:', err);
+                showDangerAlert('Error saving data: ' + (err && err.message ? err.message : err));
+            } finally {
+                Blockloaderhide();
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = origHTML;
+            }
+        }
     </script>
 
 </body>

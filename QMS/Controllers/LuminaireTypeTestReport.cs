@@ -21,6 +21,10 @@ namespace QMS.Controllers
             _internalTypeTestRepository = internalTypeTestRepository ?? throw new ArgumentNullException(nameof(internalTypeTestRepository));
             _systemLogService = systemLogService ?? throw new ArgumentNullException(nameof(systemLogService));
         }
+        public IActionResult LuminaireTypeTest()
+        {
+            return View();
+        }
 
         [HttpGet]
         public IActionResult LuminaireTypeTestDetails()

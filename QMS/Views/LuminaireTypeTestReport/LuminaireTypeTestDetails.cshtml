@@ -214,11 +214,13 @@
                     </button>
 
                     <!-- Back Button -->
-                    <a href="@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")"
-                       class="btn btn-outline-primary"
-                       style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                        <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
-                    </a>
+                    <button id="backButton"
+                            type="button"
+                            class="btn btn-outline-primary header-btn"
+                            style="width:120px;"
+                            onclick="location.href='@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")'">
+                        <i class="fas fa-arrow-left" style="margin-right:6px;"></i> Back
+                    </button>
                 </div>
             </div>
         </div>
@@ -531,8 +533,8 @@
                 tr.innerHTML = `
                 <td class="sr-cell"></td>
                 <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
+                     <td contenteditable="true" style="vertical-align: top; min-height: 120px; padding: 8px;"></td>
+                        <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align: center;"></td>
                 <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
             `;
                 tableBody.appendChild(tr);
@@ -546,10 +548,6 @@
                     const row = btn.closest('tr');
                     if (!row) return;
                     row.remove();
-                    // if the table becomes empty, ensure one row remains visible
-                    if (tableBody.querySelectorAll('tr').length === 0) {
-                        addRow();
-                    }
                     renumberRows();
                 }
             });

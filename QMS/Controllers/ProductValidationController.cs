@@ -1179,9 +1179,47 @@ public class ProductValidationController : Controller
 
 
     #endregion
-    #endregion
-}
+    #region Impact test
 
+    public IActionResult Impacttest()
+    {
+
+        return View();
+    }
+    public IActionResult ImpactTestDetails()
+    {
+        return View();
+    }
+
+
+    #endregion
+    #region Impact test
+
+    public IActionResult IngressProtetction()
+    {
+
+        return View();
+    }
+    public IActionResult IngressProtetctionDetails()
+    {
+        return View();
+    }
+
+
+    #endregion
+    #region Regulatory
+    public IActionResult RegulatoryRequirements()
+    {
+
+        return View();
+    }
+    public IActionResult RegulatoryRequirementsDetails()
+    {
+        return View();
+    }
+
+
+#endregion
 
 
 

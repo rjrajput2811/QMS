@@ -6,6 +6,7 @@ using QMS.Core.Services.SystemLogs;
 using System.Data;
 using QMS.Core.Models;
 using QMS.Core.DatabaseContext;
+using Dapper;
 
 namespace QMS.Core.Repositories.InternalTypeTestRepo
 {
@@ -21,14 +22,12 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
             _systemLogService = systemLogService;
         }
 
-        /// <summary>
-        /// Insert parent + child rows using sp_Insert_InternalTypeTest which accepts a TVP for children.
-        /// </summary>
+  
         public async Task<OperationResult> InsertInternalTypeTestAsync(InternalTypeTestViewModel model)
         {
             try
             {
-                // ✅ Null check
+            
                 if (model == null)
                 {
                     return new OperationResult
@@ -38,7 +37,6 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                     };
                 }
 
-                // Build TVP DataTable from model.Details
                 var detailsTvp = BuildDetailsDataTable(model.Details);
 
                 var parameters = new[]
@@ -54,7 +52,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                     new SqlParameter("@TestedBy", SqlDbType.NVarChar, 500) { Value = model.TestedBy ?? (object)DBNull.Value },
                     new SqlParameter("@CreatedBy", SqlDbType.NVarChar, 500) { Value = model.CreatedBy ?? (object)DBNull.Value },
 
-                   // TVP parameter
+  
                    new SqlParameter("@Details", SqlDbType.Structured)
                    {
                        TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
@@ -62,7 +60,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                     }
                 };
 
-                // Execute stored procedure
+
                 var sql = "EXEC sp_Insert_InternalTypeTest " +
                           "@Report_No, @Date, @Cust_Name, @Samp_Identi_Lab, @Samp_Desc, " +
                           "@Prod_Cat_Code, @Input_Voltage, @Ref_Standard, @TestedBy, @CreatedBy, @Details";
@@ -86,11 +84,6 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
             }
         }
 
-        /// <summary>
-        /// Creates a DataTable matching dbo.tvp_TestDetail_InternalTypeTest
-        /// Columns: SeqNo INT, Perticular_Test NVARCHAR(400), Test_Method NVARCHAR(400),
-        /// Test_Requirement NVARCHAR(800), Test_Result NVARCHAR(800), IsDeleted BIT
-        /// </summary>
         private static DataTable BuildDetailsDataTable(System.Collections.Generic.IEnumerable<InternalTypeTestDetailViewModel>? details)
         {
             var dt = new DataTable();
@@ -120,8 +113,134 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
 
             return dt;
         }
+
+        public async Task<List<InternalTypeTestViewModel>> GetInternalTypeTestsAsync()
+        {
+            try
+            {
+                // If you have a stored procedure for listing, call it here.
+                // Replace sp_Get_InternalTypeTests with your actual proc name.
+                var sql = @"EXEC sp_Get_InternalTypeTest";
+
+                var result = await Task.Run(() => _dbContext.InternalTypeTests
+                    .FromSqlRaw(sql)
+                    .AsEnumerable()
+                    .Select(x => new InternalTypeTestViewModel
+                    {
+                        Id = x.Id,
+                        Report_No = x.Report_No,
+                        Date = x.Date,
+                        Cust_Name = x.Cust_Name,
+                        Samp_Identi_Lab = x.Samp_Identi_Lab,
+                        Samp_Desc = x.Samp_Desc,
+                        Prod_Cat_Code = x.Prod_Cat_Code,
+                        Input_Voltage = x.Input_Voltage,
+                        Ref_Standard = x.Ref_Standard,
+                        TestedBy = x.TestedBy,
+                        CreatedBy= x.CreatedBy,   
+                        CreatedDate = x.CreatedDate,
+                        UpdatedBy = x.UpdatedBy,
+                        Deleted = x.Deleted,
+
+                    })
+                    .ToList());
+
+                // Fill CreatedBy name (if CreatedBy is a user id) - same pattern as electrical
+                foreach (var rec in result)
+                {
+                    // try to fetch the user name if CreatedBy stored as int user id
+                    if (int.TryParse(rec.CreatedBy, out int userId))
+                    {
+                        rec.CreatedBy = await _dbContext.User
+                            .Where(u => u.Id == userId)
+                            .Select(u => u.Name)
+                            .FirstOrDefaultAsync();
+                    }
+                }
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<InternalTypeTestViewModel> GetInternalTypeTestByIdAsync(int internalTypeId)
+        {
+            try
+            {
+                var parameters = new[]
+                {
+            new SqlParameter("@Internal_TypeId", internalTypeId),
+        };
+
+                var sql = @"EXEC sp_Get_InternalTypeTest_ById @Internal_TypeId";
+
+                var parent = await Task.Run(() => _dbContext.InternalTypeTests
+                    .FromSqlRaw(sql, parameters)
+                    .AsEnumerable()
+                    .Select(x => new InternalTypeTestViewModel
+                    {
+                        Id = x.Id,
+                        Report_No = x.Report_No,
+                        Date = x.Date,
+                        Cust_Name = x.Cust_Name,
+                        Samp_Identi_Lab = x.Samp_Identi_Lab,
+                        Samp_Desc = x.Samp_Desc,
+                        Prod_Cat_Code = x.Prod_Cat_Code,
+                        Input_Voltage = x.Input_Voltage,
+                        Ref_Standard = x.Ref_Standard,
+                        TestedBy = x.TestedBy,
+                        CreatedBy = x.CreatedBy,
+                        CreatedDate = x.CreatedDate,
+                        UpdatedBy = x.UpdatedBy,
+                        UpdatedDate = x.UpdatedDate,
+                        Deleted = x.Deleted
+                    })
+                    .FirstOrDefault());
+
+                if (parent == null)
+                    return null;
+
+                // 2) get child details via EF (assumes DbSet name: Test_Detail_InternalTypeTest or adjust accordingly)
+                var details = await _dbContext.InternalTypeTestDetails  // <-- replace with your actual DbSet for details
+                   .Where(d => d.IsDeleted == false && d.Internal_TypeId == internalTypeId)
+                    .OrderBy(d => d.Internal_TypeId)
+                    .Select(d => new InternalTypeTestDetailViewModel
+                    {
+
+                        Internal_TypeId = d.Internal_TypeId,
+                        Perticular_Test = d.Perticular_Test,
+                        Test_Method = d.Test_Method,
+                        Test_Requirement = d.Test_Requirement,
+                        Test_Result = d.Test_Result,
+                        CreatedBy = d.CreatedBy,
+                        CreatedDate = d.CreatedDate,
+                        UpdatedBy = d.UpdatedBy,
+                  
+                        IsDeleted = d.IsDeleted
+                    })
+                    .ToListAsync().ConfigureAwait(false);
+
+                parent.Details = details;
+
+                // Optionally populate user name(s) similar to your electrical method:
+                // if (parent.AddedBy > 0) parent.User = await _dbContext.User.Where(u => u.Id == parent.AddedBy).Select(u => u.Name).FirstOrDefaultAsync();
+
+                return parent;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+
     }
 
-    // Interface
+
 
 }

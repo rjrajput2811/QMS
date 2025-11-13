@@ -25,13 +25,45 @@ namespace QMS.Controllers
         {
             return View();
         }
+        public async Task<ActionResult> GetInternalTypeTestListAsync()
+        {
+            var result = await _internalTypeTestRepository.GetInternalTypeTestsAsync();
+            return Json(result);
+        }
 
         [HttpGet]
-        public IActionResult LuminaireTypeTestDetails()
+        public async Task<ActionResult> GetInternalTypeTestDetailsAsync(int internalTypeId)
         {
-            var model = new InternalTypeTestViewModel { Date = DateTime.Now };
+            var result = await _internalTypeTestRepository.GetInternalTypeTestByIdAsync(internalTypeId);
+            return Json(result);
+        }
+        [HttpGet]
+        public async Task<IActionResult> LuminaireTypeTestDetails(int? internalTypeId)
+        {
+            InternalTypeTestViewModel model;
+
+            if (internalTypeId == null || internalTypeId == 0)
+            {
+                // Add New Mode
+                model = new InternalTypeTestViewModel
+                {
+                    Date = DateTime.Now
+                };
+            }
+            else
+            {
+                // Edit Mode
+                model = await _internalTypeTestRepository.GetInternalTypeTestByIdAsync(internalTypeId.Value);
+
+                if (model == null)
+                {
+                    return NotFound();
+                }
+            }
+
             return View(model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]

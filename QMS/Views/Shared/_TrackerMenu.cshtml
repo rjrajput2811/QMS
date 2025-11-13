@@ -12,14 +12,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tracker Selection</title>
+    <title>Tracker Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap CSS and Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-    <title>@ViewData["Title"] - QMS Module</title>
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/icomoon/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -30,73 +25,9 @@
     <link href="~/css/layout.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/all.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-   
-   @*  <style>
-        
-
-        .qms-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            border: none;
-            border-left: 5px solid transparent;
-        }
-
-            .qms-card:hover {
-                transform: scale(1.01);
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-                border-left: 5px solid #0d6efd;
-                background-color: #e9f2ff;
-                cursor: pointer;
-            }
-
-            .qms-card .icon {
-                font-size: 2.5rem;
-                color: #0d6efd;
-                transition: transform 0.3s;
-            }
-
-            .qms-card:hover .icon {
-                transform: rotate(5deg) scale(1.1);
-            }
-
-        .details-section {
-            display: none;
-            animation: fadeIn 0.5s ease-in-out forwards;
-            background: #fff;
-            border-left: 4px solid #0d6efd;
-        }
-
-        @@keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .menu-active {
-            background-color: #eee !important;
-            color: #0c83ff !important;
-            font-weight: bold !important;
-            font-size: small;
-        }
-
-        .nav-group-sub {
-            display: none;
-        }
-
-            .nav-group-sub.open {
-                display: block; /* Show the submenu when it has the 'open' class */
-                color: #FFFF00 !important;
-            }
-
-
-
-    </style> *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/popper.js/dist/umd/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
     <style>
         :root {
             --border: #e4e7eb;
@@ -205,9 +136,79 @@
             font-size: 16px;
             margin-left: 10px;
         }
+
+        .menu-table {
+            display: grid;
+            grid-template-columns: 220px 1fr; /* left label | right links */
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .menu-row {
+            display: contents; /* lets child cells draw the borders like a real table row */
+        }
+
+        .menu-cell {
+            padding: 10px 14px;
+            border-bottom: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
+        }
+
+            .menu-cell:last-child {
+                border-right: 0;
+            }
+
+        .menu-row:last-child .menu-cell {
+            border-bottom: 0;
+        }
+
+        .menu-section {
+            font-weight: 500;
+           
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .menu-links {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+            .menu-links li + li {
+                margin-top: 6px;
+            }
+
+            .menu-links a {
+                text-decoration: none;
+                color: #2196f3;
+            }
+
+                .menu-links a:hover {
+                    text-decoration: underline;
+                    color: blue;
+                   
+                }
+
+        /* Responsive: stack to single column on small screens */
+        @@media (max-width: 576px) {
+            .menu-table
+
+        {
+            grid-template-columns: 1fr;
+        }
+
+        .menu-cell {
+            border-right: 0 !important;
+        }
+
+        }
     </style>
 </head>
-<body style="overflow:hidden">
+<body>
 
     <div class="navbar navbar-dark navbar-expand-lg navbar-static">
         <div class="d-md-none">
@@ -269,167 +270,351 @@
         </div>
     </div>
     <div class="card">
-    <div class="row align-items-center" style="padding:10px;">
-        <!-- Search box on the left -->
-        <div class="col-md-4">
-            <input type="text" id="cardSearch" class="form-control" placeholder="Search Tracker..." style="border-radius: 10px;">
-        </div>
+      
+            
+            <!-- Back button -->
+            @* <div class="col-md-12 text-right mt-1">
+                <button id="tarcBackButton" type="button" class="btn btn-outline-primary"
+                        onclick="location.href='@Url.Action("WiproMenu", "Home")'">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div> *@
+      
 
-        <!-- Back button on the right -->
-        <div class="col-md-8 text-end">
-            <button id="tarcBackButton" type="button" class="btn btn-outline-primary"
-                    onclick="location.href='@Url.Action("WiproMenu", "Home")'">
-                   
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-        </div>
-    </div>
-   
-    <div class="row ">
-       
-    <div class="col-md-4">
-    <div class="card-body">
-        <div class="card-section">
-            <div class="card-header">
-                <span><i class="bi bi-diagram-3 me-2"></i>Tracker</span>
-                
-            </div>
-            <ul class="list-group">
-                <li class="list-group-item" onclick="location.href='@Url.Action("BisProjectTracker", "BisProjectTrac")'">
-                    <span class="label"><i class="bi bi-calendar3"></i> BIS Project Tracker</span>
-                    <span class="badge-pill badge-blue">Check</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("ThirdPartyInspection","ThirdPartyInspection")'">
-                    <span class="label"><i class="bi bi-file-earmark-arrow-up"></i> Third Party Inspection Tracker</span>
-                            <span class="badge-pill badge-gray">Check</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("PaymentTracker", "PaymentTracker")'">
-                    <span class="label"><i class="bi bi-people"></i>Payment Tracker</span>
-                            <span class="badge-pill badge-green">Check</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("PDITracker", "PDITracker")'">
-                    <span class="label"><i class="bi bi-calendar2-week"></i> PDI Tracker</span>
-                            <span class="badge-pill badge-cyan">Check</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("FIFOTracker", "FIFOTrac")'">
-                    <span class="label"><i class="bi bi-box-seam"></i> FIFO Tracker Waluj testing</span>
-                            <span class="badge-pill badge-light">Check</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")'">
-                    <span class="label"><i class="bi bi-upload"></i> Third Party Test Tracker</span>
-                            <span class="badge-pill badge-gray">Check</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("KaizenTracker", "KaizenTracker")'">
-                    <span class="label"><i class="bi bi-journal-text"></i> Kaizen Tracker</span>
-                                <span class="badge-pill badge-blue">Check</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'">
-                            <span class="label"><i class="bi bi-clipboard-check"></i>Continual Improvement</span>
-                                <span class="badge-pill badge-blue">Check</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
+        <div class="row">
+            <!-- -------- Column 1 -------- -->
+            <div class="col-md-4">
+                <div class="card-body">
+                    <div class="card-section">
+                        <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
+                            <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Tracker</h5>
 
-                        <li class="list-group-item" onclick="location.href='@Url.Action("PDIAuthSignatory", "PDIAuthSign")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>PDI Authorised Signatory</span>
-                                <span class="badge-pill badge-gray">Check</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
+                            <div class="input-group" style="width:240px;">
+                                <input type="text" id="menuSearch" class="form-control form-control-sm" placeholder="Search Tracker..." />
+                                <div class="input-group-append">
+                                   
+                                </div>
+                            </div>
+                        </div>
 
-                
-            </ul>
-        </div>
-    </div>
-    </div>
-    
-    <div class="col-md-4">
-        <div class="card-body">
-            <div class="card-section">
-                <div class="card-header">
-                    <span><i class="bi bi-diagram-3 me-2"></i>Tracker</span>
+                            <!-- Collapsible group -->
+                        <div class="menu-table">
+
+                            <!-- Corrective Action -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-tools"></i> Corrective Action</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("CAReport", "CAReport")'>CA Report</a></li>
+                                        <li><a href='@Url.Action("CustomerRCAReport", "CAReport")'>Customer RCA Report</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Deviation -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-exclamation-triangle"></i> Deviation</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("DNTracker", "DNTracker")'>Deviation Note</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+
+
+                            <!-- Continual Improvement -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-chart-line"></i> Continual Improvement</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'>Continual Improvement</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Waluj -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-industry"></i> Waluj</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("FIFOTracker", "FIFOTrac")'>FIFO format of Waluj Testing</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Third Party Testing -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-clipboard-check"></i> Third Party Testing</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("PaymentTracker", "PaymentTracker")'>Payment Tracker</a></li>
+                                        <li><a href='@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")'>Third Party Testing Template</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Kaizen Activity -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-lightbulb"></i> Kaizen Activity</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("KaizenTracker", "KaizenTracker")'>Kaizen Summary</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Third Party Inspection (TPI) -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-shield-alt"></i> Third Party Inspection (TPI)</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")'>Third Party Inspection Tracker</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- CSAT -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-smile"></i> CSAT</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("CSATSUMMARY", "CSAT")'>CSAT Summary</a></li>
+                                        <li><a href='@Url.Action("CSATComment", "CSATComment")'>CSAT Comment Analysis</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- PDI -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-shield-alt"></i>PDI</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("PDITracker", "PDITracker")'>PDI Tracker</a></li>
+                                        <li><a href='@Url.Action("PDIAuthSignatory", "PDIAuthSign")'>PDI Authorised Signatory</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        
+
+                          
+
+                        </div>
+
+                           
                     </div>
-                    <ul class="list-group">
-                       
-                        <li class="list-group-item" onclick="location.href='@Url.Action("DNTracker", "DNTracker")'">
-                            <span class="label"><i class="bi bi-clipboard-check"></i>Deviation Note</span>
-                                <span class="badge-pill badge-gray">Check</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-
-                        <li class="list-group-item" onclick="location.href='@Url.Action("CSATComment", "CSATComment")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>CSAT Comment Analysis</span>
-                                <span class="badge-pill badge-blue">Check</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("RMTCTracker", "RMTCTracker")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>RM TC Report</span>
-                                <span class="badge-pill badge-gray">Check</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        </ul>
-               
-                </div>
-                </div>
-                </div>
-
-        <div class="col-md-4">
-            <div class="card-body">
-                <div class="card-section">
-                    <div class="card-header">
-                        <span><i class="bi bi-diagram-3 me-2"></i>Product Validation </span>
-                    </div>
-                    <ul class="list-group">
-                        <li class="list-group-item" onclick="location.href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-clipboard-check"></i>PhysicalCheck And Visual Inspection</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-
-                        <li class="list-group-item" onclick="location.href='@Url.Action("ElectricalPerformance", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>Electrical  performance</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("ElectricalProtection", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-clipboard-check"></i>Electrical Protection, Safety Test & Reliability Test</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-
-                        <li class="list-group-item" onclick="location.href='@Url.Action("RippleTestReport", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>Ripple Test Reports</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("SURGETestReport", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i> SURGE Test Report</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("TemperatureRiseTest", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>Temperature Rise Test ( TRT )</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("Photometry", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>Photometry</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("InstallationTrial", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i> Installation Trial</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                        <li class="list-group-item" onclick="location.href='@Url.Action("DropTestReport", "ProductValidation")'">
-                            <span class="label"><i class="bi bi-sort-up-alt"></i>Drop Test Report</span>
-                            <i class="bi bi-chevron-right icon-right"></i>
-                        </li>
-                    </ul>
-
                 </div>
             </div>
-        </div>
+
+            <!-- -------- Column 2 -------- -->
+            <div class="col-md-4">
+                <div class="card-body">
+                    <div class="card-section">
+                        <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
+                            <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Tracker</h5>
+
+                            <div class="input-group" style="width:240px;">
+                                <input type="text" id="menuSearch" class="form-control form-control-sm" placeholder="Search Tracker..." />
+                                <div class="input-group-append">
+                                  
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-table">
+                            <!-- AHP Note -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-book"></i> AHP Note</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("AHPNotetracker", "AHPNotetracker")'>AHP Note Format</a></li>
+                                        <li><a href='@Url.Action("SEEIndicees", "SEEIndicees")'>SEE Indices</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- RMTC -->
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-book"></i> Raw Material Test Certificate
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li>
+                                            <a href='@Url.Action("RMTCTracker", "RMTCTracker")'>
+                                                RM TC Report
+                                            </a>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                        <div class="menu-row">
+                            <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-vial"></i>Internal Type Test</div>
+                            </div>
+                            <div class="menu-cell">
+                                <ul class="menu-links">
+                                    <li><a href='@Url.Action("InternalTestReport", "InternalTestReport")'>Internal Type Test Report</a></li>
+                                  
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="menu-row">
+                            <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-cogs"></i>SPM Calculation(Supplier Perfomance Matrxi)</div>
+                            </div>
+                            <div class="menu-cell">
+                                <ul class="menu-links">
+                                    <li><a href='@Url.Action("SPMCalculationSheet", "SPMCalculationSheet")'>SPM Calculation Sheet : Make & Buy Vendor</a></li>
+
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="menu-row">
+                            <div class="menu-cell">
+                                    <div class="menu-section"><i class="fas fa-certificate"></i>Test Certificate</div>
+                            </div>
+                            <div class="menu-cell">
+                                <ul class="menu-links">
+                                    <li><a href='@Url.Action("TestCertificate", "TestCertificate")'>Test Certificate for Sales Submission</a></li>
+
+                                </ul>
+                            </div>
+                        </div>
+                           
+                    </div>
                 </div>
+            </div>
+            </div>
+            
+
+            <!-- -------- Column 3 -------- -->
+            <div class="col-md-4">
+                <div class="card-body">
+                    <div class="card-section">
+                        <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
+                            <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Product Validation</h5>
+
+                            <div class="input-group" style="width:240px;">
+                                <input type="text" id="menuSearch" class="form-control form-control-sm" placeholder="Search Tracker..." />
+                                <div class="input-group-append">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="menu-table">
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Physical Check</div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'>Physical Check & Visual Inspection</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+
+
+                                <ul class="menu-links">
+                                    <li>
+                                        <a href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'>
+                                            <i class="fas fa-eye mr-1"></i> Physical Check & Visual Inspection
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("ElectricalPerformance", "ProductValidation")'>
+                                            <i class="fas fa-bolt mr-1"></i> Electrical Performance
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("ElectricalProtection", "ProductValidation")'>
+                                            <i class="fas fa-shield-alt mr-1"></i> Electrical Protection, Safety & Reliability Test
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("RippleTestReport", "ProductValidation")'>
+                                            <i class="fas fa-wave-square mr-1"></i> Ripple Test Reports
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("SURGETestReport", "ProductValidation")'>
+                                            <i class="fas fa-bolt mr-1"></i> Surge Test Report
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("TemperatureRiseTest", "ProductValidation")'>
+                                            <i class="fas fa-thermometer-three-quarters mr-1"></i> Temperature Rise Test (TRT)
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("Photometry", "ProductValidation")'>
+                                            <i class="fas fa-lightbulb mr-1"></i> Photometry
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("InstallationTrial", "ProductValidation")'>
+                                            <i class="fas fa-tools mr-1"></i> Installation Trial
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href='@Url.Action("DropTestReport", "ProductValidation")'>
+                                            <i class="fas fa-box-open mr-1"></i> Drop Test Report
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+             </div>
+                </div>
+     
+                                       
+
+
+    <!-- Optional arrow rotation -->
+    <style>
+        .ca-chevron {
+            transition: transform .25s ease;
+        }
+
+            .ca-chevron.rotated {
+                transform: rotate(180deg);
+            }
+    </style>
+    <script>
+        $('#correctiveActionMenu').on('shown.bs.collapse', function () {
+          $(this).prev('a').find('.ca-chevron').addClass('rotated');
+        });
+        $('#correctiveActionMenu').on('hidden.bs.collapse', function () {
+          $(this).prev('a').find('.ca-chevron').removeClass('rotated');
+        });
+    </script>
+
 
     <div class="content-wrapper">
         @RenderBody()
@@ -439,7 +624,7 @@
 
 
     <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <!-- Core JS files -->

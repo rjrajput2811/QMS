@@ -1,0 +1,560 @@
+﻿@{
+    ViewData["Title"] = "Ingress Protection (IP) Test Report";
+}
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"]</title>
+
+    <style>
+        /* ==========================
+                   Global / Re-used styles
+                   ========================== */
+
+        /* ensure consistent card border & size */
+        .card {
+            border-radius: 8px;
+            border: 1px solid #ccc; /* same light color as header */
+            background: #fff;
+            margin-bottom: 16px;
+        }
+
+        /* top header card (lighter border like your original) */
+        .header-card {
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+        }
+
+        /* small utilities */
+        .d-flex {
+            display: flex;
+        }
+
+        .justify-between {
+            justify-content: space-between;
+        }
+
+        .align-center {
+            align-items: center;
+        }
+
+        /* Keep table cells tidy & identical size behavior */
+        .table, .table-surge {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 14px;
+            text-align: center;
+        }
+
+            .table th, .table td, .table-surge th, .table-surge td {
+                border: 1.5px solid #000;
+                padding: 6px 8px;
+                vertical-align: middle;
+                box-sizing: border-box;
+            }
+
+        /* header title style (used inside top header card) */
+        .header-title {
+            font-size: x-large;
+            color: #4682B4;
+            font-weight: 700;
+        }
+
+        /* underline inputs (kept from your stylesheet) */
+        .underline-input {
+            border: 0;
+            border-bottom: 1.5px solid #666;
+            border-radius: 0;
+            background: transparent;
+            width: 50%;
+            font-size: 15px;
+            padding: 2px 6px;
+            outline: none;
+            box-shadow: none;
+            vertical-align: middle;
+            transition: border-color 0.2s ease-in-out;
+        }
+
+            .underline-input:focus {
+                border-bottom: 1.5px solid #4682B4;
+            }
+
+        /* ==========================
+                   Soft/underline select styles
+                   (keeps dropdown appearance consistent)
+                   ========================== */
+
+        .soft-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            display: inline-block;
+            width: 95%;
+            min-width: 140px;
+            padding: 8px 32px 8px 10px;
+            font-size: 14px;
+            line-height: 1.2;
+            color: #111;
+            background-color: #fff;
+            border: none;
+            border-bottom: 1.8px solid #cfd9e3; /* bottom-only underline */
+            border-radius: 0 0 6px 6px; /* gentle curve at bottom corners */
+            box-shadow: none;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 5 5-5' stroke='%23666' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+            transition: border-color 0.2s ease-in-out;
+            cursor: pointer;
+            vertical-align: middle;
+            box-sizing: border-box;
+        }
+
+            .soft-select:hover {
+                border-bottom-color: #b0c9e6;
+            }
+
+            .soft-select:focus {
+                outline: none;
+                border-bottom-color: #4a90e2;
+            }
+
+            .soft-select.small {
+                padding: 6px 26px 6px 8px;
+                font-size: 13px;
+                border-radius: 0 0 5px 5px;
+            }
+
+        select.soft-select::-ms-expand {
+            display: none;
+        }
+
+        /* narrow IP rating select */
+        .ip-rating-select {
+            width: 80px;
+            margin-left: 6px;
+            text-align: center;
+            border-bottom: 1.8px solid #cfd9e3;
+            border-radius: 0 0 6px 6px;
+        }
+
+        /* ==========================
+                   Button rectangle used for controls
+                   ========================== */
+        .btn-rectangle {
+            display: inline-block;
+            min-width: 260px;
+            height: 60px;
+            border: 1.5px solid #000;
+            border-radius: 6px;
+            background: #fff;
+            vertical-align: middle;
+            padding: 6px 10px;
+            box-sizing: border-box;
+        }
+
+            .btn-rectangle .inner {
+                display: flex;
+                align-items: center;
+                justify-content: space-around;
+                height: 100%;
+            }
+
+        .btn-outline-success, .btn-outline-danger {
+            transition: all .18s ease-in-out;
+        }
+
+            .btn-outline-success:hover, .btn-outline-danger:hover {
+                transform: scale(1.05);
+            }
+
+        /* per-row delete button (small circular x) */
+        .row-del-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            margin-left: 6px;
+            padding: 0;
+            color: red;
+            font-size: 16px;
+        }
+
+            .row-del-btn:hover {
+                color: darkred;
+                transform: scale(1.1);
+            }
+
+
+        /* ensure tables inside cards look consistent */
+        .card .table thead th {
+            background: #f8f9fa;
+            font-weight: 700;
+        }
+
+        /* small responsive tweak so selects don't overflow */
+        .table td select.soft-select {
+            max-width: 220px;
+        }
+
+        /* keep contenteditable cells minimal height */
+        td[contenteditable="true"] {
+            min-height: 36px;
+            text-align: left;
+        }
+
+        /* small helper for center text */
+        .text-center {
+            text-align: center;
+            .card
+
+        {
+            border-radius: 8px;
+            border: 1.5px solid #000; /* 👈 This is the outer card border */
+            background: #fff;
+            margin-bottom: 16px;
+        }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- =========================
+         Header Card (title + Save/Back)
+         ========================= -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+        <div class="card-body d-flex justify-between align-center" style="padding:18px;">
+            <div style="flex:1; text-align:left;">
+                <span class="header-title">Ingress Protection (IP) Test Report</span>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button id="saveBtn" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                    <i class="fas fa-save" aria-hidden="true"></i> Save
+                </button>
+                <a href="@Url.Action("IngressProtetction","ProductValidation")" class="btn btn-outline-primary" style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================
+         Info Card (top table showing product/report info)
+         ========================= -->
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0px;">
+
+    <div class="card-body" style="padding:16px;">
+        <div class="table-responsive">
+            <!-- ========== TABLE 1 ========== -->
+            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-bottom:0;">
+                <thead>
+                    <tr>
+                        <th colspan="4" style="text-align:center; padding:10px;">
+                            Resistance to Dust and Moisture: As per IS10322
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td colspan="2" style="vertical-align:top; padding:10px 10px 10px 0; padding-left:0;">
+                            <span style="font-weight:700; display:inline-block; margin-left:-4px;">Report No :</span>
+                            <input type="text" class="underline-input"
+                                   style="width:85%; margin-left:4px;"
+                                   placeholder="Enter report number" />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3" style="vertical-align:top; padding:10px 10px 10px 0; padding-left:0;">
+                            <span style="font-weight:700; display:inline-block; margin-left:-1px;">Customer/Project Name :</span>
+                            <input type="text" class="underline-input"
+                                   style="width:83.5%; margin-left:1px;"
+                                   placeholder="Enter customer or project name" />
+                        </td>
+                        <td colspan="1" style="vertical-align:top; padding:10px 10px 10px 0; padding-left:0;">
+                            <span style="font-weight:700; display:inline-block; margin-left:-1px;">Date :</span>
+                            <input type="text" class="underline-input"
+                                   style="width:83%; margin-left:1px;"
+                                   placeholder="dd-mm-yyyy" />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:10px 10px 10px 0; padding-left:0;">
+                            <span style="font-weight:700; display:inline-block; margin-left:-4px;">Product Cat Ref :</span>
+                            <input type="text" class="underline-input"
+                                   placeholder="Enter product reference"
+                                   style="width:64%; margin-left:4px; border-bottom:1.5px solid #000;" />
+                        </td>
+
+                        <td style="padding:10px 10px 10px 0; padding-left:0;">
+                            <span style="font-weight:700; display:inline-block; margin-left:-4px;">Product Description :</span>
+                            <input type="text" class="underline-input"
+                                   placeholder="Enter description"
+                                   style="width:60%; margin-left:4px; border-bottom:1.5px solid #000;" />
+                        </td>
+
+                        <td style="padding:10px 10px 10px 0; padding-left:0;">
+                            <span style="font-weight:700; display:inline-block; margin-left:-4px;">Batch Code :</span>
+                            <input type="text" class="underline-input"
+                                   style="width:70%; margin-left:4px;"
+                                   placeholder="Batch" />
+                        </td>
+
+                        <td style="padding:10px 10px 10px 0; padding-left:0;">
+                            <span style="font-weight:700; display:inline-block; margin-left:-4px;">Quantity :</span>
+                            <input type="text" class="underline-input"
+                                   style="width:73%; margin-left:4px;"
+                                   placeholder="Qty" />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="3" style="padding:10px; text-align:left;">
+                            <span style="font-weight:700; color:red;">IP Rating -</span>
+                            <select id="ipRating" class="soft-select small ip-rating-select">
+                                <option value="">Select</option>
+                                <option value="20">20</option>
+                                <option value="40">40</option>
+                                <option value="44">44</option>
+                                <option value="54">54</option>
+                                <option value="65">65</option>
+                                <option value="66">66</option>
+                                <option value="67">67</option>
+                                <option value="68">68</option>
+                            </select>
+                        </td>
+                        <td style="padding:10px 10px 10px 0; padding-left:0;">
+                            <b style="font-weight:700; display:inline-block; margin-left:-4px;">PKD -</b>
+                            <input type="text" class="underline-input"
+                                   style="width:82%; margin-left:4px;"
+                                   placeholder="Enter PKD" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========== TABLE 2 (Row Controls) ========== -->
+        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+            <table class="table table-bordered"
+                   style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                <tbody>
+                    <tr>
+                        <td colspan="6" style="padding:12px; text-align:left;">
+                            <button id="addRowBtn"
+                                    type="button"
+                                    class="btn btn-outline-success"
+                                    style="width:120px; font-size:15px; border-radius:6px;">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ========== TABLE 3 (IP Test Table) ========== -->
+        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+            <table id="ipTestTable" class="table table-surge"
+                   style="width:100%; border-collapse:collapse; margin-top:-1.5px;">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width:5%;">Sr. No.</th>
+                        <th rowspan="2" style="width:20%;">Description</th>
+                        <th colspan="2" style="width:40%;">IP Test</th>
+                        <th rowspan="2" style="width:20%;">Observation</th>
+                        <th rowspan="2" style="width:10%; color:red;">Result (Pass / Fail / N/A)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="3" style="text-align:left;">
+                            <strong>Tested By :</strong>
+                            <input type="text" class="underline-input"
+                                   placeholder="Enter name"
+                                   style="width:65%; margin-left:10px; border-bottom:1.5px solid #000;" />
+                        </td>
+                        <td colspan="3" style="text-align:left;">
+                            <strong>Verified By :</strong>
+                            <input type="text" class="underline-input"
+                                   placeholder="Enter name"
+                                   style="width:65%; margin-left:10px; border-bottom:1.5px solid #000;" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+    <!-- =========================
+         Scripts (add/delete + per-row delete + renumbering)
+         ========================= -->
+    <script>
+        (function () {
+            const tbody = document.querySelector('#ipTestTable tbody');
+            const addBtn = document.getElementById('addRowBtn');
+            const deleteLastBtn = document.getElementById('deleteRowBtn');
+
+            // Find SR rows (exclude final sign-off row which has colspan)
+            function getSRRows() {
+                return Array.from(tbody.querySelectorAll('tr')).filter(r => {
+                    const first = r.cells[0];
+                    if (!first) return false;
+                    return !first.hasAttribute('colspan'); // sign-off row has colspan -> exclude
+                });
+            }
+
+            // Renumber all SR cells 1..N and ensure each has a delete button
+            function renumber() {
+                const rows = getSRRows();
+                rows.forEach((r, idx) => {
+                    const td = r.cells[0];
+                    const btn = td.querySelector('.row-del-btn');
+                    td.textContent = (idx + 1) + ' ';
+                    if (btn) td.appendChild(btn);
+                    else {
+                        const newBtn = createDeleteButton();
+                        td.appendChild(newBtn);
+                    }
+                });
+            }
+
+            // Create a per-row delete button and attach event (no confirm)
+            function createDeleteButton() {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'row-del-btn';
+                btn.title = 'Delete this row';
+
+                // Use Font Awesome trash icon instead of ×
+                btn.innerHTML = '<i class="fa fa-trash"></i>';
+
+                btn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    const tr = btn.closest('tr');
+                    if (!tr) return;
+                    tr.remove();
+                    renumber();
+                });
+                return btn;
+            }
+
+
+            // Build a new row (same structure as existing rows)
+            function buildRow() {
+                const tr = document.createElement('tr');
+
+                // SR cell
+                const td0 = document.createElement('td');
+                td0.style.height = '250px';
+                td0.style.textAlign = 'left';
+                // number will be set by renumber()
+                td0.textContent = '0 ';
+                td0.appendChild(createDeleteButton());
+                tr.appendChild(td0);
+
+                // 4 editable cells
+                for (let i = 0; i < 4; i++) {
+                    const td = document.createElement('td');
+                    td.contentEditable = true;
+                    td.style.textAlign = 'left';
+                    tr.appendChild(td);
+                }
+
+                // last select cell
+                const tdLast = document.createElement('td');
+                const select = document.createElement('select');
+                select.className = 'soft-select';
+                select.innerHTML = `
+                      <option value="">Select</option>
+                      <option>Pass</option>
+                      <option>Fail</option>
+                      <option>Not Applicable</option>
+                    `;
+                select.style.width = '95%';
+                tdLast.appendChild(select);
+                tr.appendChild(tdLast);
+
+                return tr;
+            }
+
+            // Add row handler: insert before the sign-off row (which has colspan)
+            function addRow() {
+                const newRow = buildRow();
+
+                // insert before final sign-off row if exists
+                const allRows = Array.from(tbody.querySelectorAll('tr'));
+                const lastRow = allRows[allRows.length - 1];
+                if (lastRow && lastRow.cells && lastRow.cells[0] && lastRow.cells[0].hasAttribute('colspan')) {
+                    tbody.insertBefore(newRow, lastRow);
+                } else {
+                    tbody.appendChild(newRow);
+                }
+                renumber();
+                newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            // Delete last row handler (no confirm)
+            function deleteLastRow() {
+                const rows = getSRRows();
+                if (rows.length === 0) return;
+                const last = rows[rows.length - 1];
+                last.remove();
+                renumber();
+            }
+
+            // Ensure any existing SR rows have delete buttons and are renumbered.
+            // If there are NO SR rows at all, create one (ensures at least one row on page load).
+            function init() {
+                const rows = getSRRows();
+                if (rows.length === 0) {
+                    // create one initial row so the table always has at least one row on load
+                    addRow();
+                    return;
+                }
+                rows.forEach(r => {
+                    const td = r.cells[0];
+                    if (!td.querySelector('.row-del-btn')) {
+                        td.appendChild(createDeleteButton());
+                    }
+                });
+                renumber();
+            }
+
+            // Attach events
+            if (addBtn) addBtn.addEventListener('click', addRow);
+            if (deleteLastBtn) deleteLastBtn.addEventListener('click', deleteLastRow);
+
+            // Init on DOM ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+            // Optional: allow Ctrl+Enter to add row
+            document.addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') addRow();
+            });
+        })();
+    </script>
+
+
+    <!-- font-awesome icons fallback: if not available, icons will be empty but buttons still work.
+         If you use FontAwesome locally or via CDN, keep it loaded in your layout. -->
+
+</body>
+</html>
+
+@section HideSidebar { }

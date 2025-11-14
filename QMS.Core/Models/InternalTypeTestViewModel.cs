@@ -58,8 +58,8 @@ namespace QMS.Core.ViewModels
         public int? Internal_TypeId { get; set; }
 
         // name used by TVP is SeqNo
-        [JsonPropertyName("SrNo")]                 // map client's SrNo -> SeqNo
-        public int? SeqNo { get; set; }
+        //[JsonPropertyName("SrNo")]                 // map client's SrNo -> SeqNo
+        //public int? SeqNo { get; set; }
 
         // map JSON property ParticularOfTest -> Perticular_Test (DB column)
         [JsonPropertyName("ParticularOfTest")]

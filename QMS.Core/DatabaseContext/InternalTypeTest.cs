@@ -47,9 +47,10 @@ namespace QMS.Core.DatabaseContext
     public class InternalTypeTestDetail : SqlTable
     {
         public bool IsDeleted { get; set; } = false;
-        public int Internal_TypeId { get; set; } 
+        public int Internal_TypeId { get; set; }
+        public int InternalType_DetId { get; set; }
 
-        public int? SeqNo { get; set; }
+        //public int? SeqNo { get; set; }
         public string? Perticular_Test { get; set; }
         public string? Test_Method { get; set; }
         public string? Test_Requirement { get; set; }
@@ -57,7 +58,7 @@ namespace QMS.Core.DatabaseContext
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }
-        public DateTime? UpdatedDated { get; set; }
+        public DateTime? UpdatedDate { get; set; }
 
         // Navigation back to parent
         [ForeignKey("Internal_TypeId")]

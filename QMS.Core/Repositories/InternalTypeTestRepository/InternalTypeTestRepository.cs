@@ -102,7 +102,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
             {
                 var row = dt.NewRow();
                 row["InternalType_DetId"] = d.InternalType_DetId > 0 ? d.InternalType_DetId : DBNull.Value;
-                row["SeqNo"] = d.SeqNo.HasValue ? (object)d.SeqNo.Value : DBNull.Value;
+                //row["SeqNo"] = d.SeqNo.HasValue ? (object)d.SeqNo.Value : DBNull.Value;
                 row["Perticular_Test"] = string.IsNullOrEmpty(d.Perticular_Test) ? (object)DBNull.Value : d.Perticular_Test!;
                 row["Test_Method"] = string.IsNullOrEmpty(d.Test_Method) ? (object)DBNull.Value : d.Test_Method!;
                 row["Test_Requirement"] = string.IsNullOrEmpty(d.Test_Requirement) ? (object)DBNull.Value : d.Test_Requirement!;
@@ -166,70 +166,46 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                 throw;
             }
         }
-
         public async Task<InternalTypeTestViewModel> GetInternalTypeTestByIdAsync(int internalTypeId)
         {
             try
             {
-                var parameters = new[]
+                var sql = "EXEC sp_Get_InternalTypeTest_ById @Internal_TypeId";
+
+                var conn = _dbContext.Database.GetDbConnection();
+                if (conn.State != System.Data.ConnectionState.Open)
+                    await conn.OpenAsync();
+
+                using (var multi = await conn.QueryMultipleAsync(sql, new { Internal_TypeId = internalTypeId }))
                 {
-            new SqlParameter("@Internal_TypeId", internalTypeId),
-        };
+                    // PARENT (1st result set)
+                    var header = (await multi.ReadAsync<InternalTypeTestViewModel>()).FirstOrDefault();
+                    if (header == null)
+                        return null;
 
-                var sql = @"EXEC sp_Get_InternalTypeTest_ById @Internal_TypeId";
+                    // CHILD (2nd result set)
+                    var details = (await multi.ReadAsync<InternalTypeTestDetailViewModel>()).ToList();
 
-                var parent = await Task.Run(() => _dbContext.InternalTypeTests
-                    .FromSqlRaw(sql, parameters)
-                    .AsEnumerable()
-                    .Select(x => new InternalTypeTestViewModel
-                    {
-                        Id = x.Id,
-                        Report_No = x.Report_No,
-                        Date = x.Date,
-                        Cust_Name = x.Cust_Name,
-                        Samp_Identi_Lab = x.Samp_Identi_Lab,
-                        Samp_Desc = x.Samp_Desc,
-                        Prod_Cat_Code = x.Prod_Cat_Code,
-                        Input_Voltage = x.Input_Voltage,
-                        Ref_Standard = x.Ref_Standard,
-                        TestedBy = x.TestedBy,
-                        CreatedBy = x.CreatedBy,
-                        CreatedDate = x.CreatedDate,
-                        UpdatedBy = x.UpdatedBy,
-                        UpdatedDate = x.UpdatedDate,
-                        Deleted = x.Deleted
-                    })
-                    .FirstOrDefault());
+                    // Build final ViewModel WITH details
+                    header.Details = details
+                        .Select(d => new InternalTypeTestDetailViewModel
+                        {
+                            InternalType_DetId = d.InternalType_DetId,
+                            Internal_TypeId = d.Internal_TypeId,
+                            Perticular_Test = d.Perticular_Test,
+                            Test_Method = d.Test_Method,
+                            Test_Requirement = d.Test_Requirement,
+                            Test_Result = d.Test_Result,
+                            CreatedBy = d.CreatedBy,
+                            CreatedDate = d.CreatedDate,
+                            UpdatedBy = d.UpdatedBy,
+                            UpdatedDate = d.UpdatedDate,
+                            IsDeleted = d.IsDeleted
+                        })
+                        .ToList();
 
-                if (parent == null)
-                    return null;
-
-                // 2) get child details via EF (assumes DbSet name: Test_Detail_InternalTypeTest or adjust accordingly)
-                var details = await _dbContext.InternalTypeTestDetails  // <-- replace with your actual DbSet for details
-                   .Where(d => d.IsDeleted == false && d.Internal_TypeId == internalTypeId)
-                    .OrderBy(d => d.Internal_TypeId)
-                    .Select(d => new InternalTypeTestDetailViewModel
-                    {
-
-                        Internal_TypeId = d.Internal_TypeId,
-                        Perticular_Test = d.Perticular_Test,
-                        Test_Method = d.Test_Method,
-                        Test_Requirement = d.Test_Requirement,
-                        Test_Result = d.Test_Result,
-                        CreatedBy = d.CreatedBy,
-                        CreatedDate = d.CreatedDate,
-                        UpdatedBy = d.UpdatedBy,
-                  
-                        IsDeleted = d.IsDeleted
-                    })
-                    .ToListAsync().ConfigureAwait(false);
-
-                parent.Details = details;
-
-                // Optionally populate user name(s) similar to your electrical method:
-                // if (parent.AddedBy > 0) parent.User = await _dbContext.User.Where(u => u.Id == parent.AddedBy).Select(u => u.Name).FirstOrDefaultAsync();
-
-                return parent;
+                    return header;
+                }
             }
             catch (Exception ex)
             {
@@ -237,6 +213,8 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                 throw;
             }
         }
+
+
 
 
     }

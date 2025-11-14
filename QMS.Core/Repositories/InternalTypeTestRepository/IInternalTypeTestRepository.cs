@@ -17,7 +17,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
         Task<InternalTypeTestViewModel> GetInternalTypeTestByIdAsync(int internalTypeId);
 
  
-        //Task<OperationResult> UpdateInternalTypeTestAsync(InternalTypeTestViewModel model);
-        //Task<OperationResult> DeleteInternalTypeTestAsync(int internalTypeId);
+        Task<OperationResult> UpdateInternalTypeTestAsync(InternalTypeTestViewModel model);
+        Task<OperationResult> DeleteInternalTypeTestAsync(int internalTypeId);
     }
 }

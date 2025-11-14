@@ -52,6 +52,7 @@ namespace QMS.Core.ViewModels
     // =======================
     public class InternalTypeTestDetailViewModel
     {
+        public int Id { get; set; }
         public int InternalType_DetId { get; set; }
 
         // optional FK if you maintain it client-side

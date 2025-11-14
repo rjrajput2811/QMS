@@ -83,6 +83,68 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                 };
             }
         }
+        public async Task<OperationResult> UpdateInternalTypeTestAsync(InternalTypeTestViewModel model)
+        {
+            try
+            {
+                if (model == null || model.Id <= 0)
+                {
+                    return new OperationResult
+                    {
+                        Success = false,
+                        Message = "Invalid model. Internal_TypeId is required for update."
+                    };
+                }
+
+                // Build TVP for child details (re-uses your existing helper)
+                var detailsTvp = BuildDetailsDataTable(model.Details);
+
+                var parameters = new[]
+                {
+            new SqlParameter("@Internal_TypeId", SqlDbType.Int) { Value = model.Id },
+
+            new SqlParameter("@Report_No", SqlDbType.NVarChar, 500) { Value = model.Report_No ?? (object)DBNull.Value },
+            new SqlParameter("@Date", SqlDbType.DateTime) { Value = model.Date ?? (object)DBNull.Value },
+            new SqlParameter("@Cust_Name", SqlDbType.NVarChar, -1) { Value = model.Cust_Name ?? (object)DBNull.Value },
+            new SqlParameter("@Samp_Identi_Lab", SqlDbType.NVarChar, 500) { Value = model.Samp_Identi_Lab ?? (object)DBNull.Value },
+            new SqlParameter("@Samp_Desc", SqlDbType.NVarChar, 500) { Value = model.Samp_Desc ?? (object)DBNull.Value },
+            new SqlParameter("@Prod_Cat_Code", SqlDbType.NVarChar, 500) { Value = model.Prod_Cat_Code ?? (object)DBNull.Value },
+            new SqlParameter("@Input_Voltage", SqlDbType.NVarChar, 500) { Value = model.Input_Voltage ?? (object)DBNull.Value },
+            new SqlParameter("@Ref_Standard", SqlDbType.NVarChar, -1) { Value = model.Ref_Standard ?? (object)DBNull.Value },
+            new SqlParameter("@TestedBy", SqlDbType.NVarChar, 500) { Value = model.TestedBy ?? (object)DBNull.Value },
+
+            // UpdatedBy (SP expects NVARCHAR(100) in your script)
+            new SqlParameter("@UpdatedBy", SqlDbType.NVarChar, 100) { Value = model.UpdatedBy ?? (object)DBNull.Value },
+
+            new SqlParameter("@Details", SqlDbType.Structured)
+            {
+                TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
+                Value = detailsTvp
+            }
+        };
+
+                var sql = "EXEC sp_Update_InternalTypeTest " +
+                          "@Internal_TypeId, @Report_No, @Date, @Cust_Name, @Samp_Identi_Lab, @Samp_Desc, " +
+                          "@Prod_Cat_Code, @Input_Voltage, @Ref_Standard, @TestedBy, @UpdatedBy, @Details";
+
+                await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
+
+                return new OperationResult
+                {
+                    Success = true,
+                    Message = "Internal type test updated successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return new OperationResult
+                {
+                    Success = false,
+                    Message = "Failed to update internal type test: " + ex.Message
+                };
+            }
+        }
 
         private static DataTable BuildDetailsDataTable(System.Collections.Generic.IEnumerable<InternalTypeTestDetailViewModel>? details)
         {
@@ -166,6 +228,19 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                 throw;
             }
         }
+        public async Task<OperationResult> DeleteInternalTypeTestAsync(int id)
+        {
+            try
+            {
+                var result = await base.DeleteAsync<InternalTypeTest>(id);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
         public async Task<InternalTypeTestViewModel> GetInternalTypeTestByIdAsync(int internalTypeId)
         {
             try
@@ -190,6 +265,8 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                     header.Details = details
                         .Select(d => new InternalTypeTestDetailViewModel
                         {
+
+                            Id = d.Id,
                             InternalType_DetId = d.InternalType_DetId,
                             Internal_TypeId = d.Internal_TypeId,
                             Perticular_Test = d.Perticular_Test,

@@ -37,6 +37,7 @@ using QMS.Core.Repositories.ElectricalProtectionRepository;
 using QMS.Core.Repositories.InternalTypeTestRepo;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
+using QMS.Core.Repositories.CSATSummaryRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -85,6 +86,8 @@ builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerfor
 builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 builder.Services.AddScoped<IElectricalProtectionRepository, ElectricalProtectionRepository>();
 builder.Services.AddScoped<IInternalTypeTestRepository, InternalTypeTestRepository>();
+builder.Services.AddTransient<ICSATSummaryRepository, CSATSummaryRepository>();
+
 
 
 //

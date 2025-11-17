@@ -1,0 +1,480 @@
+﻿@{
+    ViewData["Title"] = "Glow Wire Test Report";
+}
+
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<script src="~/js/tabulator.min.js"></script>
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    /* core styles (kept from your page) */
+    .header-table, .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .header-table {
+        border: 1px solid #000;
+    }
+
+        .header-table td, .pv-table td, .pv-table th {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            vertical-align: middle;
+            box-sizing: border-box;
+            white-space: normal;
+        }
+
+    .field-label {
+        font-weight: 600;
+        margin-right: 6px;
+        color: #000;
+    }
+
+    .inline-input, .inline-date {
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        padding: 2px 4px;
+        outline: none;
+        transition: border-color .2s;
+    }
+
+        .inline-input:focus, .inline-date:focus {
+            border-bottom-color: #4682B4;
+        }
+
+    .pv-table th {
+        background: #f8f9fa;
+        font-weight: 700;
+        text-align: center;
+        padding: 8px 10px;
+    }
+
+    .pv-table td[contenteditable="true"] {
+        min-height: 28px;
+        cursor: text;
+        text-align: left;
+    }
+
+    .result-select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 140px;
+        padding: 8px 28px 8px 10px;
+        font-size: 14px;
+        background: #fff;
+        border: none;
+        outline: none;
+        text-align-last: center;
+        border-bottom: 2px solid transparent;
+        border-radius: 0 0 10px 10px;
+        box-shadow: inset 0 -2px 0 #d5dce5, 0 2px 4px rgba(0,0,0,0.05);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'><path fill='black' d='M5 7l5 5 5-5'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 14px;
+    }
+
+        .result-select:focus {
+            box-shadow: inset 0 -2px 0 #4682B4, 0 2px 6px rgba(70,130,180,0.15);
+        }
+
+    /* Photo input layout (ONE file input per cell) */
+    .photo-cell-files {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        justify-content: flex-start;
+    }
+
+    .photo-input-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: flex-start;
+        min-width: 160px;
+        max-width: 48%;
+        box-sizing: border-box;
+    }
+
+        .photo-input-wrap input[type="file"] {
+            display: block;
+            width: 100%;
+        }
+
+    .photo-filename {
+        font-size: 13px;
+        color: #333;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    /* reduce spacing between stacked tables */
+    .pv-table + .pv-table {
+        margin-top: 0;
+        border-top-width: 1px;
+    }
+
+    .btn {
+        margin: 0;
+    }
+</style>
+
+<!-- Header card -->
+<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+    <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+        <div><b style="font-size:x-large; color:#4682B4;">Glow Wire Test Report</b></div>
+
+        <div>
+            <button id="saveChangeNoteButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="saveChangeNote()" style="width:120px; font-size:15px;">
+                <i class="fas fa-save mr-1"></i>Save
+            </button>
+
+            <a href='@Url.Action("GlowWireTestReport", "GlowWireTest")' class="btn btn-outline-primary" style="width:120px; font-size:15px;">
+                <i class="fas fa-arrow-left"></i> BACK
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Reference block + Add button -->
+<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+    <div class="card-body">
+        <table class="header-table" style="margin:0;">
+            <tbody>
+                <tr>
+                    <td colspan="4" style="text-align:center; padding:10px 12px;">
+                        <span class="field-label">Reference Standard :</span>
+                        <input type="text" name="ReferenceStandard" class="inline-input" placeholder="Enter Reference Standard" style="width:20%; text-align:center;" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="3"></td>
+                    <td style="padding:10px 12px;">
+                        <span class="field-label">Report No.:</span>
+                        <input type="text" name="ReportNo" class="inline-input" style="width:60%;" placeholder="Enter Report No." />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="3" style="padding:10px 12px;">
+                        <span class="field-label">Customer / Project Name :</span>
+                        <input type="text" name="CustomerName" class="inline-input" style="width:70%;" placeholder="Enter Customer / Project" />
+                    </td>
+                    <td style="padding:10px 12px;">
+                        <span class="field-label">Date :</span>
+                        <input type="date" name="ReportDate" class="inline-date" style="width:70%;" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td style="padding:10px 12px;">
+                        <span class="field-label">Product Cat Ref :</span>
+                        <input type="text" name="ProductCatRef" class="inline-input" placeholder="Enter Product Cat Ref" style="width:50%;" />
+                    </td>
+                    <td style="padding:10px 12px;">
+                        <span class="field-label">Product Description :</span>
+                        <input type="text" name="ProductDescription" class="inline-input" placeholder="Enter Product Description" style="width:50%;" />
+                    </td>
+                    <td style="padding:10px 12px;">
+                        <span class="field-label">Batch Code :</span>
+                        <input type="text" name="BatchCode" class="inline-input" placeholder="Enter Batch Code" style="width:50%;" />
+                    </td>
+                    <td style="padding:10px 12px;">
+                        <span class="field-label">Quantity :</span>
+                        <input type="number" name="Quantity" class="inline-input" placeholder="0" style="width:50%;" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="2" style="padding:10px 12px;">
+                        <span class="field-label">Part Description :</span>
+                        <input type="text" name="PartDescription" class="inline-input" placeholder="Enter Part Description" style="width:70%;" />
+                    </td>
+                    <td colspan="2" style="padding:10px 12px;">
+                        <span class="field-label">PKD :</span>
+                        <input type="text" name="PKD" class="inline-input" placeholder="Enter PKD" style="width:60%;" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <table class="header-table" style="margin-top:-1px;">
+            <tbody>
+                <tr>
+                    <td colspan="4" style="padding:10px 12px; text-align:left;">
+                        <button id="addTestRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px;">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Tests table -->
+        <!-- ================= TEST TABLE ================= -->
+        <table class="pv-table" id="glowTestsTable" style="margin-top:0;">
+            <thead>
+                <tr>
+                    <th style="width:6%; text-align:center;">Sr. No.</th>
+                    <th style="width:36%; text-align:center;">TESTS WITH CLAUSE REFERENCE</th>
+                    <th style="width:28%; text-align:center;">SPECIFIED REQUIREMENTS</th>
+                    <th style="width:18%; text-align:center;">Observation</th>
+                    <th style="width:12%; text-align:center; color:#c0392b;">Result</th>
+                </tr>
+            </thead>
+
+            <tbody id="glowTestsTbody">
+                <tr>
+                    <td style="text-align:center;">
+                        <span class="srno-test">1</span>
+                        <button type="button" class="btn btn-link p-0 ml-2 delete-test-row" style="color:#c0392b;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td contenteditable="true"></td>
+                    <td style="text-align:center;">
+                        <select class="result-select">
+                            <option value="">Select</option>
+                            <option>Pass</option>
+                            <option>Fail</option>
+                            <option>Not Applicable</option>
+                        </select>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ================= PHOTOS TABLE ================= -->
+        <table class="pv-table" id="glowPhotosTable" style="margin-top:0;">
+            <thead>
+                <tr>
+                    <th style="width:6%; text-align:center;">Sr. No.</th>
+                    <th style="width:47%; text-align:center;">Photo during testing</th>
+                    <th style="width:47%; text-align:center;">Photo after testing</th>
+                </tr>
+            </thead>
+
+            <tbody id="glowPhotosTbody">
+                <tr>
+                    <td style="text-align:center; vertical-align:top;">
+                        <span class="srno-photo">1</span>
+                        <button type="button" class="btn btn-link p-0 ml-2 delete-photo-row" style="color:#c0392b;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+
+                    <td class="photo-cell" data-side="during"></td>
+                    <td class="photo-cell" data-side="after"></td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="pv-table" style="margin-top:0; width:100%; border-collapse:collapse;">
+            <tbody>
+                <tr>
+                    <td style="padding:10px 12px; white-space:nowrap;">
+
+                        <span style="color:#c0392b; font-weight:700; margin-right:20px;">
+                            Test Result:
+                        </span>
+
+                        <select id="finalTestResult" class="result-select" style="width:180px;">
+                            <option value="">Select</option>
+                            <option value="Pass">Pass</option>
+                            <option value="Fail">Fail</option>
+                        </select>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
+            <tbody>
+
+                <!-- Empty Row -->
+                <tr>
+                    <td colspan="4" style="height:80px;"></td>
+                </tr>
+
+                <!-- Tested By / Verified By Row -->
+                <tr>
+                    <!-- Tested By -->
+                    <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
+                        <span class="field-label">Tested By :</span>
+                        <input type="text" name="TestedBy" class="inline-input" placeholder="Enter Name" style="width:60%;" />
+                    </td>
+
+                    <!-- Verified By -->
+                    <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                        <span class="field-label">Verified By :</span>
+                        <input type="text" name="VerifiedBy" class="inline-input" placeholder="Enter Name" style="width:60%;" />
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+        <!-- ================= SCRIPT ================= -->
+        <script>
+            (function () {
+
+                const testsTbody = document.getElementById("glowTestsTbody");
+                const photosTbody = document.getElementById("glowPhotosTbody");
+                const addBtn = document.getElementById("addTestRowBtn");
+
+                /* ------- FILE INPUT BUILDER (ONE per cell, filename shows ONCE) ------- */
+                function createPhotoInput() {
+                    const wrap = document.createElement("div");
+
+                    const inp = document.createElement("input");
+                    inp.type = "file";
+                    inp.accept = "image/*";
+
+                    const label = document.createElement("div");
+                    label.className = "photo-filename";
+                    label.style.fontSize = "13px";
+
+                    inp.addEventListener("change", () => {
+                        label.textContent = inp.files.length ? inp.files[0].name : "";
+                    });
+
+                    wrap.appendChild(inp);
+                    wrap.appendChild(label);
+
+                    return wrap;
+                }
+
+                /* ------- CREATE PHOTO ROW ------- */
+                function createPhotoRow() {
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td style="text-align:center; vertical-align:top;">
+                            <span class="srno-photo"></span>
+                            <button type="button" class="btn btn-link p-0 ml-2 delete-photo-row" style="color:#c0392b;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        <td class="photo-cell" data-side="during"></td>
+                        <td class="photo-cell" data-side="after"></td>
+                    `;
+
+                    tr.querySelector('[data-side="during"]').appendChild(createPhotoInput());
+                    tr.querySelector('[data-side="after"]').appendChild(createPhotoInput());
+
+                    return tr;
+                }
+
+                /* ------- CREATE TEST ROW ------- */
+                function createTestRow() {
+                    const tr = document.createElement("tr");
+
+                    tr.innerHTML = `
+                        <td style="text-align:center;">
+                            <span class="srno-test"></span>
+                            <button type="button" class="btn btn-link p-0 ml-2 delete-test-row" style="color:#c0392b;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td style="text-align:center;">
+                            <select class="result-select">
+                                <option value="">Select</option>
+                                <option>Pass</option>
+                                <option>Fail</option>
+                                <option>Not Applicable</option>
+                            </select>
+                        </td>
+                    `;
+
+                    return tr;
+                }
+
+                /* ------- ADD NEW ROWS (TEST + PHOTO) ------- */
+                function addRow() {
+                    const testRow = createTestRow();
+                    const photoRow = createPhotoRow();
+
+                    testsTbody.appendChild(testRow);
+                    photosTbody.appendChild(photoRow);
+
+                    refreshSerials();
+                }
+
+                /* ------- DELETE TEST ROW (AND MATCHING PHOTO ROW) ------- */
+                testsTbody.addEventListener("click", function (e) {
+                    const del = e.target.closest(".delete-test-row");
+                    if (!del) return;
+
+                    const tr = del.closest("tr");
+                    const index = [...testsTbody.children].indexOf(tr);
+
+                    testsTbody.removeChild(tr);
+
+                    if (photosTbody.children[index])
+                        photosTbody.removeChild(photosTbody.children[index]);
+
+                    refreshSerials();
+                });
+
+                /* ------- DELETE PHOTO ROW (AND MATCHING TEST ROW) ------- */
+                photosTbody.addEventListener("click", function (e) {
+                    const del = e.target.closest(".delete-photo-row");
+                    if (!del) return;
+
+                    const tr = del.closest("tr");
+                    const index = [...photosTbody.children].indexOf(tr);
+
+                    photosTbody.removeChild(tr);
+
+                    if (testsTbody.children[index])
+                        testsTbody.removeChild(testsTbody.children[index]);
+
+                    refreshSerials();
+                });
+
+                /* ------- SERIAL NUMBER REFRESH ------- */
+                function refreshSerials() {
+                    [...testsTbody.children].forEach((tr, i) => {
+                        tr.querySelector(".srno-test").textContent = i + 1;
+                    });
+
+                    [...photosTbody.children].forEach((tr, i) => {
+                        tr.querySelector(".srno-photo").textContent = i + 1;
+                    });
+                }
+
+                /* ------- INITIAL FIX (inject file inputs into first row) ------- */
+                (function init() {
+                    document
+                        .querySelector('[data-side="during"]')
+                        .appendChild(createPhotoInput());
+
+                    document
+                        .querySelector('[data-side="after"]')
+                        .appendChild(createPhotoInput());
+
+                    refreshSerials();
+                })();
+
+                /* ------- ADD BUTTON ACTION ------- */
+                addBtn.addEventListener("click", addRow);
+
+            })();
+        </script>
+
+    </div>
+</div>
+
+@section HideSidebar { }

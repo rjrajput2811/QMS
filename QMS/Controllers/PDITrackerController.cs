@@ -243,7 +243,7 @@ namespace QMS.Controllers
                 if (ModelState.IsValid)
                 {
                     var operationResult = new OperationResult();
-                    bool existingResult = await _pdiTrackerRepository.CheckBatchCodePDIDuplicate(model.Batch_Code.Trim(), 0);
+                    bool existingResult = await _pdiTrackerRepository.CheckBatchCodePDIDuplicate(model.Vendor.Trim(), 0);
                     if (!existingResult)
                     {
                         model.CreatedBy = HttpContext.Session.GetString("FullName");
@@ -275,7 +275,7 @@ namespace QMS.Controllers
                 if (ModelState.IsValid)
                 {
                     var operationResult = new OperationResult();
-                    bool existingResult = await _pdiTrackerRepository.CheckBatchCodePDIDuplicate(model.Batch_Code.Trim(), model.Id);
+                    bool existingResult = await _pdiTrackerRepository.CheckBatchCodePDIDuplicate(model.Vendor.Trim(), model.Id);
                     if (!existingResult)
                     {
                         model.UpdatedDate = DateTime.Now;

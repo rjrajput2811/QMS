@@ -16,5 +16,6 @@ namespace QMS.Core.Repositories.PDIAuthSignRepository
         Task<OperationResult> UpdateAsync(PDI_Auth_Signatory entity, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int id);
         Task<bool> UpdateAttachmentAsync(int id, string fileName,string type);
+        Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync();
     }
 }

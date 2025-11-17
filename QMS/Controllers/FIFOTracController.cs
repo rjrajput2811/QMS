@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using QMS.Core.DatabaseContext;
+using QMS.Core.Models;
 using QMS.Core.Repositories.BisProjectTracRepository;
 using QMS.Core.Repositories.FIFOTrackerRepository;
 using QMS.Core.Services.SystemLogs;
@@ -135,6 +136,115 @@ namespace QMS.Controllers
                 _systemLogService.WriteLog(ex.Message);
                 throw;
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetTestReqDropdown()
+        {
+            try
+            {
+                var vendorList = await _fIFOTrackerRepository.GetTestReqDropdownAsync();
+                return Json(vendorList);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                return StatusCode(500, "Error retrieving TestReq dropdown.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetTestReqFIFOByIdAsync(int Id)
+        {
+            var instId = await _fIFOTrackerRepository.GetTestReqFIFOByIdAsync(Id);
+            return Json(instId);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetTestReqFIFOAsync()
+        {
+            var instList = await _fIFOTrackerRepository.GetTestReqFIFOAsync();
+            return Json(instList);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> CreateTestReqFIFOAsync([FromBody] TestReqFIFOViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _fIFOTrackerRepository.CheckTestReqFIFODuplicate(model.Test.Trim(), 0);
+                    if (!existingResult)
+                    {
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        model.CreatedDate = DateTime.Now;
+                        operationResult = await _fIFOTrackerRepository.CreateTestReqFIFOAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdateTestReqFIFOAsync([FromBody] TestReqFIFOViewModel model)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _fIFOTrackerRepository.CheckTestReqFIFODuplicate(model.Test.Trim(), model.Id);
+                    if (!existingResult)
+                    {
+                        model.UpdatedDate = DateTime.Now;
+                        model.UpdatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _fIFOTrackerRepository.UpdateTestReqFIFOAsync(model);
+                        return Json(operationResult);
+                    }
+                    else
+                    {
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
+                    }
+                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> DeleteTestReqFIFOAsync(int id)
+        {
+            try
+            {
+                var operationResult = await _fIFOTrackerRepository.DeleteTestReqFIFOAsync(id);
+                return Json(operationResult);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+
         }
 
     }

@@ -24,6 +24,8 @@ namespace QMS.Core.Models
 
         public string? FY { get; set; }
 
+        public string? Categorised_Scope { get; set; }
+
         public DateTime? CreatedDate { get; set; }
 
         public string? CreatedBy { get; set; }

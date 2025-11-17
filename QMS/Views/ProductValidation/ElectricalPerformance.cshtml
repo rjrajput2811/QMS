@@ -266,18 +266,18 @@
         var table = '';
         const searchTerms = {};
         $(document).ready(function () {
-            loadProductValidationGridData();
+            loadElectricalperformanceGridData();
         });
 
-        function loadProductValidationGridData() {
+        function loadElectricalperformanceGridData() {
             Blockloadershow();
             $.ajax({
-                url: '@Url.Action("GetElectricalPeemoncsList", "ProductValidation")',
+                url: '@Url.Action("GetElectricalPerformanceList", "ProductValidation")',
                 type: 'GET',
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data)) {
-                        OnProductValidationGridLoad(data);
+                        OnElectricalperformanceLoad(data);
                     }
                     else {
                         showDangerAlert('No data available to load.');
@@ -346,17 +346,25 @@
 
                     let reportDate = "";
                     if (item.addedOn) {
-                        const dateObj = new Date(item.report_Date);
+                        const dateObj = new Date(item.reportDate);
                         reportDate = dateObj.toLocaleDateString("en-GB");
                     }
 
                     tabledata.push({
                         Sr_No: index + 1,
                         Id: item.id,
-                        Report_No: item.report_No,
-                        Report_Date: reportDate,
-                        Project_Name: item.project_Name,
-                        Quantity: item.quantity,
+                        ReportNo: item.reportNo,
+                        ReportDate: reportDate,
+                        ProductCatRef: item.productCatRef,
+                        ProductDescription: item.productDescription,
+                        LightSourceDetails: item.lightSourceDetails,
+                        DriverDetails: item.driverDetails,
+                        PCBDetails: item.pcbDetails,
+                        LEDCombinations: item.ledCombinations,
+                        BatchCode: item.batchCode,
+                        SensorDetails: item.sensorDetails,
+                        LampDetails: item.lampDetails,
+                        PKD: item.pkd,
                         User: item.user
                     });
                 });
@@ -379,11 +387,19 @@
                         }
                     },
                     { title: "SNo", field: "Sr_No", width: 50, responsive: 0,  sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left" },
-                    { title: "Report No", field: "Report_No", responsive: 1, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Report Date", field: "Report_Date", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-                    { title: "Customer/Project Name", field: "Project_Name", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "Quantity", field: "Quantity", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "User", field: "User", responsive: 5,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Report No", field: "ReportNo", responsive: 1, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                    { title: "Report Date", field: "ReportDate", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                    { title: "Product Cat Ref", field: "ProductCatRef", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Product Description", field: "ProductDescription", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Light Source Details", field: "LightSourceDetails", responsive: 5,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Driver Details", field: "DriverDetails", responsive: 6,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "PCB Details", field: "PCBDetails", responsive: 7,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "LED Combinations", field: "LEDCombinations", responsive: 8,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Batch Code", field: "BatchCode", responsive: 9,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Sensor Details", field: "SensorDetails", responsive: 10,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Lamp Details", field: "LampDetails", responsive: 11,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "PKD", field: "PKD", responsive: 12,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "User", field: "User", responsive: 13,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                 );
 
                 // // Initialize Tabulator

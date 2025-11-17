@@ -24,6 +24,20 @@ namespace QMS.Core.Models
         public DateTime? Report_Release_Date { get; set; }
         public DateTime? NABL_Released_Date { get; set; }
         public string? Final_Report { get; set; }
+        public string? Remark { get; set; }
+        public int? Delayed_Days { get; set; }
+       
+        public string? CreatedBy { get; set; }
+        public DateTime? CreatedDate { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
+    }
+
+    public class TestReqFIFOViewModel
+    {
+        public int Id { get; set; }
+        public bool Deleted { get; set; }
+        public string? Test { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }

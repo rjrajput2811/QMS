@@ -27,14 +27,14 @@ $(document).ready(function () {
                 filterStartCsatDate = start.format('YYYY-MM-DD');
                 filterEndCsatDate = end.format('YYYY-MM-DD');
                 $('#dateRangeTexCsat').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                loadData();
+                loadCSATData();
             });
 
             picker.on('clear', () => {
                 filterStartCsatDate = "";
                 filterEndCsatDate = "";
                 $('#dateRangeTexCsat').text("Select Date Range");
-                loadData();
+                loadCSATData();
             });
         },
         ranges: {
@@ -58,10 +58,10 @@ $(document).ready(function () {
         window.history.back();
     });
 
-    loadData();
+    loadCSATData();
 });
 
-function loadData() {
+function loadCSATData() {
     Blockloadershow();
 
     $.ajax({
@@ -69,19 +69,19 @@ function loadData() {
         type: 'GET',
         dataType: 'json',
         data: {
-            startDate: filterStartContiDate,
-            endDate: filterEndContiDate
+            startDate: filterStartCsatDate,
+            endDate: filterEndCsatDate
         },
         success: function (data) {
             if (Array.isArray(data)) {
                 OnTabGridLoad(data);
             } else {
-                showDangerAlert('No Kaizen data available.');
+                showDangerAlert('No CSAT Comment data available.');
             }
             Blockloaderhide();
         },
         error: function () {
-            showDangerAlert('Error loading Kaizen data.');
+            showDangerAlert('Error loading CSAT Comment data.');
             Blockloaderhide();
         }
     });
@@ -174,7 +174,7 @@ function OnTabGridLoad(response) {
             width: 90,
             formatter: function (cell) {
                 const rowData = cell.getRow().getData();
-                return `<i onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
+                return `<i onclick="delConfirm(${rowData.Id}, this)" class="fas fa-trash-alt text-danger" title="Delete" style="cursor:pointer;"></i>`;
             }
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, width: 80, headerMenu: headerMenu },
@@ -201,7 +201,8 @@ function OnTabGridLoad(response) {
         { title: "Created Date", field: "CreatedDate", visible: false, headerMenu: headerMenu },
         { title: "Created By", field: "CreatedBy", visible: false, headerMenu: headerMenu },
         { title: "Updated Date", field: "UpdatedDate", visible: false },
-        { title: "Updated By", field: "UpdatedBy", visible: false, headerMenu: headerMenu }
+        { title: "Updated By", field: "UpdatedBy", visible: false, headerMenu: headerMenu },
+         { title: "Id", field: "Id", visible: false }
     ];
 
     if (table) {
@@ -216,7 +217,8 @@ function OnTabGridLoad(response) {
             paginationSizeSelector: [10, 50, 100, 500],
             paginationCounter: "rows",
             placeholder: "No data available",
-            columns: columns
+            columns: columns,
+            index: "Id"
         });
 
         table.on("cellEdited", function (cell) {
@@ -529,8 +531,19 @@ function OnTabGridLoad(response) {
     Blockloaderhide();
 }
 
+function renumberSrNo() {
+    const rows = table.getRows("active");
+    $.each(rows, function (i, r) {
+        const d = r.getData();
+        if (d.Sr_No !== i + 1) { r.update({ Sr_No: i + 1 }); }
+    });
+}
+
+
 function delConfirm(recid, element) {
+
     if (!recid || recid <= 0) {
+        // Unsaved row: just remove from UI
         const rowEl = $(element).closest(".tabulator-row")[0];
         const row = table.getRow(rowEl);
         if (row) row.delete();
@@ -565,8 +578,7 @@ function delConfirm(recid, element) {
                                 const rowEl = $(element).closest(".tabulator-row")[0];
                                 const row = table.getRow(rowEl);
                                 if (row) row.delete();
-                                // reload using SAME filter (globals preserved)
-                                loadData();
+                                loadCSATData();
                             } else if (data && data.success === false && data.message === "Not_Deleted") {
                                 showDangerAlert("Record is used in QMS Log transactions.");
                             } else {
@@ -613,7 +625,6 @@ function delConfirm(recid, element) {
         }
     });
 }
-
 function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
     let columnDef = {
         title: title,
@@ -714,7 +725,7 @@ function saveEditedRow(rowData) {
             if (response.success) {
                 if (isNew) {
                     showSuccessNewAlert("Saved successfully!.");
-                    loadData();
+                    loadCSATData();
                 }
             }
             else if (response.message === "Exist") {

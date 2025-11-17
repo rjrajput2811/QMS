@@ -6,6 +6,7 @@ using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ProductValidationRepo;
+using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using System.Drawing;
 using System.Threading.Tasks;
 
@@ -14,46 +15,49 @@ namespace QMS.Controllers;
 public class ProductValidationController : Controller
 {
     private readonly IPhysicalCheckAndVisualInspectionRepository _physicalCheckAndVisualInspectionRepository;
+    private readonly IElectricalPerformanceRepository _electricalPerformanceRepository;
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly IElectricalProtectionRepository _electricalProtectionRepository;
-
-
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
         IElectricalProtectionRepository electricalProtectionRepository,
-        IWebHostEnvironment hostEnvironment)
+        IWebHostEnvironment hostEnvironment,
+        IElectricalProtectionRepository electricalProtectionRepository1)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalProtectionRepository = electricalProtectionRepository;
         _hostEnvironment = hostEnvironment;
+        _electricalProtectionRepository = electricalProtectionRepository;
     }
-   
+
 
     public IActionResult Index()
     {
         return View();
     }
 
+    #region PhysicalCheckAndVisualInspection
+
     public IActionResult PhysicalCheckAndVisualInspection()
     {
         return View();
     }
-    public IActionResult ElectricalPerformance()
+
+    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
     {
-        return View();
+        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsAsync();
+        return Json(result);
     }
+
     public IActionResult Electricalprotection()
     {
         return View();
     }
-
-
-
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
     {
         var model = new PhysicalCheckAndVisualInspectionViewModel();
-        if(Id > 0)
+        if (Id > 0)
         {
             model = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsByIdAsync(Id);
         }
@@ -61,7 +65,7 @@ public class ProductValidationController : Controller
         {
             model.Report_Date = DateTime.Now;
         }
-            return View(model);
+        return View(model);
     }
     public async Task<IActionResult> ElectricalProtectionDetails(int Id)
     {
@@ -70,7 +74,7 @@ public class ProductValidationController : Controller
         if (Id > 0)
         {
             model = await _electricalProtectionRepository.GetElectricalProtectionByIdAsync(Id);
-       
+
         }
         else
         {
@@ -80,21 +84,36 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public IActionResult ElectricalPerformanceDetails(int Id)
+    public IActionResult ElectricalPerformance()
     {
-        return View(); 
+        return View();
     }
 
-    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionListAsync()
+    public async Task<IActionResult> ElectricalPerformanceDetails(int Id)
     {
-        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsAsync();
-        return Json(result);
+        var model = new ElectricalPerformanceViewModel();
+
+        if (Id > 0)
+        {
+            model = await _electricalPerformanceRepository.GetElectricalPerformancesByIdAsync(Id);
+
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+
+        return View(model);
     }
 
-    public async Task<ActionResult> GetPhysicalCheckAndVisualInspectionDetailsAsync(int Id)
+    public IActionResult RippleTestReport()
     {
-        var result = await _physicalCheckAndVisualInspectionRepository.GetPhysicalCheckAndVisualInspectionsByIdAsync(Id);
-        return Json(result);
+        return View();
+    }
+
+    public IActionResult Rippletestreportdetails(int Id)
+    {
+        return View();
     }
 
     public async Task<ActionResult> InsertUpdatePhysicalCheckAndVisualInspectionDetailsAsync(PhysicalCheckAndVisualInspectionViewModel model)
@@ -150,12 +169,12 @@ public class ProductValidationController : Controller
 
         string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
 
- 
+
         string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "ElectricProt_Att", model.ReportNo.ToString());
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
-       
+
         if (model.TestedByFile != null)
         {
             string fileName = Path.GetFileName(model.TestedByFile.FileName);
@@ -166,7 +185,7 @@ public class ProductValidationController : Controller
                 return Json(new { Success = false, Message = "Only .png, .jpg, .jpeg" });
             }
 
-     
+
             model.TestedBySignature = fileName;
 
             string savePath = Path.Combine(folder, fileName);
@@ -176,7 +195,7 @@ public class ProductValidationController : Controller
             }
         }
 
-    
+
         if (model.VerifiedByFile != null)
         {
             string fileName = Path.GetFileName(model.VerifiedByFile.FileName);
@@ -196,7 +215,7 @@ public class ProductValidationController : Controller
             }
         }
 
-      
+
         if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
@@ -212,7 +231,7 @@ public class ProductValidationController : Controller
             return Json(result);
         }
     }
-    
+
 
 
 
@@ -256,11 +275,11 @@ public class ProductValidationController : Controller
             // --- Header Generation (Rows 1-6) ---
             int currentRow = 1;
 
-          
-            const int COL_IMAGE = 9;
-            const int COL_TITLE_END = COL_RESULT - 1; 
 
-          
+            const int COL_IMAGE = 9;
+            const int COL_TITLE_END = COL_RESULT - 1;
+
+
             worksheet.Row(currentRow).Height = 73.20;
             var titleRange = worksheet.Range(currentRow, 1, currentRow, COL_TITLE_END);
             titleRange.Merge();
@@ -273,15 +292,15 @@ public class ProductValidationController : Controller
 
 
 
-            var webRootPath = _hostEnvironment.WebRootPath; 
-            var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png"); 
-            if (System.IO.File.Exists(imagePath)) 
+            var webRootPath = _hostEnvironment.WebRootPath;
+            var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png");
+            if (System.IO.File.Exists(imagePath))
             { var picture = worksheet.AddPicture(imagePath).MoveTo(worksheet.Cell(currentRow, COL_IMAGE), 45, 12).WithPlacement(XLPicturePlacement.Move).Scale(0.9); }
 
-            var imageRange = worksheet.Range(currentRow, 9, currentRow, 9); 
-            imageRange.Style.Border.SetInsideBorder(XLBorderStyleValues.Medium); 
-            imageRange.Style.Border.SetRightBorder(XLBorderStyleValues.Medium); 
-            imageRange.Style.Border.SetBottomBorder(XLBorderStyleValues.Medium); 
+            var imageRange = worksheet.Range(currentRow, 9, currentRow, 9);
+            imageRange.Style.Border.SetInsideBorder(XLBorderStyleValues.Medium);
+            imageRange.Style.Border.SetRightBorder(XLBorderStyleValues.Medium);
+            imageRange.Style.Border.SetBottomBorder(XLBorderStyleValues.Medium);
             imageRange.Style.Border.SetLeftBorder(XLBorderStyleValues.Thin); currentRow++;
 
 
@@ -719,8 +738,8 @@ public class ProductValidationController : Controller
             imageRange.Style.Border.SetBottomBorder(XLBorderStyleValues.Medium);
             imageRange.Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
 
-            currentRow ++; // Row 2
-                           // Report No.
+            currentRow++; // Row 2
+                          // Report No.
             worksheet.Range(currentRow, 1, currentRow, 6).Merge();
             worksheet.Range(currentRow, 1, currentRow, 6).Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
             worksheet.Range(currentRow, 1, currentRow, 6).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
@@ -755,7 +774,7 @@ public class ProductValidationController : Controller
             worksheet.Row(currentRow + 1).Height = 19.80;
 
             currentRow += 2; // Row 5
-                          // Product Details
+                             // Product Details
             worksheet.Range(currentRow, 1, currentRow, 2).Merge();
             worksheet.Range(currentRow, 1, currentRow, 2).Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
             worksheet.Range(currentRow, 1, currentRow, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
@@ -1158,6 +1177,7 @@ public class ProductValidationController : Controller
     }
 
 
+
     #endregion
     #region Impact test
 
@@ -1203,4 +1223,3 @@ public class ProductValidationController : Controller
 
 
 
-}

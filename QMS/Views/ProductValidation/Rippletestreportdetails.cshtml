@@ -1,0 +1,321 @@
+﻿@using QMS.Core.Models
+
+@model RippleTestReportViewModel
+
+@{
+    ViewData["Title"] = "Ripple Test Report";
+}
+
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<script src="~/js/tabulator.min.js"></script>
+
+
+<form id="electricalForm" method="post" action="#">
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+            <div>
+                <b style="font-size:large; color:#4682B4;">
+                    Ripple Test Report
+                </b>
+            </div>
+
+            <div>
+                <button id="saveButton" type="button" class="btn btn-outline-success mr-2" style="width:120px; font-size:15px">
+                    <i class="fas fa-save mr-2 fa-1x"></i> SAVE
+                </button>
+
+                <a href='@Url.Action("Electricalprotection","ProductValidation")'
+                   class="btn btn-outline-primary"
+                   style="width:120px; font-size:15px">
+                    <i class="fas fa-arrow-left"></i> BACK
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <!-- Top meta table (unchanged) -->
+            <div class="table-responsive">
+                <table class="table table-bordered" style="font-size:14px; border:1px solid #000; width:100%; border-collapse:collapse;">
+                    <colgroup>
+                        <col style="width:33.33%;">
+                        <col style="width:33.33%;">
+                        <col style="width:33.33%;">
+                    </colgroup>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <b>Product Cat Ref :</b>
+                                @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control" })
+                            </td>
+                            <td>
+                                <b>Product Description :</b>
+                                @Html.TextBoxFor(m => m.ProductDescription, new { @class = "form-control" })
+                            </td>
+                            <td>
+                                <b>Report No. :</b>
+                                @Html.TextBoxFor(m => m.ReportNo, new { @class = "form-control" })
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Light Source Details :</b>
+                                @* @Html.TextBoxFor(m => m.li, new { @class = "form-control" }) *@
+                            </td>
+                            <td>
+                                <b>Driver Details &amp; Qty :</b>
+                                @* @Html.TextBoxFor(m => m.DriverDetails, new { @class = "form-control" }) *@
+                            </td>
+                            <td>
+                                <b>Report Date :</b>
+                                @* @Html.TextBoxFor(m => m.ReportDate, new { @class = "form-control" }) *@
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>PCB Details &amp; Qty :</b>
+                                @* @Html.TextBoxFor(m => m.PCBDetails, new { @class = "form-control" }) *@
+                            </td>
+                            <td>
+                                <b>LED Combinations :</b>
+                                @* @Html.TextBoxFor(m => m.LEDCombinations, new { @class = "form-control" }) *@
+                            </td>
+                            <td>
+                                <b>Batch Code :</b>
+                                @Html.TextBoxFor(m => m.BatchCode, new { @class = "form-control" })
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <b>Sensor Details &amp; Qty :</b>
+                                @* @Html.TextBoxFor(m => m.SensorDetails, new { @class = "form-control" }) *@
+                            </td>
+                            <td>
+                                <b>Lamp Details :</b>
+                                @* @Html.TextBoxFor(m => m.LampDetails, new { @class = "form-control" }) *@
+                            </td>
+                            <td>
+                                <b>PKD :</b>
+                                @Html.TextBoxFor(m => m.PKD, new { @class = "form-control" })
+                            </td>
+                        </tr>
+                  
+                       
+                    </tbody>
+                </table>
+            </div>
+            <table>
+                <tr>
+                    <td colspan="2"></td>
+                </tr>
+                <tr>
+                    <td class="formula-cell">RIPPLE % = ((Δ/2)/RMS) * 100</td>
+                  
+                    <td class="td-text-wrap" contenteditable="true" data-name="RIPPLERMS">
+                        @* @Model.RIPPLERMS *@
+                        </td>
+                  </tr>
+                <tr>
+                    <td class="formula-cell" >  Δ =</td>
+                    <td class="td-text-wrap" contenteditable="true" data-name="PIE">
+                        @* @Model.PIE *@
+                        </td>
+                    </tr>
+                <tr>
+                    <td class="formula-cell" > RMS = </td>
+                    <td class ="td-text-wrap" contenteditable="true" data-name="RMS">
+                        @* @Model.RMS *@
+                    </td>
+
+                    </tr>
+                    <tr>
+                    <td class="formula-cell" >Calculation =</td>
+                    <td class="td-text-wrap" contenteditable="true" data-name="Calculation">
+                       @*  @Model.Calculation *@
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="formula-cell">RIPPLE % =</td>
+                    <td class="td-text-wrap" contenteditable="true" data-name="RIPPLE">
+                        @* @Model.RIPPLE *@
+                        </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="photo-space">
+                        <label for="photoUpload" class="upload-label">Upload Photos</label>
+                        <input type="file" id="photoUpload" multiple accept="image/*" onchange="previewPhotos(event)">
+                        <div id="photoPreview" class="photo-preview">
+                            <em style="color:#555;">No photos uploaded</em>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="result-cell">
+                        Result ( Pass / Fail )
+                    </td>
+                </tr>
+              
+            </table>
+            <div class="card">
+                <div class="card-body">
+                    <div class="row form-group align-items-center mb-2">
+                        <div class="col-3 pe-3 align-items-center">
+                            <label class="me-3"><b>Tested By</b></label><em>*</em>
+                            @*  @Html.TextBoxFor(m => m.TestedBy, new { @class = "form-control" }) *@
+                        </div>
+                        <div class="col-3 pe-3 align-items-center">
+                            <label class="me-3"><b>Verified By</b></label>
+                            @*  @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "form-control" }) *@
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
+            </div>
+            </form>
+<style>
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+    }
+
+    .table {
+        border-collapse: collapse;
+    }
+
+        .table th, .table td {
+            border: 1px solid #000 !important;
+            padding: 4px 6px !important;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+    table.table-bordered td {
+        padding: 6px 10px;
+        vertical-align: middle;
+        border: 1px solid #000 !important;
+        text-align: left;
+    }
+
+    table.table-bordered b {
+        font-weight: 600;
+        color: #000;
+        margin-right: 5px;
+    }
+
+    input.form-control {
+        border: none;
+        border-bottom: 1px solid #999;
+        background: transparent;
+        outline: none;
+        box-shadow: none;
+    }
+
+        input.form-control:focus {
+            border-bottom: 1px solid #4682B4;
+            box-shadow: none;
+        }
+
+    .form-control-sm {
+        font-size: 13px;
+        padding: 2px 4px;
+        display: inline-block;
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .result-table td {
+        padding: 6px 10px;
+        vertical-align: middle;
+        font-size: 14px;
+    }
+
+    .result-table input {
+        width: 70% !important;
+        font-size: 13px;
+    }
+
+    .result-table b {
+        font-size: 13px;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: Arial, sans-serif;
+    }
+
+    td, th {
+        border: 1px solid #000;
+        vertical-align: top;
+        padding: 8px;
+    }
+
+    .formula-cell {
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .sub-values {
+        text-align: left;
+        padding-left: 50px;
+        line-height: 1.8;
+    }
+
+    .photo-space {
+        height: 250px;
+        text-align: center;
+        vertical-align: middle;
+        position: relative;
+    }
+
+        .photo-space input[type="file"] {
+            display: none;
+        }
+
+    .upload-label {
+        background: #007bff;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .photo-preview {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+        .photo-preview img {
+            max-height: 120px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+    .result-cell {
+        font-weight: bold;
+        color: red;
+    }   
+
+    .signature-cell {
+        height: 60px;
+        vertical-align: bottom;
+    }
+</style>
+
+
+@section HideSidebar { }
+         

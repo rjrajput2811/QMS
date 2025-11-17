@@ -75,6 +75,7 @@ function loadData() {
         url: '/Service/GetVendor',
         type: 'GET'
     }).done(function (vendorData) {
+
         if (Array.isArray(vendorData)) {
             vendorOptions = vendorData.reduce((acc, v) => {
                 acc[v.value] = v.label;
@@ -296,6 +297,7 @@ function OnTabGridLoad(response) {
                 Kaizen_Attch: item.kaizen_Attch || "",
                 Remark: item.remark || "",
                 FY: item.fy || "",
+                Categorised_Scope: item.categorised_Scope || "",
                 CreatedDate: formatDate(item.createdDate || ""),
                 UpdatedDate: formatDate(item.updatedDate || ""),
                 CreatedBy: item.createdBy || "",
@@ -374,6 +376,13 @@ function OnTabGridLoad(response) {
         editableColumn("Team", "Team", true),
         editableColumn("Kaizen", "Kaizen_Attch", true),
 
+        editableColumn("Categorised Scope", "Categorised_Scope", "list", "center", "input", {}, {
+            values: [
+                { label: "Quality", value: "Quality" },
+                { label: "Safety Productivity", value: "Safety Productivity" }
+            ]
+        }),
+
         {
             title: "Remark",
             field: "Remark",
@@ -384,7 +393,7 @@ function OnTabGridLoad(response) {
                 const rowData = cell.getRow().getData();
                 const fileName = cell.getValue();
                 const fileDisplay = fileName
-                    ? `<a href="~/KaizenTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                    ? `<a href="/KaizenTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
                     : '';
 
                 return `
@@ -399,7 +408,8 @@ function OnTabGridLoad(response) {
 
         { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: true },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: true },
-        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: true }
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: true },
+        { title: "Id", field: "Id", visible: false }
     );
 
     // // Initialize Tabulator
@@ -412,7 +422,8 @@ function OnTabGridLoad(response) {
         paginationSizeSelector: [50, 100, 500, 1500, 2000],
         paginationCounter: "rows",
         dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-        columns: columns
+        columns: columns,
+        index: "Id"
     });
 
     table.on("cellEdited", function (cell) {
@@ -745,8 +756,17 @@ $('#kaizen_table').on('change', '.bis-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessNewAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                row.update({ Remark: fileName });   // triggers reformat for that cell
+            } else {
+                // fallback: add/update by explicit key
+                table.updateOrAddData([{ Id: id, Remark: fileName }], "Id");
+            }
+            //table.updateData([{ Id: response.id, Remark: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }
@@ -1256,7 +1276,8 @@ function InsertUpdateKaizen(rowData) {
         Team: rowData.Team || null,
         Kaizen_Attch: rowData.Kaizen_Attch || null,
         Remark: rowData.Remark || null,
-        FY : rowData.FY || null
+        FY : rowData.FY || null,
+        Categorised_Scope: rowData.Categorised_Scope || null
     };
 
     console.log(cleanedData);

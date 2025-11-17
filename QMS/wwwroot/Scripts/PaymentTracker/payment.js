@@ -798,8 +798,17 @@ $('#payment_Table').on('change', '.payment-upload', function () {
         processData: false
     }).done(function (response) {
         if (response.success) {
+            const id = response.id ?? response.Id ?? $(input).data("id");
+            const fileName = response.fileName;
             showSuccessAlert("File uploaded successfully.");
-            table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
+            const row = table.getRow(id);
+            if (row) {
+                row.update({ Attachment: fileName });   // triggers reformat for that cell
+            } else {
+                // fallback: add/update by explicit key
+                table.updateOrAddData([{ Id: id, Attachment: fileName }], "Id");
+            }
+            //table.updateData([{ Id: response.id, BIS_Attachment: response.fileName }]);
         } else {
             showDangerAlert(response.message || "Upload failed.");
         }
@@ -1332,7 +1341,7 @@ function InsertUpdateLab(rowData) {
 }
 
 $('#labPaymentModel').on('hidden.bs.modal', function () {
-    loadLabData(); // uncomment if you want full reload
+    loadData(); // uncomment if you want full reload
 });
 
 

@@ -469,7 +469,6 @@
         </div>
 
     </form> <!-- END form -->
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const toolbar = document.getElementById('testReqToolbar');
@@ -555,12 +554,12 @@
             function addRow() {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                        <td class="sr-cell"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                             <td contenteditable="true" style="vertical-align: top; min-height: 120px; padding: 8px;"></td>
-                                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align: center;"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                    `;
+                            <td class="sr-cell"></td>
+                            <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                                 <td contenteditable="true" style="vertical-align: top; min-height: 120px; padding: 8px;"></td>
+                                    <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align: center;"></td>
+                            <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                        `;
                 tableBody.appendChild(tr);
                 bindTestReqCell(tr.querySelector('.test-req-cell'));
                 renumberRows();
@@ -741,7 +740,27 @@
                         showSuccessAlert(json.Message || 'Saved successfully.');
                     }
 
-                    if (json.RedirectUrl) setTimeout(() => window.location.href = json.RedirectUrl, 800);
+                    // NAVIGATION: prefer server RedirectUrl; otherwise go back to referring page or history
+                    const navigateBack = () => {
+                        if (json.RedirectUrl) {
+                            window.location.href = json.RedirectUrl;
+                            return;
+                        }
+                        // prefer document.referrer if it exists and is different from current location
+                        try {
+                            const ref = document.referrer;
+                            if (ref && ref !== '' && ref !== window.location.href) {
+                                window.location.href = ref;
+                                return;
+                            }
+                        } catch (e) { /* ignore */ }
+
+                        // last resort: browser history
+                        history.back();
+                    };
+
+                    // Wait a short moment so the user sees the success alert
+                    setTimeout(navigateBack, 800);
                     return;
                 }
 
@@ -773,6 +792,8 @@
             }
         }
     </script>
+
+
 
 </body>
 </html>

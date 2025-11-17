@@ -55,7 +55,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
   
                    new SqlParameter("@Details", SqlDbType.Structured)
                    {
-                       TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
+                       TypeName = "dbo.tvp_TestDetail_InternalType",
                        Value = detailsTvp
                     }
                 };
@@ -118,7 +118,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
 
             new SqlParameter("@Details", SqlDbType.Structured)
             {
-                TypeName = "dbo.tvp_TestDetail_InternalTypeTest",
+                TypeName = "dbo.tvp_TestDetail_InternalType",
                 Value = detailsTvp
             }
         };

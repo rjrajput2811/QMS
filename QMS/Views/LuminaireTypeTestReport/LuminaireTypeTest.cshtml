@@ -211,16 +211,16 @@
                             formatter: function (cell) {
                                 const row = cell.getRow().getData();
                                 return `
-                                    <i onclick="deleteLuminaire(${row.Id})"
-                                       class="fas fa-trash-alt"
-                                       title="Delete"
-                                       style="color:red; cursor:pointer; margin-right:10px;"></i>
+                    <i onclick="(function(e){ e.stopPropagation(); deleteLuminaire(${row.Id}); })(event)"
+                       class="fas fa-trash-alt"
+                       title="Delete"
+                       style="color:red; cursor:pointer; margin-right:10px;"></i>
 
-                                    <i onclick="exportLuminaireToExcel(${row.Id})"
-                                       class="fas fa-file-excel"
-                                       title="Export Excel"
-                                       style="color:green; cursor:pointer;"></i>
-                                `;
+                    <i onclick="(function(e){ e.stopPropagation(); exportLuminaireToExcel(${row.Id}); })(event)"
+                       class="fas fa-file-excel"
+                       title="Export Excel"
+                       style="color:green; cursor:pointer;"></i>
+                `;
                             }
                         },
 
@@ -297,21 +297,63 @@
 
             function deleteLuminaire(id) {
                 if (!id) return;
-                // if (!confirm("Are you sure to delete this record?")) return;
+
+                // Optional: simple confirm
+                if (!confirm("Are you sure you want to delete this record?")) return;
+
+                Blockloadershow();
 
                 $.post('@Url.Action("DeleteInternalTypeTest", "LuminaireTypeTestReport")', { id: id })
                     .done(function (resp) {
-                        if (resp.success) {
-                            showSuccessAlert("Deleted successfully");
-                            loadLuminaireGrid();
-                        } else {
-                            showDangerAlert(resp.message || "Delete failed.");
+                        Blockloaderhide();
+                        try {
+                            // Normalize response success key (some APIs use success / Success)
+                            const ok = resp && (resp.success === true || resp.Success === true);
+                            if (ok) {
+                                showSuccessAlert("Deleted successfully");
+
+                                // If Tabulator instance exists, remove the row quickly
+                                try {
+                                    if (table && typeof table.deleteRow === 'function') {
+                                        // deleteRow accepts the row ID if you used it as the row's unique id.
+                                        // We used Id in row data, so attempt to remove by matching Id
+                                        // If your table has a defined index, you can also use table.deleteRow(rowId)
+                                        // We'll find the row and delete it to avoid a full reload:
+                                        const row = table.getRows().find(r => r.getData().Id == id);
+                                        if (row) {
+                                            row.delete();
+                                            // re-numbering / local pagination will update automatically
+                                        } else {
+                                            // fallback: reload the whole grid
+                                            loadLuminaireGrid();
+                                        }
+                                    } else {
+                                        // fallback if `table` isn't available
+                                        loadLuminaireGrid();
+                                    }
+                                } catch (ex) {
+                                    console.warn('Could not remove row from Tabulator, reloading grid', ex);
+                                    loadLuminaireGrid();
+                                }
+                            } else {
+                                showDangerAlert(resp && (resp.message || resp.Message) || "Delete failed.");
+                            }
+                        } catch (ex) {
+                            console.error('Delete response handling error', ex);
+                            showDangerAlert("Error deleting record. See console for details.");
                         }
                     })
-                    .fail(function () {
-                        showDangerAlert("Error deleting record.");
+                    .fail(function (xhr) {
+                        Blockloaderhide();
+                        if (xhr && xhr.status === 401) {
+                            // optional: redirect to login if unauthorized
+                            window.location.href = '@Url.Action("Login", "Account")';
+                        } else {
+                            showDangerAlert("Error deleting record.");
+                        }
                     });
             }
+
 
             function exportLuminaireToExcel(recid) {
                 if (!recid) return;

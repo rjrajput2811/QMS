@@ -15,7 +15,7 @@
         font-size: 14px;
         margin: 0;
     }
-
+     
     .header-table {
         border: 1px solid #000;
     }
@@ -221,7 +221,7 @@
 
         <!-- Tests table -->
         <!-- ================= TEST TABLE ================= -->
-        <table class="pv-table" id="glowTestsTable" style="margin-top:0;">
+        <table class="pv-table" id="glowCombinedTable" style="margin-top:0;">
             <thead>
                 <tr>
                     <th style="width:6%; text-align:center;">Sr. No.</th>
@@ -232,52 +232,19 @@
                 </tr>
             </thead>
 
-            <tbody id="glowTestsTbody">
-                <tr>
-                    <td style="text-align:center;">
-                        <span class="srno-test">1</span>
-                        <button type="button" class="btn btn-link p-0 ml-2 delete-test-row" style="color:#c0392b;">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td contenteditable="true"></td>
-                    <td style="text-align:center;">
-                        <select class="result-select">
-                            <option value="">Select</option>
-                            <option>Pass</option>
-                            <option>Fail</option>
-                            <option>Not Applicable</option>
-                        </select>
-                    </td>
-                </tr>
+            <tbody id="glowCombinedTbody">
+                <!-- initial group will be inserted by JS on init -->
             </tbody>
         </table>
 
         <!-- ================= PHOTOS TABLE ================= -->
+        <!-- ================= PHOTOS TABLE (NO SR. NO. COLUMN) ================= -->
         <table class="pv-table" id="glowPhotosTable" style="margin-top:0;">
             <thead>
-                <tr>
-                    <th style="width:6%; text-align:center;">Sr. No.</th>
-                    <th style="width:47%; text-align:center;">Photo during testing</th>
-                    <th style="width:47%; text-align:center;">Photo after testing</th>
-                </tr>
+               
             </thead>
 
-            <tbody id="glowPhotosTbody">
-                <tr>
-                    <td style="text-align:center; vertical-align:top;">
-                        <span class="srno-photo">1</span>
-                        <button type="button" class="btn btn-link p-0 ml-2 delete-photo-row" style="color:#c0392b;">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-
-                    <td class="photo-cell" data-side="during"></td>
-                    <td class="photo-cell" data-side="after"></td>
-                </tr>
-            </tbody>
+  
         </table>
         <table class="pv-table" style="margin-top:0; width:100%; border-collapse:collapse;">
             <tbody>
@@ -302,9 +269,7 @@
             <tbody>
 
                 <!-- Empty Row -->
-                <tr>
-                    <td colspan="4" style="height:80px;"></td>
-                </tr>
+              
 
                 <!-- Tested By / Verified By Row -->
                 <tr>
@@ -325,154 +290,210 @@
         </table>
         <!-- ================= SCRIPT ================= -->
         <script>
-            (function () {
+    (function () {
+        // try several possible tbody ids (keeps the script robust to copy/paste differences)
+        const tbody = document.getElementById('glowCombinedTbody')
+            || document.getElementById('combinedTbody')
+            || document.getElementById('glowTestsTbody')   // fallback possibilities
+            || document.querySelector('#combinedTable tbody')
+            ;
+        const addBtn = document.getElementById('addGroupBtn') || document.getElementById('addTestRowBtn') || document.getElementById('addGroupBtnAlt');
+        if (!tbody) {
+            console.error('Cannot find target tbody for combined groups. Expected id: glowCombinedTbody or combinedTbody.');
+            return;
+        }
+        if (!addBtn) {
+            console.error('Cannot find Add button (id="addGroupBtn" or "addTestRowBtn").');
+            return;
+        }
 
-                const testsTbody = document.getElementById("glowTestsTbody");
-                const photosTbody = document.getElementById("glowPhotosTbody");
-                const addBtn = document.getElementById("addTestRowBtn");
+        let groupCounter = 0;
 
-                /* ------- FILE INPUT BUILDER (ONE per cell, filename shows ONCE) ------- */
-                function createPhotoInput() {
-                    const wrap = document.createElement("div");
+        function createTestRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-test-row';
+            tr.innerHTML = `
+              <td style="text-align:center;">
+                <span class="srno-test"></span>
+                <button type="button" class="btn btn-link p-0 ml-2 delete-group" style="color:#c0392b; margin-left:6px;" title="Delete group">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+              <td contenteditable="true"></td>
+              <td contenteditable="true"></td>
+              <td contenteditable="true"></td>
+              <td style="text-align:center;">
+                <select class="result-select" aria-label="Result">
+                  <option value="">Select</option>
+                  <option>Pass</option>
+                  <option>Fail</option>
+                  <option>Not Applicable</option>
+                </select>
+              </td>
+            `;
+            return tr;
+        }
 
-                    const inp = document.createElement("input");
-                    inp.type = "file";
-                    inp.accept = "image/*";
+        // Photo header row: first cell reserved for SR column (empty).
+        // --- UPDATED WIDTH (50%) --- set both photo header cells to equal width (50%)
+        function createPhotoHeaderRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-photo-header-row';
+            tr.innerHTML = `
+                         <td style="background:#f8f9fa;"></td>
+                 <td colspan="1"
+                style="width:50%; text-align:center; font-weight:700; color:#000; background:#f8f9fa;">
+                Photo during testing
+            </td>
 
-                    const label = document.createElement("div");
-                    label.className = "photo-filename";
-                    label.style.fontSize = "13px";
+            <td colspan="3"
+                style="width:50%; text-align:center; font-weight:700; color:#000; background:#f8f9fa;">
+                Photo after testing
+            </td>
+            `;
+            return tr;
+        }
 
-                    inp.addEventListener("change", () => {
-                        label.textContent = inp.files.length ? inp.files[0].name : "";
-                    });
+        // Photo input row: mirrors header colspans (colspan=2 for each photo side)
+        // --- UPDATED WIDTH (50%) --- set the td colspan blocks to width:50% as well
+        function createPhotoInputRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-photo-input-row';
+            tr.innerHTML = `
+              <td></td>
+              <td colspan="1" style="width:50%; padding:10px; vertical-align:top;">
+                <div class="photo-input-wrap-left">
+                  <input type="file" accept="image/*" class="photo-input-left" />
+                  <div class="photo-filename-left" style="font-size:13px;margin-top:6px;"></div>
+                </div>
+              </td>
+              <td colspan="3" style="width:50%; padding:10px; vertical-align:top;">
+                <div class="photo-input-wrap-right">
+                  <input type="file" accept="image/*" class="photo-input-right" />
+                  <div class="photo-filename-right" style="font-size:13px;margin-top:6px;"></div>
+                </div>
+              </td>
+            `;
 
-                    wrap.appendChild(inp);
-                    wrap.appendChild(label);
-
-                    return wrap;
-                }
-
-                /* ------- CREATE PHOTO ROW ------- */
-                function createPhotoRow() {
-                    const tr = document.createElement("tr");
-
-                    tr.innerHTML = `
-                        <td style="text-align:center; vertical-align:top;">
-                            <span class="srno-photo"></span>
-                            <button type="button" class="btn btn-link p-0 ml-2 delete-photo-row" style="color:#c0392b;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                        <td class="photo-cell" data-side="during"></td>
-                        <td class="photo-cell" data-side="after"></td>
-                    `;
-
-                    tr.querySelector('[data-side="during"]').appendChild(createPhotoInput());
-                    tr.querySelector('[data-side="after"]').appendChild(createPhotoInput());
-
-                    return tr;
-                }
-
-                /* ------- CREATE TEST ROW ------- */
-                function createTestRow() {
-                    const tr = document.createElement("tr");
-
-                    tr.innerHTML = `
-                        <td style="text-align:center;">
-                            <span class="srno-test"></span>
-                            <button type="button" class="btn btn-link p-0 ml-2 delete-test-row" style="color:#c0392b;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
-                        <td style="text-align:center;">
-                            <select class="result-select">
-                                <option value="">Select</option>
-                                <option>Pass</option>
-                                <option>Fail</option>
-                                <option>Not Applicable</option>
-                            </select>
-                        </td>
-                    `;
-
-                    return tr;
-                }
-
-                /* ------- ADD NEW ROWS (TEST + PHOTO) ------- */
-                function addRow() {
-                    const testRow = createTestRow();
-                    const photoRow = createPhotoRow();
-
-                    testsTbody.appendChild(testRow);
-                    photosTbody.appendChild(photoRow);
-
-                    refreshSerials();
-                }
-
-                /* ------- DELETE TEST ROW (AND MATCHING PHOTO ROW) ------- */
-                testsTbody.addEventListener("click", function (e) {
-                    const del = e.target.closest(".delete-test-row");
-                    if (!del) return;
-
-                    const tr = del.closest("tr");
-                    const index = [...testsTbody.children].indexOf(tr);
-
-                    testsTbody.removeChild(tr);
-
-                    if (photosTbody.children[index])
-                        photosTbody.removeChild(photosTbody.children[index]);
-
-                    refreshSerials();
+            // wire file inputs to display chosen filename (only once)
+            const inputLeft = tr.querySelector('.photo-input-left');
+            const labelLeft = tr.querySelector('.photo-filename-left');
+            if (inputLeft) {
+                inputLeft.addEventListener('change', () => {
+                    const f = inputLeft.files && inputLeft.files[0];
+                    labelLeft.textContent = f ? f.name : '';
                 });
-
-                /* ------- DELETE PHOTO ROW (AND MATCHING TEST ROW) ------- */
-                photosTbody.addEventListener("click", function (e) {
-                    const del = e.target.closest(".delete-photo-row");
-                    if (!del) return;
-
-                    const tr = del.closest("tr");
-                    const index = [...photosTbody.children].indexOf(tr);
-
-                    photosTbody.removeChild(tr);
-
-                    if (testsTbody.children[index])
-                        testsTbody.removeChild(testsTbody.children[index]);
-
-                    refreshSerials();
+            }
+            const inputRight = tr.querySelector('.photo-input-right');
+            const labelRight = tr.querySelector('.photo-filename-right');
+            if (inputRight) {
+                inputRight.addEventListener('change', () => {
+                    const f = inputRight.files && inputRight.files[0];
+                    labelRight.textContent = f ? f.name : '';
                 });
+            }
 
-                /* ------- SERIAL NUMBER REFRESH ------- */
-                function refreshSerials() {
-                    [...testsTbody.children].forEach((tr, i) => {
-                        tr.querySelector(".srno-test").textContent = i + 1;
-                    });
+            return tr;
+        }
 
-                    [...photosTbody.children].forEach((tr, i) => {
-                        tr.querySelector(".srno-photo").textContent = i + 1;
-                    });
+        // adds one group (A+B+C)
+        function addGroup() {
+            const id = 'g' + (++groupCounter);
+            const rowA = createTestRow(id);
+            const rowB = createPhotoHeaderRow(id);
+            const rowC = createPhotoInputRow(id);
+
+            tbody.appendChild(rowA);
+            tbody.appendChild(rowB);
+            tbody.appendChild(rowC);
+
+            refreshSerials();
+
+            // focus first editable cell for convenience
+            const firstEditable = rowA.querySelector('td[contenteditable="true"]');
+            if (firstEditable) firstEditable.focus();
+        }
+
+        // Remove a whole group (all rows with same data-group)
+        function removeGroupById(groupId) {
+            const rows = Array.from(tbody.querySelectorAll('tr[data-group="' + groupId + '"]'));
+            rows.forEach(r => r.remove());
+            refreshSerials();
+        }
+
+        // renumber sr.no. for test rows only
+        function refreshSerials() {
+            const testRows = Array.from(tbody.querySelectorAll('tr.group-test-row'));
+            testRows.forEach((tr, idx) => {
+                const sn = tr.querySelector('.srno-test');
+                if (sn) sn.textContent = idx + 1;
+            });
+        }
+
+        // delegated delete click (trash button inside test row)
+        tbody.addEventListener('click', function (e) {
+            const del = e.target.closest('.delete-group');
+            if (!del) return;
+            const testTr = del.closest('tr');
+            if (!testTr) return;
+            const gid = testTr.dataset.group;
+            if (gid) removeGroupById(gid);
+        });
+
+        // Add button supports data-add-count attribute (e.g. data-add-count="2")
+        addBtn.addEventListener('click', function (ev) {
+            // prefer explicit attribute; fallback keys: data-add-count or add-count
+            const attr = addBtn.getAttribute('data-add-count') || addBtn.getAttribute('data-count') || addBtn.dataset.addCount;
+            let count = parseInt(attr, 10);
+            if (!count || count < 1) count = 1; // default 1
+            // support shift-click to add 2 quickly
+            if (ev.shiftKey) count = 2;
+            for (let i = 0; i < count; i++) addGroup();
+        });
+
+        // init: if tbody empty create one group
+        (function init() {
+            if (tbody.children.length === 0) addGroup();
+            else refreshSerials();
+        })();
+
+        // optional: Ctrl+Enter to add a single group
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.key === 'Enter') addGroup();
+        });
+
+        // expose helper to gather data
+        window.collectCombinedGroups = function () {
+            const groups = [];
+            const testRows = Array.from(tbody.querySelectorAll('tr.group-test-row'));
+            testRows.forEach((tr) => {
+                const gid = tr.dataset.group;
+                const testCells = tr.querySelectorAll('td');
+                const action = (testCells[1] && testCells[1].innerText.trim()) || '';
+                const req = (testCells[2] && testCells[2].innerText.trim()) || '';
+                const obs = (testCells[3] && testCells[3].innerText.trim()) || '';
+                const result = tr.querySelector('select.result-select') ? tr.querySelector('select.result-select').value : '';
+
+                const photoInputRow = tbody.querySelector('tr.group-photo-input-row[data-group="' + gid + '"]');
+                const photos = { during: null, after: null };
+                if (photoInputRow) {
+                    const left = photoInputRow.querySelector('.photo-input-left');
+                    const right = photoInputRow.querySelector('.photo-input-right');
+                    if (left && left.files && left.files[0]) photos.during = left.files[0];
+                    if (right && right.files && right.files[0]) photos.after = right.files[0];
                 }
 
-                /* ------- INITIAL FIX (inject file inputs into first row) ------- */
-                (function init() {
-                    document
-                        .querySelector('[data-side="during"]')
-                        .appendChild(createPhotoInput());
+                groups.push({ action, req, obs, result, photos });
+            });
+            return groups;
+        };
 
-                    document
-                        .querySelector('[data-side="after"]')
-                        .appendChild(createPhotoInput());
+    })();
+</script>
 
-                    refreshSerials();
-                })();
-
-                /* ------- ADD BUTTON ACTION ------- */
-                addBtn.addEventListener("click", addRow);
-
-            })();
-        </script>
 
     </div>
 </div>

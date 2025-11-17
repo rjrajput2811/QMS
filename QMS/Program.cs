@@ -34,7 +34,9 @@ using QMS.Core.Repositories.CSATCommentRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepository;
-using QMS.Core.Repositories.CSATSummaryRepository;
+using QMS.Core.Repositories.InternalTypeTestRepo;
+using QMS.Core.Repositories.ThirdPartyInspectionRepository;
+using QMS.Core.Repositories.ElectricalPerformanceRepo;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -78,11 +80,12 @@ builder.Services.AddTransient<IFIFOTrackerRepository, FIFOTrackerRepository>();
 builder.Services.AddTransient<IPDIAuthSignRepository, PDIAuthSignRepository>();
 builder.Services.AddTransient<IContiImproveRespository, ContiImproveRespository>();
 builder.Services.AddTransient<ICSATCommentRepository, CSATCommentRepository>();
-builder.Services.AddTransient<ICSATSummaryRepository, CSATSummaryRepository>();
 builder.Services.AddTransient<IPhysicalCheckAndVisualInspectionRepository, PhysicalCheckAndVisualInspectionRepository>();
-//builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerformanceRepository>();
+builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerformanceRepository>();
 builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 builder.Services.AddScoped<IElectricalProtectionRepository, ElectricalProtectionRepository>();
+builder.Services.AddScoped<IInternalTypeTestRepository, InternalTypeTestRepository>();
+
 
 //
 

@@ -72,10 +72,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
         {
             var parameters = new[]
             {
-                new SqlParameter("@Id", SqlDbType.Int)
-                {
-                    Value = 0
-                }
+                new SqlParameter("@Id", Id),
             };
 
             var sql = @"EXEC sp_Get_RippleTestReport";
@@ -202,7 +199,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
             };
 
             await _dbContext.Database.ExecuteSqlRawAsync(
-                "EXEC sp_Insert_RippleTestReport " +
+                "EXEC sp_Update_RippleTestReport " +
                     "@Id, " +
                     "@ReportNo, " +
                     "@TestingDate, " +

@@ -22,12 +22,12 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
             _systemLogService = systemLogService;
         }
 
-
+  
         public async Task<OperationResult> InsertInternalTypeTestAsync(InternalTypeTestViewModel model)
         {
             try
             {
-
+            
                 if (model == null)
                 {
                     return new OperationResult
@@ -52,7 +52,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                     new SqlParameter("@TestedBy", SqlDbType.NVarChar, 500) { Value = model.TestedBy ?? (object)DBNull.Value },
                     new SqlParameter("@CreatedBy", SqlDbType.NVarChar, 500) { Value = model.CreatedBy ?? (object)DBNull.Value },
 
-
+  
                    new SqlParameter("@Details", SqlDbType.Structured)
                    {
                        TypeName = "dbo.tvp_TestDetail_InternalType",
@@ -163,7 +163,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
             foreach (var d in details)
             {
                 var row = dt.NewRow();
-                row["InternalType_DetId"] = d.Id > 0 ? d.Id : DBNull.Value;
+                row["InternalType_DetId"] = d.InternalType_DetId > 0 ? d.InternalType_DetId : DBNull.Value;
                 //row["SeqNo"] = d.SeqNo.HasValue ? (object)d.SeqNo.Value : DBNull.Value;
                 row["Perticular_Test"] = string.IsNullOrEmpty(d.Perticular_Test) ? (object)DBNull.Value : d.Perticular_Test!;
                 row["Test_Method"] = string.IsNullOrEmpty(d.Test_Method) ? (object)DBNull.Value : d.Test_Method!;
@@ -199,7 +199,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                         Input_Voltage = x.Input_Voltage,
                         Ref_Standard = x.Ref_Standard,
                         TestedBy = x.TestedBy,
-                        CreatedBy = x.CreatedBy,
+                        CreatedBy= x.CreatedBy,   
                         CreatedDate = x.CreatedDate,
                         UpdatedBy = x.UpdatedBy,
                         Deleted = x.Deleted,
@@ -253,17 +253,21 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
 
                 using (var multi = await conn.QueryMultipleAsync(sql, new { Internal_TypeId = internalTypeId }))
                 {
+                    // PARENT (1st result set)
                     var header = (await multi.ReadAsync<InternalTypeTestViewModel>()).FirstOrDefault();
                     if (header == null)
                         return null;
 
+                    // CHILD (2nd result set)
                     var details = (await multi.ReadAsync<InternalTypeTestDetailViewModel>()).ToList();
 
+                    // Build final ViewModel WITH details
                     header.Details = details
                         .Select(d => new InternalTypeTestDetailViewModel
                         {
 
                             Id = d.Id,
+                            InternalType_DetId = d.InternalType_DetId,
                             Internal_TypeId = d.Internal_TypeId,
                             Perticular_Test = d.Perticular_Test,
                             Test_Method = d.Test_Method,
@@ -272,8 +276,8 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                             CreatedBy = d.CreatedBy,
                             CreatedDate = d.CreatedDate,
                             UpdatedBy = d.UpdatedBy,
-                            Deleted = d.Deleted,
-                            UpdatedDate = d.UpdatedDate
+                            UpdatedDate = d.UpdatedDate,
+                            IsDeleted = d.IsDeleted
                         })
                         .ToList();
 
@@ -286,5 +290,12 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                 throw;
             }
         }
+
+
+
+
     }
+
+
+
 }

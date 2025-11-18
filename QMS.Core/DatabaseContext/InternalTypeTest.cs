@@ -58,11 +58,8 @@ namespace QMS.Core.DatabaseContext
         public string? Test_Result { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
-
-        public int AddedBy { get; set; }
-        public DateTime AddedOn { get; set; }
-        public int? UpdatedBy { get; set; }
-        public DateTime? UpdatedOn { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
 
         [ForeignKey("Internal_TypeId")]
         public InternalTypeTest? InternalTypeTest { get; set; }

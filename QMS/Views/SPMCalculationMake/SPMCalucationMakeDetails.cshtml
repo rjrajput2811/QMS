@@ -1,0 +1,858 @@
+﻿@{
+    ViewData["Title"] = "SMP Calculation Make";
+}
+
+<style>
+    /* Header card */
+    .header-card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        margin-bottom: 0;
+    }
+
+    .bootstrap-select-look {
+        width: 100%;
+        padding: 6px 12px;
+        font-size: 16px;
+        color: #212529;
+        background-color: #fff;
+        border: 1px solid #86b7fe;
+        border-radius: 4px;
+        box-sizing: border-box;
+        appearance: auto !important;
+        -webkit-appearance: auto !important;
+        -moz-appearance: auto !important;
+    }
+
+        .bootstrap-select-look:focus {
+            outline: none !important;
+            border-color: #0d6efd !important;
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+        }
+
+    .content {
+        min-height: auto !important;
+        padding-bottom: 0 !important;
+        padding-top: 0 !important;
+    }
+
+    .header-title {
+        font-size: large;
+        color: #4682B4;
+        font-weight: 700;
+    }
+
+    .header-btn {
+        width: 140px;
+        font-size: 15px;
+        border-radius: 6px;
+        padding: 8px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .header-btn:hover {
+            transform: scale(1.03);
+        }
+
+    .mr-2 {
+        margin-right: 8px;
+    }
+
+    .card {
+        margin-bottom: 0;
+    }
+
+    .period-card .card-body {
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    /* Tabulator header background */
+    .tabulator .tabulator-header {
+        background-color: #d6e4f0 !important;
+        background-image: none !important;
+    }
+
+    .tabulator .tabulator-col-group {
+        background-color: #d6e4f0 !important;
+        border-right: 1px solid #ccc !important;
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        background-color: #d6e4f0 !important;
+        border-right: 1px solid #ccc !important;
+    }
+
+    .tabulator-col-title {
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        color: #000 !important;
+        text-align: center !important;
+    }
+
+    /* ---------- Header filter input: match your screenshot ---------- */
+    .tabulator .tabulator-header .tabulator-header-filter input {
+        display: block;
+        width: calc(100% - 12px);
+        height: 34px;
+        padding: 6px 10px;
+        font-size: 14px;
+        line-height: 1;
+        background: #ffffff;
+        border: 1px solid #bcd7fb;
+        border-radius: 6px;
+        box-sizing: border-box;
+        box-shadow: none;
+        text-align: left;
+        color: #111;
+    }
+
+        /* hide placeholder text visually */
+        .tabulator .tabulator-header .tabulator-header-filter input::placeholder {
+            color: transparent !important;
+        }
+
+        .tabulator .tabulator-header .tabulator-header-filter input:focus {
+            outline: none;
+            border-color: #2f7be6;
+            box-shadow: 0 0 0 4px rgba(47,123,230,0.12);
+        }
+
+    .tabulator .tabulator-header .tabulator-header-filter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 4px;
+    }
+
+    /* REMOVE ALL HEADER + OUTER BORDERS */
+    .tabulator,
+    .tabulator-header,
+    .tabulator-header .tabulator-col,
+    .tabulator-header .tabulator-col-group {
+        border: none !important;
+        border-right: none !important;
+        background-color: #d6e4f0 !important;
+    }
+
+    .tabulator-col-group {
+        border: none !important;
+    }
+
+    .tab-cell-select {
+        width: calc(100% - 8px);
+        box-sizing: border-box;
+        padding: 6px 28px 6px 8px;
+        border-radius: 4px;
+        border: 1px solid #bdbdbd;
+        background-color: #fff;
+        font-size: 13px;
+        cursor: pointer;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    .styled-select {
+        width: 100%;
+        padding: 6px 30px 6px 10px !important;
+        font-size: 14px;
+        color: #333;
+        background-color: #ffffff;
+        border: 1px solid #b4c2d1;
+        border-radius: 4px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: linear-gradient(45deg, transparent 50%, #333 50%), linear-gradient(135deg, #333 50%, transparent 50%), linear-gradient(to right, #ffffff, #ffffff);
+        background-position: calc(100% - 16px) calc(50% - 4px), calc(100% - 11px) calc(50% - 4px), calc(100% - 2px) 0.5em;
+        background-size: 6px 6px, 6px 6px, 1px 1em;
+        background-repeat: no-repeat;
+        box-sizing: border-box;
+        cursor: pointer;
+    }
+
+        .styled-select:focus {
+            outline: none !important;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25);
+        }
+
+    .tab-cell-select {
+        background-image: linear-gradient(45deg, transparent 50%, #333 50%), linear-gradient(135deg, #333 50%, transparent 50%), linear-gradient(to right, #e6e6e6, #e6e6e6);
+        background-position: calc(100% - 14px) calc(50% - 3px), calc(100% - 9px) calc(50% - 3px), calc(100% - 2px) 0.5em;
+        background-size: 6px 6px, 6px 6px, 1px 1.2em;
+        background-repeat: no-repeat;
+    }
+
+        .tab-cell-select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(66,133,244,0.12);
+            border-color: #4d90fe;
+        }
+
+    .tabulator .tabulator-cell .tab-cell-select {
+        margin: 0;
+    }
+
+    .tab-cell-select:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(66,133,244,0.15);
+        border-color: #4d90fe;
+    }
+
+    .tabulator-header .tabulator-col {
+        border-right: none !important;
+    }
+
+    /* KEEP BORDERS ONLY FOR TABLE DATA CELLS */
+    .tabulator .tabulator-cell {
+        border: 1px solid #ccc !important;
+    }
+
+    .tabulator .tabulator-row {
+        border-bottom: 1px solid #ccc !important;
+    }
+
+    .tabulator-tableholder {
+        border: none !important;
+    }
+
+    .tabulator-footer {
+        background: #d6e4f0 !important;
+        border-top: none !important;
+        padding: 8px 12px !important;
+    }
+
+        .tabulator-footer .tabulator-paginator label {
+            font-weight: 700;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .tabulator-footer .tabulator-page,
+        .tabulator-footer .tabulator-pages button,
+        .tabulator-footer select {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .tabulator-footer .tabulator-pages button {
+            background: #e8f0f9 !important;
+            padding: 6px 10px !important;
+            margin-left: 3px !important;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .tabulator-footer .tabulator-pages .active {
+            background: #007bff !important;
+            color: #fff !important;
+            font-weight: bold;
+        }
+
+        .tabulator-footer .tabulator-pages button:disabled {
+            opacity: 0.4;
+        }
+
+        .tabulator-footer select {
+            background: white;
+            padding: 4px 6px;
+            border-radius: 3px;
+        }
+
+        .tabulator-footer .tabulator-page-size {
+            float: right;
+        }
+
+    .tabulator .tabulator-frozen.tabulator-frozen-left,
+    .tabulator .tabulator-cell.tabulator-frozen {
+        z-index: 5 !important;
+        background: #ffffff;
+        box-shadow: 2px 0 6px rgba(0,0,0,0.06);
+    }
+
+    .bootstrap-select-look {
+        width: calc(100% - 8px);
+        box-sizing: border-box;
+        padding: 4px 28px 4px 8px;
+        font-size: 14px;
+        line-height: 1;
+        height: 30px;
+        border: 1px solid #c6d8ef;
+        border-radius: 2px;
+        background-color: #ffffff;
+        color: #111;
+        text-align: center;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='%23111' d='M6 8L0 0h12z'/></svg>");
+        vertical-align: middle;
+        cursor: pointer;
+    }
+
+        .bootstrap-select-look option {
+            text-align: center;
+            padding: 4px 8px;
+        }
+
+        .bootstrap-select-look:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.08);
+        }
+
+    .tabulator-row .tabulator-cell {
+        padding: 4px 6px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .tabulator-row.tabulator-row-added .tabulator-cell {
+        display: block !important;
+        align-items: unset !important;
+        justify-content: unset !important;
+    }
+
+    .tabulator-row .tabulator-cell .bootstrap-select-look {
+        display: inline-block;
+        max-width: 100%;
+    }
+
+    .tabulator .tabulator-cell {
+        text-align: center !important;
+    }
+
+    .tabulator .tabulator-header .tabulator-col.tabulator-frozen {
+        z-index: 6 !important;
+        box-shadow: 2px 0 6px rgba(0,0,0,0.06);
+    }
+
+    .tabulator-row.flash-added {
+        animation: flashNewRow 2s ease-out forwards;
+    }
+
+    @@keyframes flashNewRow {
+        0% {
+            background-color: #fff7c2;
+        }
+        /* pale yellow */
+        100% {
+            background-color: #ffffff;
+        }
+        /* back to white */
+    }
+
+    .tabulator .tabulator-cell.tabulator-frozen + .tabulator-cell,
+    .tabulator .tabulator-col.tabulator-frozen + .tabulator-col {
+        border-left: 1px solid #e0e0e0;
+    }
+
+    .period-divider {
+        height: 0.5px;
+        width: 100%;
+        background: #4682B4;
+        margin: 8px 0 12px 0;
+        border-radius: 2px;
+    }
+
+    .tabulator-tableholder {
+        background-color: white !important;
+    }
+
+    .tabulator-placeholder {
+        background-color: white !important;
+    }
+
+        .tabulator-placeholder span {
+            display: none !important;
+        }
+
+    #dn_table {
+        width: 100%;
+    }
+
+    .tabulator-row {
+        background-color: #ffffff !important;
+    }
+
+    .tabulator-cell {
+        background-color: #ffffff !important;
+    }
+
+    .bootstrap-select-look {
+        text-align: center;
+    }
+
+    .tabulator-row.tabulator-selected {
+        background-color: #ffffff !important;
+    }
+
+    .tabulator-row:hover {
+        background-color: #ffffff !important;
+    }
+
+    .chart-container {
+        width: 100%;
+    }
+
+    .row, .col-12 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+</style>
+
+<div class="content">
+
+    <!-- Header Card -->
+    <div class="card shadow-sm header-card" style="width:100%; margin:0;">
+        <div class="card-body d-flex justify-content-between align-items-center">
+
+            <div>
+                <b class="header-title">SMP Calculation Make</b>
+            </div>
+
+            <div>
+                <button id="addDNButton"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2 header-btn"
+                        onclick="onAddClick()">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+
+                <button id="backButton"
+                        type="button"
+                        class="btn btn-outline-primary header-btn"
+                        onclick="onBackClick()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Period Title + Table -->
+    <div class="card shadow-sm period-card"
+         style="border-radius:8px; border:1px solid #ccc; margin-top:20px; width:100%;">
+
+        <div class="card-body">
+            <div class="chart-container">
+                <div id="deviation_note_table_wrapper" style="overflow-x:auto;">
+                    <div id="dn_table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+
+    <link href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+
+    <script>
+        (function () {
+
+      
+            function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
+                const col = {
+                    title: title,
+                    field: field,
+                    editor: editorType,
+                    editorParams: editorParams,
+                    formatter: formatter,
+                    headerFilter: headerFilterType,
+                    headerFilterParams: headerFilterParams,
+                    headerMenu: headerMenu,
+                    hozAlign: align,
+                    headerHozAlign: "left"
+                };
+                return col;
+            }
+
+      
+            const columns = [
+
+                {
+                    title: "Sr No.",
+                    field: "sr_no",
+                    width: 90,
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    frozen: true,
+                    headerSort: false,
+                    editor: false,
+                    headerFilter: false,   //
+
+                    formatter: function (cell) {
+                       
+                        const table = cell.getTable();
+                        const rowData = cell.getRow().getData();
+                       
+                        let idx = -1;
+                        if (rowData && rowData.id !== undefined) {
+                            const data = table.getData();
+                            idx = data.findIndex(r => r.id === rowData.id);
+                        }
+                        const rowNumber = (idx >= 0 ? idx : cell.getRow().getPosition()) + 1;
+
+                        return `
+                            <div style="
+                                display:flex;
+                                justify-content:center;
+                                align-items:center;
+                                gap:8px;
+                            ">
+                                <span>${rowNumber}</span>
+                                <i class="fa fa-trash delete-icon" data-delete="1"
+                                   style="color:red; cursor:pointer; font-size:16px;"
+                                   title="Delete row"></i>
+                            </div>
+                        `;
+                    },
+
+                    cellClick: function (e, cell) {
+                        const deleteBtn = e.target.closest && e.target.closest('[data-delete]');
+                        if (deleteBtn) {
+                         
+                            cell.getRow().delete().then(() => {
+                             
+                                cell.getTable().redraw(true);
+                            }).catch(err => {
+                                console.error("Delete failed:", err);
+                            });
+                        }
+                    }
+                },
+
+                {
+                    title: "Supplier Name",
+                    field: "SupplierName",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    frozen: true,
+                    frozenPosition: "left",
+                    width: 240,
+                    responsive: 0,
+             
+                },
+                {
+                    title: "Location",
+                    field: "Location",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    frozen: false,
+                    width: 150
+                },
+                {
+                    title: "SQA",
+                    field: "SQA",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    frozen: false,
+                    width: 150
+                },
+                {
+                    title: "PC",
+                    field: "PC",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    frozen: false,
+                    width: 150
+                },
+                {
+                    title: "Month",
+                    field: "Month",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    frozen: false,
+                    width: 150
+                },
+                {
+                    title: "PPM",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "0-5000", field: "ppm_value", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Delivery Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "96-100", field: "delivery_value", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "CAPA Age",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "0-5", field: "capa_age_value", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Audit Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "> 85", field: "audit_value", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Cost Initiative",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "1.5%", field: "cost_value", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "NPI Response",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "npi_value", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Replacement Lead Time",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "<=7", field: "lead_value", hozAlign: "center", width: 120 }
+                    ]
+                },
+
+            
+                {
+                    title: "PPM Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "20", field: "ppm_rating", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Delivery Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "15", field: "delivery_rating2", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "CAPA Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "capa_rating", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Audit Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "20", field: "audit_rating", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Cost Initiative Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "15", field: "cost_rating", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "NPI Response Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "npi_rating", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Replace Lead Time Rating",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "lead_rating", hozAlign: "center", width: 120 }
+                    ]
+                },
+                {
+                    title: "Total",
+                    headerHozAlign: "center",
+                    columns: [
+                        { title: "100", field: "total", hozAlign: "center", width: 120 }
+                    ]
+                },
+
+                
+                {
+                    field: "Apr24",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    width: 150,
+
+                    formatter: "plaintext",
+                    editor: "select",
+
+                    editorParams: {
+                        values: (function () {
+                            const year = new Date().getFullYear();
+
+                            return [
+                                "Jan " + year, "Feb " + year, "Mar " + year, "Apr " + year,
+                                "May " + year, "Jun " + year, "Jul " + year, "Aug " + year,
+                                "Sep " + year, "Oct " + year, "Nov " + year, "Dec " + year
+                            ];
+                        })(),
+
+                        allowEmpty: false,
+                        elementAttributes: {
+                            class: "bootstrap-select-look"
+                        }
+                    },
+
+                    defaultValue: (function () {
+                        const currentYear = new Date().getFullYear();
+                        const year = (currentYear === 2025)
+                            ? 25
+                            : (currentYear % 100);
+                        return "Apr " + year;
+                    })()
+                }
+
+            ];
+
+           
+            function transformColumns(cols) {
+                return cols.map(function (col) {
+                    // If group column, recurse
+                    if (Array.isArray(col.columns) && col.columns.length) {
+                        return Object.assign({}, col, { columns: transformColumns(col.columns) });
+                    }
+
+                    // Keep special Sr No column and Apr24 (they already have specific settings)
+                    if (col.field === "sr_no" || col.field === "Apr24") {
+                        return col;
+                    }
+
+                    // If leaf column with field -> replace with editableColumn keeping width/frozen/align/etc.
+                    // if (col.field) {
+                    //     const title = col.title || col.field;
+                    //     const field = col.field;
+                    //     const editorType = col.editor !== undefined ? col.editor : true;
+                    //     const align = col.hozAlign || "center";
+                    //     const headerFilterType = (col.headerFilter !== undefined) ? col.headerFilter : "input";
+                    //     const headerFilterParams = Object.assign({}, col.headerFilterParams || {}, { elementAttributes: Object.assign({}, (col.headerFilterParams && col.headerFilterParams.elementAttributes) || {}, { class: ((col.headerFilterParams && col.headerFilterParams.elementAttributes && col.headerFilterParams.elementAttributes.class) || "") + " header-filter" }) });
+                    //     const editorParams = col.editorParams || {};
+                    //     const formatter = col.formatter || null;
+                    //     const base = editableColumn(title, field, editorType, align, headerFilterType, headerFilterParams, editorParams, formatter);
+
+                    //     // copy other display props (non-editor) so nothing changes visually
+                    //     if (col.width) base.width = col.width;
+                    //     if (col.frozen) base.frozen = col.frozen;
+                    //     if (col.frozenPosition) base.frozenPosition = col.frozenPosition;
+                    //     if (col.responsive !== undefined) base.responsive = col.responsive;
+                    //     if (col.headerHozAlign) base.headerHozAlign = col.headerHozAlign;
+                    //     if (col.hozAlign) base.hozAlign = col.hozAlign;
+                    //     if (col.headerSort !== undefined) base.headerSort = col.headerSort;
+                    //     if (col.visible !== undefined) base.visible = col.visible;
+
+                    //     return base;
+                    // }
+
+                    // otherwise return as-is
+                    return col;
+                });
+            }
+
+            const transformedColumns = transformColumns(columns);
+
+            // initialize table
+            const dnTable = new Tabulator("#dn_table", {
+                data: [],
+                columns: transformedColumns,
+                layout: "fitData",
+                responsiveLayout: false,
+                height: "auto",
+                placeholder: "",
+                movableColumns: true,
+
+                pagination: "local",
+                paginationSize: 10,
+                paginationSizeSelector: [10, 20, 50, 100],
+                paginationCounter: "rows",
+
+                columnDefaults: {
+                    editor: "input"   // makes all cells editable by default
+                },
+
+                tableBuilt: function () {
+                    this.redraw(true);
+                }
+            });
+
+            window.dnTable = dnTable;
+            window.onAddClick = function () {
+                try {
+                    const data = dnTable.getData();
+                    const existingIds = data.map(d => Number(d.id || d.Sr_No || 0)).filter(n => !isNaN(n) && n > 0);
+                    const nextId = existingIds.length ? Math.max(...existingIds) + 1 : 1;
+
+                    const newRow = {
+                        id: nextId,
+                        SupplierName: "",
+                        Location: "",
+                        SQA: "",
+                        PC: "",
+                        Month: "",
+                        ppm_value: "",
+                        Apr24: ""
+                    };
+
+                    dnTable.addRow(newRow, false).then(function (row) {
+                           row.getElement().classList.add("flash-added");
+                        row.getElement().scrollIntoView({ behavior: "smooth", block: "nearest" });
+                     
+                        const cell = row.getCell("SupplierName");
+                        if (cell) cell.edit(true);
+                    }).catch(function (err) {
+                        console.error("Failed to add row:", err);
+                    });
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+
+            window.onBackClick = function () {
+                window.history.back();
+            };
+
+            document.addEventListener("keydown", function (e) {
+                if (e.ctrlKey && e.key === "Enter") {
+                    window.onAddClick();
+                }
+            });
+
+        })();
+
+        // keep existing headerMenu reference (your page likely defines it elsewhere)
+        function headerMenu() {
+            // placeholder fallback if headerMenu not defined
+            return [];
+        }
+
+        function onAddClick() { /* optional */ }
+        function onBackClick() { window.history.back(); }
+
+    </script>
+
+}
+
+@section HideSidebar { }

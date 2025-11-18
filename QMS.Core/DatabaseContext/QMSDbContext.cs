@@ -48,6 +48,8 @@ namespace QMS.Core.DatabaseContext
         public DbSet<PhysicalCheckAndVisualInspection> PhysicalCheckAndVisualInspections { get; set; }
         public DbSet<ElectricalPerformance> ElectricalPerformances { get; set; }
         public DbSet<ElectricalProtection> ElectricalProtections { get; set; }
+        public DbSet<InternalTypeTest> InternalTypeTests { get; set; }
+        public DbSet<InternalTypeTestDetail> InternalTypeTestDetails { get; set; }
         public DbSet<RippleTestReport> RippleTestReports { get; set; }
         public DbSet<SurgeTestReport> SurgeTestReports { get; set; }
         public DbSet<TemperatureRiseTest> TemperatureRiseTests { get; set; }

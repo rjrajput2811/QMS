@@ -163,7 +163,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
             foreach (var d in details)
             {
                 var row = dt.NewRow();
-                row["InternalType_DetId"] = d.InternalType_DetId > 0 ? d.InternalType_DetId : DBNull.Value;
+                row["InternalType_DetId"] = d.Id > 0 ? d.Id : DBNull.Value;
                 //row["SeqNo"] = d.SeqNo.HasValue ? (object)d.SeqNo.Value : DBNull.Value;
                 row["Perticular_Test"] = string.IsNullOrEmpty(d.Perticular_Test) ? (object)DBNull.Value : d.Perticular_Test!;
                 row["Test_Method"] = string.IsNullOrEmpty(d.Test_Method) ? (object)DBNull.Value : d.Test_Method!;
@@ -267,7 +267,6 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                         {
 
                             Id = d.Id,
-                            InternalType_DetId = d.InternalType_DetId,
                             Internal_TypeId = d.Internal_TypeId,
                             Perticular_Test = d.Perticular_Test,
                             Test_Method = d.Test_Method,
@@ -277,7 +276,7 @@ namespace QMS.Core.Repositories.InternalTypeTestRepo
                             CreatedDate = d.CreatedDate,
                             UpdatedBy = d.UpdatedBy,
                             UpdatedDate = d.UpdatedDate,
-                            IsDeleted = d.IsDeleted
+                            Deleted = d.Deleted
                         })
                         .ToList();
 

@@ -408,7 +408,6 @@ public async Task<IActionResult> ExportInternalTypeTestExcel(int id)
                 {
                     // Update path
                     model.UpdatedBy = userId;
-                    model.UpdatedDate = DateTime.Now;
 
                     // Make sure repository has UpdateInternalTypeTestAsync implemented
                     result = await _internalTypeTestRepository.UpdateInternalTypeTestAsync(model);
@@ -423,7 +422,6 @@ public async Task<IActionResult> ExportInternalTypeTestExcel(int id)
                 {
                     // Insert path
                     model.CreatedBy = userId;
-                    model.CreatedDate = DateTime.Now;
 
                     result = await _internalTypeTestRepository.InsertInternalTypeTestAsync(model);
                     if (result == null)

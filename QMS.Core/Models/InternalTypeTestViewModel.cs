@@ -31,7 +31,7 @@ namespace QMS.Core.ViewModels
 
         public DateTime? CreatedDate { get; set; }
 
-        public int? UpdatedBy { get; set; }
+        public string? UpdatedBy { get; set; }
 
         public DateTime? UpdatedOn { get; set; }
 
@@ -64,6 +64,5 @@ namespace QMS.Core.ViewModels
         public DateTime? UpdatedDate { get; set; }
 
         public int? UpdatedBy { get; set; }
-        public DateTime? UpdatedDate { get; set; }
     }
 }

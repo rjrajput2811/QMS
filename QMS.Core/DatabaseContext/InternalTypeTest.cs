@@ -30,10 +30,8 @@ namespace QMS.Core.DatabaseContext
         public string? TestedBy { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
-        public int AddedBy { get; set; }
-        public DateTime AddedOn { get; set; }
-        public int? UpdatedBy { get; set; }
-        public DateTime? UpdatedOn { get; set; }
+        public string? UpdatedBy { get; set; }
+        public DateTime? UpdatedDate { get; set; }
         public List<InternalTypeTestDetail>? Details { get; set; }
     }
 
@@ -49,7 +47,6 @@ namespace QMS.Core.DatabaseContext
 
         [Column("IsDeleted")]
         public override bool Deleted { get; set; }
-        //------------ END overrides --------
         public int Internal_TypeId { get; set; } 
         public int? SeqNo { get; set; }
         public string? Perticular_Test { get; set; }

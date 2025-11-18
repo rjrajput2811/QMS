@@ -195,7 +195,7 @@
           asp-controller="LuminaireTypeTestReport"
           asp-action="InsertInternalTypeTest">
         @Html.AntiForgeryToken()
-        @Html.HiddenFor(m => m.Internal_TypeId)
+        @Html.HiddenFor(m => m.Id)
 
         <!-- Header Card -->
         <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
@@ -214,11 +214,13 @@
                     </button>
 
                     <!-- Back Button -->
-                    <a href="@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")"
-                       class="btn btn-outline-primary"
-                       style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                        <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
-                    </a>
+                    <button id="backButton"
+                            type="button"
+                            class="btn btn-outline-primary header-btn"
+                            style="width:120px;"
+                            onclick="location.href='@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")'">
+                        <i class="fas fa-arrow-left" style="margin-right:6px;"></i> Back
+                    </button>
                 </div>
             </div>
         </div>
@@ -383,39 +385,63 @@
                                 <th style="width:15%;">Test Result</th>
                             </tr>
                         </thead>
-
                         <tbody id="testTableBody">
-                            <!-- initial single row - more rows will be added by script -->
-                        @*     <tr style="height:120px;">
-                                <td class="sr-cell">
-                                    1
-                                    <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
-                                </td>
+                            @{
+                                var details = Model?.Details ?? new List<QMS.Core.ViewModels.InternalTypeTestDetailViewModel>();
+                                int idx = 1;
+                            }
 
-                                <!-- Particular Of Test -->
-                                <td contenteditable="true" style="vertical-align:top;"
-                                    data-name="Perticular_Test">
-                                    @Model.Details?.FirstOrDefault()?.Perticular_Test
-                                </td>
+                            @if (details.Any())
+                            {
+                                foreach (var item in details)
+                                {
+                                    <tr style="height:120px;">
+                                        <td class="sr-cell">
+                                            @idx
+                                            <button class="row-del-btn" title="Delete row">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </td>
 
-                                <!-- Test Method -->
-                                <td contenteditable="true" style="vertical-align:top;"
-                                    data-name="Test_Method">
-                                    @Model.Details?.FirstOrDefault()?.Test_Method
-                                </td>
+                                        <!-- Particular Of Test -->
+                                        <td contenteditable="true" style="vertical-align:top;" data-name="Perticular_Test">
+                                            @(item.Perticular_Test ?? "")
+                                        </td>
 
-                                <!-- Test Requirement -->
-                                <td class="test-req-cell" contenteditable="true"
-                                    data-name="Test_Requirement">
-                                    @Html.Raw(Model.Details?.FirstOrDefault()?.Test_Requirement)
-                                </td>
+                                        <!-- Test Method -->
+                                        <td contenteditable="true" style="vertical-align:top;" data-name="Test_Method">
+                                            @(item.Test_Method ?? "")
+                                        </td>
 
-                                <!-- Test Result -->
-                                <td contenteditable="true" style="vertical-align:top;"
-                                    data-name="Test_Result">
-                                    @Model.Details?.FirstOrDefault()?.Test_Result
-                                </td>
-                            </tr> *@
+                                        <!-- Test Requirement (supports HTML, null-safe) -->
+                                        <td class="test-req-cell" contenteditable="true" data-name="Test_Requirement">
+                                            @Html.Raw(item.Test_Requirement ?? "")
+                                        </td>
+
+                                        <!-- Test Result -->
+                                        <td contenteditable="true" style="vertical-align:top;" data-name="Test_Result">
+                                            @(item.Test_Result ?? "")
+                                        </td>
+                                    </tr>
+
+                                    idx++;
+                                }
+                            }
+                            else
+                            {
+                                <!-- Blank default row when adding new -->
+                                <tr style="height:120px;">
+                                    <td class="sr-cell">
+                                        1
+                                        <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
+                                    </td>
+
+                                    <td contenteditable="true" style="vertical-align:top;" data-name="Perticular_Test"></td>
+                                    <td contenteditable="true" style="vertical-align:top;" data-name="Test_Method"></td>
+                                    <td class="test-req-cell" contenteditable="true" data-name="Test_Requirement"></td>
+                                    <td contenteditable="true" style="vertical-align:top;" data-name="Test_Result"></td>
+                                </tr>
+                            }
                         </tbody>
 
                         <tfoot>
@@ -443,7 +469,6 @@
         </div>
 
     </form> <!-- END form -->
-
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const toolbar = document.getElementById('testReqToolbar');
@@ -529,12 +554,12 @@
             function addRow() {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                <td class="sr-cell"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-            `;
+                            <td class="sr-cell"></td>
+                            <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                                 <td contenteditable="true" style="vertical-align: top; min-height: 120px; padding: 8px;"></td>
+                                    <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align: center;"></td>
+                            <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                        `;
                 tableBody.appendChild(tr);
                 bindTestReqCell(tr.querySelector('.test-req-cell'));
                 renumberRows();
@@ -546,10 +571,6 @@
                     const row = btn.closest('tr');
                     if (!row) return;
                     row.remove();
-                    // if the table becomes empty, ensure one row remains visible
-                    if (tableBody.querySelectorAll('tr').length === 0) {
-                        addRow();
-                    }
                     renumberRows();
                 }
             });
@@ -612,7 +633,7 @@
                 { name: "Prod_Cat_Code", label: "Product CAT Code" },
                 { name: "Input_Voltage", label: "Input Voltage" },
                 { name: "Samp_Identi_Lab", label: "Sample Identification For Lab" },
-                { name: "Ref_Standard", label: "Reference Standard" } 
+                { name: "Ref_Standard", label: "Reference Standard" }
             ];
 
             // ✅ Validate required fields
@@ -641,6 +662,16 @@
                 if (!form) throw new Error('Form element not found (id="luminaireForm").');
 
                 const formData = new FormData(form);
+
+                // -------------------------
+                // MINIMAL, SAFE CHANGE:
+                // Ensure Id is always sent to server so controller can decide Insert vs Update.
+                // Razor will render the numeric Id from the Model (0 if new).
+                // -------------------------
+                // NOTE: This line uses Razor to inline server Model.Id — keep as-is in your .cshtml.
+                const currentInternalTypeId = @(Model?.Id ?? 0);
+                formData.set('Id', String(currentInternalTypeId));
+                // -------------------------
 
                 // ✅ Build Details array from table rows
                 const details = [];
@@ -701,8 +732,35 @@
 
                 const json = payload || {};
                 if (json && (json.Success === true || json.success === true)) {
-                    showSuccessAlert(json.Message || 'Saved successfully.');
-                    if (json.RedirectUrl) setTimeout(() => window.location.href = json.RedirectUrl, 800);
+                    // --- MINIMAL CHANGE: show different message for update vs insert ---
+                    const currentId = parseInt(formData.get('Id') || "0", 10);
+                    if (currentId > 0) {
+                        showSuccessAlert(json.Message || 'Updated successfully.');
+                    } else {
+                        showSuccessAlert(json.Message || 'Saved successfully.');
+                    }
+
+                    // NAVIGATION: prefer server RedirectUrl; otherwise go back to referring page or history
+                    const navigateBack = () => {
+                        if (json.RedirectUrl) {
+                            window.location.href = json.RedirectUrl;
+                            return;
+                        }
+                        // prefer document.referrer if it exists and is different from current location
+                        try {
+                            const ref = document.referrer;
+                            if (ref && ref !== '' && ref !== window.location.href) {
+                                window.location.href = ref;
+                                return;
+                            }
+                        } catch (e) { /* ignore */ }
+
+                        // last resort: browser history
+                        history.back();
+                    };
+
+                    // Wait a short moment so the user sees the success alert
+                    setTimeout(navigateBack, 800);
                     return;
                 }
 
@@ -733,8 +791,9 @@
                 }
             }
         }
-
     </script>
+
+
 
 </body>
 </html>

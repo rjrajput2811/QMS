@@ -285,12 +285,12 @@
             <!-- -------- Column 1 -------- -->
             <div class="col-md-4">
                 <div class="card-body">
-                    <div class="card-section">
+                    <div class="card-section tracker-card">
                         <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
                             <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Tracker</h5>
 
                             <div class="input-group" style="width:240px;">
-                                <input type="text" id="menuSearch" class="form-control form-control-sm" placeholder="Search Tracker..." />
+                                <input type="text" id="menuSearch" class="form-control form-control-sm tracker-search" placeholder="Search Tracker..." />
                                 <div class="input-group-append">
                                    
                                 </div>
@@ -298,7 +298,7 @@
                         </div>
 
                             <!-- Collapsible group -->
-                        <div class="menu-table">
+                        <div class="menu-table tracker-menu">
 
                             <!-- Corrective Action -->
                             <div class="menu-row">
@@ -427,18 +427,18 @@
             <!-- -------- Column 2 -------- -->
             <div class="col-md-4">
                 <div class="card-body">
-                    <div class="card-section">
+                    <div class="card-section tracker-card">
                         <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
                             <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Tracker</h5>
 
                             <div class="input-group" style="width:240px;">
-                                <input type="text" id="menuSearch" class="form-control form-control-sm" placeholder="Search Tracker..." />
+                                <input type="text" id="menuSearch" class="form-control form-control-sm tracker-search" placeholder="Search Tracker..." />
                                 <div class="input-group-append">
                                   
                                 </div>
                             </div>
                         </div>
-                        <div class="menu-table">
+                        <div class="menu-table tracker-menu">
                             <!-- AHP Note -->
                             <div class="menu-row">
                                 <div class="menu-cell">
@@ -512,17 +512,17 @@
             <!-- -------- Column 3 -------- -->
             <div class="col-md-4">
                 <div class="card-body">
-                    <div class="card-section">
+                    <div class="card-section tracker-card">
                         <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
                             <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Product Validation</h5>
 
                             <div class="input-group" style="width:240px;">
-                                <input type="text" id="menuSearch" class="form-control form-control-sm" placeholder="Search Tracker..." />
+                                <input type="text" id="menuSearch" class="form-control form-control-sm tracker-search" placeholder="Search Tracker..." />
                                 <div class="input-group-append">
                                 </div>
                             </div>
                         </div>
-                        <div class="menu-table">
+                        <div class="menu-table tracker-menu">
                             <div class="menu-row">
                                 <div class="menu-cell">
                                     <div class="menu-section">
@@ -651,26 +651,23 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const searchInput = document.getElementById('cardSearch');
-            // Scope to this grid for safety
-            const cards = document.querySelectorAll('#cardGrid .qms-card');
+            // For every card with its own search box
+            document.querySelectorAll('.tracker-card').forEach(function (card) {
+                const searchInput = card.querySelector('.tracker-search');
+                const rows = card.querySelectorAll('.tracker-menu .menu-row');
 
-            function applyFilter(q) {
-                const query = (q || '').trim().toLowerCase();
-                cards.forEach(card => {
-                    const title = (card.querySelector('h5')?.textContent || '').toLowerCase();
-                    const col = card.closest('.col-6, .col-md-4, .col-lg-3, .col-xxl-2') || card.parentElement;
-                    const match = title.includes(query);
-                    // Use CSS display toggle to keep Bootstrap grid reflowing
-                    col.style.display = match ? '' : 'none';
+                if (!searchInput || rows.length === 0) return;
+
+                searchInput.addEventListener('input', function () {
+                    const q = this.value.trim().toLowerCase();
+
+                    rows.forEach(function (row) {
+                        const text = row.innerText.toLowerCase();
+                        // show / hide entire row based on match
+                        row.style.display = text.includes(q) ? '' : 'none';
+                    });
                 });
-            }
-
-            // Initial (show all)
-            applyFilter('');
-
-            // Live filter on each keystroke
-            searchInput.addEventListener('input', (e) => applyFilter(e.target.value));
+            });
         });
     </script>
 

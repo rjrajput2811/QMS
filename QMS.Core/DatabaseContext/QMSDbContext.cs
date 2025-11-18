@@ -64,6 +64,9 @@ namespace QMS.Core.DatabaseContext
         public DbSet<MainValidationReport> MainValidationReports { get; set; }
         public DbSet<ValidationClosureReport> ValidationClosureReports { get; set; }
 
+        public DbSet<InternalTypeTest> InternalTypeTests { get; set; }
+        public DbSet<InternalTypeTestDetail> InternalTypeTestDetails { get; set; }
+
 
 
         //// ------- Service -------- ////

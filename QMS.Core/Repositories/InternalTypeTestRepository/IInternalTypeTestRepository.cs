@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace QMS.Core.Repositories.InternalTypeTestRepo
 {
    public interface IInternalTypeTestRepository
-    {
+   {
         Task<OperationResult> InsertInternalTypeTestAsync(InternalTypeTestViewModel model);
-    }
+   }
 }

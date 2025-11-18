@@ -3,6 +3,11 @@
 }
 
 <!-- CSS: Matches Photometry / Electrical Protection header design -->
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+
 <style>
     .header-card {
         border-radius: 8px;
@@ -11,7 +16,7 @@
     }
 
     .header-title {
-        font-size: large; /* consistent size */
+        font-size: large;
         color: #4682B4;
         font-weight: 700;
     }
@@ -30,6 +35,58 @@
     .mr-2 {
         margin-right: 8px;
     }
+
+    /* simple blocker overlay used by Blockloadershow/Blockloaderhide */
+    #globalBlocker {
+        position: fixed;
+        left: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.25);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+    }
+
+        #globalBlocker .loader {
+            background: #fff;
+            padding: 20px 30px;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+            font-weight: 600;
+        }
+
+    /* alert container */
+    #alertContainer {
+        position: fixed;
+        right: 18px;
+        top: 76px;
+        width: 320px;
+        z-index: 2200;
+    }
+
+    /* Tabulator niceties */
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 35px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
 </style>
 
 <div class="content">
@@ -59,16 +116,310 @@
         </div>
     </div>
 
-    <!-- Optional placeholder for Luminaire data/grid -->
-    <!--
     <div class="card">
         <div class="card-body">
-            <div class="table-responsive">
-                <!-- Add your Luminaire table or Tabulator grid here -->
-</div>
+            <div id="luminaire_table_wrapper" style="overflow-x:auto; width:100%; float:left;">
+                <div id="luminaire_table"></div>
+            </div>
         </div>
     </div>
-    -->
+
+    <!-- simple blocker and alert container -->
+    <div id="globalBlocker"><div class="loader">Loading...</div></div>
+    <div id="alertContainer"></div>
+    @section Scripts {
+        <script src="~/js/tabulator.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+        <script asp-append-version="true">
+            var table = null;
+
+            $(document).ready(function () {
+                loadLuminaireGrid();
+            });
+
+            function loadLuminaireGrid() {
+                Blockloadershow();
+                $.ajax({
+                    url: '@Url.Action("GetInternalTypeTestList", "LuminaireTypeTestReport")',
+                    type: 'GET',
+                    success: function (data) {
+                        Blockloaderhide();
+                        console.log("RAW SERVER DATA:", data);
+                        if (Array.isArray(data)) {
+                            buildLuminaireGrid(data);
+                        } else {
+                            buildLuminaireGrid([]);
+                            showDangerAlert("No data found.");
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        Blockloaderhide();
+                        showDangerAlert("Error loading data: " + error);
+                    }
+                });
+            }
+
+            function buildLuminaireGrid(response) {
+
+                var tabledata = response.map((item, index) => {
+
+                    // ✅ Convert item.date → dd/MM/yyyy
+                    let formattedDate = "";
+                    if (item.date) {
+                        let d = new Date(item.date);
+                        formattedDate = !isNaN(d) ? d.toLocaleDateString("en-GB") : item.date;
+                    }
+
+                    return {
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        Prod_Cat_Code: item.prod_Cat_Code || "",
+
+                        Report_No: item.report_No || "",
+                        Report_Date: formattedDate,   // ✅ updated line
+
+                        Cust_Name: item.cust_Name || "",
+                        Samp_Identi_Lab: item.samp_Identi_Lab || "",
+                        Input_Voltage: item.input_Voltage || "",
+                        Samp_Desc: item.samp_Desc || "",
+                    };
+                });
+
+                if (table) table.destroy();
+
+                table = new Tabulator("#luminaire_table", {
+                    data: tabledata,
+                    layout: "fitDataTable",
+                    movableColumns: true,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [10, 50, 100, { label: "All", value: true }],
+
+                    columns: [
+
+                        // Action column stays centered (optional) → If you want it left, tell me.
+                        {
+                            title: "Action",
+                            field: "Action",
+                            width: 140,
+                            hozAlign: "center",
+                            formatter: function (cell) {
+                                const row = cell.getRow().getData();
+                                return `
+                    <i onclick="(function(e){ e.stopPropagation(); deleteLuminaire(${row.Id}); })(event)"
+                       class="fas fa-trash-alt"
+                       title="Delete"
+                       style="color:red; cursor:pointer; margin-right:10px;"></i>
+
+                    <i onclick="(function(e){ e.stopPropagation(); exportLuminaireToExcel(${row.Id}); })(event)"
+                       class="fas fa-file-excel"
+                       title="Export Excel"
+                       style="color:green; cursor:pointer;"></i>
+                `;
+                            }
+                        },
+
+                        { title: "SNo", field: "Sr_No", width: 100, hozAlign: "left" },
+                        { title: "Product Category", field: "Prod_Cat_Code", width: 250, headerFilter: "input", hozAlign: "left" },
+                        { title: "Sample Description", field: "Samp_Desc", width: 300, headerFilter: "input", hozAlign: "left" },
+
+                        { title: "Report No", field: "Report_No", width: 200, headerFilter: "input", hozAlign: "left" },
+                        { title: "Report Date", field: "Report_Date", width: 180, headerFilter: "input", hozAlign: "left" },
+
+                        { title: "Customer Name", field: "Cust_Name", width: 250, headerFilter: "input", hozAlign: "left" },
+                        { title: "Input Voltage", field: "Input_Voltage", width: 200, headerFilter: "input", hozAlign: "left" },
+                        { title: "Sample Identification (Lab)", field: "Samp_Identi_Lab", width: 280, headerFilter: "input", hozAlign: "left" }
+                    ]
+                });
+
+                // insert top buttons (Add New, Refresh) just once
+                insertGridButtons();
+
+                // ✅ FIX — Do not navigate when clicking Action buttons
+                table.on("cellClick", (e, cell) => {
+                    if (cell.getColumn().getField() === "Action") return;
+
+                    const id = cell.getRow().getData().Id;
+                    if (id) {
+                        window.location.href = "/LuminaireTypeTestReport/LuminaireTypeTestDetails?internalTypeId=" + id;
+                    }
+                });
+            }
+
+            // Adds "Add New" and "Refresh" buttons above the grid (non-destructive — minimal UI)
+            function insertGridButtons() {
+                try {
+                    // If already inserted, skip
+                    if (document.getElementById('luminaireGridActions')) return;
+
+                    var container = document.querySelector("#luminaire_table")?.parentElement;
+                    if (!container) {
+                        // fallback — add to body top
+                        container = document.body;
+                    }
+
+                    var wrapper = document.createElement('div');
+                    wrapper.id = 'luminaireGridActions';
+                    wrapper.style.display = 'flex';
+                    wrapper.style.justifyContent = 'flex-end';
+                    wrapper.style.margin = '8px 0';
+                    wrapper.style.gap = '8px';
+
+                    var addBtn = document.createElement('button');
+                    addBtn.type = 'button';
+                    addBtn.className = 'btn btn-outline-primary';
+                    addBtn.style.padding = '6px 10px';
+                    addBtn.innerHTML = '<i class="fas fa-plus" style="margin-right:6px;"></i> Add New';
+                    addBtn.addEventListener('click', function () {
+                        // navigate to details page without id for create
+                        window.location.href = '/LuminaireTypeTestReport/LuminaireTypeTestDetails';
+                    });
+
+               
+
+                    // insert wrapper before the table element (if parent exists)
+                    var tableEl = document.querySelector("#luminaire_table");
+                    if (tableEl && tableEl.parentElement) {
+                        tableEl.parentElement.insertBefore(wrapper, tableEl);
+                    } else {
+                        // fallback: append to the top of container
+                        container.insertBefore(wrapper, container.firstChild);
+                    }
+                } catch (err) {
+                    console.warn('Could not insert grid buttons:', err);
+                }
+            }
+
+            function deleteLuminaire(id) {
+                if (!id) return;
+
+                // Optional: simple confirm
+                if (!confirm("Are you sure you want to delete this record?")) return;
+
+                Blockloadershow();
+
+                $.post('@Url.Action("DeleteInternalTypeTest", "LuminaireTypeTestReport")', { id: id })
+                    .done(function (resp) {
+                        Blockloaderhide();
+                        try {
+                            // Normalize response success key (some APIs use success / Success)
+                            const ok = resp && (resp.success === true || resp.Success === true);
+                            if (ok) {
+                                showSuccessAlert("Deleted successfully");
+
+                                // If Tabulator instance exists, remove the row quickly
+                                try {
+                                    if (table && typeof table.deleteRow === 'function') {
+                                        // deleteRow accepts the row ID if you used it as the row's unique id.
+                                        // We used Id in row data, so attempt to remove by matching Id
+                                        // If your table has a defined index, you can also use table.deleteRow(rowId)
+                                        // We'll find the row and delete it to avoid a full reload:
+                                        const row = table.getRows().find(r => r.getData().Id == id);
+                                        if (row) {
+                                            row.delete();
+                                            // re-numbering / local pagination will update automatically
+                                        } else {
+                                            // fallback: reload the whole grid
+                                            loadLuminaireGrid();
+                                        }
+                                    } else {
+                                        // fallback if table isn't available
+                                        loadLuminaireGrid();
+                                    }
+                                } catch (ex) {
+                                    console.warn('Could not remove row from Tabulator, reloading grid', ex);
+                                    loadLuminaireGrid();
+                                }
+                            } else {
+                                showDangerAlert(resp && (resp.message || resp.Message) || "Delete failed.");
+                            }
+                        } catch (ex) {
+                            console.error('Delete response handling error', ex);
+                            showDangerAlert("Error deleting record. See console for details.");
+                        }
+                    })
+                    .fail(function (xhr) {
+                        Blockloaderhide();
+                        if (xhr && xhr.status === 401) {
+                            // optional: redirect to login if unauthorized
+                            window.location.href = '@Url.Action("Login", "Account")';
+                        } else {
+                            showDangerAlert("Error deleting record.");
+                        }
+                    });
+            }
+
+
+            function exportLuminaireToExcel(recid) {
+                if (!recid) return;
+                Blockloadershow();
+
+                $.ajax({
+                    url: '@Url.Action("ExportInternalTypeTestExcel", "LuminaireTypeTestReport")',
+                    data: { id: recid },
+                    type: 'POST',
+                    xhrFields: {
+                        responseType: 'blob' // expect binary Excel blob
+                    },
+                    success: function (data, status, xhr) {
+                        try {
+                            var blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') || 'application/octet-stream' });
+
+                            var contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                            var fileName = '';
+
+                            if (contentDisposition) {
+                                // RFC5987 / filename* handling
+                                var fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                                if (fileNameMatch && fileNameMatch.length > 1) {
+                                    fileName = decodeURIComponent(fileNameMatch[1].split(';')[0].trim());
+                                } else {
+                                    // fallback to basic filename="..."
+                                    var fileNameSimpleMatch = contentDisposition.match(/filename="?(.+?)"?($|;)/);
+                                    if (fileNameSimpleMatch && fileNameSimpleMatch.length > 1) {
+                                        fileName = fileNameSimpleMatch[1].trim();
+                                    }
+                                }
+                            }
+
+                            if (!fileName) {
+                                fileName = 'LuminaireTypeTestReport.xlsx';
+                            }
+
+                            var link = document.createElement('a');
+                            link.href = window.URL.createObjectURL(blob);
+                            link.download = fileName;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        } catch (ex) {
+                            console.error('Failed to save Excel file', ex);
+                            showDangerAlert('Failed to download the file. See console for details.');
+                        }
+                    },
+                    error: function (xhr) {
+                        if (xhr.status === 401) {
+                            // optional: redirect to login if unauthorized
+                            window.location.href = '@Url.Action("Login", "Account")';
+                        } else {
+                            showDangerAlert('Error exporting Excel. Please try again.');
+                        }
+                    },
+                    complete: function () {
+                        Blockloaderhide();
+                    }
+                });
+            }
+        </script>
+    }
+    
+
+
 </div>
 
 @section HideSidebar { }

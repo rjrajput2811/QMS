@@ -1,17 +1,24 @@
 ﻿using QMS.Core.DatabaseContext.Shared;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QMS.Core.DatabaseContext
 {
-    // =======================
-    // PARENT TABLE
-    // =======================
     [Table("tbl_InternalType_Test")]
     public class InternalTypeTest : SqlTable
     {
-        public bool IsDeleted { get; set; } = false;
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("Internal_TypeId")]
+        public override int Id { get; set; }
+
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
         public string? Report_No { get; set; }
         public DateTime? Date { get; set; }
         public string? Cust_Name { get; set; }
@@ -27,20 +34,23 @@ namespace QMS.Core.DatabaseContext
         public DateTime AddedOn { get; set; }
         public int? UpdatedBy { get; set; }
         public DateTime? UpdatedOn { get; set; }
-
-        // Navigation property to child table
         public List<InternalTypeTestDetail>? Details { get; set; }
     }
 
-    // =======================
-    // CHILD TABLE
-    // =======================
     [Table("tbl_Test_Detail_InternalTypeTest")]
     public class InternalTypeTestDetail : SqlTable
     {
-        public bool IsDeleted { get; set; } = false;
-        public int Internal_TypeId { get; set; } // foreign key to parent
+        //-----------------------------------
+        // SqlTable override
+        //-----------------------------------
+        [Key]
+        [Column("InternalType_DetId")]
+        public override int Id { get; set; }
 
+        [Column("IsDeleted")]
+        public override bool Deleted { get; set; }
+        //------------ END overrides --------
+        public int Internal_TypeId { get; set; } 
         public int? SeqNo { get; set; }
         public string? Perticular_Test { get; set; }
         public string? Test_Method { get; set; }
@@ -54,7 +64,6 @@ namespace QMS.Core.DatabaseContext
         public int? UpdatedBy { get; set; }
         public DateTime? UpdatedOn { get; set; }
 
-        // Navigation back to parent
         [ForeignKey("Internal_TypeId")]
         public InternalTypeTest? InternalTypeTest { get; set; }
     }

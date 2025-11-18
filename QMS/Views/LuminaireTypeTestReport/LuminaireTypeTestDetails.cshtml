@@ -1,742 +1,769 @@
 ﻿@model QMS.Core.ViewModels.InternalTypeTestViewModel
+
 @{
     ViewData["Title"] = "Luminaire Type Test Report";
 }
-<!-- Font Awesome CDN -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>@ViewData["Title"]</title>
+<link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet" />
 
-    <style>
-        /* ==========================
-                           Global / Re-used styles
-                           ========================== */
-        .card {
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            background: #fff;
-            margin-bottom: 16px;
+
+<style>
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background: #fff;
+        margin-bottom: 16px;
+    }
+
+    .d-flex {
+        display: flex;
+    }
+
+    .justify-between {
+        justify-content: space-between;
+    }
+
+    .align-center {
+        align-items: center;
+    }
+
+    .header-title {
+        font-size: x-large;
+        color: #4682B4;
+        font-weight: 700;
+    }
+
+    .btn-outline-success, .btn-outline-primary {
+        transition: all 0.18s ease-in-out;
+    }
+
+        .btn-outline-success:hover, .btn-outline-primary:hover {
+            transform: scale(1.05);
         }
 
-        .d-flex {
-            display: flex;
+    .inline-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 6px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        width: max-content;
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+    }
+
+    #testReqToolbar .fmt-btn {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f8f8f8;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+        #testReqToolbar .fmt-btn:hover {
+            background: #e6eef6;
+            border-color: #a5c0e6;
         }
 
-        .justify-between {
-            justify-content: space-between;
-        }
-
-        .align-center {
-            align-items: center;
-        }
-
-        .header-title {
-            font-size: x-large;
-            color: #4682B4;
-            font-weight: 700;
-        }
-
-        .btn-outline-success, .btn-outline-primary {
-            transition: all 0.18s ease-in-out;
-        }
-
-            .btn-outline-success:hover, .btn-outline-primary:hover {
-                transform: scale(1.05);
-            }
-
-        /* toolbar style (keeps compact) */
-        .inline-toolbar {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 6px;
-            background: #fff;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            width: max-content;
-            font-family: Arial, sans-serif;
-            font-size: 13px;
-        }
-
-        /* equal sized toolbar buttons */
-        #testReqToolbar .fmt-btn {
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f8f8f8;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 14px;
+        #testReqToolbar .fmt-btn i {
+            font-size: 16px;
             color: #333;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
         }
 
-            #testReqToolbar .fmt-btn:hover {
-                background: #e6eef6;
-                border-color: #a5c0e6;
-            }
-
-            #testReqToolbar .fmt-btn i {
-                font-size: 16px;
-                color: #333;
-            }
-
-            #testReqToolbar .fmt-btn:active {
-                background: #d9e7f7;
-                border-color: #7da2d6;
-            }
-
-        /* table baseline */
-        .table {
-            border-collapse: collapse;
-            width: 100%;
-            font-size: 14px;
+        #testReqToolbar .fmt-btn:active {
+            background: #d9e7f7;
+            border-color: #7da2d6;
         }
 
-            .table th, .table td {
-                border: 1.5px solid #000;
-                padding: 6px 8px;
-                vertical-align: middle;
-                box-sizing: border-box;
-            }
+    .table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+    }
 
-            .table thead th {
-                background: #f4f4f4;
-                font-weight: 700;
-                text-align: center;
-            }
-
-        /* test requirement column cells align left for text */
-        .test-req-cell {
-            text-align: left;
-            padding: 12px;
-            vertical-align: top;
-            min-height: 120px; /* taller by default */
-            overflow-wrap: break-word;
-        }
-
-        .sr-cell span {
-            font-weight: normal;
-        }
-
-        /* subtle focus style for editable cells */
- 
-        /* make contenteditable cells maintain height */
-        #testTableBody td[contenteditable] {
-            /* use min-height rather than forcing tr height */
-            min-height: 120px;
-            padding: 8px;
-            vertical-align: top; /* keep text at top */
-            box-sizing: border-box; /* include padding in height calc */
-            white-space: pre-wrap; /* preserve line breaks inserted with execCommand */
-        }
-
-        /* sr-cell: show number + delete button full height and vertically centered */
-        .sr-cell {
-            min-height: 120px;
-            padding: 8px;
+        .table th, .table td {
+            border: 1.5px solid #000;
+            padding: 6px 8px;
+            vertical-align: middle;
             box-sizing: border-box;
-            display: flex;
-            align-items: center; /* vertical center */
-            justify-content: space-between;
         }
 
-            /* optional: ensure the delete button doesn't shrink layout */
-            .sr-cell .row-del-btn {
-                margin-left: 6px;
-                height: 26px; /* suitable button size */
-            }
+        .table thead th {
+            background: #f4f4f4;
+            font-weight: 700;
+            text-align: center;
+        }
 
-        .row-del-btn {
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            color: red;
-            font-size: 14px;
+    .test-req-cell {
+        text-align: left;
+        padding: 12px;
+        vertical-align: top;
+        min-height: 120px; /* taller by default */
+        overflow-wrap: break-word;
+    }
+
+    .sr-cell span {
+        font-weight: normal;
+    }
+
+
+    #testTableBody td[contenteditable] {
+        min-height: 120px;
+        padding: 8px;
+        vertical-align: top; 
+        box-sizing: border-box; 
+        white-space: pre-wrap; 
+    }
+
+    .sr-cell {
+        min-height: 120px;
+        padding: 8px;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center; 
+        justify-content: space-between;
+    }
+
+        .sr-cell .row-del-btn {
             margin-left: 6px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            height: 26px; 
         }
 
-            .row-del-btn:hover {
-                color: darkred;
-                transform: scale(1.05);
-            }
+    .row-del-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        color: red;
+        font-size: 14px;
+        margin-left: 6px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-        /* SR cell layout */
-        .sr-cell {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
+        .row-del-btn:hover {
+            color: darkred;
+            transform: scale(1.05);
         }
 
-        /* small helper */
-        .spinner-inline {
-            margin-left: 6px;
-        }
-    </style>
-</head>
-<body>
+    .sr-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
 
-    <!-- START: Form wrapper (new) -->
-    <form id="luminaireForm"
-          method="post"
-          enctype="multipart/form-data"
-          asp-controller="LuminaireTypeTestReport"
-          asp-action="InsertInternalTypeTest">
-        @Html.AntiForgeryToken()
-        @Html.HiddenFor(m => m.Internal_TypeId)
+    .spinner-inline {
+        margin-left: 6px;
+    }
+</style>
 
-        <!-- Header Card -->
-        <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-            <div class="card-body d-flex justify-between align-center" style="padding:18px;">
-                <!-- Title -->
-                <div style="flex:1; text-align:left;">
-                    <span class="header-title">Luminaire Type Test Report</span>
-                </div>
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-between align-center py-3" style="padding:18px;">
+                    <div style="flex:1; text-align:left;">
+                        <span class="header-title">Luminaire Type Test Report</span>
+                    </div>
 
-                <!-- Buttons -->
-                <div style="display:flex; gap:10px;">
-                    <!-- Save Button -->
-                    <button id="saveBtn" type="button" class="btn btn-outline-success"
-                            style="width:120px; font-size:15px; border-radius:6px;" onclick="saveLuminaireTypeTest()">
-                        <i class="fas fa-save" aria-hidden="true"></i> Save
-                    </button>
+                    <div style="display:flex; gap:10px;">
+                        <button id="saveBtn" type="button" class="btn btn-outline-success"
+                                style="width:120px; font-size:15px; border-radius:6px;" onclick="saveLuminaireTypeTest()">
+                            <i class="fas fa-save" aria-hidden="true"></i> Save
+                        </button>
 
-                    <!-- Back Button -->
-                    <a href="@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")"
-                       class="btn btn-outline-primary"
-                       style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                        <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
-                    </a>
+                        <button id="backButton"
+                                type="button"
+                                class="btn btn-outline-primary header-btn"
+                                style="width:120px;"
+                                onclick="location.href='@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")'">
+                            <i class="fas fa-arrow-left" style="margin-right:6px;"></i> Back
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Card for Report Details -->
-        <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0;">
-            <div class="card-body" style="padding:16px;">
+            <form id="luminaireForm" method="post" enctype="multipart/form-data" asp-controller="LuminaireTypeTestReport" asp-action="InsertInternalTypeTest">
 
-                <div class="table-responsive">
-                    <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;">
-                        <tbody>
-                            <!-- Report No -->
-                            <tr>
-                                <td colspan="4" style="padding:8px;">
-                                    <strong>Report No: <span style="color:red;">*</span></strong>
-                                    <input type="text"
-                                           name="Report_No"
-                                           value="@Model.Report_No"
-                                           placeholder="Enter Report No"
-                                           required
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:64%; margin-left:6px; padding:2px 4px; font-size:14px;" />
-                                </td>
-                            </tr>
-
-                            <!-- Customer Name & Address / Date -->
-                            <tr>
-                                <td colspan="3" style="padding:8px;">
-                                    <strong>Customer Name & Address: <span style="color:red;">*</span></strong>
-                                    <input type="text"
-                                           name="Cust_Name"
-                                           value="@Model.Cust_Name"
-                                           placeholder="Enter Customer Name & Address"
-                                           required
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:6px; padding:2px 4px; font-size:14px;" />
-                                </td>
-
-                                <td style="width:25%; padding:8px;">
-                                    <strong>Date: <span style="color:red;">*</span></strong>
-                                    <input type="date"
-                                           name="Date"
-                                           value="@(Model.Date.HasValue ? Model.Date.Value.ToString("yyyy-MM-dd") : "")"
-                                           required
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;" />
-                                </td>
-                            </tr>
-
-                            <!-- Sample Description + Product CAT Code / Sample Identification -->
-                            <tr>
-                                <td colspan="3" style="padding:8px; vertical-align:top;">
-                                    <strong>Sample Description: <span style="color:red;">*</span></strong>
-                                    <input type="text"
-                                           name="Samp_Desc"
-                                           value="@Model.Samp_Desc"
-                                           placeholder="Enter Sample Description"
-                                           required
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;" />
-                                    <br><br>
-
-                                    <strong>Product CAT Code: <span style="color:red;">*</span></strong>
-                                    <input type="text"
-                                           name="Prod_Cat_Code"
-                                           value="@Model.Prod_Cat_Code"
-                                           placeholder="Enter Product CAT Code"
-                                           required
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:66%; margin-left:6px; padding:2px 4px; font-size:14px;" />
-                                    <br><br>
-
-                                    <strong>Input Voltage: <span style="color:red;">*</span></strong>
-                                    <input type="text"
-                                           name="Input_Voltage"
-                                           value="@Model.Input_Voltage"
-                                           placeholder="Enter Input Voltage"
-                                           required
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:69%; margin-left:6px; padding:2px 4px; font-size:14px;" />
-                                </td>
-
-                                <td style="width:25%; padding:8px; vertical-align:bottom;">
-                                    <strong>Sample Identification For Lab: <span style="color:red;">*</span></strong>
-                                    <input type="text"
-                                           name="Samp_Identi_Lab"
-                                           value="@Model.Samp_Identi_Lab"
-                                           placeholder="Sample Id"
-                                           required
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:90%; margin-left:6px; padding:2px 4px; font-size:14px;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
-                    <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
-                        <tbody>
-                            <tr>
-                                <td colspan="6" style="padding:12px; text-align:left;">
-                                    <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Table with Test Requirement column — toolbar embedded in header -->
-                <div class="table-responsive" style="margin-top:0px;">
-                    <table id="mainTestTable" class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
-                        <thead>
-                            <!-- Reference header -->
-                            <tr>
-                                <th colspan="5"
-                                    style="background-color:#ffffff; font-weight:normal; text-align:center; padding:8px 16px; vertical-align:middle;">
-                                    <strong>Reference Standard:<span style="color:red;">*</span></strong>
-                                    <input type="text"
-                                           name="Ref_Standard"
-                                           placeholder="Enter Reference Standard"
-                                           value="@Model.Ref_Standard"
-                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none;
-                  width:15%; margin-left:8px; padding:2px 4px; font-size:14px;">
-                                </th>
-                            </tr>
-
-                            <!-- Column Titles: toolbar placed inside the Test Requirement header -->
-                            <tr>
-                                <th style="width:5%;">Sr. No.</th>
-
-                                <th style="width:25%;">Particular Of Test And Specification No.</th>
-
-                                <th style="width:20%;">Test Method</th>
-
-                                <th style="width:35%;">
-                                    <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                                        <span style="font-weight:700;">Test Requirement</span>
-
-                                        <!-- Inline toolbar (only targets test-req cells) -->
-                                        <div id="testReqToolbar" class="inline-toolbar" title="Formatting for Test Requirement column"
-                                             style="display:flex; align-items:center; gap:6px; padding:6px 8px; background:#fff; border:1px solid #ccc; border-radius:6px; width:max-content; margin-left:8px;">
-
-                                            <!-- Text style buttons -->
-                                            <button type="button" class="fmt-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
-                                            <button type="button" class="fmt-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
-                                            <button type="button" class="fmt-btn" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
-
-                                            <!-- Divider -->
-                                            <div style="width:1px; height:22px; background:#ccc; margin:0 4px;"></div>
-
-                                            <!-- Alignment buttons -->
-                                            <button type="button" class="fmt-btn" data-cmd="justifyLeft" title="Align left">
-                                                <i class="fas fa-align-left" aria-hidden="true"></i>
-                                            </button>
-                                            <button type="button" class="fmt-btn" data-cmd="justifyCenter" title="Center">
-                                                <i class="fas fa-align-center" aria-hidden="true"></i>
-                                            </button>
-                                            <button type="button" class="fmt-btn" data-cmd="justifyRight" title="Align right">
-                                                <i class="fas fa-align-right" aria-hidden="true"></i>
-                                            </button>
-                                        </div>
-
-                                    </div>
-                                </th>
-
-                                <th style="width:15%;">Test Result</th>
-                            </tr>
-                        </thead>
-
-                        <tbody id="testTableBody">
-                            <!-- initial single row - more rows will be added by script -->
-                        @*     <tr style="height:120px;">
-                                <td class="sr-cell">
-                                    1
-                                    <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
-                                </td>
-
-                                <!-- Particular Of Test -->
-                                <td contenteditable="true" style="vertical-align:top;"
-                                    data-name="Perticular_Test">
-                                    @Model.Details?.FirstOrDefault()?.Perticular_Test
-                                </td>
-
-                                <!-- Test Method -->
-                                <td contenteditable="true" style="vertical-align:top;"
-                                    data-name="Test_Method">
-                                    @Model.Details?.FirstOrDefault()?.Test_Method
-                                </td>
-
-                                <!-- Test Requirement -->
-                                <td class="test-req-cell" contenteditable="true"
-                                    data-name="Test_Requirement">
-                                    @Html.Raw(Model.Details?.FirstOrDefault()?.Test_Requirement)
-                                </td>
-
-                                <!-- Test Result -->
-                                <td contenteditable="true" style="vertical-align:top;"
-                                    data-name="Test_Result">
-                                    @Model.Details?.FirstOrDefault()?.Test_Result
-                                </td>
-                            </tr> *@
-                        </tbody>
-
-                        <tfoot>
-                            <tr>
-                                <td colspan="5" style="border:1.5px solid #000; padding:10px 16px; font-weight:600;">
-                                    <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
-
-                                        
-                                        <div style="flex:1; text-align:right;">
-                                            Prepared & Tested By:
+                @Html.HiddenFor(m => m.Id)
+                <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0;">
+                    <div class="card-body" style="padding:16px;">
+                        <div class="table-responsive">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px;">
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" style="padding:8px;">
+                                            <strong>Report No: <span style="color:red;">*</span></strong>
                                             <input type="text"
-                                                   name="Prepared & TestedBy"
-                                                   value="@Model.TestedBy"
-                                                   placeholder="Enter name"
-                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:200px; height:20px; margin-left:8px; font-size:14px; padding:2px 4px;" />
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                                                   name="Report_No"
+                                                   value="@Model.Report_No"
+                                                   placeholder="Enter Report No"
+                                                   required
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:64%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="3" style="padding:8px;">
+                                            <strong>Customer Name & Address: <span style="color:red;">*</span></strong>
+                                            <input type="text"
+                                                   name="Cust_Name"
+                                                   value="@Model.Cust_Name"
+                                                   placeholder="Enter Customer Name & Address"
+                                                   required
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:75%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                        </td>
+
+                                        <td style="width:25%; padding:8px;">
+                                            <strong>Date: <span style="color:red;">*</span></strong>
+                                            <input type="date"
+                                                   name="Date"
+                                                   value="@(Model.Date.HasValue ? Model.Date.Value.ToString("yyyy-MM-dd") : "")"
+                                                   required
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:70%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="3" style="padding:8px; vertical-align:top;">
+                                            <strong>Sample Description: <span style="color:red;">*</span></strong>
+                                            <input type="text"
+                                                   name="Samp_Desc"
+                                                   value="@Model.Samp_Desc"
+                                                   placeholder="Enter Sample Description"
+                                                   required
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:65%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                            <br><br>
+
+                                            <strong>Product CAT Code: <span style="color:red;">*</span></strong>
+                                            <input type="text"
+                                                   name="Prod_Cat_Code"
+                                                   value="@Model.Prod_Cat_Code"
+                                                   placeholder="Enter Product CAT Code"
+                                                   required
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:66%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                            <br><br>
+
+                                            <strong>Input Voltage: <span style="color:red;">*</span></strong>
+                                            <input type="text"
+                                                   name="Input_Voltage"
+                                                   value="@Model.Input_Voltage"
+                                                   placeholder="Enter Input Voltage"
+                                                   required
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:69%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                        </td>
+
+                                        <td style="width:25%; padding:8px; vertical-align:bottom;">
+                                            <strong>Sample Identification For Lab: <span style="color:red;">*</span></strong>
+                                            <input type="text"
+                                                   name="Samp_Identi_Lab"
+                                                   value="@Model.Samp_Identi_Lab"
+                                                   placeholder="Sample Id"
+                                                   required
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:90%; margin-left:6px; padding:2px 4px; font-size:14px;" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="padding:12px; text-align:left;">
+                                            <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table with Test Requirement column — toolbar embedded in header -->
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table id="mainTestTable" class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
+                                <thead>
+                                    <!-- Reference header -->
+                                    <tr>
+                                        <th colspan="5"
+                                            style="background-color:#ffffff; font-weight:normal; text-align:center; padding:8px 16px; vertical-align:middle;">
+                                            <strong>Reference Standard:<span style="color:red;">*</span></strong>
+                                            <input type="text"
+                                                   name="Ref_Standard"
+                                                   placeholder="Enter Reference Standard"
+                                                   value="@Model.Ref_Standard"
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none;
+                                                                                        width:15%; margin-left:8px; padding:2px 4px; font-size:14px;">
+                                        </th>
+                                    </tr>
+
+                                    <!-- Column Titles: toolbar placed inside the Test Requirement header -->
+                                    <tr>
+                                        <th style="width:5%;">Sr. No.</th>
+
+                                        <th style="width:25%;">Particular Of Test And Specification No.</th>
+
+                                        <th style="width:20%;">Test Method</th>
+
+                                        <th style="width:35%;">
+                                            <div style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                                                <span style="font-weight:700;">Test Requirement</span>
+
+                                                <!-- Inline toolbar (only targets test-req cells) -->
+                                                <div id="testReqToolbar" class="inline-toolbar" title="Formatting for Test Requirement column"
+                                                     style="display:flex; align-items:center; gap:6px; padding:6px 8px; background:#fff; border:1px solid #ccc; border-radius:6px; width:max-content; margin-left:8px;">
+
+                                                    <!-- Text style buttons -->
+                                                    <button type="button" class="fmt-btn" data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>
+                                                    <button type="button" class="fmt-btn" data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>
+                                                    <button type="button" class="fmt-btn" data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>
+
+                                                    <!-- Divider -->
+                                                    <div style="width:1px; height:22px; background:#ccc; margin:0 4px;"></div>
+
+                                                    <!-- Alignment buttons -->
+                                                    <button type="button" class="fmt-btn" data-cmd="justifyLeft" title="Align left">
+                                                        <i class="fas fa-align-left" aria-hidden="true"></i>
+                                                    </button>
+                                                    <button type="button" class="fmt-btn" data-cmd="justifyCenter" title="Center">
+                                                        <i class="fas fa-align-center" aria-hidden="true"></i>
+                                                    </button>
+                                                    <button type="button" class="fmt-btn" data-cmd="justifyRight" title="Align right">
+                                                        <i class="fas fa-align-right" aria-hidden="true"></i>
+                                                    </button>
+                                                </div>
+
+                                            </div>
+                                        </th>
+
+                                        <th style="width:15%;">Test Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="testTableBody">
+                                    @{
+                                        var details = Model?.Details ?? new List<QMS.Core.ViewModels.InternalTypeTestDetailViewModel>();
+                                        int idx = 1;
+                                    }
+
+                                    @if (details.Any())
+                                    {
+                                        foreach (var item in details)
+                                        {
+                                            <tr style="height:120px;">
+                                                <td class="sr-cell">
+                                                    @idx
+                                                    <button class="row-del-btn" title="Delete row">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </td>
+
+                                                <!-- Particular Of Test -->
+                                                <td contenteditable="true" style="vertical-align:top;" data-name="Perticular_Test">
+                                                    @(item.Perticular_Test ?? "")
+                                                </td>
+
+                                                <!-- Test Method -->
+                                                <td contenteditable="true" style="vertical-align:top;" data-name="Test_Method">
+                                                    @(item.Test_Method ?? "")
+                                                </td>
+
+                                                <!-- Test Requirement (supports HTML, null-safe) -->
+                                                <td class="test-req-cell" contenteditable="true" data-name="Test_Requirement">
+                                                    @Html.Raw(item.Test_Requirement ?? "")
+                                                </td>
+
+                                                <!-- Test Result -->
+                                                <td contenteditable="true" style="vertical-align:top;" data-name="Test_Result">
+                                                    @(item.Test_Result ?? "")
+                                                </td>
+                                            </tr>
+
+                                            idx++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <!-- Blank default row when adding new -->
+                                        <tr style="height:120px;">
+                                            <td class="sr-cell">
+                                                1
+                                                <button class="row-del-btn" title="Delete row"><i class="fa fa-trash"></i></button>
+                                            </td>
+
+                                            <td contenteditable="true" style="vertical-align:top;" data-name="Perticular_Test"></td>
+                                            <td contenteditable="true" style="vertical-align:top;" data-name="Test_Method"></td>
+                                            <td class="test-req-cell" contenteditable="true" data-name="Test_Requirement"></td>
+                                            <td contenteditable="true" style="vertical-align:top;" data-name="Test_Result"></td>
+                                        </tr>
+                                    }
+                                </tbody>
+
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="5" style="border:1.5px solid #000; padding:10px 16px; font-weight:600;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+
+
+                                                <div style="flex:1; text-align:right;">
+                                                    Prepared & Tested By:
+                                                    <input type="text"
+                                                           name="Prepared & TestedBy"
+                                                           value="@Model.TestedBy"
+                                                           placeholder="Enter name"
+                                                           style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:200px; height:20px; margin-left:8px; font-size:14px; padding:2px 4px;" />
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
                 </div>
+            </form>
 
-            </div>
         </div>
+    </div>
+</div>
 
-    </form> <!-- END form -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const toolbar = document.getElementById('testReqToolbar');
+        const addBtn = document.getElementById('addRowBtn');
+        const tableBody = document.getElementById('testTableBody');
+        let currentCell = null;
+        let savedRange = null;
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const toolbar = document.getElementById('testReqToolbar');
-            const addBtn = document.getElementById('addRowBtn');
-            const tableBody = document.getElementById('testTableBody');
-            let currentCell = null;
-            let savedRange = null;
-
-            // tolerate if toolbar missing
-            if (toolbar) {
-                toolbar.querySelectorAll('button').forEach(btn => {
-                    btn.addEventListener('mousedown', (ev) => ev.preventDefault());
-                });
-            }
-
-            function bindTestReqCell(cell) {
-                if (!cell) return;
-                cell.setAttribute('tabindex', '0');
-                cell.addEventListener('mousedown', () => { currentCell = cell; });
-                cell.addEventListener('focus', () => currentCell = cell);
-                cell.addEventListener('click', () => currentCell = cell);
-                cell.addEventListener('mouseup', saveSelection);
-                cell.addEventListener('keyup', saveSelection);
-                cell.addEventListener('keydown', e => {
-                    if (e.key === 'Enter') {
-                        document.execCommand('insertHTML', false, '<br><br>');
-                        e.preventDefault();
-                    }
-                });
-            }
-
-            document.querySelectorAll('.test-req-cell').forEach(bindTestReqCell);
-
-            document.addEventListener('selectionchange', () => {
-                try { saveSelection(); } catch (err) { /* ignore */ }
+        // tolerate if toolbar missing
+        if (toolbar) {
+            toolbar.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('mousedown', (ev) => ev.preventDefault());
             });
+        }
 
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.test-req-cell') && !e.target.closest('#testReqToolbar')) {
-                    currentCell = null;
+        function bindTestReqCell(cell) {
+            if (!cell) return;
+            cell.setAttribute('tabindex', '0');
+            cell.addEventListener('mousedown', () => { currentCell = cell; });
+            cell.addEventListener('focus', () => currentCell = cell);
+            cell.addEventListener('click', () => currentCell = cell);
+            cell.addEventListener('mouseup', saveSelection);
+            cell.addEventListener('keyup', saveSelection);
+            cell.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    document.execCommand('insertHTML', false, '<br><br>');
+                    e.preventDefault();
                 }
             });
+        }
 
-            function saveSelection() {
-                const sel = window.getSelection();
-                if (!sel || sel.rangeCount === 0) return;
-                const range = sel.getRangeAt(0);
-                let container = range.commonAncestorContainer;
-                if (container.nodeType === 3) container = container.parentNode;
-                if (!currentCell) {
-                    const maybeCell = container && container.closest && container.closest('.test-req-cell');
-                    if (maybeCell) currentCell = maybeCell;
-                }
-                if (currentCell && currentCell.contains(range.commonAncestorContainer)) {
-                    savedRange = range.cloneRange();
-                }
+        document.querySelectorAll('.test-req-cell').forEach(bindTestReqCell);
+
+        document.addEventListener('selectionchange', () => {
+            try { saveSelection(); } catch (err) { /* ignore */ }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.test-req-cell') && !e.target.closest('#testReqToolbar')) {
+                currentCell = null;
             }
+        });
 
-            function restoreSelection() {
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                if (savedRange) sel.addRange(savedRange);
+        function saveSelection() {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            let container = range.commonAncestorContainer;
+            if (container.nodeType === 3) container = container.parentNode;
+            if (!currentCell) {
+                const maybeCell = container && container.closest && container.closest('.test-req-cell');
+                if (maybeCell) currentCell = maybeCell;
             }
+            if (currentCell && currentCell.contains(range.commonAncestorContainer)) {
+                savedRange = range.cloneRange();
+            }
+        }
 
-            if (toolbar) {
-                toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        if (!currentCell) return;
-                        restoreSelection();
-                        const cmd = btn.getAttribute('data-cmd');
-                        document.execCommand(cmd, false, null);
-                        saveSelection();
-                        currentCell.focus();
-                    });
+        function restoreSelection() {
+            const sel = window.getSelection();
+            sel.removeAllRanges();
+            if (savedRange) sel.addRange(savedRange);
+        }
+
+        if (toolbar) {
+            toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!currentCell) return;
+                    restoreSelection();
+                    const cmd = btn.getAttribute('data-cmd');
+                    document.execCommand(cmd, false, null);
+                    saveSelection();
+                    currentCell.focus();
                 });
-            }
+            });
+        }
 
-            // Add row
-            if (addBtn) {
-                addBtn.addEventListener('click', addRow);
-            }
+        // Add row
+        if (addBtn) {
+            addBtn.addEventListener('click', addRow);
+        }
 
-            function addRow() {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td class="sr-cell"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px;"></td>
-                <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-            `;
-                tableBody.appendChild(tr);
-                bindTestReqCell(tr.querySelector('.test-req-cell'));
+        function addRow() {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                        <td class="sr-cell"></td>
+                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                             <td contenteditable="true" style="vertical-align: top; min-height: 120px; padding: 8px;"></td>
+                                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align: center;"></td>
+                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                    `;
+            tableBody.appendChild(tr);
+            bindTestReqCell(tr.querySelector('.test-req-cell'));
+            renumberRows();
+        }
+
+        tableBody.addEventListener('click', (e) => {
+            const btn = e.target.closest('.row-del-btn');
+            if (btn) {
+                const row = btn.closest('tr');
+                if (!row) return;
+                row.remove();
                 renumberRows();
             }
+        });
 
-            tableBody.addEventListener('click', (e) => {
-                const btn = e.target.closest('.row-del-btn');
-                if (btn) {
-                    const row = btn.closest('tr');
-                    if (!row) return;
-                    row.remove();
-                    // if the table becomes empty, ensure one row remains visible
-                    if (tableBody.querySelectorAll('tr').length === 0) {
-                        addRow();
-                    }
-                    renumberRows();
-                }
-            });
+        function createDeleteButton() {
+            const btn = document.createElement('button');
+            btn.className = 'row-del-btn';
+            btn.title = 'Delete row';
+            btn.innerHTML = '<i class="fa fa-trash"></i>';
+            btn.addEventListener('mousedown', ev => ev.preventDefault());
+            return btn;
+        }
 
-            function createDeleteButton() {
-                const btn = document.createElement('button');
-                btn.className = 'row-del-btn';
-                btn.title = 'Delete row';
-                btn.innerHTML = '<i class="fa fa-trash"></i>';
-                btn.addEventListener('mousedown', ev => ev.preventDefault());
-                return btn;
-            }
-
-            function renumberRows() {
-                const rows = Array.from(tableBody.querySelectorAll('tr'));
-                rows.forEach((row, index) => {
-                    const srCell = row.querySelector('.sr-cell');
-                    if (srCell) {
-                        srCell.innerHTML = '';
+        function renumberRows() {
+            const rows = Array.from(tableBody.querySelectorAll('tr'));
+            rows.forEach((row, index) => {
+                const srCell = row.querySelector('.sr-cell');
+                if (srCell) {
+                    srCell.innerHTML = '';
+                    const numText = document.createElement('span');
+                    numText.textContent = (index + 1);
+                    srCell.appendChild(numText);
+                    srCell.appendChild(createDeleteButton());
+                } else {
+                    const firstCell = row.cells[0];
+                    if (firstCell) {
+                        firstCell.innerHTML = '';
+                        firstCell.classList.add('sr-cell');
                         const numText = document.createElement('span');
                         numText.textContent = (index + 1);
-                        srCell.appendChild(numText);
-                        srCell.appendChild(createDeleteButton());
-                    } else {
-                        const firstCell = row.cells[0];
-                        if (firstCell) {
-                            firstCell.innerHTML = '';
-                            firstCell.classList.add('sr-cell');
-                            const numText = document.createElement('span');
-                            numText.textContent = (index + 1);
-                            firstCell.appendChild(numText);
-                            firstCell.appendChild(createDeleteButton());
-                        }
+                        firstCell.appendChild(numText);
+                        firstCell.appendChild(createDeleteButton());
                     }
-                });
-            }
-
-            // initial numbering
-            renumberRows();
-
-            // IMPORTANT: ensure there's at least one row visible at first load / refresh
-            // If there are no rows in the tbody, add a single empty row (Sr No. 1)
-            if (tableBody.querySelectorAll('tr').length === 0) {
-                addRow();
-            }
-
-        }); // end DOMContentLoaded
-
-        // ================= NEW: Save function for AJAX FormData submit =================
-        async function saveLuminaireTypeTest() {
-            const saveBtn = document.getElementById('saveBtn');
-            if (!saveBtn) return;
-
-            // ✅ Required fields list
-            const requiredFields = [
-                { name: "Report_No", label: "Report No" },
-                { name: "Cust_Name", label: "Customer Name & Address" },
-                { name: "Date", label: "Date" },
-                { name: "Samp_Desc", label: "Sample Description" },
-                { name: "Prod_Cat_Code", label: "Product CAT Code" },
-                { name: "Input_Voltage", label: "Input Voltage" },
-                { name: "Samp_Identi_Lab", label: "Sample Identification For Lab" },
-                { name: "Ref_Standard", label: "Reference Standard" } 
-            ];
-
-            // ✅ Validate required fields
-            const missing = [];
-            requiredFields.forEach(f => {
-                const el = document.querySelector(`[name="${f.name}"]`);
-                const value = el?.value?.trim();
-                if (!value) {
-                    missing.push(f.label);
                 }
             });
+        }
 
-            if (missing.length > 0) {
-                const listHTML = missing.map(m => `<li>${m}</li>`).join("");
-                showDangerAlert(`<p>Please fill out the following required field(s):</p><ul>${listHTML}</ul>`);
+        // initial numbering
+        renumberRows();
+
+        // IMPORTANT: ensure there's at least one row visible at first load / refresh
+        // If there are no rows in the tbody, add a single empty row (Sr No. 1)
+        if (tableBody.querySelectorAll('tr').length === 0) {
+            addRow();
+        }
+
+    }); // end DOMContentLoaded
+
+    // ================= NEW: Save function for AJAX FormData submit =================
+    async function saveLuminaireTypeTest() {
+        const saveBtn = document.getElementById('saveBtn');
+        if (!saveBtn) return;
+
+        // ✅ Required fields list
+        const requiredFields = [
+            { name: "Report_No", label: "Report No" },
+            { name: "Cust_Name", label: "Customer Name & Address" },
+            { name: "Date", label: "Date" },
+            { name: "Samp_Desc", label: "Sample Description" },
+            { name: "Prod_Cat_Code", label: "Product CAT Code" },
+            { name: "Input_Voltage", label: "Input Voltage" },
+            { name: "Samp_Identi_Lab", label: "Sample Identification For Lab" },
+            { name: "Ref_Standard", label: "Reference Standard" }
+        ];
+
+        // ✅ Validate required fields
+        const missing = [];
+        requiredFields.forEach(f => {
+            const el = document.querySelector([name="${f.name}"]);
+            const value = el?.value?.trim();
+            if (!value) {
+                missing.push(f.label);
+            }
+        });
+
+        if (missing.length > 0) {
+            const listHTML = missing.map(m => <li>${m}</li>).join("");
+            showDangerAlert(<p>Please fill out the following required field(s):</p><ul>${listHTML}</ul>);
+            return;
+        }
+
+        const origHTML = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin spinner-inline"></i> Saving...';
+        Blockloadershow();
+
+        try {
+            const form = document.getElementById('luminaireForm');
+            if (!form) throw new Error('Form element not found (id="luminaireForm").');
+
+            const formData = new FormData(form);
+
+            // -------------------------
+            // MINIMAL, SAFE CHANGE:
+            // Ensure Id is always sent to server so controller can decide Insert vs Update.
+            // Razor will render the numeric Id from the Model (0 if new).
+            // -------------------------
+            // NOTE: This line uses Razor to inline server Model.Id — keep as-is in your .cshtml.
+            const currentInternalTypeId = @(Model?.Id ?? 0);
+            formData.set('Id', String(currentInternalTypeId));
+            // -------------------------
+
+            // ✅ Build Details array from table rows
+            const details = [];
+            const rows = Array.from(document.querySelectorAll('#testTableBody tr'));
+            rows.forEach((row, idx) => {
+                const cells = row.querySelectorAll('td');
+                if (!cells || cells.length < 5) return;
+
+                details.push({
+                    SeqNo: idx + 1,
+                    Perticular_Test: (cells[1].innerText || '').trim(),
+                    Test_Method: (cells[2].innerText || '').trim(),
+                    Test_Requirement: (cells[3].innerHTML || '').trim(), // keep formatting
+                    Test_Result: (cells[4].innerText || '').trim(),
+                    IsDeleted: false
+                });
+            });
+
+            // ✅ Append Details to form data
+            details.forEach((d, i) => {
+                formData.append(Details[${i}].SeqNo, d.SeqNo != null ? d.SeqNo.toString() : '');
+                formData.append(Details[${i}].Perticular_Test, d.Perticular_Test || '');
+                formData.append(Details[${i}].Test_Method, d.Test_Method || '');
+                formData.append(Details[${i}].Test_Requirement, d.Test_Requirement || '');
+                formData.append(Details[${i}].Test_Result, d.Test_Result || '');
+                formData.append(Details[${i}].IsDeleted, d.IsDeleted ? 'true' : 'false');
+            });
+
+            // ✅ Include JSON backup
+            formData.set('DetailsJson', JSON.stringify(details));
+
+            // ✅ Submit form
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+
+            const raw = await response.text();
+            let payload = null;
+            try { payload = raw && raw.length ? JSON.parse(raw) : null; } catch { payload = null; }
+
+            if (!response.ok) {
+                if (payload) {
+                    if (Array.isArray(payload.errors) && payload.errors.length)
+                        showDangerAlert(payload.errors.join('<br/>'));
+                    else if (Array.isArray(payload.Errors) && payload.Errors.length)
+                        showDangerAlert(payload.Errors.join('<br/>'));
+                    else if (payload.Message || payload.message)
+                        showDangerAlert(payload.Message || payload.message);
+                    else
+                        showDangerAlert('Server returned error: HTTP ' + response.status);
+                } else {
+                    showDangerAlert('Server error: HTTP ' + response.status + ' — ' + raw);
+                }
                 return;
             }
 
-            const origHTML = saveBtn.innerHTML;
-            saveBtn.disabled = true;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin spinner-inline"></i> Saving...';
-            Blockloadershow();
-
-            try {
-                const form = document.getElementById('luminaireForm');
-                if (!form) throw new Error('Form element not found (id="luminaireForm").');
-
-                const formData = new FormData(form);
-
-                // ✅ Build Details array from table rows
-                const details = [];
-                const rows = Array.from(document.querySelectorAll('#testTableBody tr'));
-                rows.forEach((row, idx) => {
-                    const cells = row.querySelectorAll('td');
-                    if (!cells || cells.length < 5) return;
-
-                    details.push({
-                        SeqNo: idx + 1,
-                        Perticular_Test: (cells[1].innerText || '').trim(),
-                        Test_Method: (cells[2].innerText || '').trim(),
-                        Test_Requirement: (cells[3].innerHTML || '').trim(), // keep formatting
-                        Test_Result: (cells[4].innerText || '').trim(),
-                        IsDeleted: false
-                    });
-                });
-
-                // ✅ Append Details to form data
-                details.forEach((d, i) => {
-                    formData.append(`Details[${i}].SeqNo`, d.SeqNo != null ? d.SeqNo.toString() : '');
-                    formData.append(`Details[${i}].Perticular_Test`, d.Perticular_Test || '');
-                    formData.append(`Details[${i}].Test_Method`, d.Test_Method || '');
-                    formData.append(`Details[${i}].Test_Requirement`, d.Test_Requirement || '');
-                    formData.append(`Details[${i}].Test_Result`, d.Test_Result || '');
-                    formData.append(`Details[${i}].IsDeleted`, d.IsDeleted ? 'true' : 'false');
-                });
-
-                // ✅ Include JSON backup
-                formData.set('DetailsJson', JSON.stringify(details));
-
-                // ✅ Submit form
-                const response = await fetch(form.action, {
-                    method: 'POST',
-                    body: formData,
-                    credentials: 'same-origin'
-                });
-
-                const raw = await response.text();
-                let payload = null;
-                try { payload = raw && raw.length ? JSON.parse(raw) : null; } catch { payload = null; }
-
-                if (!response.ok) {
-                    if (payload) {
-                        if (Array.isArray(payload.errors) && payload.errors.length)
-                            showDangerAlert(payload.errors.join('<br/>'));
-                        else if (Array.isArray(payload.Errors) && payload.Errors.length)
-                            showDangerAlert(payload.Errors.join('<br/>'));
-                        else if (payload.Message || payload.message)
-                            showDangerAlert(payload.Message || payload.message);
-                        else
-                            showDangerAlert('Server returned error: HTTP ' + response.status);
-                    } else {
-                        showDangerAlert('Server error: HTTP ' + response.status + ' — ' + raw);
-                    }
-                    return;
-                }
-
-                const json = payload || {};
-                if (json && (json.Success === true || json.success === true)) {
-                    showSuccessAlert(json.Message || 'Saved successfully.');
-                    if (json.RedirectUrl) setTimeout(() => window.location.href = json.RedirectUrl, 800);
-                    return;
-                }
-
-                if (json) {
-                    if (Array.isArray(json.errors) && json.errors.length)
-                        showDangerAlert(json.errors.join('<br/>'));
-                    else if (Array.isArray(json.Errors) && json.Errors.length)
-                        showDangerAlert(json.Errors.join('<br/>'));
-                    else if (json.Message || json.message)
-                        showDangerAlert(json.Message || json.message);
-                    else {
-                        console.error('Unexpected server response:', json);
-                        showDangerAlert('Save failed — see console for details.');
-                    }
+            const json = payload || {};
+            if (json && (json.Success === true || json.success === true)) {
+                // --- MINIMAL CHANGE: show different message for update vs insert ---
+                const currentId = parseInt(formData.get('Id') || "0", 10);
+                if (currentId > 0) {
+                    showSuccessAlert(json.Message || 'Updated successfully.');
                 } else {
-                    showDangerAlert('Unexpected server response. See console for details.');
-                    console.log('Raw response:', raw);
+                    showSuccessAlert(json.Message || 'Saved successfully.');
                 }
 
-            } catch (err) {
-                console.error('Save error:', err);
-                showDangerAlert('Error saving data: ' + (err && err.message ? err.message : err));
-            } finally {
-                Blockloaderhide();
-                if (saveBtn) {
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = origHTML;
+                // NAVIGATION: prefer server RedirectUrl; otherwise go back to referring page or history
+                const navigateBack = () => {
+                    if (json.RedirectUrl) {
+                        window.location.href = json.RedirectUrl;
+                        return;
+                    }
+                    // prefer document.referrer if it exists and is different from current location
+                    try {
+                        const ref = document.referrer;
+                        if (ref && ref !== '' && ref !== window.location.href) {
+                            window.location.href = ref;
+                            return;
+                        }
+                    } catch (e) { /* ignore */ }
+
+                    // last resort: browser history
+                    history.back();
+                };
+
+                // Wait a short moment so the user sees the success alert
+                setTimeout(navigateBack, 800);
+                return;
+            }
+
+            if (json) {
+                if (Array.isArray(json.errors) && json.errors.length)
+                    showDangerAlert(json.errors.join('<br/>'));
+                else if (Array.isArray(json.Errors) && json.Errors.length)
+                    showDangerAlert(json.Errors.join('<br/>'));
+                else if (json.Message || json.message)
+                    showDangerAlert(json.Message || json.message);
+                else {
+                    console.error('Unexpected server response:', json);
+                    showDangerAlert('Save failed — see console for details.');
                 }
+            } else {
+                showDangerAlert('Unexpected server response. See console for details.');
+                console.log('Raw response:', raw);
+            }
+
+        } catch (err) {
+            console.error('Save error:', err);
+            showDangerAlert('Error saving data: ' + (err && err.message ? err.message : err));
+        } finally {
+            Blockloaderhide();
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = origHTML;
             }
         }
+    }
+</script>
 
-    </script>
 
-</body>
-</html>
+
+
 
 @section HideSidebar { }

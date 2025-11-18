@@ -1,6 +1,24 @@
 ﻿@{
-    ViewData["Title"] = "SMP Calculation Make";
+    ViewData["Title"] = "SMP Calculation Buy";
 }
+
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+@* <script src="~/lib/bootstrap/dist/js/popupAlert.js"></script> *@
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
+@* <script src="~/js/xlsx.min.js"></script> *@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
     /* Header card */
@@ -422,7 +440,7 @@
         <div class="card-body d-flex justify-content-between align-items-center">
 
             <div>
-                <b class="header-title">SMP Calculation Make</b>
+                <b class="header-title">SMP Calculation Buy</b>
             </div>
 
             <div>
@@ -433,7 +451,7 @@
                     <i class="fas fa-plus"></i> Add
                 </button>
 
-                <a href='@Url.Action("SPMCalucationMake", "SPMCalculationMake")'
+                <a href='@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")'
                    class="btn btn-outline-primary"
                    style="width:120px; font-size:15px;">
                     <i class="fas fa-arrow-left"></i> BACK
@@ -459,15 +477,17 @@
 
 @section Scripts {
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
+    <!-- Font Awesome (if not already in your layout) -->
+    @* <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script> *@
 
-    <link href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css" rel="stylesheet" />
-    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
-
+    <!-- Litepicker CSS/JS (move CSS to head in layout for production if you like) -->
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
     <script>
         (function () {
 
-      
+
             function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
                 const col = {
                     title: title,
@@ -484,7 +504,7 @@
                 return col;
             }
 
-      
+
             const columns = [
 
                 {
@@ -499,10 +519,10 @@
                     headerFilter: false,   //
 
                     formatter: function (cell) {
-                       
+
                         const table = cell.getTable();
                         const rowData = cell.getRow().getData();
-                       
+
                         let idx = -1;
                         if (rowData && rowData.id !== undefined) {
                             const data = table.getData();
@@ -511,26 +531,26 @@
                         const rowNumber = (idx >= 0 ? idx : cell.getRow().getPosition()) + 1;
 
                         return `
-                            <div style="
-                                display:flex;
-                                justify-content:center;
-                                align-items:center;
-                                gap:8px;
-                            ">
-                                <span>${rowNumber}</span>
-                                <i class="fa fa-trash delete-icon" data-delete="1"
-                                   style="color:red; cursor:pointer; font-size:16px;"
-                                   title="Delete row"></i>
-                            </div>
-                        `;
+                                    <div style="
+                                        display:flex;
+                                        justify-content:center;
+                                        align-items:center;
+                                        gap:8px;
+                                    ">
+                                        <span>${rowNumber}</span>
+                                        <i class="fa fa-trash delete-icon" data-delete="1"
+                                           style="color:red; cursor:pointer; font-size:16px;"
+                                           title="Delete row"></i>
+                                    </div>
+                                `;
                     },
 
                     cellClick: function (e, cell) {
                         const deleteBtn = e.target.closest && e.target.closest('[data-delete]');
                         if (deleteBtn) {
-                         
+
                             cell.getRow().delete().then(() => {
-                             
+
                                 cell.getTable().redraw(true);
                             }).catch(err => {
                                 console.error("Delete failed:", err);
@@ -548,7 +568,7 @@
                     frozenPosition: "left",
                     width: 240,
                     responsive: 0,
-             
+
                 },
                 {
                     title: "Location",
@@ -600,14 +620,7 @@
                     title: "CAPA Age",
                     headerHozAlign: "center",
                     columns: [
-                        { title: "0-5", field: "capa_age_value", hozAlign: "center", width: 120 }
-                    ]
-                },
-                {
-                    title: "Audit Rating",
-                    headerHozAlign: "center",
-                    columns: [
-                        { title: "> 85", field: "audit_value", hozAlign: "center", width: 120 }
+                        { title: "15", field: "capa_age_value", hozAlign: "center", width: 120 }
                     ]
                 },
                 {
@@ -621,7 +634,7 @@
                     title: "NPI Response",
                     headerHozAlign: "center",
                     columns: [
-                        { title: "10", field: "npi_value", hozAlign: "center", width: 120 }
+                        { title: "20", field: "npi_value", hozAlign: "center", width: 120 }
                     ]
                 },
                 {
@@ -632,7 +645,8 @@
                     ]
                 },
 
-            
+                // ----------------- RATINGS -----------------
+
                 {
                     title: "PPM Rating",
                     headerHozAlign: "center",
@@ -651,35 +665,28 @@
                     title: "CAPA Rating",
                     headerHozAlign: "center",
                     columns: [
-                        { title: "10", field: "capa_rating", hozAlign: "center", width: 120 }
-                    ]
-                },
-                {
-                    title: "Audit Rating",
-                    headerHozAlign: "center",
-                    columns: [
-                        { title: "20", field: "audit_rating", hozAlign: "center", width: 120 }
+                        { title: "15", field: "capa_rating", hozAlign: "center", width: 120 }
                     ]
                 },
                 {
                     title: "Cost Initiative Rating",
                     headerHozAlign: "center",
                     columns: [
-                        { title: "15", field: "cost_rating", hozAlign: "center", width: 120 }
+                        { title: "20", field: "cost_rating", hozAlign: "center", width: 120 }
                     ]
                 },
                 {
                     title: "NPI Response Rating",
                     headerHozAlign: "center",
                     columns: [
-                        { title: "10", field: "npi_rating", hozAlign: "center", width: 120 }
+                        { title: "20", field: "npi_rating", hozAlign: "center", width: 120 }
                     ]
                 },
                 {
                     title: "Replace Lead Time Rating",
                     headerHozAlign: "center",
                     columns: [
-                        { title: "10", field: "lead_rating", hozAlign: "center", width: 120 }
+                        { title: "15", field: "lead_rating", hozAlign: "center", width: 120 }
                     ]
                 },
                 {
@@ -688,9 +695,10 @@
                     columns: [
                         { title: "100", field: "total", hozAlign: "center", width: 120 }
                     ]
-                },
+                }
+                ,
 
-                
+
                 {
                     field: "Apr24",
                     hozAlign: "center",
@@ -728,45 +736,45 @@
 
             ];
 
-           
+
             function transformColumns(cols) {
                 return cols.map(function (col) {
-                    // If group column, recurse
+                    If group column, recurse
                     if (Array.isArray(col.columns) && col.columns.length) {
                         return Object.assign({}, col, { columns: transformColumns(col.columns) });
                     }
 
-                    // Keep special Sr No column and Apr24 (they already have specific settings)
+                    Keep special Sr No column and Apr24 (they already have specific settings)
                     if (col.field === "sr_no" || col.field === "Apr24") {
                         return col;
                     }
 
-                    // If leaf column with field -> replace with editableColumn keeping width/frozen/align/etc.
-                    // if (col.field) {
-                    //     const title = col.title || col.field;
-                    //     const field = col.field;
-                    //     const editorType = col.editor !== undefined ? col.editor : true;
-                    //     const align = col.hozAlign || "center";
-                    //     const headerFilterType = (col.headerFilter !== undefined) ? col.headerFilter : "input";
-                    //     const headerFilterParams = Object.assign({}, col.headerFilterParams || {}, { elementAttributes: Object.assign({}, (col.headerFilterParams && col.headerFilterParams.elementAttributes) || {}, { class: ((col.headerFilterParams && col.headerFilterParams.elementAttributes && col.headerFilterParams.elementAttributes.class) || "") + " header-filter" }) });
-                    //     const editorParams = col.editorParams || {};
-                    //     const formatter = col.formatter || null;
-                    //     const base = editableColumn(title, field, editorType, align, headerFilterType, headerFilterParams, editorParams, formatter);
+                    If leaf column with field -> replace with editableColumn keeping width/frozen/align/etc.
+                    if (col.field) {
+                        const title = col.title || col.field;
+                        const field = col.field;
+                        const editorType = col.editor !== undefined ? col.editor : true;
+                        const align = col.hozAlign || "center";
+                        const headerFilterType = (col.headerFilter !== undefined) ? col.headerFilter : "input";
+                        const headerFilterParams = Object.assign({}, col.headerFilterParams || {}, { elementAttributes: Object.assign({}, (col.headerFilterParams && col.headerFilterParams.elementAttributes) || {}, { class: ((col.headerFilterParams && col.headerFilterParams.elementAttributes && col.headerFilterParams.elementAttributes.class) || "") + " header-filter" }) });
+                        const editorParams = col.editorParams || {};
+                        const formatter = col.formatter || null;
+                        const base = editableColumn(title, field, editorType, align, headerFilterType, headerFilterParams, editorParams, formatter);
 
-                    //     // copy other display props (non-editor) so nothing changes visually
-                    //     if (col.width) base.width = col.width;
-                    //     if (col.frozen) base.frozen = col.frozen;
-                    //     if (col.frozenPosition) base.frozenPosition = col.frozenPosition;
-                    //     if (col.responsive !== undefined) base.responsive = col.responsive;
-                    //     if (col.headerHozAlign) base.headerHozAlign = col.headerHozAlign;
-                    //     if (col.hozAlign) base.hozAlign = col.hozAlign;
-                    //     if (col.headerSort !== undefined) base.headerSort = col.headerSort;
-                    //     if (col.visible !== undefined) base.visible = col.visible;
+                        // copy other display props (non-editor) so nothing changes visually
+                        if (col.width) base.width = col.width;
+                        if (col.frozen) base.frozen = col.frozen;
+                        if (col.frozenPosition) base.frozenPosition = col.frozenPosition;
+                        if (col.responsive !== undefined) base.responsive = col.responsive;
+                        if (col.headerHozAlign) base.headerHozAlign = col.headerHozAlign;
+                        if (col.hozAlign) base.hozAlign = col.hozAlign;
+                        if (col.headerSort !== undefined) base.headerSort = col.headerSort;
+                        if (col.visible !== undefined) base.visible = col.visible;
 
-                    //     return base;
-                    // }
+                        return base;
+                    }
 
-                    // otherwise return as-is
+                    otherwise return as-is
                     return col;
                 });
             }
@@ -816,9 +824,9 @@
                     };
 
                     dnTable.addRow(newRow, false).then(function (row) {
-                           row.getElement().classList.add("flash-added");
+                        row.getElement().classList.add("flash-added");
                         row.getElement().scrollIntoView({ behavior: "smooth", block: "nearest" });
-                     
+
                         const cell = row.getCell("SupplierName");
                         if (cell) cell.edit(true);
                     }).catch(function (err) {
@@ -841,10 +849,9 @@
 
         })();
 
-        // keep existing headerMenu reference (your page likely defines it elsewhere)
+   
         function headerMenu() {
-            // placeholder fallback if headerMenu not defined
-            return [];
+           
         }
 
         function onAddClick() { /* optional */ }

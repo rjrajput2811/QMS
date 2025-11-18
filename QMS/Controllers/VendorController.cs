@@ -421,11 +421,11 @@ namespace QMS.Controllers
         //}
 
         [HttpGet]
-        public async Task<JsonResult> GetCertificateData()
+        public async Task<JsonResult> GetCertificateData(int? venId)
         {
             try
             {
-                var certList = await _vendorRepository.CertGetAllAsync();
+                var certList = await _vendorRepository.CertGetAllAsync(venId);
                 return Json(new { success = true, data = certList });
             }
             catch (Exception ex)
@@ -723,11 +723,11 @@ namespace QMS.Controllers
 
             // GET: /VenBISCertificate/GetAll
             [HttpGet]
-            public async Task<JsonResult> GetAllBISCertificates()
+            public async Task<JsonResult> GetAllBISCertificates(int? venId)
             {
                 try
                 {
-                    var certificates = await _vendorRepository.GetAllBISCertificatesAsync();
+                    var certificates = await _vendorRepository.GetAllBISCertificatesAsync(venId);
                     return Json(new { success = true, data = certificates });
                 }
                 catch (Exception ex)

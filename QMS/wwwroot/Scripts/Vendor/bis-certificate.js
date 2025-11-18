@@ -275,9 +275,11 @@ function initializeBISCertificateTable(data) {
 }
 function loadBISCertificates() {
     Blockloadershow();
+    let vendorID = $('#hdnId').val();
     $.ajax({
         url: '/Vendor/GetAllBISCertificates',
         type: 'GET',
+        data: { venId: vendorID },
         success: function (response) {
             Blockloaderhide();
             if (response.success && Array.isArray(response.data)) {

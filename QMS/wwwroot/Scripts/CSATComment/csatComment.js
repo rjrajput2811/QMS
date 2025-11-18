@@ -182,19 +182,149 @@ function OnTabGridLoad(response) {
         editableColumn("Quarter", "Quarter", true),
         editableColumn("Organisation", "Organisation", true),
         editableColumn("Powder Region", "Region", true),
-        editableColumn("Q1", "Q1", true),
-        editableColumn("Q2", "Q2", true),
-        editableColumn("Q3", "Q3", true),
-        editableColumn("Q4", "Q4", true),
-        editableColumn("Q5", "Q5", true),
-        editableColumn("Q6", "Q6", true),
-        editableColumn("Q7", "Q7", true),
-        editableColumn("Q8", "Q8", true),
-        editableColumn("Q9", "Q9", true),
-        editableColumn("Q10", "Q10", true),
-        editableColumn("Q11", "Q11", true),
-        editableColumn("Q12", "Q12", true),
-        editableColumn("Q13", "Q13", true),
+        //editableColumn("Q1", "Q1", true),
+        editableColumn("Q1", "Q1", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q2", "Q2", true),
+        editableColumn("Q2", "Q2", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q3", "Q3", true),
+        editableColumn("Q3", "Q3", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q4", "Q4", true),
+        editableColumn("Q4", "Q4", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q5", "Q5", true),
+        editableColumn("Q5", "Q5", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q6", "Q6", true),
+        editableColumn("Q6", "Q6", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q7", "Q7", true),
+        editableColumn("Q7", "Q7", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q8", "Q8", true),
+        editableColumn("Q8", "Q8", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q9", "Q9", true),
+        editableColumn("Q9", "Q9", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q10", "Q10", true),
+        editableColumn("Q10", "Q10", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q11", "Q11", true),
+        editableColumn("Q11", "Q11", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q12", "Q12", true),
+        editableColumn("Q12", "Q12", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
+        //editableColumn("Q13", "Q13", true),
+        editableColumn("Q13", "Q13", "list", "left", "input", {}, {
+            values: [
+                { label: "Strongly Disagree", value: "Strongly Disagree" },
+                { label: "Disagree", value: "Disagree" },
+                { label: "Agree", value: "Agree" },
+                { label: "Strongly Agree", value: "Strongly Agree" },
+                { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
+                { label: "Cannot rate", value: "Cannot rate" },
+            ]
+        }),
         editableColumn("Cust Critical Aspect", "Cust_Critical_Aspect", true),
         editableColumn("Comments & Suggestions", "Comment", true),
 

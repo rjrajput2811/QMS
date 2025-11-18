@@ -341,12 +341,21 @@ namespace QMS.Core.Repositories.VendorRepository
             }
         }
         //Certification Details
-        public async Task<List<CertificationDetailViewModel>> CertGetAllAsync()
+        public async Task<List<CertificationDetailViewModel>> CertGetAllAsync(int? venId)
         {
             try
             {
+
+                var parameters = new[]
+                {
+                    new SqlParameter("@vendorId", venId),
+                };
+
+                var sql = @"EXEC dbo.GetAllCertificationDetails @vendorId";
+
+                //var result = await _dbContext.Vendor.FromSqlRaw(sql, parameters).ToListAsync();
                 var result = await _dbContext.CertificationDetailViewModel
-                    .FromSqlRaw("EXEC dbo.GetAllCertificationDetails")
+                    .FromSqlRaw(sql, parameters)
                     .ToListAsync();
 
                 return result;
@@ -864,10 +873,10 @@ namespace QMS.Core.Repositories.VendorRepository
                 .Distinct() 
                 .ToListAsync();
         }
-        public async Task<List<VenBISCertificateViewModel>> GetAllBISCertificatesAsync()
+        public async Task<List<VenBISCertificateViewModel>> GetAllBISCertificatesAsync(int? venId)
         {
             return await _dbContext.VenBISCertificates
-                .Where(c => c.Deleted != true)
+                .Where(c => c.Deleted != true && c.VendorID == venId)
                 .Select(c => new VenBISCertificateViewModel
                 {
                     ID = c.Id,

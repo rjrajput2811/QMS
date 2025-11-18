@@ -148,10 +148,13 @@ document.addEventListener('click', function (e) {
 });
 
 function loadCertificateData() {
+    debugger
     Blockloadershow();
+    let vendorID = $('#hdnId').val();
     $.ajax({
         url: '/Vendor/GetCertificateData',
         type: 'GET',
+        data: { venId: vendorID },
         success: function (response) {
             Blockloaderhide();
             if (response.success && Array.isArray(response.data)) {

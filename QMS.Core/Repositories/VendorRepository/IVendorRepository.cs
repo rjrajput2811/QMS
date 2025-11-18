@@ -21,7 +21,7 @@ namespace QMS.Core.Repositories.VendorRepository
         Task<OperationResult> CertCreateAsync(CertificationDetail cert);
         Task<OperationResult> CertUpdateAsync(CertificationDetail cert);
         Task<OperationResult> CertDeleteAsync(int id, string updatedBy);
-        Task<List<CertificationDetailViewModel?>> CertGetAllAsync();
+        Task<List<CertificationDetailViewModel?>> CertGetAllAsync(int? venId);
         Task<BulkCertiCreateResult> BulkCertiCreateAsync(List<CertificationDetailViewModel> listOfData, string fileName, string uploadedBy, string recordType);
 
         //Task<List<ProductCodeDetailDto>> GetProductCodesAsync(string term);
@@ -33,7 +33,7 @@ namespace QMS.Core.Repositories.VendorRepository
         Task<List<ProductCodeDetailViewModel>> GetCodeSearchAsync(string search = "");
 
         Task<List<DropdownOptionViewModel>> GetVendorDropdownAsync();
-        Task<List<VenBISCertificateViewModel>> GetAllBISCertificatesAsync();
+        Task<List<VenBISCertificateViewModel>> GetAllBISCertificatesAsync(int? venId);
         Task<VenBISCertificate?> GetBISCertificateByIdAsync(int id);
         Task<bool> CreateOrUpdateBISCertificateAsync(VenBISCertificate cert);
         Task<bool> DeleteBISCertificateAsync(int id, string updatedBy);

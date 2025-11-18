@@ -44,29 +44,42 @@
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        var tableData = [
-            { quarter: "1", pc: "PC1", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC2", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC3", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "Q1", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+        const quarters = {
+             1: ["PC1", "PC2", "PC3", "Q1"],
+             2: ["PC4", "PC5", "PC6", "Q2"],
+             3: ["PC7", "PC8", "PC9", "Q3"],
+             4: ["PC10", "PC11", "PC12", "Q4"]
+        };
 
-            { quarter: "2", pc: "PC4", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC5", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC6", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "Q2", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+        var tableData = [];
 
-            { quarter: "3", pc: "PC7", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC8", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC9", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "Q3", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
+        Object.keys(quarters).forEach(q => {
+            quarters[q].forEach((pc, index) => {
+                tableData.push({
+                    quarter: index === 0 ? q : "",
+                    pc: pc,
+                    reqSent: "",
+                    resRec: "",
+                    promoters: "",
+                    collection: "",
+                    detractors: "",
+                    nps: "",
+                    detDetails: ""
+                });
+            });
+        });
 
-            { quarter: "4", pc: "PC10", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC11", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "PC12", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-            { quarter: "", pc: "Q4", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" },
-
-            { quarter: "YTD", pc: "", reqSent: "", resRec: "", promoters: "", collection: "", detractors: "", nps: "", detDetails: "" }
-        ];
+        tableData.push({
+            quarter: "YTD",
+            pc: "",
+            reqSent: "",
+            resRec: "",
+            promoters: "",
+            collection: "",
+            detractors: "",
+            nps: "",
+            detDetails: ""
+        });
 
         var table = new Tabulator("#csatTable", {
             data: tableData,
@@ -77,14 +90,13 @@
                 { title: "Request Sent", field: "reqSent", hozAlign: "center", editor: "input" },
                 { title: "Responses Received", field: "resRec", hozAlign: "center", editor: "input" },
                 { title: "Promoters", field: "promoters", hozAlign: "center", editor: "input" },
-                { title: "% Collection", field: "collection", hozAlign: "center", editor: "input" },
+                { title: "% Collection", field: "collection", hozAlign: "center"},
                 { title: "Detractors", field: "detractors", hozAlign: "center", editor: "input" },
                 { title: "NPS", field: "nps", hozAlign: "center", editor: "input" },
                 { title: "Detractor Details", field: "detDetails", hozAlign: "center", editor: "input" }
             ],
             movableColumns: false,
-            resizableRows: false,
-            height: "auto"
+            resizableRows: false
         });
 
 

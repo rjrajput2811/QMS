@@ -168,7 +168,7 @@ function OnTabGridLoad(response) {
 
             if (columnField !== "Action") {
                 let rowData = cell.getRow().getData();
-                showEditVendor(rowData.Id);
+                showEditSummary(rowData.Id);
             }
         });
 
@@ -181,7 +181,7 @@ function OnTabGridLoad(response) {
     Blockloaderhide();
 }
 
-function showEditVendor(id) {
+function showEditSummary(id) {
     debugger
     var url = '/CSAT/CSATSummaryDetail?id=' + id;
     window.location.href = url;
@@ -233,7 +233,7 @@ function delConfirm(recid) {
     });
 }
 
-function openVendor(id) {
+function openSummaryDetail(id) {
     debugger
     var url = '/CSAT/CSATSummaryDetail';
     url = url + '?id=' + id

@@ -22,10 +22,10 @@ namespace QMS.Controllers
             return View();
         }
 
-        public IActionResult CSATSummaryDetail()
-        {
-            return View();
-        }
+        //public IActionResult CSATSummaryDetail()
+        //{
+        //    return View();
+        //}
 
         public async Task<IActionResult> CSATSummaryDetail(int id)
         {

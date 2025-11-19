@@ -119,9 +119,9 @@
     #testTableBody td[contenteditable] {
         min-height: 120px;
         padding: 8px;
-        vertical-align: top; 
-        box-sizing: border-box; 
-        white-space: pre-wrap; 
+        vertical-align: top;
+        box-sizing: border-box;
+        white-space: pre-wrap;
     }
 
     .sr-cell {
@@ -129,13 +129,13 @@
         padding: 8px;
         box-sizing: border-box;
         display: flex;
-        align-items: center; 
+        align-items: center;
         justify-content: space-between;
     }
 
         .sr-cell .row-del-btn {
             margin-left: 6px;
-            height: 26px; 
+            height: 26px;
         }
 
     .row-del-btn {
@@ -293,6 +293,14 @@
 
                         <!-- Table with Test Requirement column — toolbar embedded in header -->
                         <div class="table-responsive" style="margin-top:0px;">
+                            @* @Html.HiddenFor(m => m.Details[0].InternalType_DetId) *@
+                            @if (Model.Details != null && Model.Details.Count > 0)
+                            {
+                                for (int i = 0; i < Model.Details.Count; i++)
+                                {
+                                    @Html.HiddenFor(m => m.Details[i].InternalType_DetId)
+                                }
+                            }
                             <table id="mainTestTable" class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center; font-size:14px;">
                                 <thead>
                                     <!-- Reference header -->
@@ -440,329 +448,318 @@
 
 @section Scripts {
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const toolbar = document.getElementById('testReqToolbar');
-        const addBtn = document.getElementById('addRowBtn');
-        const tableBody = document.getElementById('testTableBody');
-        let currentCell = null;
-        let savedRange = null;
+    <script>
+        $(document).ready(function () {
+            const toolbar = document.getElementById('testReqToolbar');
+            const addBtn = document.getElementById('addRowBtn');
+            const tableBody = document.getElementById('testTableBody');
+            let currentCell = null;
+            let savedRange = null;
 
-        // tolerate if toolbar missing
-        if (toolbar) {
-            toolbar.querySelectorAll('button').forEach(btn => {
-                btn.addEventListener('mousedown', (ev) => ev.preventDefault());
+            // tolerate if toolbar missing
+            if (toolbar) {
+                toolbar.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('mousedown', (ev) => ev.preventDefault());
+                });
+            }
+
+            function bindTestReqCell(cell) {
+                if (!cell) return;
+                cell.setAttribute('tabindex', '0');
+                cell.addEventListener('mousedown', () => { currentCell = cell; });
+                cell.addEventListener('focus', () => currentCell = cell);
+                cell.addEventListener('click', () => currentCell = cell);
+                cell.addEventListener('mouseup', saveSelection);
+                cell.addEventListener('keyup', saveSelection);
+                cell.addEventListener('keydown', e => {
+                    if (e.key === 'Enter') {
+                        document.execCommand('insertHTML', false, '<br><br>');
+                        e.preventDefault();
+                    }
+                });
+            }
+
+            document.querySelectorAll('.test-req-cell').forEach(bindTestReqCell);
+
+            document.addEventListener('selectionchange', () => {
+                try { saveSelection(); } catch (err) { }
             });
-        }
 
-        function bindTestReqCell(cell) {
-            if (!cell) return;
-            cell.setAttribute('tabindex', '0');
-            cell.addEventListener('mousedown', () => { currentCell = cell; });
-            cell.addEventListener('focus', () => currentCell = cell);
-            cell.addEventListener('click', () => currentCell = cell);
-            cell.addEventListener('mouseup', saveSelection);
-            cell.addEventListener('keyup', saveSelection);
-            cell.addEventListener('keydown', e => {
-                if (e.key === 'Enter') {
-                    document.execCommand('insertHTML', false, '<br><br>');
-                    e.preventDefault();
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.test-req-cell') && !e.target.closest('#testReqToolbar')) {
+                    currentCell = null;
                 }
             });
-        }
 
-        document.querySelectorAll('.test-req-cell').forEach(bindTestReqCell);
-
-        document.addEventListener('selectionchange', () => {
-            try { saveSelection(); } catch (err) { /* ignore */ }
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.test-req-cell') && !e.target.closest('#testReqToolbar')) {
-                currentCell = null;
+            function saveSelection() {
+                const sel = window.getSelection();
+                if (!sel || sel.rangeCount === 0) return;
+                const range = sel.getRangeAt(0);
+                let container = range.commonAncestorContainer;
+                if (container.nodeType === 3) container = container.parentNode;
+                if (!currentCell) {
+                    const maybeCell = container && container.closest && container.closest('.test-req-cell');
+                    if (maybeCell) currentCell = maybeCell;
+                }
+                if (currentCell && currentCell.contains(range.commonAncestorContainer)) {
+                    savedRange = range.cloneRange();
+                }
             }
-        });
 
-        function saveSelection() {
-            const sel = window.getSelection();
-            if (!sel || sel.rangeCount === 0) return;
-            const range = sel.getRangeAt(0);
-            let container = range.commonAncestorContainer;
-            if (container.nodeType === 3) container = container.parentNode;
-            if (!currentCell) {
-                const maybeCell = container && container.closest && container.closest('.test-req-cell');
-                if (maybeCell) currentCell = maybeCell;
+            function restoreSelection() {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                if (savedRange) sel.addRange(savedRange);
             }
-            if (currentCell && currentCell.contains(range.commonAncestorContainer)) {
-                savedRange = range.cloneRange();
-            }
-        }
 
-        function restoreSelection() {
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            if (savedRange) sel.addRange(savedRange);
-        }
-
-        if (toolbar) {
-            toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    if (!currentCell) return;
-                    restoreSelection();
-                    const cmd = btn.getAttribute('data-cmd');
-                    document.execCommand(cmd, false, null);
-                    saveSelection();
-                    currentCell.focus();
+            if (toolbar) {
+                toolbar.querySelectorAll('.fmt-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (!currentCell) return;
+                        restoreSelection();
+                        const cmd = btn.getAttribute('data-cmd');
+                        document.execCommand(cmd, false, null);
+                        saveSelection();
+                        currentCell.focus();
+                    });
                 });
-            });
-        }
+            }
 
-        // Add row
-        if (addBtn) {
-            addBtn.addEventListener('click', addRow);
-        }
+            // Add row
+            if (addBtn) {
+                addBtn.addEventListener('click', addRow);
+            }
 
-        function addRow() {
-            const tr = document.createElement('tr');
-            tr.innerHTML = `
-                        <td class="sr-cell"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                             <td contenteditable="true" style="vertical-align: top; min-height: 120px; padding: 8px;"></td>
-                                <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align: center;"></td>
-                        <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
-                    `;
-            tableBody.appendChild(tr);
-            bindTestReqCell(tr.querySelector('.test-req-cell'));
-            renumberRows();
-        }
-
-        tableBody.addEventListener('click', (e) => {
-            const btn = e.target.closest('.row-del-btn');
-            if (btn) {
-                const row = btn.closest('tr');
-                if (!row) return;
-                row.remove();
+            function addRow() {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="sr-cell"></td>
+                    <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                    <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                    <td class="test-req-cell" contenteditable="true" style="min-height:120px; padding:8px; text-align:center;"></td>
+                    <td contenteditable="true" style="vertical-align:top; min-height:120px; padding:8px;"></td>
+                `;
+                tableBody.appendChild(tr);
+                bindTestReqCell(tr.querySelector('.test-req-cell'));
                 renumberRows();
             }
-        });
 
-        function createDeleteButton() {
-            const btn = document.createElement('button');
-            btn.className = 'row-del-btn';
-            btn.title = 'Delete row';
-            btn.innerHTML = '<i class="fa fa-trash"></i>';
-            btn.addEventListener('mousedown', ev => ev.preventDefault());
-            return btn;
-        }
+            tableBody.addEventListener('click', (e) => {
+                const btn = e.target.closest('.row-del-btn');
+                if (btn) {
+                    const row = btn.closest('tr');
+                    if (!row) return;
+                    row.remove();
+                    renumberRows();
+                }
+            });
 
-        function renumberRows() {
-            const rows = Array.from(tableBody.querySelectorAll('tr'));
-            rows.forEach((row, index) => {
-                const srCell = row.querySelector('.sr-cell');
-                if (srCell) {
-                    srCell.innerHTML = '';
-                    const numText = document.createElement('span');
-                    numText.textContent = (index + 1);
-                    srCell.appendChild(numText);
-                    srCell.appendChild(createDeleteButton());
-                } else {
-                    const firstCell = row.cells[0];
-                    if (firstCell) {
-                        firstCell.innerHTML = '';
-                        firstCell.classList.add('sr-cell');
+            function createDeleteButton() {
+                const btn = document.createElement('button');
+                btn.className = 'row-del-btn';
+                btn.title = 'Delete row';
+                btn.innerHTML = '<i class="fa fa-trash"></i>';
+                btn.addEventListener('mousedown', ev => ev.preventDefault());
+                return btn;
+            }
+
+            function renumberRows() {
+                const rows = Array.from(tableBody.querySelectorAll('tr'));
+                rows.forEach((row, index) => {
+                    const srCell = row.querySelector('.sr-cell');
+                    if (srCell) {
+                        srCell.innerHTML = '';
                         const numText = document.createElement('span');
                         numText.textContent = (index + 1);
-                        firstCell.appendChild(numText);
-                        firstCell.appendChild(createDeleteButton());
+                        srCell.appendChild(numText);
+                        srCell.appendChild(createDeleteButton());
+                    } else {
+                        const firstCell = row.cells[0];
+                        if (firstCell) {
+                            firstCell.innerHTML = '';
+                            firstCell.classList.add('sr-cell');
+                            const numText = document.createElement('span');
+                            numText.textContent = (index + 1);
+                            firstCell.appendChild(numText);
+                            firstCell.appendChild(createDeleteButton());
+                        }
                     }
-                }
-            });
-        }
+                });
+            }
 
-        // initial numbering
-        renumberRows();
+            // initial numbering
+            renumberRows();
 
-        // IMPORTANT: ensure there's at least one row visible at first load / refresh
-        // If there are no rows in the tbody, add a single empty row (Sr No. 1)
-        if (tableBody.querySelectorAll('tr').length === 0) {
-            addRow();
-        }
-
-    }); // end DOMContentLoaded
-
-    // ================= NEW: Save function for AJAX FormData submit =================
-    async function saveLuminaireTypeTest() {
-        const saveBtn = document.getElementById('saveBtn');
-        if (!saveBtn) return;
-
-        // ✅ Required fields list
-        const requiredFields = [
-            { name: "Report_No", label: "Report No" },
-            { name: "Cust_Name", label: "Customer Name & Address" },
-            { name: "Date", label: "Date" },
-            { name: "Samp_Desc", label: "Sample Description" },
-            { name: "Prod_Cat_Code", label: "Product CAT Code" },
-            { name: "Input_Voltage", label: "Input Voltage" },
-            { name: "Samp_Identi_Lab", label: "Sample Identification For Lab" },
-            { name: "Ref_Standard", label: "Reference Standard" }
-        ];
-
-        // ✅ Validate required fields
-        const missing = [];
-        requiredFields.forEach(f => {
-            const el = document.querySelector([name="${f.name}"]);
-            const value = el?.value?.trim();
-            if (!value) {
-                missing.push(f.label);
+            // ensure there's at least one row
+            if (tableBody.querySelectorAll('tr').length === 0) {
+                addRow();
             }
         });
 
-        if (missing.length > 0) {
-            const listHTML = missing.map(m => <li>${m}</li>).join("");
-            showDangerAlert(<p>Please fill out the following required field(s):</p><ul>${listHTML}</ul>);
-            return;
-        }
+        // ================= Save function for AJAX FormData submit =================
+        async function saveLuminaireTypeTest() {
+            const saveBtn = document.getElementById('saveBtn');
+            if (!saveBtn) return;
 
-        const origHTML = saveBtn.innerHTML;
-        saveBtn.disabled = true;
-        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin spinner-inline"></i> Saving...';
-        Blockloadershow();
+            // Required fields list
+            const requiredFields = [
+                { name: "Report_No", label: "Report No" },
+                { name: "Cust_Name", label: "Customer Name & Address" },
+                { name: "Date", label: "Date" },
+                { name: "Samp_Desc", label: "Sample Description" },
+                { name: "Prod_Cat_Code", label: "Product CAT Code" },
+                { name: "Input_Voltage", label: "Input Voltage" },
+                { name: "Samp_Identi_Lab", label: "Sample Identification For Lab" },
+                { name: "Ref_Standard", label: "Reference Standard" }
+            ];
 
-        try {
-            const form = document.getElementById('luminaireForm');
-            if (!form) throw new Error('Form element not found (id="luminaireForm").');
-
-            const formData = new FormData(form);
-
-            // -------------------------
-            // MINIMAL, SAFE CHANGE:
-            // Ensure Id is always sent to server so controller can decide Insert vs Update.
-            // Razor will render the numeric Id from the Model (0 if new).
-            // -------------------------
-            // NOTE: This line uses Razor to inline server Model.Id — keep as-is in your .cshtml.
-            const currentInternalTypeId = @(Model?.Id ?? 0);
-            formData.set('Id', String(currentInternalTypeId));
-            // -------------------------
-
-            // ✅ Build Details array from table rows
-            const details = [];
-            const rows = Array.from(document.querySelectorAll('#testTableBody tr'));
-            rows.forEach((row, idx) => {
-                const cells = row.querySelectorAll('td');
-                if (!cells || cells.length < 5) return;
-
-                details.push({
-                    SeqNo: idx + 1,
-                    Perticular_Test: (cells[1].innerText || '').trim(),
-                    Test_Method: (cells[2].innerText || '').trim(),
-                    Test_Requirement: (cells[3].innerHTML || '').trim(), // keep formatting
-                    Test_Result: (cells[4].innerText || '').trim(),
-                    IsDeleted: false
-                });
-            });
-
-            // ✅ Append Details to form data
-            details.forEach((d, i) => {
-                formData.append(Details[${i}].SeqNo, d.SeqNo != null ? d.SeqNo.toString() : '');
-                formData.append(Details[${i}].Perticular_Test, d.Perticular_Test || '');
-                formData.append(Details[${i}].Test_Method, d.Test_Method || '');
-                formData.append(Details[${i}].Test_Requirement, d.Test_Requirement || '');
-                formData.append(Details[${i}].Test_Result, d.Test_Result || '');
-                formData.append(Details[${i}].IsDeleted, d.IsDeleted ? 'true' : 'false');
-            });
-
-            // ✅ Include JSON backup
-            formData.set('DetailsJson', JSON.stringify(details));
-
-            // ✅ Submit form
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                credentials: 'same-origin'
-            });
-
-            const raw = await response.text();
-            let payload = null;
-            try { payload = raw && raw.length ? JSON.parse(raw) : null; } catch { payload = null; }
-
-            if (!response.ok) {
-                if (payload) {
-                    if (Array.isArray(payload.errors) && payload.errors.length)
-                        showDangerAlert(payload.errors.join('<br/>'));
-                    else if (Array.isArray(payload.Errors) && payload.Errors.length)
-                        showDangerAlert(payload.Errors.join('<br/>'));
-                    else if (payload.Message || payload.message)
-                        showDangerAlert(payload.Message || payload.message);
-                    else
-                        showDangerAlert('Server returned error: HTTP ' + response.status);
-                } else {
-                    showDangerAlert('Server error: HTTP ' + response.status + ' — ' + raw);
+            // Validate required fields
+            const missing = [];
+            requiredFields.forEach(f => {
+                const el = document.querySelector(`[name="${f.name}"]`);
+                const value = el?.value?.trim();
+                if (!value) {
+                    missing.push(f.label);
                 }
+            });
+
+            if (missing.length > 0) {
+                const listHTML = missing.map(m => `<li>${m}</li>`).join("");
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${listHTML}</ul>`
+                );
                 return;
             }
 
-            const json = payload || {};
-            if (json && (json.Success === true || json.success === true)) {
-                // --- MINIMAL CHANGE: show different message for update vs insert ---
-                const currentId = parseInt(formData.get('Id') || "0", 10);
-                if (currentId > 0) {
-                    showSuccessAlert(json.Message || 'Updated successfully.');
-                } else {
-                    showSuccessAlert(json.Message || 'Saved successfully.');
+            const origHTML = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin spinner-inline"></i> Saving...';
+            Blockloadershow();
+
+            try {
+                const form = document.getElementById('luminaireForm');
+                if (!form) throw new Error('Form element not found (id="luminaireForm").');
+
+                const formData = new FormData(form);
+
+                // Ensure Id is always sent to server
+                const currentInternalTypeId = @(Model?.Id ?? 0);
+                formData.set('Id', String(currentInternalTypeId));
+
+                // Build Details array from table rows
+                const details = [];
+                const rows = Array.from(document.querySelectorAll('#testTableBody tr'));
+                rows.forEach((row, idx) => {
+                    const cells = row.querySelectorAll('td');
+                    if (!cells || cells.length < 5) return;
+
+                    details.push({
+                        SeqNo: idx + 1,
+                        Perticular_Test: (cells[1].innerText || '').trim(),
+                        Test_Method: (cells[2].innerText || '').trim(),
+                        Test_Requirement: (cells[3].innerHTML || '').trim(), // keep formatting
+                        Test_Result: (cells[4].innerText || '').trim(),
+                        IsDeleted: false
+                    });
+                });
+
+                // Append Details to form data
+                details.forEach((d, i) => {
+                    formData.append(`Details[${i}].SeqNo`, d.SeqNo != null ? d.SeqNo.toString() : '');
+                    formData.append(`Details[${i}].Perticular_Test`, d.Perticular_Test || '');
+                    formData.append(`Details[${i}].Test_Method`, d.Test_Method || '');
+                    formData.append(`Details[${i}].Test_Requirement`, d.Test_Requirement || '');
+                    formData.append(`Details[${i}].Test_Result`, d.Test_Result || '');
+                    formData.append(`Details[${i}].IsDeleted`, d.IsDeleted ? 'true' : 'false');
+                });
+
+                // JSON backup
+                formData.set('DetailsJson', JSON.stringify(details));
+
+                // Submit form
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'same-origin'
+                });
+
+                const raw = await response.text();
+                let payload = null;
+                try { payload = raw && raw.length ? JSON.parse(raw) : null; } catch { payload = null; }
+
+                if (!response.ok) {
+                    if (payload) {
+                        if (Array.isArray(payload.errors) && payload.errors.length)
+                            showDangerAlert(payload.errors.join('<br/>'));
+                        else if (Array.isArray(payload.Errors) && payload.Errors.length)
+                            showDangerAlert(payload.Errors.join('<br/>'));
+                        else if (payload.Message || payload.message)
+                            showDangerAlert(payload.Message || payload.message);
+                        else
+                            showDangerAlert('Server returned error: HTTP ' + response.status);
+                    } else {
+                        showDangerAlert('Server error: HTTP ' + response.status + ' — ' + raw);
+                    }
+                    return;
                 }
 
-                // NAVIGATION: prefer server RedirectUrl; otherwise go back to referring page or history
-                const navigateBack = () => {
-                    if (json.RedirectUrl) {
-                        window.location.href = json.RedirectUrl;
-                        return;
+                const json = payload || {};
+                if (json && (json.Success === true || json.success === true)) {
+                    const currentId = parseInt(formData.get('Id') || "0", 10);
+                    if (currentId > 0) {
+                        showSuccessAlert(json.Message || 'Updated successfully.');
+                    } else {
+                        showSuccessAlert(json.Message || 'Saved successfully.');
                     }
-                    // prefer document.referrer if it exists and is different from current location
-                    try {
-                        const ref = document.referrer;
-                        if (ref && ref !== '' && ref !== window.location.href) {
-                            window.location.href = ref;
+
+                    const navigateBack = () => {
+                        if (json.RedirectUrl) {
+                            window.location.href = json.RedirectUrl;
                             return;
                         }
-                    } catch (e) { /* ignore */ }
+                        try {
+                            const ref = document.referrer;
+                            if (ref && ref !== '' && ref !== window.location.href) {
+                                window.location.href = ref;
+                                return;
+                            }
+                        } catch (e) { }
 
-                    // last resort: browser history
-                    history.back();
-                };
+                        history.back();
+                    };
 
-                // Wait a short moment so the user sees the success alert
-                setTimeout(navigateBack, 800);
-                return;
-            }
-
-            if (json) {
-                if (Array.isArray(json.errors) && json.errors.length)
-                    showDangerAlert(json.errors.join('<br/>'));
-                else if (Array.isArray(json.Errors) && json.Errors.length)
-                    showDangerAlert(json.Errors.join('<br/>'));
-                else if (json.Message || json.message)
-                    showDangerAlert(json.Message || json.message);
-                else {
-                    console.error('Unexpected server response:', json);
-                    showDangerAlert('Save failed — see console for details.');
+                    setTimeout(navigateBack, 800);
+                    return;
                 }
-            } else {
-                showDangerAlert('Unexpected server response. See console for details.');
-                console.log('Raw response:', raw);
-            }
 
-        } catch (err) {
-            console.error('Save error:', err);
-            showDangerAlert('Error saving data: ' + (err && err.message ? err.message : err));
-        } finally {
-            Blockloaderhide();
-            if (saveBtn) {
-                saveBtn.disabled = false;
-                saveBtn.innerHTML = origHTML;
+                if (json) {
+                    if (Array.isArray(json.errors) && json.errors.length)
+                        showDangerAlert(json.errors.join('<br/>'));
+                    else if (Array.isArray(json.Errors) && json.Errors.length)
+                        showDangerAlert(json.Errors.join('<br/>'));
+                    else if (json.Message || json.message)
+                        showDangerAlert(json.Message || json.message);
+                    else {
+                        console.error('Unexpected server response:', json);
+                        showDangerAlert('Save failed — see console for details.');
+                    }
+                } else {
+                    showDangerAlert('Unexpected server response. See console for details.');
+                    console.log('Raw response:', raw);
+                }
+
+            } catch (err) {
+                console.error('Save error:', err);
+                showDangerAlert('Error saving data: ' + (err && err.message ? err.message : err));
+            } finally {
+                Blockloaderhide();
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHTML;
+                }
             }
         }
-    }
-</script>
+    </script>
 }
 
 @section HideSidebar { }

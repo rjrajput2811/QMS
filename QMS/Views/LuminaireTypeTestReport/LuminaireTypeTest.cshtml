@@ -181,7 +181,7 @@
                         Prod_Cat_Code: item.prod_Cat_Code || "",
 
                         Report_No: item.report_No || "",
-                        Report_Date: formattedDate,   // ✅ updated line
+                        Report_Date: formattedDate,
 
                         Cust_Name: item.cust_Name || "",
                         Samp_Identi_Lab: item.samp_Identi_Lab || "",
@@ -202,7 +202,6 @@
 
                     columns: [
 
-                        // Action column stays centered (optional) → If you want it left, tell me.
                         {
                             title: "Action",
                             field: "Action",
@@ -211,36 +210,30 @@
                             formatter: function (cell) {
                                 const row = cell.getRow().getData();
                                 return `
-                    <i onclick="(function(e){ e.stopPropagation(); deleteLuminaire(${row.Id}); })(event)"
-                       class="fas fa-trash-alt"
-                       title="Delete"
-                       style="color:red; cursor:pointer; margin-right:10px;"></i>
+                                    <i onclick="(function(e){ e.stopPropagation(); deleteLuminaire(${row.Id}); })(event)"
+                                       class="fas fa-trash-alt"
+                                       title="Delete"
+                                       style="color:red; cursor:pointer; margin-right:10px;"></i>
 
-                    <i onclick="(function(e){ e.stopPropagation(); exportLuminaireToExcel(${row.Id}); })(event)"
-                       class="fas fa-file-excel"
-                       title="Export Excel"
-                       style="color:green; cursor:pointer;"></i>
-                `;
+                                    <i onclick="(function(e){ e.stopPropagation(); exportLuminaireToExcel(${row.Id}); })(event)"
+                                       class="fas fa-file-excel"
+                                       title="Export Excel"
+                                       style="color:green; cursor:pointer;"></i>
+                                `;
                             }
                         },
 
-                        { title: "SNo", field: "Sr_No", width: 100, hozAlign: "left" },
-                        { title: "Product Category", field: "Prod_Cat_Code", width: 250, headerFilter: "input", hozAlign: "left" },
-                        { title: "Sample Description", field: "Samp_Desc", width: 300, headerFilter: "input", hozAlign: "left" },
-
-                        { title: "Report No", field: "Report_No", width: 200, headerFilter: "input", hozAlign: "left" },
-                        { title: "Report Date", field: "Report_Date", width: 180, headerFilter: "input", hozAlign: "left" },
-
-                        { title: "Customer Name", field: "Cust_Name", width: 250, headerFilter: "input", hozAlign: "left" },
-                        { title: "Input Voltage", field: "Input_Voltage", width: 200, headerFilter: "input", hozAlign: "left" },
-                        { title: "Sample Identification (Lab)", field: "Samp_Identi_Lab", width: 280, headerFilter: "input", hozAlign: "left" }
+                        { title: "SNo", field: "Sr_No", width: 100, hozAlign: "center" },
+                        { title: "Report No", field: "Report_No",headerFilter: "input", hozAlign: "left" },
+                        { title: "Report Date", field: "Report_Date", headerFilter: "input", hozAlign: "center" },
+                        { title: "Product CAT Code", field: "Prod_Cat_Code",headerFilter: "input", hozAlign: "left" },
+                        { title: "Sample Description", field: "Samp_Desc", headerFilter: "input", hozAlign: "left" },
+                        { title: "Customer Name", field: "Cust_Name",  headerFilter: "input", hozAlign: "left" },
+                        { title: "Input Voltage", field: "Input_Voltage", headerFilter: "input", hozAlign: "left" },
+                        { title: "Sample Identification (Lab)", field: "Samp_Identi_Lab", headerFilter: "input", hozAlign: "left" }
                     ]
                 });
 
-                // insert top buttons (Add New, Refresh) just once
-                insertGridButtons();
-
-                // ✅ FIX — Do not navigate when clicking Action buttons
                 table.on("cellClick", (e, cell) => {
                     if (cell.getColumn().getField() === "Action") return;
 
@@ -251,112 +244,50 @@
                 });
             }
 
-            // Adds "Add New" and "Refresh" buttons above the grid (non-destructive — minimal UI)
-            function insertGridButtons() {
-                try {
-                    // If already inserted, skip
-                    if (document.getElementById('luminaireGridActions')) return;
-
-                    var container = document.querySelector("#luminaire_table")?.parentElement;
-                    if (!container) {
-                        // fallback — add to body top
-                        container = document.body;
-                    }
-
-                    var wrapper = document.createElement('div');
-                    wrapper.id = 'luminaireGridActions';
-                    wrapper.style.display = 'flex';
-                    wrapper.style.justifyContent = 'flex-end';
-                    wrapper.style.margin = '8px 0';
-                    wrapper.style.gap = '8px';
-
-                    var addBtn = document.createElement('button');
-                    addBtn.type = 'button';
-                    addBtn.className = 'btn btn-outline-primary';
-                    addBtn.style.padding = '6px 10px';
-                    addBtn.innerHTML = '<i class="fas fa-plus" style="margin-right:6px;"></i> Add New';
-                    addBtn.addEventListener('click', function () {
-                        // navigate to details page without id for create
-                        window.location.href = '/LuminaireTypeTestReport/LuminaireTypeTestDetails';
-                    });
-
-               
-
-                    // insert wrapper before the table element (if parent exists)
-                    var tableEl = document.querySelector("#luminaire_table");
-                    if (tableEl && tableEl.parentElement) {
-                        tableEl.parentElement.insertBefore(wrapper, tableEl);
-                    } else {
-                        // fallback: append to the top of container
-                        container.insertBefore(wrapper, container.firstChild);
-                    }
-                } catch (err) {
-                    console.warn('Could not insert grid buttons:', err);
-                }
-            }
-
-            function deleteLuminaire(id) {
-                if (!id) return;
-
-                // Optional: simple confirm
-                if (!confirm("Are you sure you want to delete this record?")) return;
-
-                Blockloadershow();
-
-                $.post('@Url.Action("DeleteInternalTypeTest", "LuminaireTypeTestReport")', { id: id })
-                    .done(function (resp) {
-                        Blockloaderhide();
-                        try {
-                            // Normalize response success key (some APIs use success / Success)
-                            const ok = resp && (resp.success === true || resp.Success === true);
-                            if (ok) {
-                                showSuccessAlert("Deleted successfully");
-
-                                // If Tabulator instance exists, remove the row quickly
-                                try {
-                                    if (table && typeof table.deleteRow === 'function') {
-                                        // deleteRow accepts the row ID if you used it as the row's unique id.
-                                        // We used Id in row data, so attempt to remove by matching Id
-                                        // If your table has a defined index, you can also use table.deleteRow(rowId)
-                                        // We'll find the row and delete it to avoid a full reload:
-                                        const row = table.getRows().find(r => r.getData().Id == id);
-                                        if (row) {
-                                            row.delete();
-                                            // re-numbering / local pagination will update automatically
-                                        } else {
-                                            // fallback: reload the whole grid
-                                            loadLuminaireGrid();
-                                        }
-                                    } else {
-                                        // fallback if `table` isn't available
-                                        loadLuminaireGrid();
-                                    }
-                                } catch (ex) {
-                                    console.warn('Could not remove row from Tabulator, reloading grid', ex);
-                                    loadLuminaireGrid();
-                                }
-                            } else {
-                                showDangerAlert(resp && (resp.message || resp.Message) || "Delete failed.");
+            function deleteLuminaire(recid) {
+                PNotify.prototype.options.styling = "bootstrap3";
+                (new PNotify({
+                    title: 'Confirmation Needed',
+                    text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+                    icon: 'glyphicon glyphicon-question-sign',
+                    hide: false,
+                    confirm: {
+                        confirm: true
+                    },
+                    buttons: {
+                        closer: false,
+                        sticker: false
+                    },
+                    history: {
+                        history: false
+                    },
+                })).get().on('pnotify.confirm', function () {
+                    $.ajax({
+                        url: '@Url.Action("DeleteInternalTypeTest", "LuminaireTypeTestReport")',
+                        type: 'POST',
+                        data: { Id: recid },
+                        success: function (data) {
+                            if (data.success == true) {
+                                showSuccessAlert("Deleted successfully.");
+                                setTimeout(function () {
+                                    window.location.reload();
+                                }, 2500);
                             }
-                        } catch (ex) {
-                            console.error('Delete response handling error', ex);
-                            showDangerAlert("Error deleting record. See console for details.");
-                        }
-                    })
-                    .fail(function (xhr) {
-                        Blockloaderhide();
-                        if (xhr && xhr.status === 401) {
-                            // optional: redirect to login if unauthorized
-                            window.location.href = '@Url.Action("Login", "Account")';
-                        } else {
-                            showDangerAlert("Error deleting record.");
+                            else {
+                                showDangerAlert(data.message);
+                            }
+                        },
+                        error: function () {
+                            showDangerAlert('Error retrieving data.');
                         }
                     });
+                }).on('pnotify.cancel', function () {
+                    loadLuminaireGrid();
+                });
             }
 
 
             function exportLuminaireToExcel(recid) {
-                if (!recid) return;
                 Blockloadershow();
 
                 $.ajax({

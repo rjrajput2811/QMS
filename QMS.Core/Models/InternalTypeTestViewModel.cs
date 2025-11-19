@@ -42,7 +42,7 @@ namespace QMS.Core.ViewModels
 
     public class InternalTypeTestDetailViewModel
     {
-        public int Id { get; set; }
+        public int InternalType_DetId { get; set; }
 
         public int? Internal_TypeId { get; set; }
 

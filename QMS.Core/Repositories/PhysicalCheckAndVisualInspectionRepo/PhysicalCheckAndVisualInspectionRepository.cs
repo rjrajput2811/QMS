@@ -72,7 +72,7 @@ public class PhysicalCheckAndVisualInspectionRepository : SqlTableRepository, IP
                 new SqlParameter("@Id", Id),
             };
 
-            var sql = @"EXEC sp_Get_PhysicalCheckAndVisualInspection";
+            var sql = @"EXEC sp_Get_PhysicalCheckAndVisualInspection @Id";
 
             var result = await Task.Run(() => _dbContext.PhysicalCheckAndVisualInspections.FromSqlRaw(sql, parameters)
                 .AsEnumerable()

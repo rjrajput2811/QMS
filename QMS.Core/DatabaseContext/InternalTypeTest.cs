@@ -41,9 +41,7 @@ namespace QMS.Core.DatabaseContext
         //-----------------------------------
         // SqlTable override
         //-----------------------------------
-        [Key]
-        [Column("InternalType_DetId")]
-        public override int Id { get; set; }
+        public  int InternalType_DetId { get; set; }
 
         [Column("IsDeleted")]
         public override bool Deleted { get; set; }

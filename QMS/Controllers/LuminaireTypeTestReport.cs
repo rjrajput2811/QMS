@@ -48,6 +48,7 @@ namespace QMS.Controllers
             var result = await _internalTypeTestRepository.GetInternalTypeTestByIdAsync(internalTypeId);
             return Json(result);
         }
+
         [HttpGet]
         public async Task<IActionResult> LuminaireTypeTestDetails(int? internalTypeId)
         {
@@ -110,7 +111,7 @@ namespace QMS.Controllers
         [HttpPost]
 
     
-public async Task<IActionResult> ExportInternalTypeTestExcel(int id)
+        public async Task<IActionResult> ExportInternalTypeTestExcel(int id)
         {
             try
             {

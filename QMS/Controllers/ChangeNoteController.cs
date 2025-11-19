@@ -2,13 +2,13 @@
 
 namespace QMS.Controllers
 {
-    public class SPMCalculationBuy : Controller
+    public class ChangeNoteController : Controller
     {
-        public IActionResult SPMCalculationBuyReport()
+        public IActionResult ChangeNoteDetails()
         {
             return View();
         }
-        public IActionResult SPMCalculationBuyReportDetials()
+        public IActionResult ChangeNotee()
         {
             return View();
         }

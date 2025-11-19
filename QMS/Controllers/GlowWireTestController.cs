@@ -2,15 +2,16 @@
 
 namespace QMS.Controllers
 {
-    public class SPMCalculationMake : Controller
+    public class GlowWireTestController : Controller
     {
-        public IActionResult SPMCalucationMakeDetails()
+        public IActionResult GlowWireTestReport()
         {
             return View();
         }
-        public IActionResult SPMCalucationMake()
+        public IActionResult GlowWireTestReportDetails()
         {
             return View();
         }
+
     }
 }

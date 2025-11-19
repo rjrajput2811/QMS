@@ -10,7 +10,7 @@ namespace QMS.Controllers
         }
         public IActionResult SEEIndiceesdetail()
         {
-            return View();
+            return View(); 
         }
     }
 }

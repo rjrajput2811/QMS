@@ -146,73 +146,74 @@
             </div>
         </div>
     </div>
+</div>
 
 
-    @section Scripts {
-        <!-- Font Awesome (if not already in your layout) -->
-        @* <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script> *@
+@section Scripts {
+    <!-- Font Awesome (if not already in your layout) -->
+@* <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script> *@
 
-        <!-- Litepicker CSS/JS (move CSS to head in layout for production if you like) -->
-        <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <!-- Litepicker CSS/JS (move CSS to head in layout for production if you like) -->
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
-        <script>
+    <script>
 
-            let filterStartSPMMakeDate = moment().startOf('month').format('YYYY-MM-DD');
-            let filterEndSPMMakeDate = moment().endOf('month').format('YYYY-MM-DD');
+        let filterStartSPMMakeDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndSPMMakeDate = moment().endOf('month').format('YYYY-MM-DD');
 
-            $(document).ready(function () {
+        $(document).ready(function () {
 
-                $('#dateRangePaymentSPMMake').text(
-                    moment(filterStartSPMMakeDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndSPMMakeDate).format('MMMM D, YYYY')
-                );
+            $('#dateRangePaymentSPMMake').text(
+                moment(filterStartSPMMakeDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndSPMMakeDate).format('MMMM D, YYYY')
+            );
 
-                const picker = new Litepicker({
-                    element: document.getElementById('customDateTriggerSPMMake'),
-                    singleMode: false,
-                    format: 'DD-MM-YYYY',
-                    numberOfMonths: 2,
-                    numberOfColumns: 2,
-                    dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
-                    plugins: ['ranges'],
-                    setup: (picker) => {
-                        picker.on('selected', (start, end) => {
-                            filterStartSPMMakeDate = start.format('YYYY-MM-DD');
-                            filterEndSPMMakeDate = end.format('YYYY-MM-DD');
-                            $('#dateRangePaymentSPMMake').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                        });
-
-                        picker.on('clear', () => {
-                            filterStartSPMMakeDate = "";
-                            filterEndSPMMakeDate = "";
-                            $('#dateRangePaymentSPMMake').text("Select Date Range");
-                        });
-                    },
-                    ranges: {
-                        Today: [moment(), moment()],
-                        Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                        'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                        'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                        'This Month': [moment().startOf('month'), moment().endOf('month')],
-                        'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                    },
-                    startDate: moment().startOf('month').format('DD-MM-YYYY'),
-                    endDate: moment().endOf('month').format('DD-MM-YYYY')
-                });
-
-                $('#customDateTriggerSPMMake').on('click', function () {
-                    picker.show();
-                });
-
-                document.addEventListener('DOMContentLoaded', function () {
-                    document.getElementById('backButton').addEventListener('click', function () {
-                        window.history.back();
+            const picker = new Litepicker({
+                element: document.getElementById('customDateTriggerSPMMake'),
+                singleMode: false,
+                format: 'DD-MM-YYYY',
+                numberOfMonths: 2,
+                numberOfColumns: 2,
+                dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
+                plugins: ['ranges'],
+                setup: (picker) => {
+                    picker.on('selected', (start, end) => {
+                        filterStartSPMMakeDate = start.format('YYYY-MM-DD');
+                        filterEndSPMMakeDate = end.format('YYYY-MM-DD');
+                        $('#dateRangePaymentSPMMake').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
                     });
-                });
 
+                    picker.on('clear', () => {
+                        filterStartSPMMakeDate = "";
+                        filterEndSPMMakeDate = "";
+                        $('#dateRangePaymentSPMMake').text("Select Date Range");
+                    });
+                },
+                ranges: {
+                    Today: [moment(), moment()],
+                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                startDate: moment().startOf('month').format('DD-MM-YYYY'),
+                endDate: moment().endOf('month').format('DD-MM-YYYY')
             });
-        </script>
+
+            $('#customDateTriggerSPMMake').on('click', function () {
+                picker.show();
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('backButton').addEventListener('click', function () {
+                    window.history.back();
+                });
+            });
+
+        });
+    </script>
     }
 
-    @section HideSidebar { }
+@section HideSidebar { }

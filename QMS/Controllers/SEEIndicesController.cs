@@ -2,7 +2,7 @@
 
 namespace QMS.Controllers
 {
-    public class IndicesController : Controller
+    public class SEEIndicesController: Controller
     {
         public IActionResult SEEIndicees()
         {

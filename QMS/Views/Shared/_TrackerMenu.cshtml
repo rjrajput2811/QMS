@@ -456,7 +456,7 @@
                                 <div class="menu-cell">
                                     <ul class="menu-links">
                                         <li><a href='@Url.Action("AHPNotetracker", "AHPNotetracker")'>AHP Note Format</a></li>
-                                        <li><a href='@Url.Action("SEEIndicees", "SEEIndicees")'>SEE Indices</a></li>
+                                        <li><a href='@Url.Action("SEEIndicees", "SEEIndices")'>SEE Indices</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -484,7 +484,7 @@
                             </div>
                             <div class="menu-cell">
                                 <ul class="menu-links">
-                                    <li><a href='@Url.Action("InternalTestReport", "InternalTestReport")'>Internal Type Test Report</a></li>
+                                        <li><a href='@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")'>Internal Type Test Report</a></li>
                                   
                                 </ul>
                             </div>
@@ -495,8 +495,9 @@
                             </div>
                             <div class="menu-cell">
                                 <ul class="menu-links">
-                                    <li><a href='@Url.Action("SPMCalculationSheet", "SPMCalculationSheet")'>SPM Calculation Sheet : Make & Buy Vendor</a></li>
-
+                                        
+                                        <li><a href='@Url.Action("SPMCalucationMake", "SPMCalculationMake")'>SPM Calculation Sheet :Make</a></li>
+                                        <li><a href='@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")'>SPM Calculation Sheet : Buy</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -546,54 +547,116 @@
                             </div>
 
 
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Electrical Performance
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("ElectricalPerformance", "ProductValidation")'>Electrical Performance</a></li>
 
-                                <ul class="menu-links">
-                                    <li>
-                                        <a href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'>
-                                            <i class="fas fa-eye mr-1"></i> Physical Check & Visual Inspection
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("ElectricalPerformance", "ProductValidation")'>
-                                            <i class="fas fa-bolt mr-1"></i> Electrical Performance
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("ElectricalProtection", "ProductValidation")'>
-                                            <i class="fas fa-shield-alt mr-1"></i> Electrical Protection, Safety & Reliability Test
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("RippleTestReport", "ProductValidation")'>
-                                            <i class="fas fa-wave-square mr-1"></i> Ripple Test Reports
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("SURGETestReport", "ProductValidation")'>
-                                            <i class="fas fa-bolt mr-1"></i> Surge Test Report
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("TemperatureRiseTest", "ProductValidation")'>
-                                            <i class="fas fa-thermometer-three-quarters mr-1"></i> Temperature Rise Test (TRT)
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("Photometry", "ProductValidation")'>
-                                            <i class="fas fa-lightbulb mr-1"></i> Photometry
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("InstallationTrial", "ProductValidation")'>
-                                            <i class="fas fa-tools mr-1"></i> Installation Trial
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a href='@Url.Action("DropTestReport", "ProductValidation")'>
-                                            <i class="fas fa-box-open mr-1"></i> Drop Test Report
-                                        </a>
-                                    </li>
-                                </ul>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Electrical Protection
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("ElectricalProtection", "ProductValidation")'>Electrical Protection, Safety & Reliability Test</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Ripple Test Reports
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("RippleTestReport", "ProductValidation")'>Ripple Test Reports</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Surge Test Report
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("SURGETestReport", "ProductValidation")'>Surge Test Reports</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Surge Test Report
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("TemperatureRiseTest", "ProductValidation")'>Temperature Rise Test (TRT)</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Photometry
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("Photometry", "ProductValidation")'>Photometry</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Installation Trial
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("InstallationTrial", "ProductValidation")'>Installation Trial</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <div class="menu-row">
+                                <div class="menu-cell">
+                                    <div class="menu-section">
+                                        <i class="fas fa-eye mr-1"></i>Drop Test Report
+                                    </div>
+                                </div>
+                                <div class="menu-cell">
+                                    <ul class="menu-links">
+                                        <li><a href='@Url.Action("DropTestReport", "ProductValidation")'>Drop Test Report</a></li>
+
+                                    </ul>
+                                </div>
+                            </div>
+                                 
+                                
                             </div>
                         </div>
 

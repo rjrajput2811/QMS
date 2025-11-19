@@ -1181,6 +1181,18 @@ public class ProductValidationController : Controller
     #endregion
     #region IngressProtection
 
+    public IActionResult impactTest()
+    {
+        return View();
+    }
+    public IActionResult impactTestDetails()
+    {
+        return View();
+    }
+
+    #endregion
+    #region IngressProtection
+
     public IActionResult IngressProtetction()
     {
         return View();

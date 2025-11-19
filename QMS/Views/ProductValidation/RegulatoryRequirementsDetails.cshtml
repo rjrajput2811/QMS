@@ -75,82 +75,84 @@
             color: #000;
             text-align: center;
         }
-        /* ================================
-   Legal / Regulatory Checklist Table
-   ================================ */
+    /* ================================
+       Legal / Regulatory Checklist Table
+       ================================ */
 
-/* Table structure — matches other cards */
-.table-legal {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-    table-layout: fixed;
-}
+    /* Table structure — matches other cards */
+    .table-legal {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        table-layout: fixed;
+    }
 
-.table-legal th,
-.table-legal td {
-    border: 1.5px solid #000;
-    padding: 8px 10px;
-    vertical-align: middle;
-    text-align: left;
-    box-sizing: border-box;
-}
+        .table-legal th,
+        .table-legal td {
+            border: 1.5px solid #000;
+            padding: 8px 10px;
+            vertical-align: middle;
+            text-align: left;
+            box-sizing: border-box;
+        }
 
-/* Table header */
-.table-legal thead th {
-    background-color: #f8f9fa;
-    font-weight: 700;
-    color: #000;
-    text-align: center;
-}
+        /* Table header */
+        .table-legal thead th {
+            background-color: #f8f9fa;
+            font-weight: 700;
+            color: #000;
+            text-align: center;
+        }
 
-/* Column specific look */
-.table-legal th:nth-child(3) {
-    color: red;
-    text-align: center;
-}
-.table-legal th:nth-child(1),
-.table-legal th:nth-child(2) {
-    text-align: left;
-}
-.table-legal th:nth-child(4) {
-    text-align: center;
-}
+        /* Column specific look */
+        .table-legal th:nth-child(3) {
+            color: red;
+            text-align: center;
+        }
 
-/* Dropdown inside "Result" column */
-.soft-select.small {
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-    display: inline-block;
-    width: 100%;
-    min-width: 120px;
-    padding: 6px 28px 6px 10px;
-    font-size: 13px;
-    color: #111;
-    background-color: #fff;
-    border: none;
-    border-bottom: 1.8px solid #cfd9e3;
-    border-radius: 0 0 6px 6px;
-    box-shadow: none;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 5 5-5' stroke='%23666' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 12px;
-    transition: border-color 0.2s ease-in-out;
-    cursor: pointer;
-}
+        .table-legal th:nth-child(1),
+        .table-legal th:nth-child(2) {
+            text-align: left;
+        }
 
-.soft-select.small:focus {
-    outline: none;
-    border-bottom-color: #4a90e2;
-}
+        .table-legal th:nth-child(4) {
+            text-align: center;
+        }
 
-.soft-select.small:hover {
-    border-bottom-color: #93b4d8;
-}
+    /* Dropdown inside "Result" column */
+    .soft-select.small {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        display: inline-block;
+        width: 100%;
+        min-width: 120px;
+        padding: 6px 28px 6px 10px;
+        font-size: 13px;
+        color: #111;
+        background-color: #fff;
+        border: none;
+        border-bottom: 1.8px solid #cfd9e3;
+        border-radius: 0 0 6px 6px;
+        box-shadow: none;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 5 5-5' stroke='%23666' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 12px;
+        transition: border-color 0.2s ease-in-out;
+        cursor: pointer;
+    }
 
-/* "Choose File" button styling */
+        .soft-select.small:focus {
+            outline: none;
+            border-bottom-color: #4a90e2;
+        }
+
+        .soft-select.small:hover {
+            border-bottom-color: #93b4d8;
+        }
+
+    /* "Choose File" button styling */
     .chooseFileBtn {
         font-family: sans-serif;
         font-size: 13px;
@@ -185,447 +187,450 @@
         max-width: 180px; /* you can adjust */
     }
 
-/* File input hidden behind the button */
-.table-legal input[type="file"] {
-    display: none;
-}
+    /* File input hidden behind the button */
+    .table-legal input[type="file"] {
+        display: none;
+    }
 
-/* Responsive tweak for narrow screens */
+    /* Responsive tweak for narrow screens */
 
     .chooseFileBtn {
         font-size: 12px;
         padding: 4px 6px;
     }
-}
 
-</style>
-<script>
-    function showFileName(input) {
-        const wrapper = input.closest('.file-upload-wrapper');
-        const fileNameSpan = wrapper.querySelector('.file-name');
-        if (input.files && input.files.length > 0) {
-            fileNameSpan.textContent = input.files[0].name;
-        } else {
-            fileNameSpan.textContent = "No file chosen";
-        }
     }
-</script>
+</style>
 
 
-<body>
 
-    <!-- =========================
-         Title Card
-         ========================= -->
-    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
-            <div>
-                <b style="font-size:x-large; color:#4682B4;">
-                    Legal / Regulatory Requirement and Documents Verification
-                </b>
-          
+
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b style="font-size:x-large; color:#4682B4;">
+                            Legal / Regulatory Requirement and Documents Verification
+                        </b>
+
+                    </div>
+
+                    <div>
+                        <button id="addLegalDocButton"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2"
+                                onclick="insertLegalDocVerification()"
+                                style="width:120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i> Save
+                        </button>
+
+                        <a href='@Url.Action("RegulatoryRequirements", "ProductValidation")'
+                           class="btn btn-outline-primary"
+                           style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </a>
+                    </div>
+                </div>
             </div>
 
-            <div>
-                <button id="addLegalDocButton"
-                        type="button"
-                        class="btn btn-outline-success legitRipple mr-2"
-                        onclick="insertLegalDocVerification()"
-                        style="width:120px; font-size:15px;">
-                    <i class="fas fa-save mr-1"></i> Save
-                </button>
 
-                <a href='@Url.Action("RegulatoryRequirements", "ProductValidation")'
-                   class="btn btn-outline-primary"
-                   style="width:120px; font-size:15px;">
-                    <i class="fas fa-arrow-left"></i> BACK
-                </a>
+       
+
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body" style="padding:18px 20px;">
+                    <div class="table table-bordered table-legal">
+                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-bottom:0;">
+                            <tbody>
+                               
+                                <tr>
+                                    <td style="width:60%; padding:10px;"></td>
+
+                                    <td style="width:20%; vertical-align:top; padding:10px;">
+                                        <b>Report No -</b>
+                                        <input type="text" class="underline-input"
+                                               placeholder="Enter report number"
+                                               style="width:65%; margin-left:6px;" />
+                                    </td>
+
+                                    <td style="width:20%; vertical-align:top; padding:10px;">
+                                        <b>Date -</b>
+                                        <input type="date" class="underline-input"
+                                               style="width:50%; margin-left:6px; cursor:pointer;" />
+                                    </td>
+                                </tr>
+
+                      
+                                <tr>
+                                    <td style="vertical-align:top; padding:10px;">
+                                        <b>Product Cat Ref</b>
+                                        <input type="text" class="underline-input"
+                                               placeholder="Enter product reference"
+                                               style="width:80%; margin-left:6px; border-bottom:1.5px solid #000;" />
+                                    </td>
+
+                                    <td colspan="2" style="vertical-align:top; padding:10px;">
+                                        <b>Product Description</b>
+                                        <input type="text" class="underline-input"
+                                               placeholder="Enter description"
+                                               style="width:70%; margin-left:6px; border-bottom:1.5px solid #000;" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; font-size:14px;">
+                            <thead>
+                                <tr>
+                                    <th style="width:5%; text-align:left; padding:6px;">Category</th>
+                                    <th style="width:10%; text-align:left; padding:6px;">Minimum Technical Requirement</th>
+                                    <th colspan="4" style="width:35%; color:red; text-align:center; padding:6px;">
+                                        Result (OK / Not OK / Not Applicable / Pending)
+                                    </th>
+                                    <th style="width:8%; text-align:center; padding:6px;">Upload File</th>
+                                </tr>
+
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Driver BIS registration</td>
+                                    <td>Valid BIS Inclusion Letter & Lab Report</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>Luminaires BIS Registration</td>
+                                    <td>Valid BIS Inclusion Letter & Lab Report</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>CCL list compliance</td>
+                                    <td>Valid Driver & Product CCL Report</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>NPI Buy Sheet</td>
+                                    <td>Product must match with NPI</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>CPS</td>
+                                    <td>Product must match with CPS</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>PPS</td>
+                                    <td>Product must match with PPS</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>TDS</td>
+                                    <td>Product Must match with TDS</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Design Docket</td>
+                                    <td>Product Must match with Docket</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>Installation sheet</td>
+                                    <td>Product Can install as per Sheet</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td>ROHS Compliance</td>
+                                    <td>Component Must Compliance</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                <tr>
+                                    <td>CIMFR For flame proof</td>
+                                    <td>Valid CIMFR Certificate</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>PESO For flame proof</td>
+                                    <td>Valid CIMFR Certificate</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>BOM</td>
+                                    <td>Product must match with BOM</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>Spare Code Uploaded on Wipro SAP</td>
+                                    <td>Sapre must be Uploaded</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+                                <tr>
+                                    <td>CE Registration for export</td>
+                                    <td>Valid CE certificate</td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
+                                    <td>
+                                        <div class="file-upload-wrapper">
+                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
+                                                Choose File
+                                            </button>
+                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
+                                            <span class="file-name">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+
+            
+                    <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px;">
+                            <tbody>
+                  
+                                <tr>
+                                    <td colspan="2" style="padding:12px; vertical-align:middle;">
+                                        <strong style="color:#d00;">Result ( OK / Not OK / Not Applicable / Pending )</strong>
+                                        <select class="soft-select small" style="width:220px; margin-left:15px;">
+                                            <option value="">Select</option>
+                                            <option value="ok">OK</option>
+                                            <option value="notok">Not OK</option>
+                                            <option value="na">Not Applicable</option>
+                                            <option value="pending">Pending</option>
+                                        </select>
+
+
+
+                                    </td>
+                                </tr>
+
+                     
+                                <tr>
+                                    <td style="width:50%; padding:12px;">
+                                        <strong>Checked By :</strong>
+                                        <input type="text" class="underline-input" placeholder="Enter name" style="width:70%; margin-left:10px;" />
+                                    </td>
+
+                                    <td style="width:50%; padding:12px;">
+                                        <strong>Verified By :</strong>
+                                        <input type="text" class="underline-input" placeholder="Enter name" style="width:70%; margin-left:10px;" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
             </div>
         </div>
     </div>
+</div>
 
+@section Scripts {
 
-    <!-- =========================
-         Body Card (Tables)
-         ========================= -->
-
-        <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-            <div class="card-body" style="padding:18px 20px;">
-                <div class="table table-bordered table-legal">
-                    <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-bottom:0;">
-                        <tbody>
-                            <!-- Row 1: Empty cell + Report No + Date -->
-                            <tr>
-                                <td style="width:60%; padding:10px;"></td>
-
-                                <td style="width:20%; vertical-align:top; padding:10px;">
-                                    <b>Report No -</b>
-                                    <input type="text" class="underline-input"
-                                           placeholder="Enter report number"
-                                           style="width:65%; margin-left:6px;" />
-                                </td>
-
-                            <td style="width:20%; vertical-align:top; padding:10px;">
-                                <b>Date -</b>
-                                <input type="date" class="underline-input"
-                                       style="width:50%; margin-left:6px; cursor:pointer;" />
-                            </td>
-                            </tr>
-
-                            <!-- Row 2: Product Cat Ref + Product Description -->
-                            <tr>
-                                <td style="vertical-align:top; padding:10px;">
-                                    <b>Product Cat Ref</b>
-                                    <input type="text" class="underline-input"
-                                           placeholder="Enter product reference"
-                                           style="width:80%; margin-left:6px; border-bottom:1.5px solid #000;" />
-                                </td>
-
-                                <td colspan="2" style="vertical-align:top; padding:10px;">
-                                    <b>Product Description</b>
-                                    <input type="text" class="underline-input"
-                                           placeholder="Enter description"
-                                           style="width:70%; margin-left:6px; border-bottom:1.5px solid #000;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; font-size:14px;">
-                    <thead>
-                        <tr>
-                            <th style="width:5%; text-align:left; padding:6px;">Category</th>
-                            <th style="width:10%; text-align:left; padding:6px;">Minimum Technical Requirement</th>
-                            <th colspan="4" style="width:35%; color:red; text-align:center; padding:6px;">
-                                Result (OK / Not OK / Not Applicable / Pending)
-                            </th>
-                            <th style="width:8%; text-align:center; padding:6px;">Upload File</th>
-                        </tr>
-                    
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Driver BIS registration</td>
-                            <td>Valid BIS Inclusion Letter & Lab Report</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td>Luminaires BIS Registration</td>
-                            <td>Valid BIS Inclusion Letter & Lab Report</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>CCL list compliance</td>
-                            <td>Valid Driver & Product CCL Report</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>NPI Buy Sheet</td>
-                            <td>Product must match with NPI</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>CPS</td>
-                            <td>Product must match with CPS</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>PPS</td>
-                            <td>Product must match with PPS</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>TDS</td>
-                            <td>Product Must match with TDS</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Design Docket</td>
-                            <td>Product Must match with Docket</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>Installation sheet</td>
-                            <td>Product Can install as per Sheet</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td>ROHS Compliance</td>
-                            <td>Component Must Compliance</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-
-                        <tr>
-                            <td>CIMFR For flame proof</td>
-                            <td>Valid CIMFR Certificate</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td>PESO For flame proof</td>
-                            <td>Valid CIMFR Certificate</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td>BOM</td>
-                            <td>Product must match with BOM</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td>Spare Code Uploaded on Wipro SAP</td>
-                            <td>Sapre must be Uploaded</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-
-                        </tr>
-
-                        <tr>
-                            <td>CE Registration for export</td>
-                            <td>Valid CE certificate</td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                            <td>
-                                <div class="file-upload-wrapper">
-                                    <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                        Choose File
-                                    </button>
-                                    <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                    <span class="file-name">No file chosen</span>
-                                </div>
-                            </td>
-
-                        </tr>
-
-
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- ===== Result + Checked By / Verified By (insert this inside the same card-body) ===== -->
-            <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px;">
-                    <tbody>
-                        <!-- Row 1: Result label + dropdown + choose file -->
-                        <tr>
-                            <td colspan="2" style="padding:12px; vertical-align:middle;">
-                                <strong style="color:#d00;">Result ( OK / Not OK / Not Applicable / Pending )</strong>
-                                <select class="soft-select small" style="width:220px; margin-left:15px;">
-                                    <option value="">Select</option>
-                                    <option value="ok">OK</option>
-                                    <option value="notok">Not OK</option>
-                                    <option value="na">Not Applicable</option>
-                                    <option value="pending">Pending</option>
-                                </select>
-
-                        
-                
-                            </td>
-                        </tr>
-
-                        <!-- Row 2: Checked By + Verified By -->
-                        <tr>
-                            <td style="width:50%; padding:12px;">
-                                <strong>Checked By :</strong>
-                                <input type="text" class="underline-input" placeholder="Enter name" style="width:70%; margin-left:10px;" />
-                            </td>
-
-                            <td style="width:50%; padding:12px;">
-                                <strong>Verified By :</strong>
-                                <input type="text" class="underline-input" placeholder="Enter name" style="width:70%; margin-left:10px;" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            </div>
-     
-
-
-
-</body>
-
-@section HideSidebar { }
+    <script>
+        function showFileName(input) {
+            const wrapper = input.closest('.file-upload-wrapper');
+            const fileNameSpan = wrapper.querySelector('.file-name');
+            if (input.files && input.files.length > 0) {
+                fileNameSpan.textContent = input.files[0].name;
+            } else {
+                fileNameSpan.textContent = "No file chosen";
+            }
+        }
+    </script>
+}
+    @section HideSidebar { }

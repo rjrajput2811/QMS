@@ -2,13 +2,13 @@
 
 namespace QMS.Controllers
 {
-    public class CustomerCA : Controller
+    public class CAReportController : Controller
     {
-        public IActionResult CustomerRCA()
+        public IActionResult CAFormatee()
         {
             return View();
         }
-        public IActionResult CustomerRCADetails()
+        public IActionResult CAFormateDetails()
         {
             return View();
         }

@@ -2,6 +2,7 @@
     ViewData["Title"] = "Impact Test (Pendulum type)";
 }
 
+
 <style>
     /* your existing styles (kept) */
     .underline-input {
@@ -217,353 +218,324 @@
     }
 </style>
 
-<body>
-    <!-- Title Card (matching TRT style) -->
-    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
-            <div>
-                <b style="font-size:x-large; color:#4682B4;">
-                    Impact Test (Pendulum type)
-                </b>
-            </div>
 
-            <div>
-                <button id="addImpactButton"
-                        type="button"
-                        class="btn btn-outline-success legitRipple mr-2"
-                        onclick="insertImpactTest()"
-                        style="width:120px; font-size:15px;">
-                    <i class="fas fa-save mr-1"></i>Save
-                </button>
+    <div class="content">
+        <div class="row">
+            <div class="col-12">
 
-                <a href='@Url.Action("Impacttest", "ProductValidation")'
-                   class="btn btn-outline-primary"
-                   style="width:120px; font-size:15px;">
-                    <i class="fas fa-arrow-left"></i> BACK
-                </a>
+                <!-- Page Title -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body d-flex justify-content-between align-items-center py-3">
+
+                        <div>
+                            <b style="font-size:x-large; color:#4682B4;">Impact Test (Pendulum type)</b>
+                        </div>
+
+                        <div>
+                            <button id="addImpactButton"
+                                    type="button"
+                                    class="btn btn-outline-success"
+                                    onclick="insertImpactTest()"
+                                    style="width:120px; font-size:15px;">
+                                <i class="fas fa-save mr-1"></i> Save
+                            </button>
+
+                            <a href='@Url.Action("Impacttest", "ProductValidation")'
+                               class="btn btn-outline-primary"
+                               style="width:120px; font-size:15px;">
+                                <i class="fas fa-arrow-left"></i> BACK
+                            </a>
+                        </div>
+
+                    </div>
+                </div>
+
+
+                <!-- MAIN FORM TABLES -->
+                <div class="card shadow-sm mb-3" style="border:1.5px solid #000;">
+                    <div class="card-body" style="padding:18px 20px;">
+
+                        <!-- TOP INFO TABLE -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+
+                                <tbody>
+                                    <tr>
+                                        <td colspan="2">
+                                            <b>Customer / Project Name :</b>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:10px;" />
+                                        </td>
+
+                                        <td colspan="2">
+                                            <b>Report No :</b>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:10px;" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="2"></td>
+                                        <td colspan="2">
+                                            <b>Date :</b>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:10px;" />
+                                        </td>
+                                    </tr>
+
+                                    <!-- PRODUCT DETAILS -->
+                                    <tr>
+                                        <td>
+                                            <b>Product Cat Ref :</b>
+                                            <input type="text" class="underline-input" style="width:65%; margin-left:10px;" />
+                                        </td>
+                                        <td>
+                                            <b>Product Description :</b>
+                                            <input type="text" class="underline-input" style="width:65%; margin-left:10px;" />
+                                        </td>
+                                        <td>
+                                            <b>Batch Code :</b>
+                                            <input type="text" class="underline-input" style="width:50%; margin-left:10px;" />
+                                        </td>
+                                        <td>
+                                            <b>Quantity :</b>
+                                            <input type="text" class="underline-input" style="width:50%; margin-left:10px;" />
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+                        </div>
+
+
+                        <!-- IK RATING TABLE -->
+                        <div class="table-responsive" style="margin-top:0;">
+                            <table class="table table-bordered text-center">
+
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">IK Rating</th>
+                                        <th colspan="10">Test Specification</th>
+                                    </tr>
+                                    <tr>
+                                        <th>IK01</th>
+                                        <th>IK02</th>
+                                        <th>IK03</th>
+                                        <th>IK04</th>
+                                        <th>IK05</th>
+                                        <th>IK06</th>
+                                        <th>IK07</th>
+                                        <th>IK08</th>
+                                        <th>IK09</th>
+                                        <th>IK10</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    <tr>
+                                        <td contenteditable="true">Weight (kg)</td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td contenteditable="true">Distance (cm)</td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td contenteditable="true">Impact Energy (joules)</td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td contenteditable="true">Applicable Test</td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                    </tr>
+                                </tbody>
+
+                            </table>
+                        </div>
+
+
+                        <!-- OBSERVATION + PHOTO -->
+                        <div class="table-responsive" style="margin-top:0;">
+                            <table class="table table-bordered">
+
+                                <tbody>
+                                    <tr>
+
+                                        <!-- LEFT COLUMN -->
+                                        <td style="width:50%; vertical-align:top; padding:18px;">
+
+                                            <b>Observation :</b><br /><br />
+
+                                            <div class="row mb-2">
+                                                <div class="col-7">1. Damage observed</div>
+                                                <div class="col-5">
+                                                    <select class="form-control" id="damageObserved">
+                                                        <option value="">Select</option>
+                                                        <option value="yes">YES</option>
+                                                        <option value="no">NO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mb-2">
+                                                <div class="col-7">2. Live parts accessibility</div>
+                                                <div class="col-5">
+                                                    <select class="form-control" id="liveParts">
+                                                        <option value="">Select</option>
+                                                        <option value="yes">YES</option>
+                                                        <option value="no">NO</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="row mt-3">
+                                                <div class="col-4"><b style="color:red;">Test Result:</b></div>
+                                                <div class="col-8">
+                                                    <select class="form-control" id="testResult">
+                                                        <option value="">Select</option>
+                                                        <option value="pass">Pass</option>
+                                                        <option value="fail">Fail</option>
+                                                        <option value="n/a">Not Applicable</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                        </td>
+
+
+                                        <!-- RIGHT COLUMN (PHOTO) -->
+                                        <td style="width:50%; vertical-align:top;">
+
+                                            <div id="photoContainer" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
+                                                <div id="photoSpace">
+                                                    <div style="font-size:18px; font-weight:600;">Space For Photo</div>
+                                                    <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
+                                                </div>
+                                                <img id="photoPreview" style="max-width:100%; max-height:100%; display:none;" />
+                                            </div>
+
+                                            <div class="mt-2">
+                                                <button type="button" id="chooseFileBtn" class="chooseFileBtn">Choose file</button>
+                                                <input type="file" id="photoInput" accept="image/*" style="display:none" />
+                                                <span id="fileName">No file chosen</span>
+                                            </div>
+
+                                        </td>
+
+                                    </tr>
+                                </tbody>
+
+                            </table>
+                        </div>
+
+
+                   
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <b>Tested By:</b>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:8px;" />
+                                        </td>
+                                        <td>
+                                            <b>Verified By:</b>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:8px;" />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div> 
+                </div> 
+
             </div>
         </div>
     </div>
 
-    <!-- Card containing both tables one after the other (attached) -->
-    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1.5px solid #000;">
-        <div class="card-body" style="padding:18px 20px;">
-            <div class="table-responsive">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px; border:1.5px solid #000;">
-               
-                    <tbody>
-                        <!-- Row 1: Customer + Report Info -->
-                        <tr>
-                            <td colspan="2" style="padding:10px; border:1.5px solid #000; width:70%;">
-                                <span style="font-weight:700; color:#000;">Customer / Project Name :</span>
-                                <input type="text"
-                                       class="underline-input"
-                                       style="width:60%; margin-left:10px;"
-                                       placeholder="Enter customer or project name" />
-                            </td>
 
-                            <td colspan="2" style="padding:10px; border:1.5px solid #000; width:30%;">
-                                <span style="font-weight:700; color:#000;">Report No :</span>
-                                <input type="text"
-                                       class="underline-input"
-                                       style="width:60%; margin-left:10px;"
-                                       placeholder="Enter report number" />
-                            </td>
-                        </tr>
+@section Scripts {
 
-                        <!-- Row 2: Date -->
-             <tr>
-    <td colspan="2" style="padding:10px; border:1.5px solid #000; width:70%;"></td>
+    <script>
+        (function () {
 
-    <td colspan="2" style="padding:10px; border:1.5px solid #000; width:30%;">
-        <span style="font-weight:700; color:#000;">Date :</span>
-        <input type="text"
-               class="underline-input"
-               style="width:60%; margin-left:10px;"
-               placeholder="dd-mm-yyyy" />
-    </td>
-</tr>
+            const chooseBtn = document.getElementById('chooseFileBtn');
+            const fileInput = document.getElementById('photoInput');
+            const fileNameEl = document.getElementById('fileName');
+            const preview = document.getElementById('photoPreview');
+            const photoSpace = document.getElementById('photoSpace');
 
-                        <!-- Row 3: Product details -->
-                        <tr>
-                            <td style="padding:10px; border:1.5px solid #000; width:25%;">
-                                <span style="font-weight:700; color:#000;">Product Cat Ref :</span>
-                                <input type="text"
-                                       class="underline-input"
-                                       placeholder="Enter reference"
-                                       style="width:65%; margin-left:10px;" />
-                            </td>
+            chooseBtn.addEventListener('click', () => fileInput.click());
 
-                            <td style="padding:10px; border:1.5px solid #000; width:25%;">
-                                <span style="font-weight:700; color:#000;">Product Description :</span>
-                                <input type="text"
-                                       class="underline-input"
-                                       placeholder="Enter description"
-                                       style="width:65%; margin-left:10px;" />
-                            </td>
+            fileInput.addEventListener('change', (e) => {
+                const f = e.target.files[0];
+                if (!f) {
+                    fileNameEl.textContent = 'No file chosen';
+                    preview.style.display = 'none';
+                    photoSpace.style.display = 'block';
+                    return;
+                }
 
-                            <td style="padding:10px; border:1.5px solid #000; width:25%;">
-                                <span style="font-weight:700; color:#000;">Batch Code :</span>
-                                <input type="text"
-                                       class="underline-input"
-                                       placeholder="Batch"
-                                       style="width:5   0%; margin-left:10px;" />
-                            </td>
+                if (f.size > 5 * 1024 * 1024) {
+                    alert('File is too large. Max 5MB.');
+                    fileInput.value = '';
+                    return;
+                }
 
-                            <td style="padding:10px; border:1.5px solid #000; width:25%;">
-                                <span style="font-weight:700; color:#000;">Quantity :</span>
-                                <input type="text"
-                                       class="underline-input"
-                                       placeholder="Qty"
-                                       style="width:50%; margin-left:10px;" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-     
+                fileNameEl.textContent = f.name;
 
+                if (f.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        preview.src = ev.target.result;
+                        preview.style.display = 'block';
+                        photoSpace.style.display = 'none';
+                    };
+                    reader.readAsDataURL(f);
+                }
+            });
 
-            <!-- BOTTOM: IK table (directly attached — no extra wrapper gap) -->
-            <div class="table-responsive" style="margin-top:0;">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center; font-size:13px;">
-                    <thead>
-                        <tr>
-                            <th rowspan="2" style="vertical-align:middle;">IK Rating</th>
-                            <th colspan="10" style="text-align:center; font-weight:700;">Test Specification</th>
-                        </tr>
-                        <tr>
-                            <th>IK01</th>
-                            <th>IK02</th>
-                            <th>IK03</th>
-                            <th>IK04</th>
-                            <th>IK05</th>
-                            <th>IK06</th>
-                            <th>IK07</th>
-                            <th>IK08</th>
-                            <th>IK09</th>
-                            <th>IK10</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td style="text-align:left; font-weight:600;" contenteditable="true">Weight (kg)</td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                        </tr>
-                        <tr>
-                            <td style="text-align:left; font-weight:600;" contenteditable="true">Distance (cm)</td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                        </tr>
-                        <tr>
-                            <td style="text-align:left; font-weight:600; line-height:1.4; height:45px;" contenteditable="true">
-                                Impact Energy<br><span style="font-weight:600;">(joules)</span>
-                            </td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                        </tr>
-                        <tr>
-                            <td style="text-align:left; font-weight:600;" contenteditable="true">Applicable Test</td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="table-responsive" style="margin-top:0px;">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
-                    <tbody>
-                        <tr>
-                            <!-- LEFT: Observation / checks -->
-                            <td style="width:50%; vertical-align:top; padding:18px;">
-                                <div style="font-weight:700; margin-bottom:10px;">Observation :</div>
+        })();
+    </script>
 
-                                <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:8px;">
-                                    <div style="flex:1;">
-                                        <div style="margin-bottom:6px;">1.&nbsp;&nbsp;Damage observed</div>
-                                    </div>
-                                    <div style="width:140px;">
-                                        <select aria-label="Damage observed" class="form-control" style="width:100%; padding:6px;" id="damageObserved">
-                                            <option value="">Select</option>
-                                            <option value="yes">YES</option>
-                                            <option value="no">NO</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:8px;">
-                                    <div style="flex:1;">
-                                        <div style="margin-bottom:6px;">2.&nbsp;&nbsp;Live parts accessibility</div>
-                                    </div>
-                                    <div style="width:140px;">
-                                        <select aria-label="Live parts accessibility" class="form-control" style="width:100%; padding:6px;" id="liveParts">
-                                            <option value="">Select</option>
-                                            <option value="yes">YES</option>
-                                            <option value="no">NO</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div style="margin-top:12px;">
-                                    <div style="display:flex; align-items:center; gap:12px;">
-                                        <div style="font-weight:700; color:red;">Test Result:</div>
-                                        <div>
-                                            <select aria-label="Test result" class="form-control"
-                                                    style="padding:6px; width:160px;" id="testResult">
-                                                <option value="">Select</option>
-                                                <option value="pass">Pass</option>
-                                                <option value="fail">Fail</option>
-                                                <option value="n/a">Not Applicable</option>
-                                            </select>
-                                        </div>
-                                        </div>
-                                </div>
-                            </td>
-
-                            <!-- RIGHT: Photo area and file chooser -->
-                            <td style="width:50%; vertical-align:top; padding:0px;">
-                                <!-- preview area -->
-                                <div id="photoContainer" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden;">
-                                    <div id="photoSpace" style="text-align:center; color:#444;">
-                                        <div style="font-size:18px; font-weight:600; margin-bottom:6px;">Space For Photo</div>
-                                        <div style="color:#777; font-size:13px;">(Max 5 MB, JPG/PNG)</div>
-                                    </div>
-
-                                    <!-- preview image (hidden until file chosen) -->
-                                    <img id="photoPreview" src="" alt="Selected photo preview" style="max-width:100%; max-height:100%; display:none; object-fit:contain;" />
-                                </div>
-
-                                <!-- controls: always show Choose file button -->
-                                <div style="margin-top:12px; margin-left:8px; display:flex; align-items:center; gap:12px;">
-                                    <div>
-                                        <!-- actual file input (kept hidden) -->
-                                        <input type="file" id="photoInput" accept="image/*" style="display:none" />
-                                        <!-- visible button -->
-                                        <button type="button" id="chooseFileBtn" class="chooseFileBtn">
-                                            Choose file
-                                        </button>
-
-
-                                    </div>
-
-                                    <div id="fileName" style="color:#333; font-size:13px; min-width:120px;">No file chosen</div>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-         
-            <div class="table-responsive" style="margin-top:0px;">
-                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
-                    <tbody>
-                        <tr>
-                            <td style="width:50%; vertical-align:middle;">
-                                <b>Tested By</b>
-                                <input type="text"
-                                       class="underline-input"
-                                       style="width:60%; margin-left:8px;"
-                                       placeholder="Enter name" />
-                            </td>
-
-                            <td style="width:50%; vertical-align:middle;">
-                                <b>Verified By</b>
-                                <input type="text"
-                                       class="underline-input"
-                                       style="width:60%; margin-left:8px;"
-                                       placeholder="Enter name" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-
-                <script>
-                    (function () {
-                        const chooseBtn = document.getElementById('chooseFileBtn');
-                        const fileInput = document.getElementById('photoInput');
-                        const fileNameEl = document.getElementById('fileName');
-                        const preview = document.getElementById('photoPreview');
-                        const photoSpace = document.getElementById('photoSpace');
-
-                        // open file picker when user clicks the button
-                        chooseBtn.addEventListener('click', () => fileInput.click());
-
-                        // on file selection, show filename and preview image inside the photo area
-                        fileInput.addEventListener('change', (e) => {
-                            const f = e.target.files && e.target.files[0];
-                            if (!f) {
-                                fileNameEl.textContent = 'No file chosen';
-                                preview.style.display = 'none';
-                                photoSpace.style.display = 'block';
-                                preview.src = '';
-                                return;
-                            }
-
-                            // basic size check (optional) — reject files > 5MB
-                            const maxBytes = 5 * 1024 * 1024;
-                            if (f.size > maxBytes) {
-                                alert('File is too large. Maximum 5 MB allowed.');
-                                fileInput.value = '';
-                                fileNameEl.textContent = 'No file chosen';
-                                return;
-                            }
-
-                            fileNameEl.textContent = f.name;
-
-                            // only preview images
-                            if (f.type && f.type.startsWith('image/')) {
-                                const reader = new FileReader();
-                                reader.onload = function (ev) {
-                                    preview.src = ev.target.result;
-                                    preview.style.display = 'block';
-                                    photoSpace.style.display = 'none';
-                                };
-                                reader.readAsDataURL(f);
-                            } else {
-                                // non-image selected — show filename only and keep placeholder
-                                preview.style.display = 'none';
-                                photoSpace.style.display = 'block';
-                            }
-                        });
-                    })();
-                </script>
-
-        </div> <!-- card-body -->
-    </div> <!-- card -->
-</body>
+}
 
 @section HideSidebar { }

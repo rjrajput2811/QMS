@@ -106,7 +106,7 @@
         }
 
     .modal-body {
-        overflow: visible !important; /* required for dropdown to be visible in Bootstrap modal */
+        overflow: visible !important;
     }
 
     .calendar-container {
@@ -239,7 +239,7 @@
             </div>
         </div>
     </div>
-
+</div>
 
     @section Scripts {
         <script src="~/js/tabulator.min.js"></script>
@@ -278,7 +278,7 @@
                 });
             }
 
-            // ✅ Column Hide Menu
+         
             var headerMenu = function () {
                 var menu = [];
                 var columns = this.getColumns();
@@ -382,7 +382,7 @@
                     layout: "fitColumns",
                     movableColumns: true,
                     pagination: "local",
-                    paginationSize: 10, // show all rows
+                    paginationSize: 10,
                     paginationSizeSelector: [10, 50, 100, 500, { label: "All", value: true }],
                     paginationCounter: "rows",
                     columns: columns
@@ -427,10 +427,10 @@
                         });
                     })
                     .on('pnotify.cancel', function () {
-                        loadElectricalGrid(); // Reload table only
+                        loadElectricalGrid();
                     });
             }
-            // ✅ Export Excel call
+        
             function exportElectricalToExcel(recid) {
                 Blockloadershow();
                 $.ajax({
@@ -438,7 +438,7 @@
                     data: { Id: recid },
                     type: 'POST',
                     xhrFields: {
-                        responseType: 'blob' // for excel blob response
+                        responseType: 'blob' 
                     },
                     success: function (data, status, xhr) {
 
@@ -489,7 +489,7 @@
 
 
    
-</div>
+
 
 
 

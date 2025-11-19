@@ -2,7 +2,6 @@
     ViewData["Title"] = "Temperature Rise Test of Luminaire (TRT)";
 }
 
-<!-- CSS: Consistent with all test report headers -->
 <style>
     .header-card {
         border-radius: 8px;
@@ -11,7 +10,7 @@
     }
 
     .header-title {
-        font-size: large; /* same as Electrical Protection for consistency */
+        font-size: large;
         color: #4682B4;
         font-weight: 700;
     }
@@ -33,7 +32,7 @@
 </style>
 
 <div class="content">
-    <!-- Header Card -->
+
     <div class="card shadow-sm mb-3 header-card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
@@ -41,7 +40,6 @@
             </div>
 
             <div>
-                <!-- Add Button -->
                 <button id="addTRTButton"
                         type="button"
                         class="btn btn-outline-success legitRipple mr-2 header-btn"
@@ -49,7 +47,6 @@
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
 
-                <!-- Back Button -->
                 <button id="backButton"
                         type="button"
                         class="btn btn-outline-primary header-btn"
@@ -60,22 +57,6 @@
         </div>
     </div>
 
-    <!-- Optional Data Grid Section -->
-    <!--
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="chart-container">
-                        <div id="trt_table_wrapper" style="overflow-x: auto; width:100%; float:left;">
-                            <div id="trt_table"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    -->
 </div>
 
 @section HideSidebar { }

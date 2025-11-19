@@ -1,4 +1,6 @@
 ﻿@using QMS.Core.Models
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
 
 @model VendorViewModel
 
@@ -145,6 +147,7 @@
     <input type="hidden" id="hdnDate" name="Date" value="@Model?.CreatedDate" />
     <input type="hidden" id="hdnCreateBy" name="CreateBy" value="@Model?.CreatedBy" />
     <input type="hidden" id="hdnVendorCode" name="Vendor_Code" value="@Model?.Vendor_Code" />
+    <input type="hidden" id="hdnUserRole" value="@((HttpContextAccessor.HttpContext.Session.GetInt32("UserRole") ?? 0))" />
     <div class="card mb-3">
         <div class="card-body d-flex justify-content-between align-items-center">
             @if (Model?.Id > 0)
@@ -287,8 +290,8 @@
                                                     <input name="GstNo" id="GstNo" class="form-control" required value="@Model?.GstNo" />
                                                     <span id="GstNo_Error" class="text-danger"></span>
                                                 </div>
-                                                <label class="col-2"><b>Email</b></label>
-                                                <div class="col-4">
+                                                <label class="col-1.5"><b>Email</b></label>
+                                                <div class="col-5">
                                                     <input name="Email" id="Email" class="form-control" required value="@Model?.Email" />
                                                 </div>
                                             </div>

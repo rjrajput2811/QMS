@@ -74,6 +74,7 @@ namespace QMS.Core.Models
         public string? PRD_Manager { get; set; }
         public string? Service_Manager { get; set; }
         public string? User_Name { get; set; }
+        public string? Password { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }

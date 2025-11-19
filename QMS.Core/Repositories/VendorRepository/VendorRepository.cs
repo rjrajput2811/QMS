@@ -51,6 +51,7 @@ namespace QMS.Core.Repositories.VendorRepository
                     PRD_Manager = data.PRD_Manager,
                     Service_Manager = data.Service_Manager,
                     User_Name = data.User_Name,
+                    Password =  data.Password,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -289,6 +290,7 @@ namespace QMS.Core.Repositories.VendorRepository
                     Other_Cont_TwoEmail = data.Other_Cont_TwoEmail,
                     Other_Cont_TwoMobile = data.Other_Cont_TwoMobile,
                     User_Name = data.User_Name,
+                    Password = data.Password,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate
                 }).ToList();

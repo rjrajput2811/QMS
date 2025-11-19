@@ -715,9 +715,17 @@ function InsertUpdateVendorDetail() {
                     showSuccessAlert("Vendor Detail is Saved Successfully!");
 
                 }
-                setTimeout(function () {
-                    window.location.href = '/Vendor/Vendor';
-                }, 2500);
+                var userRole = $("#hdnUserRole").val();
+                if (userRole == "4") {
+                    setTimeout(function () {
+                        window.location.href = '/Vendor/VendorDetail?id='+ Model.Id;
+                    }, 2500);
+                } else {
+                    setTimeout(function () {
+                        window.location.href = '/Vendor/Vendor';
+                    }, 2500);
+                }
+                
             }
             else if (response.message == "Exist") {
                 // let duplicateFields = Array.isArray(response.playload) ? response.playload.join(", ") : "Unknown fields";

@@ -6,12 +6,12 @@ using QMS.Core.Services.SystemLogs;
 
 namespace QMS.Controllers
 {
-    public class CSATController : Controller
+    public class CSATSummaryController : Controller
     {
         private readonly ICSATSummaryRepository _csatSummaryRepository;
         private readonly ISystemLogService _systemLogService;
 
-        public CSATController(ICSATSummaryRepository csatSummaryRepository, ISystemLogService systemLogService)
+        public CSATSummaryController(ICSATSummaryRepository csatSummaryRepository, ISystemLogService systemLogService)
         {
             _csatSummaryRepository = csatSummaryRepository;
             _systemLogService = systemLogService;

@@ -15,7 +15,7 @@ $(document).ready(function () {
 function loadData() {
     Blockloadershow();
     $.ajax({
-        url: '/CSAT/GetAll',
+        url: '/CSATSummary/GetAll',
         type: 'GET',
         success: function (data) {
             Blockloaderhide();
@@ -183,7 +183,7 @@ function OnTabGridLoad(response) {
 
 function showEditSummary(id) {
     debugger
-    var url = '/CSAT/CSATSummaryDetail?id=' + id;
+    var url = '/CSATSummary/CSATSummaryDetail?id=' + id;
     window.location.href = url;
 }
 
@@ -207,7 +207,7 @@ function delConfirm(recid) {
         },
     })).get().on('pnotify.confirm', function () {
         $.ajax({
-            url: '/CSAT/Delete',
+            url: '/CSATSummary/Delete',
             type: 'POST',
             data: { id: recid },
             success: function (data) {
@@ -235,7 +235,7 @@ function delConfirm(recid) {
 
 function openSummaryDetail(id) {
     debugger
-    var url = '/CSAT/CSATSummaryDetail';
+    var url = '/CSATSummary/CSATSummaryDetail';
     url = url + '?id=' + id
     window.location.href = url;
 }

@@ -125,6 +125,7 @@ var headerMenu = function () {
 };
 
 function OnTabGridLoad(response) {
+    debugger
     Blockloadershow();
     console.log(response);
     function formatDate(value) {
@@ -180,8 +181,8 @@ function OnTabGridLoad(response) {
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, width: 80, headerMenu: headerMenu },
 
         editableColumn("Quarter", "Quarter", true),
-        editableColumn("Organisation", "Organisation", true),
-        editableColumn("Powder Region", "Region", true),
+        editableColumn("Organisation", "Organisation", true, "left"),
+        editableColumn("Powder Region", "Region", true, "left"),
         //editableColumn("Q1", "Q1", true),
         editableColumn("Q1", "Q1", "list", "left", "input", {}, {
             values: [
@@ -192,7 +193,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "Wipro Lighting's executive is in regular touch with us."),
+
         //editableColumn("Q2", "Q2", true),
         editableColumn("Q2", "Q2", "list", "left", "input", {}, {
             values: [
@@ -203,7 +205,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "Proposals submitted by Wipro Lighting meet our requirements."),
+
         //editableColumn("Q3", "Q3", true),
         editableColumn("Q3", "Q3", "list", "left", "input", {}, {
             values: [
@@ -214,7 +217,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "When requested by us,Wipro Lighting's team conducted an effective mock up & demo."),
+
         //editableColumn("Q4", "Q4", true),
         editableColumn("Q4", "Q4", "list", "left", "input", {}, {
             values: [
@@ -225,7 +229,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "Products were delivered in good condition."),
+
         //editableColumn("Q5", "Q5", true),
         editableColumn("Q5", "Q5", "list", "left", "input", {}, {
             values: [
@@ -236,7 +241,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "The products were delivered as per committed delivery schedule."),
+
         //editableColumn("Q6", "Q6", true),
         editableColumn("Q6", "Q6", "list", "left", "input", {}, {
             values: [
@@ -247,7 +253,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "Products delivered are as per our order."),
+
         //editableColumn("Q7", "Q7", true),
         editableColumn("Q7", "Q7", "list", "left", "input", {}, {
             values: [
@@ -258,7 +265,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "Bills were submitted on time."),
+
         //editableColumn("Q8", "Q8", true),
         editableColumn("Q8", "Q8", "list", "left", "input", {}, {
             values: [
@@ -269,7 +277,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "Payment related documentation was complete."),
+
         //editableColumn("Q9", "Q9", true),
         editableColumn("Q9", "Q9", "list", "left", "input", {}, {
             values: [
@@ -280,7 +289,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "When we faced technical problems,Wipro Lighting responded effectively."),
+
         //editableColumn("Q10", "Q10", true),
         editableColumn("Q10", "Q10", "list", "left", "input", {}, {
             values: [
@@ -291,7 +301,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "In case of escalations,Wipro Lighting's senior management team was easily available."),
+
         //editableColumn("Q11", "Q11", true),
         editableColumn("Q11", "Q11", "list", "left", "input", {}, {
             values: [
@@ -302,7 +313,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "We are satisfied with Wipro Lighting."),
+
         //editableColumn("Q12", "Q12", true),
         editableColumn("Q12", "Q12", "list", "left", "input", {}, {
             values: [
@@ -313,7 +325,8 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "Taking all things into consideration,we would\nrecommend Wipro Lighting products to other users\nand professional contacts over competition offerings\nfor their requirements."),
+
         //editableColumn("Q13", "Q13", true),
         editableColumn("Q13", "Q13", "list", "left", "input", {}, {
             values: [
@@ -324,9 +337,10 @@ function OnTabGridLoad(response) {
                 { label: "Neither agree nor disagree", value: "Neither agree nor disagree" },
                 { label: "Cannot rate", value: "Cannot rate" },
             ]
-        }),
+        }, null, "We are willing to give right of refusal to Wipro Lighting."),
+
         editableColumn("Cust Critical Aspect", "Cust_Critical_Aspect", true),
-        editableColumn("Comments & Suggestions", "Comment", true),
+        editableColumn("Comments & Suggestions", "Comment", true, "left"),
 
         { title: "Created Date", field: "CreatedDate", visible: false, headerMenu: headerMenu },
         { title: "Created By", field: "CreatedBy", visible: false, headerMenu: headerMenu },
@@ -755,7 +769,7 @@ function delConfirm(recid, element) {
         }
     });
 }
-function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
+function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null,headerTooltip = null) {
     let columnDef = {
         title: title,
         field: field,
@@ -768,6 +782,11 @@ function editableColumn(title, field, editorType = true, align = "center", heade
         hozAlign: align,
         headerHozAlign: "left"
     };
+
+    // 👇 add this block
+    if (headerTooltip) {
+        columnDef.headerTooltip = headerTooltip;
+    }
 
     // Set custom width for specific fields
     if (field === "ProductCode") {

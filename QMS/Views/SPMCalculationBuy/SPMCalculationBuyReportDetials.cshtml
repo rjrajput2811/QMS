@@ -478,7 +478,8 @@
 @section Scripts {
 
     <!-- Font Awesome (if not already in your layout) -->
-    @* <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script> *@
+    <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
 
     <!-- Litepicker CSS/JS (move CSS to head in layout for production if you like) -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
@@ -739,42 +740,42 @@
 
             function transformColumns(cols) {
                 return cols.map(function (col) {
-                    If group column, recurse
+                    //If group column, recurse
                     if (Array.isArray(col.columns) && col.columns.length) {
                         return Object.assign({}, col, { columns: transformColumns(col.columns) });
                     }
 
-                    Keep special Sr No column and Apr24 (they already have specific settings)
+                    //Keep special Sr No column and Apr24 (they already have specific settings)
                     if (col.field === "sr_no" || col.field === "Apr24") {
                         return col;
                     }
 
-                    If leaf column with field -> replace with editableColumn keeping width/frozen/align/etc.
-                    if (col.field) {
-                        const title = col.title || col.field;
-                        const field = col.field;
-                        const editorType = col.editor !== undefined ? col.editor : true;
-                        const align = col.hozAlign || "center";
-                        const headerFilterType = (col.headerFilter !== undefined) ? col.headerFilter : "input";
-                        const headerFilterParams = Object.assign({}, col.headerFilterParams || {}, { elementAttributes: Object.assign({}, (col.headerFilterParams && col.headerFilterParams.elementAttributes) || {}, { class: ((col.headerFilterParams && col.headerFilterParams.elementAttributes && col.headerFilterParams.elementAttributes.class) || "") + " header-filter" }) });
-                        const editorParams = col.editorParams || {};
-                        const formatter = col.formatter || null;
-                        const base = editableColumn(title, field, editorType, align, headerFilterType, headerFilterParams, editorParams, formatter);
+                    // If leaf column with field -> replace with editableColumn keeping width/frozen/align/etc.
+                    // if (col.field) {
+                    //     const title = col.title || col.field;
+                    //     const field = col.field;
+                    //     const editorType = col.editor !== undefined ? col.editor : true;
+                    //     const align = col.hozAlign || "center";
+                    //     const headerFilterType = (col.headerFilter !== undefined) ? col.headerFilter : "input";
+                    //     const headerFilterParams = Object.assign({}, col.headerFilterParams || {}, { elementAttributes: Object.assign({}, (col.headerFilterParams && col.headerFilterParams.elementAttributes) || {}, { class: ((col.headerFilterParams && col.headerFilterParams.elementAttributes && col.headerFilterParams.elementAttributes.class) || "") + " header-filter" }) });
+                    //     const editorParams = col.editorParams || {};
+                    //     const formatter = col.formatter || null;
+                    //     const base = editableColumn(title, field, editorType, align, headerFilterType, headerFilterParams, editorParams, formatter);
 
                         
-                        if (col.width) base.width = col.width;
-                        if (col.frozen) base.frozen = col.frozen;
-                        if (col.frozenPosition) base.frozenPosition = col.frozenPosition;
-                        if (col.responsive !== undefined) base.responsive = col.responsive;
-                        if (col.headerHozAlign) base.headerHozAlign = col.headerHozAlign;
-                        if (col.hozAlign) base.hozAlign = col.hozAlign;
-                        if (col.headerSort !== undefined) base.headerSort = col.headerSort;
-                        if (col.visible !== undefined) base.visible = col.visible;
+                    //     if (col.width) base.width = col.width;
+                    //     if (col.frozen) base.frozen = col.frozen;
+                    //     if (col.frozenPosition) base.frozenPosition = col.frozenPosition;
+                    //     if (col.responsive !== undefined) base.responsive = col.responsive;
+                    //     if (col.headerHozAlign) base.headerHozAlign = col.headerHozAlign;
+                    //     if (col.hozAlign) base.hozAlign = col.hozAlign;
+                    //     if (col.headerSort !== undefined) base.headerSort = col.headerSort;
+                    //     if (col.visible !== undefined) base.visible = col.visible;
 
-                        return base;
-                    }
+                    //     return base;
+                    // }
 
-                    otherwise return as-is
+                    // otherwise return as-is
                     return col;
                 });
             }

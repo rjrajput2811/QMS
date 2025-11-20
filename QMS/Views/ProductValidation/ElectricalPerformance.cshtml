@@ -254,9 +254,9 @@
     <script src="~/js/dashboard/moment/moment.min.js"></script>
     <script src="~/js/select2.min.js"></script>
     <!-- Moment.js and Litepicker -->
-    <script src="~/js/ranges.js"></script>
+    @* <script src="~/js/ranges.js"></script> *@
    
-    <script src="~/js/litepicker.js"></script>
+    @* <script src="~/js/litepicker.js"></script> *@
     <script src="~/js/exceljs.min.js"></script>
     <script>
         window.APP_BASE = '@Url.Content("~")';
@@ -281,6 +281,7 @@
                     }
                     else {
                         showDangerAlert('No data available to load.');
+                        // OnElectricalperformanceLoad(null);
                     }
                 },
                 error: function (xhr, status, error) {

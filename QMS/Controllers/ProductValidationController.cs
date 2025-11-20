@@ -21,12 +21,12 @@ public class ProductValidationController : Controller
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
-        IElectricalProtectionRepository electricalProtectionRepository,
+        IElectricalPerformanceRepository electricalPerformanceRepository,
         IWebHostEnvironment hostEnvironment,
-        IElectricalProtectionRepository electricalProtectionRepository1)
+        IElectricalProtectionRepository electricalProtectionRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
-        _electricalProtectionRepository = electricalProtectionRepository;
+        _electricalPerformanceRepository = electricalPerformanceRepository;
         _hostEnvironment = hostEnvironment;
         _electricalProtectionRepository = electricalProtectionRepository;
     }
@@ -145,6 +145,9 @@ public class ProductValidationController : Controller
         var result = await _physicalCheckAndVisualInspectionRepository.DeletePhysicalCheckAndVisualInspectionsAsync(Id);
         return Json(result);
     }
+
+    #endregion
+
     public async Task<ActionResult> GetElectricalProtectionListAsync()
     {
         var result = await _electricalProtectionRepository.GetElectricalProtectionsAsync();
@@ -1220,7 +1223,7 @@ public class ProductValidationController : Controller
     {
         return View();
     }
-
+}
 
     #endregion
 

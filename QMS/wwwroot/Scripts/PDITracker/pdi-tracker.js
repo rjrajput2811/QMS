@@ -310,20 +310,18 @@ function loadData() {
         return map;
     }
 
-    // NEW: formatter that shows CODE — DESC chips in the ProductCode cell
+    // Kept for other columns if needed; NOT used for ProductCode now
     global.tagsFormatterPairs = function (cell, params) {
         const joinWith = params?.joinWith ?? ", ";
-        const pairSeparator = params?.pairSeparator ?? " — "; // change to " - " if you prefer hyphen
+        const pairSeparator = params?.pairSeparator ?? " — ";
         const pairJoinWith = params?.pairJoinWith ?? " | ";
-        const descFieldParam = params?.descField; // string or array of possible fields
+        const descFieldParam = params?.descField;
 
-        // get codes from cell
         const raw = cell.getValue();
         const codes = Array.isArray(raw)
             ? raw
             : String(raw || "").split(joinWith).map(s => s.trim()).filter(Boolean);
 
-        // find the description text in the row (e.g. ProductDescription / ProdDesc)
         const row = cell.getRow().getData();
         let descText = "";
         if (Array.isArray(descFieldParam)) {
@@ -336,13 +334,11 @@ function loadData() {
 
         const map = parsePairs(descText, pairSeparator, pairJoinWith);
 
-        // build labels: CODE — DESC (fallback to CODE if desc not found yet)
         const labels = codes.map(code => {
             const d = map.get(String(code));
             return d ? `${code}${pairSeparator}${d}` : String(code);
         });
 
-        // render chips
         return labels.map(lbl => `<span class="tab-tag">${escapeHTML(lbl)}</span>`).join(" ");
     };
 })(window);
@@ -356,12 +352,15 @@ Tabulator.extendModule("edit", "editors", {
     autocomplete_ajax_multi: function (cell, onRendered, success, cancel, editorParams) {
         // ---------- utilities ----------
         const _escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,
-            m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+            m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': "&quot;", "'": '&#39;' }[m]));
 
         function _firstField(obj, candidates) {
-            for (const k of candidates) { if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) return obj[k]; }
+            for (const k of candidates) {
+                if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) return obj[k];
+            }
             return undefined;
         }
+
         function _parseCodeDesc(label) {
             if (!label) return { code: undefined, desc: undefined };
             const s = String(label);
@@ -384,16 +383,10 @@ Tabulator.extendModule("edit", "editors", {
                     const desc = m.slice(1).join(pairSep).trim();
                     if (code) map.set(code, desc);
                 } else {
-                    // If only desc present (legacy), we can't map to code reliably
-                    // we'll keep it for later display but not code-map
+                    // Only desc present (legacy) – can't map to code, ignore for mapping
                 }
             }
             return map;
-        }
-
-        // chips formatter for read mode (re-used here)
-        function tagsFormatterInline(arr, joinWith) {
-            return arr.map(x => `<span class="tab-tag">${_escapeHtml(x)}</span>`).join(' ');
         }
 
         // ---------- config ----------
@@ -411,18 +404,22 @@ Tabulator.extendModule("edit", "editors", {
             descItemFieldCandidates: ['description', 'desc', 'productDescription', 'ProductDescription', 'prodDesc', 'ProdDesc'],
 
             // Linked row description field(s) to update
-            descField: ['ProdDesc', 'ProductDescription'], // can be string or array
-            descAsArray: false,              // store descs as array or as joined string
-            descJoinWith: ' | ',             // joiner for desc-only format
+            // IMPORTANT: final behaviour = ONLY DESCRIPTIONS in ProdDesc
+            descField: ['ProdDesc'],   // will update only ProdDesc
+            descAsArray: false,        // store desc as a single string, not array
+            descJoinWith: ' | ',       // join multiple descs with pipe
 
-            // NEW: actually used now
-            descFormat: 'pair',              // 'pair' -> "CODE — DESC" ; 'desc' -> "DESC"
-            descPairSeparator: ' — ',
+            // Store mode:
+            //  - 'desc'  -> only descriptions in descField
+            //  - 'pair'  -> "CODE — DESC" in descField
+            descFormat: 'desc',        // <<< KEY: we want ONLY DESC
+
+            descPairSeparator: ' — ',  // still used if descFormat='pair'
             descPairJoinWith: ' | ',
 
             updateRowOnPick: true,
 
-            asArray: true,                   // store codes as array in the cell
+            asArray: true,             // ProductCode stored as array of codes
             joinWith: ', ',
             maxSelect: 0,
             allowFreeText: false
@@ -432,15 +429,24 @@ Tabulator.extendModule("edit", "editors", {
 
         // ---------- UI ----------
         const wrap = document.createElement('div');
-        wrap.className = 'tab-multi-ac'; wrap.style.width = "100%";
+        wrap.className = 'tab-multi-ac';
+        wrap.style.width = "100%";
+
         const input = document.createElement('input');
-        input.type = 'text'; input.autocomplete = 'off';
+        input.type = 'text';
+        input.autocomplete = 'off';
         wrap.appendChild(input);
 
         let dropdown = null, activeIndex = -1, pendingXHR = null, lastQuery = '';
-        let selected = []; const selectedSet = new Set();
+        let selected = [];
+        const selectedSet = new Set();
 
-        function removeDropdown() { if (dropdown && dropdown.parentNode) dropdown.parentNode.removeChild(dropdown); dropdown = null; activeIndex = -1; }
+        function removeDropdown() {
+            if (dropdown && dropdown.parentNode) dropdown.parentNode.removeChild(dropdown);
+            dropdown = null;
+            activeIndex = -1;
+        }
+
         function positionDropdown() {
             if (!dropdown) return;
             const r = wrap.getBoundingClientRect();
@@ -448,72 +454,122 @@ Tabulator.extendModule("edit", "editors", {
             dropdown.style.left = (r.left) + "px";
             dropdown.style.minWidth = r.width + "px";
         }
-        function cancelPending() { if (pendingXHR && pendingXHR.readyState !== 4) { try { pendingXHR.abort(); } catch (e) { } } pendingXHR = null; }
 
-        const debouncedFetch = (() => { let t = null; return (q) => { clearTimeout(t); t = setTimeout(() => fetchSuggestions(q), cfg.debounce); }; })();
+        function cancelPending() {
+            if (pendingXHR && pendingXHR.readyState !== 4) {
+                try { pendingXHR.abort(); } catch (e) { }
+            }
+            pendingXHR = null;
+        }
+
+        const debouncedFetch = (() => {
+            let t = null;
+            return (q) => {
+                clearTimeout(t);
+                t = setTimeout(() => fetchSuggestions(q), cfg.debounce);
+            };
+        })();
 
         function normalizeItem(raw) {
             let code = _firstField(raw, [cfg.valueField, ...cfg.valueFieldCandidates]);
             let desc = _firstField(raw, [cfg.descItemField, ...cfg.descItemFieldCandidates]);
             let label = _firstField(raw, [cfg.labelField, ...cfg.labelFieldCandidates]);
-            if (!desc && label) { const parsed = _parseCodeDesc(label); if (!code && parsed.code) code = parsed.code; if (parsed.desc) desc = parsed.desc; }
+
+            if (!desc && label) {
+                const parsed = _parseCodeDesc(label);
+                if (!code && parsed.code) code = parsed.code;
+                if (parsed.desc) desc = parsed.desc;
+            }
+
             if (!label) label = desc ? `${code} ${cfg.descPairSeparator}${desc}` : (code ?? '');
-            return { code: String(code || '').trim(), desc: desc ? String(desc).trim() : undefined, label: String(label || '').trim() };
+
+            return {
+                code: String(code || '').trim(),
+                desc: desc ? String(desc).trim() : undefined,
+                label: String(label || '').trim()
+            };
         }
 
         function fetchSuggestions(q) {
             if (q === lastQuery) return;
             lastQuery = q;
             cancelPending();
-            if (q.length < cfg.minChars) { removeDropdown(); return; }
+            if (q.length < cfg.minChars) {
+                removeDropdown();
+                return;
+            }
 
             pendingXHR = $.ajax({
-                url: cfg.url, type: 'GET', data: { [cfg.queryParam]: q }
+                url: cfg.url,
+                type: 'GET',
+                data: { [cfg.queryParam]: q }
             }).done(function (data) {
                 renderDropdown(Array.isArray(data) ? data : []);
-            }).always(function () { pendingXHR = null; });
+            }).always(function () {
+                pendingXHR = null;
+            });
         }
 
         function renderDropdown(items) {
             removeDropdown();
+
             dropdown = document.createElement('div');
             dropdown.className = 'autocomplete-dropdown';
 
             const normalized = items.map(normalizeItem).filter(it => it.code);
             const filtered = normalized.filter(it => !selectedSet.has(it.code));
+
             if (filtered.length === 0) {
                 const empty = document.createElement('div');
-                empty.className = 'autocomplete-option'; empty.style.opacity = .6;
-                empty.textContent = 'No matches'; dropdown.appendChild(empty);
+                empty.className = 'autocomplete-option';
+                empty.style.opacity = .6;
+                empty.textContent = 'No matches';
+                dropdown.appendChild(empty);
             } else {
                 filtered.forEach((it) => {
                     const opt = document.createElement('div');
                     opt.className = 'autocomplete-option';
                     opt.innerHTML = _escapeHtml(it.label);
                     opt.addEventListener('mousedown', function (e) {
-                        e.preventDefault(); e.stopPropagation();
-                        addTag(it); flushTags();
-                        input.focus(); debouncedFetch(input.value.trim());
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addTag(it);
+                        flushTags();
+                        input.focus();
+                        debouncedFetch(input.value.trim());
                     });
                     dropdown.appendChild(opt);
                 });
             }
 
             document.body.appendChild(dropdown);
+
             dropdown.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
             dropdown.addEventListener('click', (e) => e.stopPropagation());
             dropdown.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
             dropdown.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+
             positionDropdown();
         }
 
         function flushTags() {
             [...wrap.querySelectorAll('.tab-tag')].forEach(e => e.remove());
-            const labels = selected.map(it => it.desc ? `${it.code} ${cfg.descPairSeparator}${it.desc}` : (it.label || it.code));
+
+            const labels = selected.map(it =>
+                it.desc
+                    ? `${it.code} ${cfg.descPairSeparator}${it.desc}`
+                    : (it.label || it.code)
+            );
+
             labels.forEach((label, i) => {
-                const tag = document.createElement('span'); tag.className = 'tab-tag';
+                const tag = document.createElement('span');
+                tag.className = 'tab-tag';
                 tag.innerHTML = _escapeHtml(label) + ' <span class="tab-x" title="Remove">×</span>';
-                tag.querySelector('.tab-x').addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); removeItem(selected[i].code); });
+                tag.querySelector('.tab-x').addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeItem(selected[i].code);
+                });
                 wrap.insertBefore(tag, input);
             });
         }
@@ -525,8 +581,9 @@ Tabulator.extendModule("edit", "editors", {
 
             selected.push({ code, desc: item.desc ?? undefined, label: item.label ?? code });
             selectedSet.add(code);
+
             if (repaint) flushTags();
-            if (cfg.updateRowOnPick) syncLinkedDesc(); // will join ALL, not overwrite
+            if (cfg.updateRowOnPick) syncLinkedDesc();
             input.value = '';
         }
 
@@ -537,19 +594,41 @@ Tabulator.extendModule("edit", "editors", {
             if (cfg.updateRowOnPick) syncLinkedDesc();
         }
 
-        function codesArray() { return selected.map(it => it.code); }
+        function codesArray() {
+            return selected.map(it => it.code);
+        }
 
         function buildDescOutput() {
             if (cfg.descFormat === 'pair') {
                 const parts = selected.map(it => {
                     if (it.desc) return `${it.code}${cfg.descPairSeparator}${it.desc}`;
-                    // if desc is unknown, still keep the code so user knows it exists
                     return it.code;
                 });
                 return parts.join(cfg.descPairJoinWith);
-            } else { // 'desc'
-                const descs = selected.map(it => it.desc).filter(Boolean);
-                return cfg.descAsArray ? descs : descs.join(cfg.descJoinWith);
+            } else { // 'desc' → keep old desc + add new ones
+                const rowData = cell.getRow().getData();
+
+                // get existing description text from the row (first descField that has value)
+                const existingRaw =
+                    (descFields
+                        .map(f => rowData && rowData[f])
+                        .find(v => v != null && v !== "")) || "";
+
+                const existingList = existingRaw
+                    ? String(existingRaw)
+                        .split(cfg.descJoinWith)
+                        .map(s => s.trim())
+                        .filter(Boolean)
+                    : [];
+
+                // new descs coming from current selected items (from API)
+                const newDescs = selected
+                    .map(it => it.desc)
+                    .filter(d => d && !existingList.includes(d));
+
+                const allDescs = existingList.concat(newDescs);
+
+                return cfg.descAsArray ? allDescs : allDescs.join(cfg.descJoinWith);
             }
         }
 
@@ -559,7 +638,7 @@ Tabulator.extendModule("edit", "editors", {
             const val = buildDescOutput();
             const patch = {};
             descFields.forEach(f => patch[f] = val);
-            row.update(patch); // reflect combined descriptions
+            row.update(patch);
         }
 
         function commit() {
@@ -569,46 +648,72 @@ Tabulator.extendModule("edit", "editors", {
             success(val);
         }
 
-        // ---------- init from current cell value + hydrate descs from row ----------
+        // ---------- init from current cell value ----------
         (function initFromValue() {
             const raw = cell.getValue();
-            const initialCodes = Array.isArray(raw) ? raw :
-                (raw ? String(raw).split(cfg.joinWith).map(s => s.trim()).filter(Boolean) : []);
+            const initialCodes = Array.isArray(raw)
+                ? raw
+                : (raw ? String(raw).split(cfg.joinWith).map(s => s.trim()).filter(Boolean) : []);
 
-            // Try to read existing description text from row and map code→desc
             const rowData = cell.getRow().getData();
             const firstDescText = descFields.map(f => rowData && rowData[f]).find(Boolean);
+
+            // If previously stored as CODE — DESC | CODE — DESC, this will map.
+            // If only DESC is stored, map will be empty -> tags will still show code.
             const knownMap = parsePairsFromText(firstDescText, cfg.descPairSeparator, cfg.descPairJoinWith);
 
             initialCodes.forEach(code => {
-                const desc = knownMap.get(code);         // hydrate if we can
-                addTag({ code, desc, label: desc ? `${code} ${cfg.descPairSeparator}${desc}` : code }, false);
+                const desc = knownMap.get(code);
+                addTag({
+                    code,
+                    desc,
+                    label: desc ? `${code} ${cfg.descPairSeparator}${desc}` : code
+                }, false);
             });
 
             flushTags();
             if (cfg.updateRowOnPick) syncLinkedDesc();
         })();
 
-        // ---------- event handlers ----------
+        // ---------- events ----------
         input.addEventListener('keydown', function (e) {
             e.stopPropagation();
 
             const opts = dropdown ? dropdown.querySelectorAll('.autocomplete-option') : [];
             const max = opts.length - 1;
 
-            if (e.key === 'ArrowDown') { e.preventDefault(); if (!dropdown) { debouncedFetch(input.value.trim()); return; } activeIndex = Math.min(max, activeIndex + 1); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(0, activeIndex - 1); }
-            else if (e.key === 'PageDown') { e.preventDefault(); activeIndex = Math.min(max, (activeIndex < 0 ? 0 : activeIndex) + 10); }
-            else if (e.key === 'PageUp') { e.preventDefault(); activeIndex = Math.max(0, (activeIndex < 0 ? 0 : activeIndex) - 10); }
-            else if (e.key === 'Home') { e.preventDefault(); activeIndex = 0; }
-            else if (e.key === 'End') { e.preventDefault(); activeIndex = max; }
-            else if (e.key === 'Enter') {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!dropdown) {
+                    debouncedFetch(input.value.trim());
+                    return;
+                }
+                activeIndex = Math.min(max, activeIndex + 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(0, activeIndex - 1);
+            } else if (e.key === 'PageDown') {
+                e.preventDefault();
+                activeIndex = Math.min(max, (activeIndex < 0 ? 0 : activeIndex) + 10);
+            } else if (e.key === 'PageUp') {
+                e.preventDefault();
+                activeIndex = Math.max(0, (activeIndex < 0 ? 0 : activeIndex) - 10);
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                activeIndex = 0;
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                activeIndex = max;
+            } else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (dropdown && activeIndex >= 0 && opts[activeIndex]) {
-                    opts[activeIndex].dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                    opts[activeIndex].dispatchEvent(
+                        new MouseEvent('mousedown', { bubbles: true })
+                    );
                 } else if (cfg.allowFreeText && input.value.trim() !== '') {
                     const v = input.value.trim();
-                    addTag({ code: v, desc: v, label: v }); flushTags();
+                    addTag({ code: v, desc: v, label: v });
+                    flushTags();
                 } else {
                     commit();
                 }
@@ -616,29 +721,45 @@ Tabulator.extendModule("edit", "editors", {
                 const last = selected[selected.length - 1];
                 if (last) removeItem(last.code);
             } else if (e.key === 'Escape') {
-                e.preventDefault(); removeDropdown(); return;
+                e.preventDefault();
+                removeDropdown();
+                return;
             }
 
             if (dropdown) {
                 opts.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
-                if (activeIndex >= 0 && opts[activeIndex]) opts[activeIndex].scrollIntoView({ block: 'nearest' });
+                if (activeIndex >= 0 && opts[activeIndex]) {
+                    opts[activeIndex].scrollIntoView({ block: 'nearest' });
+                }
             }
         });
 
         input.addEventListener('input', () => debouncedFetch(input.value.trim()));
 
-        const onDocClick = (e) => { if (!wrap.contains(e.target) && !(dropdown && dropdown.contains(e.target))) commit(); };
+        const onDocClick = (e) => {
+            if (!wrap.contains(e.target) && !(dropdown && dropdown.contains(e.target))) commit();
+        };
+
         document.addEventListener('mousedown', onDocClick, true);
         window.addEventListener('resize', positionDropdown, true);
-        onRendered(() => { input.focus({ preventScroll: true }); positionDropdown(); });
+
+        onRendered(() => {
+            input.focus({ preventScroll: true });
+            positionDropdown();
+        });
 
         function destroy() {
-            if (pendingXHR && pendingXHR.readyState !== 4) { try { pendingXHR.abort(); } catch (e) { } }
+            if (pendingXHR && pendingXHR.readyState !== 4) {
+                try { pendingXHR.abort(); } catch (e) { }
+            }
             removeDropdown();
             document.removeEventListener('mousedown', onDocClick, true);
             window.removeEventListener('resize', positionDropdown, true);
         }
-        const _success = success, _cancel = cancel;
+
+        const _success = success;
+        const _cancel = cancel;
+
         success = (v) => { destroy(); _success(v); };
         cancel = () => { destroy(); _cancel(); };
 
@@ -769,36 +890,40 @@ function OnTabGridLoad(response) {
             headerSort: false,
             headerMenu: headerMenu,
             headerFilter: "input",
-            // use the PAIR-AWARE formatter instead of tagsFormatter
-            formatter: tagsFormatterPairs,
-            formatterParams: {
-                joinWith: ", ",
-                // where to read the combined desc text from (tries in order)
-                descField: ["ProductDescription", "ProdDesc"],
-                // how your description field is stored:
-                pairSeparator: " — ",   // use " - " if you want a hyphen
-                pairJoinWith: " | "
+
+            // Show ONLY CODES as chips
+            formatter: function (cell) {
+                const raw = cell.getValue();
+                const codes = Array.isArray(raw)
+                    ? raw
+                    : String(raw || "").split(',').map(s => s.trim()).filter(Boolean);
+
+                return codes.join(", ");
             },
+
             editorParams: {
                 url: "/PDITracker/GetCodeSearch",
                 queryParam: "search",
                 minChars: 4,
+
                 valueField: "oldPart_No",
                 descItemField: "description",
                 labelField: "oldPart_No",
 
-                // keep these to ensure the row description is maintained as pairs:
-                descField: ["ProdDesc", "ProductDescription"],
-                descFormat: "pair",
-                descPairSeparator: " — ",
-                descPairJoinWith: " | ",
+                // IMPORTANT: only ProdDesc will be updated with DESC ONLY
+                descField: ["ProdDesc"],
+                descFormat: "desc",      // ONLY descriptions
+                descAsArray: false,
+                descJoinWith: " | ",
 
-                asArray: true,
+                asArray: true,           // ProductCode stored as array of codes
                 joinWith: ", ",
                 maxSelect: 0
             },
+
             widthGrow: 2
         },
+
         //editableColumn("Product Description", "ProductDescription", "input"),
         { title: "Product Description", field: "ProdDesc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
         // editableColumn("Batch Code (Vendor)", "BatchCodeVendor", "input", "center", null, {}, {}, 140),
@@ -879,7 +1004,9 @@ function OnTabGridLoad(response) {
             headerMenu: headerMenu,
             width: 100,
             visible: false
-        }
+        },
+
+        { title: "Id", field: "Id",visible: false}
     ];
 
     // Create or replace Tabulator table
@@ -895,7 +1022,8 @@ function OnTabGridLoad(response) {
             paginationSizeSelector: [10, 50, 100, 500],
             paginationCounter: "rows",
             placeholder: "No data available",
-            columns: columns
+            columns: columns,
+            index: "Id"
         });
 
         // Handle cell edit event
@@ -982,7 +1110,7 @@ function OnTabGridLoad(response) {
         });
     })();
 
-    // Export to Excel on button click
+    //// Export to Excel on button click
     document.getElementById("exportPDIButton").addEventListener("click", async function () {
         // ===== 0) OPTIONS =====
         const EXPORT_SCOPE = "active"; // "active" | "selected" | "all"
@@ -1266,10 +1394,10 @@ $('#pdi_table').on('change', '.pdi-upload', function () {
             showSuccessAlert("File uploaded successfully.");
             const row = table.getRow(id);
             if (row) {
-                row.update({ Attachment: fileName });   // triggers reformat for that cell
+                row.update({ Attahcment: fileName });   // triggers reformat for that cell
             } else {
                 // fallback: add/update by explicit key
-                table.updateOrAddData([{ Id: id, Attachment: fileName }], "Id");
+                table.updateOrAddData([{ Id: id, Attahcment: fileName }], "Id");
             }
             //table.updateData([{ Id: response.id, Attachment: response.fileName }]);
         } else {

@@ -1127,7 +1127,7 @@ public class ProductValidationController : Controller
         }
     }
 
-    #endregion
+    
     #region SuregTestReport
     public IActionResult SurgeTestReportDetails()
     {
@@ -1223,8 +1223,8 @@ public class ProductValidationController : Controller
     {
         return View();
     }
-}
-
     #endregion
-
 }
+
+
+

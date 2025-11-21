@@ -672,7 +672,7 @@ function InsertUpdateVendorDetail() {
         Plant_Head: $("#Plant_Head").val(),
         Plant_Email: $("#Plant_Email").val(),
         Plant_Mobile: $("#Plant_Mobile").val(),
-        Quality_Manger: $("#Quality_Manger").val(),
+        Quality_Manager: $("#Quality_Manger").val(),
         Quality_Email: $("#Quality_Email").val(),
         Quality_Mobile: $("#Quality_Mobile").val(),
         PDG_Manager: $("#PDG_Manager").val(),

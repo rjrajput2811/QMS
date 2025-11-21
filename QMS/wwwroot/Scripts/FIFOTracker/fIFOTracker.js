@@ -707,7 +707,8 @@ function OnTabGridLoad(response) {
 
         { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
-        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false }
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", visible: false },
+        { title: "Id", field: "Id", visible: false }
     );
 
     // // Initialize Tabulator
@@ -720,7 +721,8 @@ function OnTabGridLoad(response) {
         paginationSizeSelector: [50, 100, 500, 1500, 2000],
         paginationCounter: "rows",
         dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
-        columns: columns
+        columns: columns,
+        index: "Id"
     });
 
     table.on("cellEdited", function (cell) {
@@ -842,7 +844,7 @@ function OnTabGridLoad(response) {
         const HEADER_TOP = 1;
         const HEADER_BOTTOM = 5;
         const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
-        const TITLE_TEXT = "BIS PROJECT TRACKER";
+        const TITLE_TEXT = "TEST REQUEST TRACKER : IN-HOUSE LAB";
 
         const LOGO_COL_START = 1;
         const LOGO_COL_END = 2;
@@ -885,7 +887,7 @@ function OnTabGridLoad(response) {
 
         // ===== 5) WORKBOOK / SHEET =====
         const wb = new ExcelJS.Workbook();
-        const ws = wb.addWorksheet("BIS Project Tracker", {
+        const ws = wb.addWorksheet("Test request tracker : In-house lab", {
             properties: { defaultRowHeight: 15 },
             views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
         });
@@ -1035,7 +1037,7 @@ function OnTabGridLoad(response) {
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
-        link.download = "BIS Project Tracker.xlsx";
+        link.download = "TEST REQUEST TRACKER : IN-HOUSE LAB.xlsx";
         document.body.appendChild(link);
         link.click();
         link.remove();

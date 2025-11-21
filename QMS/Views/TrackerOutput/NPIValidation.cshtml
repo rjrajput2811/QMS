@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "CA report";
+    ViewData["Title"] = "NPi Validation";
 }
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
@@ -20,7 +20,6 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
- 
     .form-control {
         padding: 0 10px !important;
         border: 0;
@@ -33,21 +32,11 @@
         margin-top: .3rem;
     }
 
-    #scrollToTopBtn:hover {
-        background-color: #0056b3;
-    }
-
-    #scrollToTopBtn {
-        outline: none;
-    }
-
-   
     .card .card-body .page-title {
         color: #4682B4;
         font-weight: 700;
     }
 
-    
     .tabulator .tabulator-header .tabulator-col {
         font-size: 14px;
         background-color: #D6E4F0;
@@ -68,10 +57,6 @@
         font-weight: bold;
     }
 
-    .form-group {
-        margin-bottom: 0.5rem;
-    }
-
     .calendar-container {
         cursor: pointer;
         padding: 8px 8px;
@@ -79,63 +64,56 @@
         border-radius: 5px;
         display: flex;
         align-items: center;
-        justify-content: flex-start;
-        transition: background-color 0.3s, box-shadow 0.3s;
         gap: 8px;
         border: 1px solid slategray;
-    }
-    .calendar-container:hover {
-        background-color: #e3f2fd;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-    }
-    .calendar-container i.fa-calendar {
-        color: #2196f3;
-        font-size: 1.2em;
-        padding-left: 6px;
-    }
-    .calendar-container span {
-        color: #4682B4;
-        margin: 0;
-        font-size: 14px;
+        transition: background-color .3s, box-shadow .3s;
     }
 
-    @@keyframes flash-bg {
-        0% { background-color: #fff3cd; }
-        100% { background-color: transparent; }
-    }
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
 
-    .row-flash {
-        animation: flash-bg 2s ease-out forwards;
-    }
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+        }
 
-    .tabulator-row.row-flash {
-        transition: background-color 2s ease-out;
-    }
+        .calendar-container span {
+            color: #4682B4;
+            font-size: 14px;
+        }
 
+   
 </style>
+
 
 <div class="content">
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <b style="font-size: large;color: #4682B4;">CA report</b>
+                <b style="font-size: large;color: #4682B4;">NPi Validation</b>
             </div>
+
             <div class="col-md-3">
-                <div id="customDateTriggerCAreport" class="calendar-container">
+                <div id="customDateTriggerNPi" class="calendar-container">
                     <i class="fa fa-calendar"></i>
-                    <span id="dateRangeCAreport">Select Date Range</span>
+                    <span id="dateRangeNPi">Select Date Range</span>
                 </div>
             </div>
+
             <div>
-                <button id="exportPayButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                <button id="exportNPiButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
                 </button>
-                <button id="backButton" class="btn btn-outline-primary legitRipple mr-2" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+
+                <button id="backButton" class="btn btn-outline-primary legitRipple mr-2" onclick="location.href='@Url.Action("TrackerMenu","Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
         </div>
     </div>
+
 
     <div class="row">
         <div class="col-12">
@@ -143,7 +121,7 @@
                 <div class="card-body">
                     <div class="chart-container">
                         <div class="form-group row">
-                            <div id="caReport_Table" class="col-12"></div>
+                            <div id="npiValidation_Table" class="col-12"></div>
                         </div>
                     </div>
                 </div>
@@ -152,49 +130,35 @@
     </div>
 </div>
 
+
 @section Scripts {
 
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
 
-    <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script src="~/js/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
     <script>
-        let filterStartPaymentDate = moment().startOf('month').format('YYYY-MM-DD');
-        let filterEndPaymentDate = moment().endOf('month').format('YYYY-MM-DD');
+
+        let filterStart = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEnd = moment().endOf('month').format('YYYY-MM-DD');
 
         $(document).ready(function () {
-            $('#dateRangeCAreport').text(
-                moment(filterStartPaymentDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndPaymentDate).format('MMMM D, YYYY')
+
+            $('#dateRangeNPi').text(
+                moment(filterStart).format('MMMM D, YYYY') + ' - ' + moment(filterEnd).format('MMMM D, YYYY')
             );
 
             const picker = new Litepicker({
-                element: document.getElementById('customDateTriggerCAreport'),
+                element: document.getElementById('customDateTriggerNPi'),
                 singleMode: false,
                 format: 'DD-MM-YYYY',
                 numberOfMonths: 2,
                 numberOfColumns: 2,
-                dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
                 plugins: ['ranges'],
-                setup: (picker) => {
-                    picker.on('selected', (start, end) => {
-                        filterStartPaymentDate = start.format('YYYY-MM-DD');
-                        filterEndPaymentDate = end.format('YYYY-MM-DD');
-                        $('#dateRangeCAreport').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                        // loadData();
-                    });
-
-                    picker.on('clear', () => {
-                        filterStartPaymentDate = "";
-                        filterEndPaymentDate = "";
-                        $('#dateRangeCAreport').text("Select Date Range");
-                        // loadData();
-                    });
-                },
                 ranges: {
                     Today: [moment(), moment()],
                     Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
@@ -207,26 +171,27 @@
                 endDate: moment().endOf('month').format('DD-MM-YYYY')
             });
 
-            $('#customDateTriggerCAreport').on('click', function () {
+            $('#customDateTriggerNPi').on('click', function () {
                 picker.show();
             });
 
-
-            loadCustomerGrid(null);
+            loadCustomerGrid;
         });
+
 
         var headerMenu = function () {
             var menu = [];
-            var columns = this.getColumns();
+            var cols = this.getColumns();
 
-            for (let column of columns) {
+            for (let col of cols) {
+
                 let icon = document.createElement("i");
                 icon.classList.add("fas");
-                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+                icon.classList.add(col.isVisible() ? "fa-check-square" : "fa-square");
 
                 let label = document.createElement("span");
                 let title = document.createElement("span");
-                title.textContent = " " + column.getDefinition().title;
+                title.textContent = " " + col.getDefinition().title;
 
                 label.appendChild(icon);
                 label.appendChild(title);
@@ -235,14 +200,9 @@
                     label: label,
                     action: function (e) {
                         e.stopPropagation();
-                        column.toggle();
-                        if (column.isVisible()) {
-                            icon.classList.remove("fa-square");
-                            icon.classList.add("fa-check-square");
-                        } else {
-                            icon.classList.remove("fa-check-square");
-                            icon.classList.add("fa-square");
-                        }
+                        col.toggle();
+                        icon.classList.toggle("fa-check-square");
+                        icon.classList.toggle("fa-square");
                     }
                 });
             }
@@ -250,18 +210,17 @@
             return menu;
         };
 
-        function loadCustomerGrid(response) {
-            Blockloadershow();
 
-            tabledata = [];
+        function loadCustomerGrid() {
+
             let columns = [];
+
             columns.push(
                 {
                     title: "Sr No.",
                     field: "Sr No.",
                     hozAlign: "center",
                     headerHozAlign: "center",
-
                     headerMenu: headerMenu
                 },
                 {
@@ -270,7 +229,6 @@
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
-           
                     headerMenu: headerMenu
                 },
                 {
@@ -279,39 +237,36 @@
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
-             
                     headerMenu: headerMenu
                 },
                 {
-                    title: "Total Complaint Registered",
-                    field: "Total_Registered",
+                    title: "Total Validation",
+                    field: "Total_Validation",
                     headerFilter: "input",
                     hozAlign: "right",
                     headerHozAlign: "center",
-              
                     headerMenu: headerMenu
                 },
                 {
-                    title: "Till Date Open Complaint",
-                    field: "Till_Open",
+                    title: "As on Open Validation",
+                    field: "AsOn_Open_Validation",
                     headerFilter: "input",
                     hozAlign: "right",
                     headerHozAlign: "center",
-                  
                     headerMenu: headerMenu
                 },
                 {
-                    title: "Till Date Closed Complaint",
-                    field: "Till_Closed",
+                    title: "As on Close Validation",
+                    field: "AsOn_Close_Validation",
                     headerFilter: "input",
                     hozAlign: "right",
                     headerHozAlign: "center",
-                  
                     headerMenu: headerMenu
                 }
             );
 
-            table = new Tabulator("#caReport_Table", {
+
+            new Tabulator("#npiValidation_Table", {
                 data: [],
                 layout: "fitColumns",
                 movableColumns: true,
@@ -319,14 +274,12 @@
                 paginationSize: 10,
                 paginationSizeSelector: [10, 50, 100, 500],
                 paginationCounter: "rows",
-                dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>",
+                placeholder:
+                    "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
                 columns: columns
             });
-
-            Blockloaderhide();
         }
 
-        
     </script>
 
 }

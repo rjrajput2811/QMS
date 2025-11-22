@@ -1,0 +1,917 @@
+﻿@{
+    ViewData["Title"] = "Test Report";
+}
+<style>
+    .req {
+        color: #d00;
+        font-style: normal;
+    }
+
+    .dimensions-title-cell {
+        text-align: center;
+        font-weight: bold;
+        padding: 3px 3px !important; /* almost no padding */
+        line-height: 12px !important; /* very tight */
+        height: 20px !important; /* forces flatter height */
+    }
+
+
+
+    .dimensions-add-btn {
+        width: 85px;
+        font-size: 12px;
+        border-radius: 6px;
+        padding: 6px 10px;
+        margin-left: 10px;
+    }
+
+
+    .signature-flex-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        height: 120px;
+        text-align: center;
+    }
+
+    #approvalCell {
+        width: 55%; /* adjust as needed */
+    }
+
+    .remarks-textarea {
+        resize: none !important;
+        overflow: auto;
+    }
+
+    /* thin full-width spacer row (yellow) */
+    .pv-table .spacer-row td {
+        background: #fff; /* soft yellow */
+        height: 14px; /* tweak as needed */
+        padding: 0; /* no padding so it stays thin */
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+    }
+
+    /* make the sign-off row taller with extra space for signatures */
+    .pv-table .sign-row td {
+        vertical-align: top;
+        padding: 6px 10px 25px 10px; /* small signature space */
+    }
+
+    /* underline-only input style (reuse) */
+    .same-input {
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        outline: none;
+        font-size: 14px;
+        width: 70%;
+        padding: 2px 4px;
+        transition: border-color .2s ease-in-out;
+    }
+
+        .same-input:focus {
+            border-bottom-color: #4682B4;
+        }
+
+        .same-input::placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+
+    .header-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        border: 1px solid #000;
+    }
+
+        .header-table td {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+    .field-label {
+        font-weight: 600;
+        color: #000;
+        margin-right: 6px;
+    }
+
+   
+    .inline-input,
+    .inline-date {
+        display: inline-block;
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        width: 60%;
+        font-size: 14px;
+        padding: 2px 4px;
+        outline: none;
+        box-shadow: none;
+        transition: border-color 0.2s ease-in-out;
+        vertical-align: baseline;
+    }
+
+        .inline-input:focus,
+        .inline-date:focus {
+            border-bottom-color: #4682B4;
+        }
+
+        
+        .inline-date::-webkit-calendar-picker-indicator {
+            opacity: 1;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+
+        .inline-date::-ms-clear,
+        .inline-date::-webkit-clear-button {
+            display: none;
+        }
+
+    .header-table {
+        margin-bottom: 0px !important;
+    }
+
+        .header-table + hr {
+            margin-top: 0 !important;
+        }
+
+
+
+
+    .remarks-cell {
+        vertical-align: top;
+        padding: 10px;
+        position: relative;
+     
+    }
+
+  
+    .remarks-title {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        font-weight: bold;
+        pointer-events: none;
+        color: #000;
+    }
+
+    .remarks-title {
+        font-weight: bold;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 5px;
+        display: block;
+    }
+
+    .remarks-textarea {
+        width: 100%;
+        height: 120px;
+        border: none !important;
+        outline: none;
+        resize: vertical;
+        font-size: 14px;
+        color: #000;
+        padding-top: 32px; 
+
+    .result-select {
+        width: 100%;
+        padding: 8px 30px 8px 12px;
+        border: none;
+        border-bottom: 2px solid #4682B4;
+        border-radius: 0;
+        background-color: transparent;
+        font-size: 14px;
+        color: #000;
+        appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 20 20' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.486 4.484-4.486L16 8.548l-6 6-6-6z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        cursor: pointer;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+        .result-select:hover,
+        .result-select:focus {
+            outline: none;
+            border-bottom-color: #2f5c8a;
+        }
+
+        .result-select::-ms-expand {
+            display: none;
+        }
+</style>
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+
+            <div id="TestReport" class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+
+                    <div>
+                        <b style="font-size:large; color:#4682B4;">
+                            LUMINAIRES: TEST REPORT
+                        </b>
+                    </div>
+
+                    <div>
+                        <button id="addTestButton"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2"
+                                onclick="insertElectricalProtection()"
+                                style="width: 120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+
+                        <button id="backTestButton"
+                                type="button"
+                                class="btn btn-outline-primary"
+                                onclick="location.href='@Url.Action("TestReport","TestReport")'"
+                                style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body">
+
+                
+                    <div class="table-responsive" style="margin-bottom:0;">
+                        <table class="header-table" style="margin-bottom:0; border-bottom:none;">
+                            <tbody>
+                                <tr>
+                                    <td style="width:50%;">
+                                        <span class="field-label">Doc No :</span><em class="req">*</em>
+                                        <input type="text"
+                                               name="DocNo"
+                                               class="inline-input"
+                                               placeholder="Enter Document Number"
+                                               required />
+                                    </td>
+
+                                    <td style="width:50%;">
+                                        <span class="field-label">Test Report No. :</span><em class="req">*</em>
+                                        <input type="text"
+                                               name="TestReportNo"
+                                               class="inline-input"
+                                               placeholder="Enter Test Report Number"
+                                               required />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="2">
+                                        <span class="field-label">Customer / Project :</span>
+                                        <input type="text"
+                                               name="CustomerProject"
+                                               class="inline-input"
+                                               placeholder="Enter Customer / Project" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                
+                    <div class="table-responsive" style="margin-top:-0px;">
+                        <table class="header-table" style="margin-top:0;">
+                            <tbody>
+                                <tr>
+                                    <td style="width:65%;">
+                                        <span class="field-label">Product Cat Ref :</span>
+                                        <input type="text"
+                                               name="ProductCatRef2"
+                                               class="inline-input"
+                                               placeholder="Enter Product Cat Reference" />
+                                    </td>
+
+                                    <td style="width:35%;">
+                                        <span class="field-label">Date :</span>
+                                        <input type="date"
+                                               name="ProjectDate"
+                                               class="inline-date" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="width:65%;">
+                                        <span class="field-label">Product Description :</span>
+                                        <input type="text"
+                                               name="ProductDescription2"
+                                               class="inline-input"
+                                               placeholder="Enter Product Description" />
+                                    </td>
+
+                                    <td style="width:35%;">
+                                        <span class="field-label">Quantity :</span>
+                                        <input type="text"
+                                               name="Quantity"
+                                               class="inline-input"
+                                               placeholder="Enter Quantity" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                     
+                        <table class="header-table" style="margin-top:-1px;">
+                            <tbody>
+                                <tr>
+                                    <th colspan="12"
+                                        class="subhead"
+                                        style="text-align:left; font-weight:bold; height:45px; padding-left:10px; font-size:14px; color:#000;">
+                                        A. VISUAL EXAMINATION
+                                    </th>
+                                </tr>
+
+                                <tr>
+                                    <td style="width:65%;">
+                                        <span class="field-label">1.0 Housing :</span>
+                                        <input type="text"
+                                               class="inline-input"
+                                               placeholder="" />
+                                    </td>
+
+                                    <td style="width:35%;">
+                                        <span class="field-label">Workmanship / Finish :</span>
+                                        <input type="text"
+                                               class="inline-input"
+                                               placeholder="" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="width:65%;">
+                                        <span class="field-label">2.0 Powder Coating Thickness :</span>
+                                        <input type="text"
+                                               class="inline-input"
+                                               placeholder="" />
+                                    </td>
+
+                                    <td style="width:35%;">
+                                        <span class="field-label">Finish :</span>
+                                        <input type="text"
+                                               class="inline-input"
+                                               placeholder="" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="2">
+                                        <span class="field-label">3.0 Packaging – No. of ply / Paper Quality / Markings etc. :</span>
+                                        <input type="text"
+                                               class="inline-input"
+                                               placeholder="" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                 
+                        <table class="header-table" style="margin-top:-1px;">
+                            <tbody>
+                                <!-- Header row -->
+                                <tr>
+                                    <td style="width:5%; font-weight:bold; text-align:center;">4.0</td>
+                                    <td style="width:35%; font-weight:bold;">General Observations</td>
+                                    <td style="width:20%; font-weight:bold; text-align:center;" colspan="3">Defects</td>
+                                    <td style="width:40%; font-weight:bold;">Remarks</td>
+                                </tr>
+
+                                <!-- Cr/Mi + Ma row -->
+                                <tr>
+                                    <!-- merged cell under 4.0 + General Observations -->
+                                    <td colspan="2"></td>
+
+                                    <!-- Cr + Mi -->
+                                    <td style="text-align:center; font-weight:bold;">
+                                        Cr<br>Mi
+                                    </td>
+
+                                    <!-- Ma spanning two defect columns -->
+                                    <td style="text-align:center; font-weight:bold;" colspan="2">
+                                        Ma
+                                    </td>
+
+                                    <!-- Visual Examination box -->
+                                    <td rowspan="2" class="remarks-cell">
+                                        <div contenteditable="true"
+                                             class="remarks-title"
+                                             style="outline:none;">
+                                            Visual Examination :
+                                        </div>
+
+                                        <textarea class="inline-input remarks-textarea" placeholder=""></textarea>
+                                    </td>
+
+                                </tr>
+
+                                <!-- Content row: Housing/LED/Wiring + 3 Nil boxes -->
+                                <tr>
+                                    <td colspan="2" style="vertical-align:top; padding:20px 10px; line-height:1.8;">
+
+                                        <div style="margin-top:15px;">
+                                            <!-- Extra top space for all fields -->
+                                            <!-- Housing -->
+                                            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                                                <div contenteditable="true"
+                                                     style="width:120px; font-weight:bold; min-height:20px; padding:2px 4px; outline:none;">
+                                                    Housing :
+                                                </div>
+
+                                                <div contenteditable="true"
+                                                     style="flex:1; min-height:20px; padding:2px 4px; outline:none;">
+                                                </div>
+                                            </div>
+
+                                            <!-- LED Driver -->
+                                            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                                                <div contenteditable="true"
+                                                     style="width:120px; font-weight:bold; min-height:20px; padding:2px 4px; outline:none;">
+                                                    LED Driver :
+                                                </div>
+
+                                                <div contenteditable="true"
+                                                     style="flex:1; min-height:20px; padding:2px 4px; outline:none;">
+                                                </div>
+                                            </div>
+
+                                            <!-- Wiring -->
+                                            <div style="display:flex; gap:10px; margin-bottom:12px;">
+                                                <div contenteditable="true"
+                                                     style="width:120px; font-weight:bold; min-height:20px; padding:2px 4px; outline:none;">
+                                                    Wiring :
+                                                </div>
+
+                                                <div contenteditable="true"
+                                                     style="flex:1; min-height:20px; padding:2px 4px; outline:none;">
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td class="remarks-cell" style="vertical-align:top;">
+                                        <div contenteditable="true"
+                                             class="remarks-title"
+                                             style="position:absolute; top:14px; left:14px; font-weight:bold; outline:none;">
+                                            Nil
+                                        </div>
+
+                                        <textarea class="inline-input remarks-textarea" placeholder=""></textarea>
+                                    </td>
+
+                                    <td class="remarks-cell" style="vertical-align:top;">
+                                        <div contenteditable="true"
+                                             class="remarks-title"
+                                             style="position:absolute; top:14px; left:14px; font-weight:bold; outline:none;">
+                                            Nil
+                                        </div>
+
+                                        <textarea class="inline-input remarks-textarea" placeholder=""></textarea>
+                                    </td>
+
+                                    <td class="remarks-cell" style="vertical-align:top;">
+                                        <div contenteditable="true"
+                                             class="remarks-title"
+                                             style="position:absolute; top:14px; left:14px; font-weight:bold; outline:none;">
+                                            Nil
+                                        </div>
+
+                                        <textarea class="inline-input remarks-textarea" placeholder=""></textarea>
+                                    </td>
+
+                                </tr>
+                            </tbody>
+                        </table>
+
+
+
+
+                     
+                        <table class="header-table" style="margin-top:-1px;">
+                            <thead>
+                                <tr>
+                                    <th colspan="6"
+                                        class="subhead"
+                                        style="text-align:left; font-weight:bold; height:45px; padding-left:10px; font-size:14px; color:#000;">
+                                        B. ELECTRICAL TESTS
+
+                                        <button id="addRowBtn" type="button" class="btn btn-outline-success"
+                                                style="width:95px; font-size:13px; border-radius:6px; padding:4px 10px; margin-left:10px;">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </th>
+
+                                    <th colspan="6"
+                                        style="text-align:right; padding-right:10px;">
+                                        <span class="field-label" style="font-weight:600; color:#000;">Sample size :</span>
+                                        <input type="text"
+                                               class="inline-input"
+                                               style="width:120px;"
+                                               placeholder="" />
+                                    </th>
+                                </tr>
+                            </thead>
+                        </table>
+
+                    
+                        <table class="header-table" style="margin-top:-1px;">
+                            <thead>
+                                <tr>
+                                    <td style="width:8%; text-align:center; font-weight:600; font-size:14px; color:#000;">
+                                        S.No.
+                                    </td>
+
+                                    <td style="width:32%; font-weight:600; font-size:14px; color:#000;">
+                                        Name of the test
+                                    </td>
+
+                                    <td style="width:15%; font-weight:600; font-size:14px; color:#000;">
+                                        Test voltage
+                                    </td>
+
+                                    <td style="text-align:center; font-weight:600; font-size:14px; color:#000;" colspan="2">
+                                        OBSERVATIONS
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td></td>
+                                    <td></td>
+                                    <td></td>
+
+                                    <td style="text-align:center; font-weight:600; font-size:14px; color:#000;">
+                                        LED Driver
+                                    </td>
+
+                                    <td style="text-align:center; font-weight:600; font-size:14px; color:#000;">
+                                        Luminaire
+                                    </td>
+                                </tr>
+                            </thead>
+
+                          
+                            <tbody id="electricalTestsTbody">
+
+                               
+                           
+
+                           
+                                <tr class="test-row">
+                                    <td style="text-align:center;">
+                                        <span class="srno-number"></span>
+                                        <button type="button" class="delete-row-btn"
+                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                        </button>
+                                    </td>
+
+                                    <td contenteditable="true">Starting Test</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+
+                              
+                                <tr class="test-row">
+                                    <td style="text-align:center;">
+                                        <span class="srno-number"></span>
+                                        <button type="button" class="delete-row-btn"
+                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                        </button>
+                                    </td>
+
+                                    <td contenteditable="true">Running current(I) amps</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+
+                               
+                                <tr class="test-row">
+                                    <td style="text-align:center;">
+                                        <span class="srno-number"></span>
+                                        <button type="button" class="delete-row-btn"
+                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                        </button>
+                                    </td>
+
+                                    <td contenteditable="true">Wattage (W)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+
+                         
+                                <tr class="test-row">
+                                    <td style="text-align:center;">
+                                        <span class="srno-number"></span>
+                                        <button type="button" class="delete-row-btn"
+                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                        </button>
+                                    </td>
+
+                                    <td contenteditable="true">Power Factor</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+
+                                <!-- 5. High Voltage test -->
+                                <tr class="test-row">
+                                    <td style="text-align:center;">
+                                        <span class="srno-number"></span>
+                                        <button type="button" class="delete-row-btn"
+                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                        </button>
+                                    </td>
+
+                                    <td contenteditable="true">High Voltage test</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+
+                                <!-- 6. Ins. Res. Test Mohms -->
+                                <tr class="test-row">
+                                    <td style="text-align:center;">
+                                        <span class="srno-number"></span>
+                                        <button type="button" class="delete-row-btn"
+                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                        </button>
+                                    </td>
+
+                                    <td contenteditable="true">Ins. Res. Test Mohms</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+
+                                <!-- 7. No. of defectives nos. -->
+                                <tr class="test-row">
+                                    <td style="text-align:center;">
+                                        <span class="srno-number"></span>
+                                        <button type="button" class="delete-row-btn"
+                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                        </button>
+                                    </td>
+
+                                    <td contenteditable="true">No. of defectives nos.</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                </tr>
+
+
+                            </tbody>
+                        </table>
+
+
+                    </div> 
+                    <table class="header-table" style="margin-top:-1px;">
+                        <tbody id="dimensionsTbody">
+
+                           
+                            <tr>
+                                
+                                <td rowspan="3"
+                                    id="approvalCell"
+                                    class="remarks-cell"
+                                    style="vertical-align:top;">
+
+                                    <div class="remarks-title">Approval Details:</div>
+
+                                 
+                                    <div contenteditable="true"
+                                         style="min-height:120px; padding-top:32px; outline:none;">
+                                    </div>
+                                </td>
+
+
+                                
+                                <td colspan="3" class="dimensions-title-cell">
+                                    DIMENSIONS (mm)
+
+                                    <button id="addDimRowBtn"
+                                            type="button"
+                                            class="btn btn-outline-success dimensions-add-btn">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </td>
+
+                            </tr>
+
+                    
+                            <tr>
+                                <td style="font-weight:bold; text-align:center;">Sr. No.</td>
+                                <td style="font-weight:bold;">Specification</td>
+                                <td style="font-weight:bold;">Measured</td>
+                            </tr>
+
+
+                        </tbody>
+                    </table>
+                    <table class="header-table" style="margin-top:-1px; width:100%;">
+                        <tbody>
+                            <tr>
+
+                                <td class="remarks-cell" style="vertical-align:top; width:55%;">
+                                    <div class="remarks-title">Abbreviations:</div>
+
+                                   
+                                    <div contenteditable="true"
+                                         style="min-height:120px; padding-top:32px; outline:none;">
+                                    </div>
+                                </td>
+
+
+
+                                <td style="vertical-align:top; width:50%; padding:12px;">
+
+                                    <div class="signature-flex-box">
+
+
+                                        <div contenteditable="true"
+                                             style="font-weight:bold; margin-bottom:4px; outline:none;">
+                                            Sumit Band
+                                        </div>
+
+
+                                        <div contenteditable="true"
+                                             style="font-weight:bold; outline:none;">
+                                            For Wipro Enterprises P. Limited.
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                </div>
+
+
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+
+    let addBtn;
+    let tbody;
+
+    $(document).ready(function () {
+        try { initElectricalTests(); } catch (e) { console.error(e); }
+        try { initDimensions(); } catch (e) { console.error(e); }
+    });
+
+    function refreshSerials() {
+        const rows = tbody.querySelectorAll('tr.test-row');
+        rows.forEach((tr, idx) => {
+            const snSpan = tr.querySelector('.srno-number');
+            if (snSpan) snSpan.textContent = idx + 1;
+        });
+    }
+
+    function addRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'test-row';
+
+        tr.innerHTML = `
+                <td style="width:8%; text-align:center;">
+                    <span class="srno-number"></span>
+                    <button type="button" class="delete-row-btn"
+                            style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                        <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                    </button>
+                </td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true"></td>
+            `;
+
+        tbody.appendChild(tr);
+        refreshSerials();
+    }
+
+    function initElectricalTests() {
+        addBtn = document.getElementById('addRowBtn');
+        tbody = document.getElementById('electricalTestsTbody');
+
+        if (!addBtn || !tbody) {
+            console.error('Add button or electricalTestsTbody not found.');
+            return;
+        }
+
+        tbody.addEventListener('click', function (e) {
+            const delBtn = e.target.closest('.delete-row-btn');
+            if (!delBtn) return;
+
+            const tr = delBtn.closest('tr.test-row');
+            if (tr) tr.remove();
+            refreshSerials();
+        });
+
+        addBtn.addEventListener('click', addRow);
+        refreshSerials();
+    }
+
+    let addDimBtn;
+    let dimTbody;
+    let approvalCell;
+
+    function refreshDimSerials() {
+        const rows = dimTbody.querySelectorAll('tr.dim-row');
+
+        rows.forEach((tr, idx) => {
+            const snSpan = tr.querySelector('.dim-srno');
+            if (snSpan) snSpan.textContent = idx + 1;
+        });
+
+        if (approvalCell) {
+            approvalCell.rowSpan = 2 + rows.length;
+        }
+    }
+
+    function addDimRow() {
+        const tr = document.createElement('tr');
+        tr.className = 'dim-row';
+
+        tr.innerHTML = `
+                <td style="text-align:center;">
+                    <span class="dim-srno"></span>
+                    <button type="button" class="delete-dim-row-btn"
+                            style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                        <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                    </button>
+                </td>
+                <td contenteditable="true" style="white-space:normal;"></td>
+                <td contenteditable="true"></td>
+            `;
+
+        dimTbody.appendChild(tr);
+        refreshDimSerials();
+    }
+
+    function initDimensions() {
+        addDimBtn = document.getElementById('addDimRowBtn');
+        dimTbody = document.getElementById('dimensionsTbody');
+        approvalCell = document.getElementById('approvalCell');
+
+        if (!addDimBtn || !dimTbody) {
+            console.error('Dimensions button or dimensionsTbody not found.');
+            return;
+        }
+
+        dimTbody.addEventListener('click', function (e) {
+            const delBtn = e.target.closest('.delete-dim-row-btn');
+            if (!delBtn) return;
+
+            const tr = delBtn.closest('tr.dim-row');
+            if (tr) tr.remove();
+            refreshDimSerials();
+        });
+
+        addDimBtn.addEventListener('click', addDimRow);
+        refreshDimSerials();
+    }
+
+ 
+
+    
+</script>
+
+
+
+
+
+
+
+
+
+@section HideSidebar { }

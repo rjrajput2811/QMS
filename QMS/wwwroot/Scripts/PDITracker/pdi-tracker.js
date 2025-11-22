@@ -2,8 +2,8 @@
 var table = '';
 let vendorOptions = {};
 let vendorBatchCodeOptions = {};
-let filterStartDate = moment().startOf('week').format('YYYY-MM-DD');
-let filterEndDate = moment().endOf('week').format('YYYY-MM-DD');
+let filterStartDate = moment().startOf('month').format('YYYY-MM-DD');
+let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
 var tabledataBatchCode = [];
 var tableBatchCode = '';
 let batchCodeOptions = {};
@@ -51,8 +51,8 @@ $(document).ready(function () {
             'This Month': [moment().startOf('month'), moment().endOf('month')],
             'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
         },
-        startDate: moment().startOf('week').format('DD-MM-YYYY'),
-        endDate: moment().endOf('week').format('DD-MM-YYYY')
+        startDate: moment().startOf('month').format('DD-MM-YYYY'),
+        endDate: moment().endOf('month').format('DD-MM-YYYY')
     });
 
     // 🔑 Ensure calendar opens on click
@@ -1111,14 +1111,254 @@ function OnTabGridLoad(response) {
     })();
 
     //// Export to Excel on button click
+    //document.getElementById("exportPDIButton").addEventListener("click", async function () {
+    //    // ===== 0) OPTIONS =====
+    //    const EXPORT_SCOPE = "active"; // "active" | "selected" | "all"
+    //    const EXPORT_RAW = false;    // false = use display/labels
+
+    //    // ===== 1) Build columns list from visible Tabulator columns (exclude Action/User)
+    //    if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+
+    //    const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
+    //    const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
+
+    //    const tabCols = table.getColumns(true)
+    //        .filter(c => c.getField())
+    //        .filter(c => c.isVisible())
+    //        .filter(c => {
+    //            const def = c.getDefinition();
+    //            const field = def.field || "";
+    //            const title = (def.title || "").trim();
+    //            return !EXCLUDE_FIELDS.has(field) && !EXCLUDE_TITLES.has(title);
+    //        });
+
+    //    const excelCols = tabCols.map(col => {
+    //        const def = col.getDefinition();
+    //        const label = def.title || def.field;
+    //        const px = (def.width || col.getWidth() || 120);
+    //        const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
+    //        return { label, key: def.field, width };
+    //    });
+
+    //    if (!excelCols.length) { alert("No visible columns to export."); return; }
+
+    //    // ===== 2) DOC DETAILS (fixed two rightmost columns)
+    //    const docDetails = [
+    //        ["Document No", "WCIB/LS/QA/R/005"],
+    //        ["Effective Date", "01/10/2022"],
+    //        ["Revision No", "0"],
+    //        ["Revision Date", "01/10/2022"],
+    //        ["Page No", "1 of 1"]
+    //    ];
+
+    //    // ===== 3) Layout constants =====
+    //    const TOTAL_COLS = excelCols.length;
+    //    const HEADER_TOP = 1;
+    //    const HEADER_BOTTOM = 5;
+    //    const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
+    //    const TITLE_TEXT = "PDI TRACKER";
+
+    //    // Logo block (A1:B5)
+    //    const LOGO_COL_START = 1, LOGO_COL_END = 2;
+    //    const LOGO_ROW_START = HEADER_TOP, LOGO_ROW_END = HEADER_BOTTOM;
+
+    //    const TITLE_COL_START = Math.min(3, TOTAL_COLS);
+    //    const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
+
+    //    const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
+    //    const DETAILS_VALUE_COL = TOTAL_COLS;
+
+    //    // ===== 4) Helpers =====
+    //    async function fetchAsBase64(url) {
+    //        const res = await fetch(url);
+    //        const blob = await res.blob();
+    //        return new Promise((resolve) => {
+    //            const reader = new FileReader();
+    //            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    //            reader.readAsDataURL(blob);
+    //        });
+    //    }
+    //    function setBorder(cell, style = "thin") {
+    //        cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+    //    }
+    //    function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+    //        for (let c = c1; c <= c2; c++) {
+    //            const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+    //            top.border = { ...top.border, top: { style } };
+    //            bottom.border = { ...bottom.border, bottom: { style } };
+    //        }
+    //        for (let r = r1; r <= r2; r++) {
+    //            const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+    //            left.border = { ...left.border, left: { style } };
+    //            right.border = { ...right.border, right: { style } };
+    //        }
+    //    }
+
+    //    // ===== 5) Workbook / Sheet =====
+    //    const wb = new ExcelJS.Workbook();
+    //    const ws = wb.addWorksheet("PDI Tracker", {
+    //        properties: { defaultRowHeight: 15 },
+    //        views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+    //    });
+
+    //    ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+    //    // Row heights so logo fits
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) ws.getRow(r).height = 18;
+
+    //    ws.pageSetup = {
+    //        orientation: "landscape",
+    //        fitToPage: true,
+    //        fitToWidth: 1,
+    //        fitToHeight: 0,
+    //        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+    //        printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
+    //    };
+
+    //    // ===== 6) Header band fill =====
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        for (let c = 1; c <= TOTAL_COLS; c++) {
+    //            ws.getCell(r, c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" } };
+    //        }
+    //    }
+
+    //    // ===== 7) Logo centered in A1:B5 (no stretch) + outline =====
+    //    const LOGO_WIDTH_PX = 100, LOGO_HEIGHT_PX = 100;
+
+    //    const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);
+    //    const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));
+
+    //    let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+    //    let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
+
+    //    const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
+    //    const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
+
+    //    const logoCols = LOGO_WIDTH_PX / avgColPx;
+    //    const logoRows = LOGO_HEIGHT_PX / avgRowPx;
+
+    //    const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+    //    const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+
+    //    const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+    //    if (logoUrl) {
+    //        try {
+    //            const base64 = await fetchAsBase64(logoUrl);
+    //            const imgId = wb.addImage({ base64, extension: "png" });
+    //            ws.addImage(imgId, {
+    //                tl: { col: tlCol, row: tlRow },
+    //                ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
+    //                editAs: "oneCell"
+    //            });
+    //        } catch (e) { console.warn("Logo load failed:", e); }
+    //    }
+    //    outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
+
+    //    // ===== 8) Title (merge) + outline =====
+    //    ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+    //    const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+    //    titleCell.value = TITLE_TEXT;
+    //    titleCell.font = { bold: true, size: 18 };
+    //    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+    //    outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+
+    //    // ===== 9) Document details in the last two columns =====
+    //    const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
+    //    docDetails.forEach((pair, i) => {
+    //        const r = HEADER_TOP + i;
+    //        const labelCell = ws.getCell(r, DETAILS_LABEL_COL);
+    //        const valueCell = ws.getCell(r, DETAILS_VALUE_COL);
+
+    //        labelCell.value = pair[0];
+    //        valueCell.value = pair[1];
+
+    //        labelCell.font = { bold: true };
+    //        [labelCell, valueCell].forEach(cell => {
+    //            cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //            setBorder(cell, "thin");
+    //        });
+    //    });
+    //    outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
+
+    //    // ===== 10) Manual table header row =====
+    //    while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // pad to row before header
+
+    //    const headerTitles = excelCols.map(c => c.label);
+    //    const headerRow = ws.addRow(headerTitles);
+    //    headerRow.height = 22;
+    //    headerRow.eachCell((cell) => {
+    //        cell.font = { bold: true };
+    //        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    //        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+    //        setBorder(cell);
+    //    });
+
+    //    // ===== 11) DATA ROWS (use display text for dropdowns) =====
+    //    let tabRows;
+    //    switch (EXPORT_SCOPE) {
+    //        case "selected": tabRows = table.getSelectedRows(); break;
+    //        case "all": tabRows = table.getRows(); break;
+    //        case "active":
+    //        default: tabRows = table.getRows("active"); break;
+    //    }
+
+    //    tabRows.forEach(row => {
+    //        const cells = row.getCells();
+    //        const byField = {};
+
+    //        cells.forEach(cell => {
+    //            const f = cell.getField();
+    //            if (!f) return;
+
+    //            const def = cell.getColumn().getDefinition();
+    //            const title = (def.title || "").trim();
+
+    //            if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
+
+    //            byField[f] = EXPORT_RAW ? row.getData()[f] : getDisplayValue(cell);
+    //        });
+
+    //        const values = excelCols.map(c => byField[c.key] ?? "");
+    //        const xRow = ws.addRow(values);
+
+    //        xRow.eachCell((cell, colNumber) => {
+    //            cell.alignment = {
+    //                vertical: "middle",
+    //                horizontal: colNumber === 1 ? "center" : "left",
+    //                wrapText: true
+    //            };
+    //            setBorder(cell);
+    //        });
+    //    });
+
+    //    // ===== 12) DOWNLOAD =====
+    //    const buffer = await wb.xlsx.writeBuffer();
+    //    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    //    const link = document.createElement("a");
+    //    link.href = URL.createObjectURL(blob);
+    //    link.download = "PDI Tracker.xlsx";
+    //    document.body.appendChild(link);
+    //    link.click();
+    //    link.remove();
+    //});
+
+    // Simple fallback – if you already have a better getDisplayValue, remove this
+    function getDisplayValue(cell) {
+        if (!cell) return "";
+        const v = cell.getValue();
+        return v == null ? "" : String(v);
+    }
+
+    // Export to Excel on button click
     document.getElementById("exportPDIButton").addEventListener("click", async function () {
-        // ===== 0) OPTIONS =====
         const EXPORT_SCOPE = "active"; // "active" | "selected" | "all"
-        const EXPORT_RAW = false;    // false = use display/labels
 
-        // ===== 1) Build columns list from visible Tabulator columns (exclude Action/User)
-        if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+        if (!window.table) {
+            console.error("Tabulator 'table' not found.");
+            return;
+        }
 
+        // ===== 1) BUILD COLUMNS FROM TABULATOR (VISIBLE ONLY) =====
         const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
         const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
 
@@ -1140,9 +1380,46 @@ function OnTabGridLoad(response) {
             return { label, key: def.field, width };
         });
 
-        if (!excelCols.length) { alert("No visible columns to export."); return; }
+        const TOTAL_COLS = excelCols.length;
+        if (!TOTAL_COLS) {
+            alert("No visible columns to export.");
+            return;
+        }
 
-        // ===== 2) DOC DETAILS (fixed two rightmost columns)
+        // find product code / description / remark columns BY TITLE
+        const PRODUCT_CODE_TITLES = new Set(["Product Codes", "Product Code"]);
+        const PRODUCT_DESC_TITLES = new Set(["Product Description", "Product Desc"]);
+        const REMARK_TITLES = new Set(["Remark", "Remarks"]);
+
+        let codeColKey = null, descColKey = null;
+        let codeColIndex = null, descColIndex = null, remarkColIndex = null; // 1-based for Excel
+
+        excelCols.forEach((col, idx) => {
+            const title = (col.label || "").trim();
+            const i = idx + 1;
+            if (PRODUCT_CODE_TITLES.has(title)) {
+                codeColKey = col.key;
+                codeColIndex = i;
+            }
+            if (PRODUCT_DESC_TITLES.has(title)) {
+                descColKey = col.key;
+                descColIndex = i;
+            }
+            if (REMARK_TITLES.has(title)) {
+                remarkColIndex = i;
+            }
+        });
+
+        if (!codeColKey || !descColKey) {
+            console.warn("Product Codes / Product Description columns not found by title.");
+        }
+
+        // columns that must be LEFT-aligned (data rows)
+        const leftAlignCols = new Set(
+            [codeColIndex, descColIndex, remarkColIndex].filter(Boolean)
+        );
+
+        // ===== 2) DOC DETAILS (last two columns) =====
         const docDetails = [
             ["Document No", "WCIB/LS/QA/R/005"],
             ["Effective Date", "01/10/2022"],
@@ -1152,13 +1429,11 @@ function OnTabGridLoad(response) {
         ];
 
         // ===== 3) Layout constants =====
-        const TOTAL_COLS = excelCols.length;
         const HEADER_TOP = 1;
         const HEADER_BOTTOM = 5;
-        const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
+        const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 6
         const TITLE_TEXT = "PDI TRACKER";
 
-        // Logo block (A1:B5)
         const LOGO_COL_START = 1, LOGO_COL_END = 2;
         const LOGO_ROW_START = HEADER_TOP, LOGO_ROW_END = HEADER_BOTTOM;
 
@@ -1178,58 +1453,106 @@ function OnTabGridLoad(response) {
                 reader.readAsDataURL(blob);
             });
         }
+
         function setBorder(cell, style = "thin") {
-            cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+            cell.border = {
+                top: { style },
+                bottom: { style },
+                left: { style },
+                right: { style }
+            };
         }
+
         function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
             for (let c = c1; c <= c2; c++) {
-                const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+                const top = ws.getCell(r1, c);
+                const bottom = ws.getCell(r2, c);
                 top.border = { ...top.border, top: { style } };
                 bottom.border = { ...bottom.border, bottom: { style } };
             }
             for (let r = r1; r <= r2; r++) {
-                const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+                const left = ws.getCell(r, c1);
+                const right = ws.getCell(r, c2);
                 left.border = { ...left.border, left: { style } };
                 right.border = { ...right.border, right: { style } };
             }
+        }
+
+        // Product Codes – split by <br>, newline, or ", "
+        function splitCodes(displayValue) {
+            if (!displayValue) return [];
+            let txt = String(displayValue)
+                .replace(/<br\s*\/?>/gi, "\n")
+                .replace(/\r\n/g, "\n");
+            txt = txt.replace(/\s*\|\s*/g, "\n");  // if you ever use " | "
+            return txt
+                .split(/\n|,\s*/g)
+                .map(s => s.trim())
+                .filter(Boolean);
+        }
+
+        // Product Description – split by " | " or newline (keep commas)
+        function splitDescs(displayValue) {
+            if (!displayValue) return [];
+            let txt = String(displayValue)
+                .replace(/<br\s*\/?>/gi, "\n")
+                .replace(/\r\n/g, "\n");
+            txt = txt.replace(/\s*\|\s*/g, "\n");
+            return txt
+                .split("\n")
+                .map(s => s.trim())
+                .filter(Boolean);
         }
 
         // ===== 5) Workbook / Sheet =====
         const wb = new ExcelJS.Workbook();
         const ws = wb.addWorksheet("PDI Tracker", {
             properties: { defaultRowHeight: 15 },
-            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }]
         });
 
         ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
 
-        // Row heights so logo fits
-        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) ws.getRow(r).height = 18;
+        for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+            ws.getRow(r).height = 18;
+        }
 
         ws.pageSetup = {
             orientation: "landscape",
             fitToPage: true,
             fitToWidth: 1,
             fitToHeight: 0,
-            margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+            margins: {
+                left: 0.3,
+                right: 0.3,
+                top: 0.5,
+                bottom: 0.5,
+                header: 0.2,
+                footer: 0.2
+            },
             printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
         };
 
-        // ===== 6) Header band fill =====
+        // ===== 6) Header band fill (rows 1–5) =====
         for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
             for (let c = 1; c <= TOTAL_COLS; c++) {
-                ws.getCell(r, c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" } };
+                ws.getCell(r, c).fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FFF7F7F7" }
+                };
             }
         }
 
-        // ===== 7) Logo centered in A1:B5 (no stretch) + outline =====
+        // ===== 7) Logo block =====
         const LOGO_WIDTH_PX = 100, LOGO_HEIGHT_PX = 100;
-
         const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);
         const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));
 
-        let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
-        let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
+        let rectWpx = 0;
+        for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+        let rectHpx = 0;
+        for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
 
         const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
         const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
@@ -1237,10 +1560,15 @@ function OnTabGridLoad(response) {
         const logoCols = LOGO_WIDTH_PX / avgColPx;
         const logoRows = LOGO_HEIGHT_PX / avgRowPx;
 
-        const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
-        const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+        const tlCol = (LOGO_COL_START - 1) +
+            ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+        const tlRow = (LOGO_ROW_START - 1) +
+            ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
 
-        const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+        const logoUrl =
+            window.LOGO_URL ||
+            (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+
         if (logoUrl) {
             try {
                 const base64 = await fetchAsBase64(logoUrl);
@@ -1250,11 +1578,13 @@ function OnTabGridLoad(response) {
                     ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
                     editAs: "oneCell"
                 });
-            } catch (e) { console.warn("Logo load failed:", e); }
+            } catch (e) {
+                console.warn("Logo load failed:", e);
+            }
         }
         outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
 
-        // ===== 8) Title (merge) + outline =====
+        // ===== 8) Title =====
         ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
         const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
         titleCell.value = TITLE_TEXT;
@@ -1262,7 +1592,7 @@ function OnTabGridLoad(response) {
         titleCell.alignment = { horizontal: "center", vertical: "middle" };
         outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
 
-        // ===== 9) Document details in the last two columns =====
+        // ===== 9) Document details (top-right) =====
         const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
         docDetails.forEach((pair, i) => {
             const r = HEADER_TOP + i;
@@ -1274,66 +1604,145 @@ function OnTabGridLoad(response) {
 
             labelCell.font = { bold: true };
             [labelCell, valueCell].forEach(cell => {
-                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
-                setBorder(cell, "thin");
+                cell.alignment = {
+                    vertical: "middle",
+                    horizontal: "left",
+                    wrapText: true
+                };
+                setBorder(cell);
             });
         });
         outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
 
-        // ===== 10) Manual table header row =====
-        while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // pad to row before header
+        // ===== 10) Table header row =====
+        while (ws.rowCount < GRID_HEADER_ROW - 1) {
+            ws.addRow([]);
+        }
 
         const headerTitles = excelCols.map(c => c.label);
         const headerRow = ws.addRow(headerTitles);
         headerRow.height = 22;
         headerRow.eachCell((cell) => {
             cell.font = { bold: true };
-            cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+            cell.alignment = {
+                horizontal: "center",
+                vertical: "center",
+                wrapText: true
+            };
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFD9E1F2" }
+            };
             setBorder(cell);
         });
 
-        // ===== 11) DATA ROWS (use display text for dropdowns) =====
+        // ===== 11) DATA ROWS WITH MERGED NON-PRODUCT COLUMNS =====
         let tabRows;
         switch (EXPORT_SCOPE) {
-            case "selected": tabRows = table.getSelectedRows(); break;
-            case "all": tabRows = table.getRows(); break;
+            case "selected":
+                tabRows = table.getSelectedRows();
+                break;
+            case "all":
+                tabRows = table.getRows();
+                break;
             case "active":
-            default: tabRows = table.getRows("active"); break;
+            default:
+                tabRows = table.getRows("active");
+                break;
         }
 
         tabRows.forEach(row => {
-            const cells = row.getCells();
-            const byField = {};
+            const rowData = row.getData();
 
-            cells.forEach(cell => {
-                const f = cell.getField();
-                if (!f) return;
+            // base values for ALL columns (first line)
+            const baseValues = {};
+            excelCols.forEach(col => {
+                const cell = row.getCell(col.key);
+                let val = getDisplayValue(cell);
 
-                const def = cell.getColumn().getDefinition();
-                const title = (def.title || "").trim();
+                // Convert BISCompliance true/false → Yes/No
+                if (col.label.trim().toLowerCase() === "bis compliance") {
+                    if (val === true || val === "true" || val === "True") val = "Yes";
+                    else if (val === false || val === "false" || val === "False") val = "No";
+                }
 
-                if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
-
-                byField[f] = EXPORT_RAW ? row.getData()[f] : getDisplayValue(cell);
+                baseValues[col.key] = val;
             });
 
-            const values = excelCols.map(c => byField[c.key] ?? "");
-            const xRow = ws.addRow(values);
+            // get codes & descs from THEIR display cells
+            const codeDisplay = codeColKey ? baseValues[codeColKey] : "";
+            const descDisplay = descColKey ? baseValues[descColKey] : "";
 
-            xRow.eachCell((cell, colNumber) => {
-                cell.alignment = {
-                    vertical: "middle",
-                    horizontal: colNumber === 1 ? "center" : "left",
-                    wrapText: true
-                };
-                setBorder(cell);
-            });
+            const codes = splitCodes(codeDisplay);
+            const descs = splitDescs(descDisplay);
+            const maxLines = Math.max(codes.length, descs.length, 1);
+
+            const startRowIdx = ws.rowCount + 1;
+
+            for (let i = 0; i < maxLines; i++) {
+                const isFirst = (i === 0);
+
+                const values = excelCols.map((col, idx) => {
+                    const key = col.key;
+                    const colIndex = idx + 1;
+
+                    if (key === codeColKey) {
+                        return codes[i] || "";
+                    }
+                    if (key === descColKey) {
+                        return descs[i] || "";
+                    }
+
+                    // non-product columns: only in first row, blank later
+                    return isFirst ? (baseValues[key] ?? "") : "";
+                });
+
+                const xRow = ws.addRow(values);
+
+                // *** ALIGNMENT: only Product Codes / Product Description / Remark left,
+                //     all other data columns center ***
+                xRow.eachCell((cell, colNumber) => {
+                    const horizontal = leftAlignCols.has(colNumber) ? "left" : "center";
+                    cell.alignment = {
+                        vertical: "middle",
+                        horizontal: horizontal,
+                        wrapText: true
+                    };
+                    setBorder(cell);
+                });
+            }
+
+            const endRowIdx = ws.rowCount;
+
+            if (maxLines > 1) {
+                // Merge every column EXCEPT Product Codes & Product Description
+                const mergeCols = [];
+                for (let i = 1; i <= TOTAL_COLS; i++) {
+                    if (i !== codeColIndex && i !== descColIndex) {
+                        mergeCols.push(i);
+                    }
+                }
+
+                mergeCols.forEach(colIdx => {
+                    ws.mergeCells(startRowIdx, colIdx, endRowIdx, colIdx);
+                    const cell = ws.getCell(startRowIdx, colIdx);
+                    const horizontal = leftAlignCols.has(colIdx) ? "left" : "center";
+                    cell.alignment = {
+                        vertical: "middle",
+                        horizontal: horizontal,
+                        wrapText: true
+                    };
+                });
+            }
         });
 
         // ===== 12) DOWNLOAD =====
         const buffer = await wb.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const blob = new Blob(
+            [buffer],
+            { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+        );
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = "PDI Tracker.xlsx";
@@ -1341,6 +1750,10 @@ function OnTabGridLoad(response) {
         link.click();
         link.remove();
     });
+
+    
+
+
 
     Blockloaderhide();
 }

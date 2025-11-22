@@ -283,20 +283,18 @@ function loadThirdInsData() {
         return map;
     }
 
-    // NEW: formatter that shows CODE — DESC chips in the ProductCode cell
+    // Kept for other columns if needed; NOT used for ProductCode now
     global.tagsFormatterPairs = function (cell, params) {
         const joinWith = params?.joinWith ?? ", ";
-        const pairSeparator = params?.pairSeparator ?? " — "; // change to " - " if you prefer hyphen
+        const pairSeparator = params?.pairSeparator ?? " — ";
         const pairJoinWith = params?.pairJoinWith ?? " | ";
-        const descFieldParam = params?.descField; // string or array of possible fields
+        const descFieldParam = params?.descField;
 
-        // get codes from cell
         const raw = cell.getValue();
         const codes = Array.isArray(raw)
             ? raw
             : String(raw || "").split(joinWith).map(s => s.trim()).filter(Boolean);
 
-        // find the description text in the row (e.g. ProductDescription / ProdDesc)
         const row = cell.getRow().getData();
         let descText = "";
         if (Array.isArray(descFieldParam)) {
@@ -309,13 +307,11 @@ function loadThirdInsData() {
 
         const map = parsePairs(descText, pairSeparator, pairJoinWith);
 
-        // build labels: CODE — DESC (fallback to CODE if desc not found yet)
         const labels = codes.map(code => {
             const d = map.get(String(code));
             return d ? `${code}${pairSeparator}${d}` : String(code);
         });
 
-        // render chips
         return labels.map(lbl => `<span class="tab-tag">${escapeHTML(lbl)}</span>`).join(" ");
     };
 })(window);
@@ -329,12 +325,15 @@ Tabulator.extendModule("edit", "editors", {
     autocomplete_ajax_multi: function (cell, onRendered, success, cancel, editorParams) {
         // ---------- utilities ----------
         const _escapeHtml = s => String(s ?? "").replace(/[&<>"']/g,
-            m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+            m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': "&quot;", "'": '&#39;' }[m]));
 
         function _firstField(obj, candidates) {
-            for (const k of candidates) { if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) return obj[k]; }
+            for (const k of candidates) {
+                if (obj && Object.prototype.hasOwnProperty.call(obj, k) && obj[k] != null) return obj[k];
+            }
             return undefined;
         }
+
         function _parseCodeDesc(label) {
             if (!label) return { code: undefined, desc: undefined };
             const s = String(label);
@@ -357,16 +356,10 @@ Tabulator.extendModule("edit", "editors", {
                     const desc = m.slice(1).join(pairSep).trim();
                     if (code) map.set(code, desc);
                 } else {
-                    // If only desc present (legacy), we can't map to code reliably
-                    // we'll keep it for later display but not code-map
+                    // Only desc present (legacy) – can't map to code, ignore for mapping
                 }
             }
             return map;
-        }
-
-        // chips formatter for read mode (re-used here)
-        function tagsFormatterInline(arr, joinWith) {
-            return arr.map(x => `<span class="tab-tag">${_escapeHtml(x)}</span>`).join(' ');
         }
 
         // ---------- config ----------
@@ -384,18 +377,22 @@ Tabulator.extendModule("edit", "editors", {
             descItemFieldCandidates: ['description', 'desc', 'productDescription', 'ProductDescription', 'prodDesc', 'ProdDesc'],
 
             // Linked row description field(s) to update
-            descField: ['ProdDesc', 'ProductDescription'], // can be string or array
-            descAsArray: false,              // store descs as array or as joined string
-            descJoinWith: ' | ',             // joiner for desc-only format
+            // IMPORTANT: final behaviour = ONLY DESCRIPTIONS in ProdDesc
+            descField: ['ProdDesc'],   // will update only ProdDesc
+            descAsArray: false,        // store desc as a single string, not array
+            descJoinWith: ' | ',       // join multiple descs with pipe
 
-            // NEW: actually used now
-            descFormat: 'pair',              // 'pair' -> "CODE — DESC" ; 'desc' -> "DESC"
-            descPairSeparator: ' — ',
+            // Store mode:
+            //  - 'desc'  -> only descriptions in descField
+            //  - 'pair'  -> "CODE — DESC" in descField
+            descFormat: 'desc',        // <<< KEY: we want ONLY DESC
+
+            descPairSeparator: ' — ',  // still used if descFormat='pair'
             descPairJoinWith: ' | ',
 
             updateRowOnPick: true,
 
-            asArray: true,                   // store codes as array in the cell
+            asArray: true,             // ProductCode stored as array of codes
             joinWith: ', ',
             maxSelect: 0,
             allowFreeText: false
@@ -405,15 +402,24 @@ Tabulator.extendModule("edit", "editors", {
 
         // ---------- UI ----------
         const wrap = document.createElement('div');
-        wrap.className = 'tab-multi-ac'; wrap.style.width = "100%";
+        wrap.className = 'tab-multi-ac';
+        wrap.style.width = "100%";
+
         const input = document.createElement('input');
-        input.type = 'text'; input.autocomplete = 'off';
+        input.type = 'text';
+        input.autocomplete = 'off';
         wrap.appendChild(input);
 
         let dropdown = null, activeIndex = -1, pendingXHR = null, lastQuery = '';
-        let selected = []; const selectedSet = new Set();
+        let selected = [];
+        const selectedSet = new Set();
 
-        function removeDropdown() { if (dropdown && dropdown.parentNode) dropdown.parentNode.removeChild(dropdown); dropdown = null; activeIndex = -1; }
+        function removeDropdown() {
+            if (dropdown && dropdown.parentNode) dropdown.parentNode.removeChild(dropdown);
+            dropdown = null;
+            activeIndex = -1;
+        }
+
         function positionDropdown() {
             if (!dropdown) return;
             const r = wrap.getBoundingClientRect();
@@ -421,72 +427,122 @@ Tabulator.extendModule("edit", "editors", {
             dropdown.style.left = (r.left) + "px";
             dropdown.style.minWidth = r.width + "px";
         }
-        function cancelPending() { if (pendingXHR && pendingXHR.readyState !== 4) { try { pendingXHR.abort(); } catch (e) { } } pendingXHR = null; }
 
-        const debouncedFetch = (() => { let t = null; return (q) => { clearTimeout(t); t = setTimeout(() => fetchSuggestions(q), cfg.debounce); }; })();
+        function cancelPending() {
+            if (pendingXHR && pendingXHR.readyState !== 4) {
+                try { pendingXHR.abort(); } catch (e) { }
+            }
+            pendingXHR = null;
+        }
+
+        const debouncedFetch = (() => {
+            let t = null;
+            return (q) => {
+                clearTimeout(t);
+                t = setTimeout(() => fetchSuggestions(q), cfg.debounce);
+            };
+        })();
 
         function normalizeItem(raw) {
             let code = _firstField(raw, [cfg.valueField, ...cfg.valueFieldCandidates]);
             let desc = _firstField(raw, [cfg.descItemField, ...cfg.descItemFieldCandidates]);
             let label = _firstField(raw, [cfg.labelField, ...cfg.labelFieldCandidates]);
-            if (!desc && label) { const parsed = _parseCodeDesc(label); if (!code && parsed.code) code = parsed.code; if (parsed.desc) desc = parsed.desc; }
+
+            if (!desc && label) {
+                const parsed = _parseCodeDesc(label);
+                if (!code && parsed.code) code = parsed.code;
+                if (parsed.desc) desc = parsed.desc;
+            }
+
             if (!label) label = desc ? `${code} ${cfg.descPairSeparator}${desc}` : (code ?? '');
-            return { code: String(code || '').trim(), desc: desc ? String(desc).trim() : undefined, label: String(label || '').trim() };
+
+            return {
+                code: String(code || '').trim(),
+                desc: desc ? String(desc).trim() : undefined,
+                label: String(label || '').trim()
+            };
         }
 
         function fetchSuggestions(q) {
             if (q === lastQuery) return;
             lastQuery = q;
             cancelPending();
-            if (q.length < cfg.minChars) { removeDropdown(); return; }
+            if (q.length < cfg.minChars) {
+                removeDropdown();
+                return;
+            }
 
             pendingXHR = $.ajax({
-                url: cfg.url, type: 'GET', data: { [cfg.queryParam]: q }
+                url: cfg.url,
+                type: 'GET',
+                data: { [cfg.queryParam]: q }
             }).done(function (data) {
                 renderDropdown(Array.isArray(data) ? data : []);
-            }).always(function () { pendingXHR = null; });
+            }).always(function () {
+                pendingXHR = null;
+            });
         }
 
         function renderDropdown(items) {
             removeDropdown();
+
             dropdown = document.createElement('div');
             dropdown.className = 'autocomplete-dropdown';
 
             const normalized = items.map(normalizeItem).filter(it => it.code);
             const filtered = normalized.filter(it => !selectedSet.has(it.code));
+
             if (filtered.length === 0) {
                 const empty = document.createElement('div');
-                empty.className = 'autocomplete-option'; empty.style.opacity = .6;
-                empty.textContent = 'No matches'; dropdown.appendChild(empty);
+                empty.className = 'autocomplete-option';
+                empty.style.opacity = .6;
+                empty.textContent = 'No matches';
+                dropdown.appendChild(empty);
             } else {
                 filtered.forEach((it) => {
                     const opt = document.createElement('div');
                     opt.className = 'autocomplete-option';
                     opt.innerHTML = _escapeHtml(it.label);
                     opt.addEventListener('mousedown', function (e) {
-                        e.preventDefault(); e.stopPropagation();
-                        addTag(it); flushTags();
-                        input.focus(); debouncedFetch(input.value.trim());
+                        e.preventDefault();
+                        e.stopPropagation();
+                        addTag(it);
+                        flushTags();
+                        input.focus();
+                        debouncedFetch(input.value.trim());
                     });
                     dropdown.appendChild(opt);
                 });
             }
 
             document.body.appendChild(dropdown);
+
             dropdown.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); });
             dropdown.addEventListener('click', (e) => e.stopPropagation());
             dropdown.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
             dropdown.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+
             positionDropdown();
         }
 
         function flushTags() {
             [...wrap.querySelectorAll('.tab-tag')].forEach(e => e.remove());
-            const labels = selected.map(it => it.desc ? `${it.code} ${cfg.descPairSeparator}${it.desc}` : (it.label || it.code));
+
+            const labels = selected.map(it =>
+                it.desc
+                    ? `${it.code} ${cfg.descPairSeparator}${it.desc}`
+                    : (it.label || it.code)
+            );
+
             labels.forEach((label, i) => {
-                const tag = document.createElement('span'); tag.className = 'tab-tag';
+                const tag = document.createElement('span');
+                tag.className = 'tab-tag';
                 tag.innerHTML = _escapeHtml(label) + ' <span class="tab-x" title="Remove">×</span>';
-                tag.querySelector('.tab-x').addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); removeItem(selected[i].code); });
+                tag.querySelector('.tab-x').addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeItem(selected[i].code);
+                });
                 wrap.insertBefore(tag, input);
             });
         }
@@ -498,8 +554,9 @@ Tabulator.extendModule("edit", "editors", {
 
             selected.push({ code, desc: item.desc ?? undefined, label: item.label ?? code });
             selectedSet.add(code);
+
             if (repaint) flushTags();
-            if (cfg.updateRowOnPick) syncLinkedDesc(); // will join ALL, not overwrite
+            if (cfg.updateRowOnPick) syncLinkedDesc();
             input.value = '';
         }
 
@@ -510,19 +567,41 @@ Tabulator.extendModule("edit", "editors", {
             if (cfg.updateRowOnPick) syncLinkedDesc();
         }
 
-        function codesArray() { return selected.map(it => it.code); }
+        function codesArray() {
+            return selected.map(it => it.code);
+        }
 
         function buildDescOutput() {
             if (cfg.descFormat === 'pair') {
                 const parts = selected.map(it => {
                     if (it.desc) return `${it.code}${cfg.descPairSeparator}${it.desc}`;
-                    // if desc is unknown, still keep the code so user knows it exists
                     return it.code;
                 });
                 return parts.join(cfg.descPairJoinWith);
-            } else { // 'desc'
-                const descs = selected.map(it => it.desc).filter(Boolean);
-                return cfg.descAsArray ? descs : descs.join(cfg.descJoinWith);
+            } else { // 'desc' → keep old desc + add new ones
+                const rowData = cell.getRow().getData();
+
+                // get existing description text from the row (first descField that has value)
+                const existingRaw =
+                    (descFields
+                        .map(f => rowData && rowData[f])
+                        .find(v => v != null && v !== "")) || "";
+
+                const existingList = existingRaw
+                    ? String(existingRaw)
+                        .split(cfg.descJoinWith)
+                        .map(s => s.trim())
+                        .filter(Boolean)
+                    : [];
+
+                // new descs coming from current selected items (from API)
+                const newDescs = selected
+                    .map(it => it.desc)
+                    .filter(d => d && !existingList.includes(d));
+
+                const allDescs = existingList.concat(newDescs);
+
+                return cfg.descAsArray ? allDescs : allDescs.join(cfg.descJoinWith);
             }
         }
 
@@ -532,7 +611,7 @@ Tabulator.extendModule("edit", "editors", {
             const val = buildDescOutput();
             const patch = {};
             descFields.forEach(f => patch[f] = val);
-            row.update(patch); // reflect combined descriptions
+            row.update(patch);
         }
 
         function commit() {
@@ -542,46 +621,72 @@ Tabulator.extendModule("edit", "editors", {
             success(val);
         }
 
-        // ---------- init from current cell value + hydrate descs from row ----------
+        // ---------- init from current cell value ----------
         (function initFromValue() {
             const raw = cell.getValue();
-            const initialCodes = Array.isArray(raw) ? raw :
-                (raw ? String(raw).split(cfg.joinWith).map(s => s.trim()).filter(Boolean) : []);
+            const initialCodes = Array.isArray(raw)
+                ? raw
+                : (raw ? String(raw).split(cfg.joinWith).map(s => s.trim()).filter(Boolean) : []);
 
-            // Try to read existing description text from row and map code→desc
             const rowData = cell.getRow().getData();
             const firstDescText = descFields.map(f => rowData && rowData[f]).find(Boolean);
+
+            // If previously stored as CODE — DESC | CODE — DESC, this will map.
+            // If only DESC is stored, map will be empty -> tags will still show code.
             const knownMap = parsePairsFromText(firstDescText, cfg.descPairSeparator, cfg.descPairJoinWith);
 
             initialCodes.forEach(code => {
-                const desc = knownMap.get(code);         // hydrate if we can
-                addTag({ code, desc, label: desc ? `${code} ${cfg.descPairSeparator}${desc}` : code }, false);
+                const desc = knownMap.get(code);
+                addTag({
+                    code,
+                    desc,
+                    label: desc ? `${code} ${cfg.descPairSeparator}${desc}` : code
+                }, false);
             });
 
             flushTags();
             if (cfg.updateRowOnPick) syncLinkedDesc();
         })();
 
-        // ---------- event handlers ----------
+        // ---------- events ----------
         input.addEventListener('keydown', function (e) {
             e.stopPropagation();
 
             const opts = dropdown ? dropdown.querySelectorAll('.autocomplete-option') : [];
             const max = opts.length - 1;
 
-            if (e.key === 'ArrowDown') { e.preventDefault(); if (!dropdown) { debouncedFetch(input.value.trim()); return; } activeIndex = Math.min(max, activeIndex + 1); }
-            else if (e.key === 'ArrowUp') { e.preventDefault(); activeIndex = Math.max(0, activeIndex - 1); }
-            else if (e.key === 'PageDown') { e.preventDefault(); activeIndex = Math.min(max, (activeIndex < 0 ? 0 : activeIndex) + 10); }
-            else if (e.key === 'PageUp') { e.preventDefault(); activeIndex = Math.max(0, (activeIndex < 0 ? 0 : activeIndex) - 10); }
-            else if (e.key === 'Home') { e.preventDefault(); activeIndex = 0; }
-            else if (e.key === 'End') { e.preventDefault(); activeIndex = max; }
-            else if (e.key === 'Enter') {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (!dropdown) {
+                    debouncedFetch(input.value.trim());
+                    return;
+                }
+                activeIndex = Math.min(max, activeIndex + 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                activeIndex = Math.max(0, activeIndex - 1);
+            } else if (e.key === 'PageDown') {
+                e.preventDefault();
+                activeIndex = Math.min(max, (activeIndex < 0 ? 0 : activeIndex) + 10);
+            } else if (e.key === 'PageUp') {
+                e.preventDefault();
+                activeIndex = Math.max(0, (activeIndex < 0 ? 0 : activeIndex) - 10);
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                activeIndex = 0;
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                activeIndex = max;
+            } else if (e.key === 'Enter') {
                 e.preventDefault();
                 if (dropdown && activeIndex >= 0 && opts[activeIndex]) {
-                    opts[activeIndex].dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+                    opts[activeIndex].dispatchEvent(
+                        new MouseEvent('mousedown', { bubbles: true })
+                    );
                 } else if (cfg.allowFreeText && input.value.trim() !== '') {
                     const v = input.value.trim();
-                    addTag({ code: v, desc: v, label: v }); flushTags();
+                    addTag({ code: v, desc: v, label: v });
+                    flushTags();
                 } else {
                     commit();
                 }
@@ -589,29 +694,45 @@ Tabulator.extendModule("edit", "editors", {
                 const last = selected[selected.length - 1];
                 if (last) removeItem(last.code);
             } else if (e.key === 'Escape') {
-                e.preventDefault(); removeDropdown(); return;
+                e.preventDefault();
+                removeDropdown();
+                return;
             }
 
             if (dropdown) {
                 opts.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
-                if (activeIndex >= 0 && opts[activeIndex]) opts[activeIndex].scrollIntoView({ block: 'nearest' });
+                if (activeIndex >= 0 && opts[activeIndex]) {
+                    opts[activeIndex].scrollIntoView({ block: 'nearest' });
+                }
             }
         });
 
         input.addEventListener('input', () => debouncedFetch(input.value.trim()));
 
-        const onDocClick = (e) => { if (!wrap.contains(e.target) && !(dropdown && dropdown.contains(e.target))) commit(); };
+        const onDocClick = (e) => {
+            if (!wrap.contains(e.target) && !(dropdown && dropdown.contains(e.target))) commit();
+        };
+
         document.addEventListener('mousedown', onDocClick, true);
         window.addEventListener('resize', positionDropdown, true);
-        onRendered(() => { input.focus({ preventScroll: true }); positionDropdown(); });
+
+        onRendered(() => {
+            input.focus({ preventScroll: true });
+            positionDropdown();
+        });
 
         function destroy() {
-            if (pendingXHR && pendingXHR.readyState !== 4) { try { pendingXHR.abort(); } catch (e) { } }
+            if (pendingXHR && pendingXHR.readyState !== 4) {
+                try { pendingXHR.abort(); } catch (e) { }
+            }
             removeDropdown();
             document.removeEventListener('mousedown', onDocClick, true);
             window.removeEventListener('resize', positionDropdown, true);
         }
-        const _success = success, _cancel = cancel;
+
+        const _success = success;
+        const _cancel = cancel;
+
         success = (v) => { destroy(); _success(v); };
         cancel = () => { destroy(); _cancel(); };
 
@@ -684,38 +805,42 @@ function OnTabThirdInsGridLoad(response) {
             headerSort: false,
             headerMenu: headerMenu,
             headerFilter: "input",
-            // use the PAIR-AWARE formatter instead of tagsFormatter
-            formatter: tagsFormatterPairs,
-            formatterParams: {
-                joinWith: ", ",
-                // where to read the combined desc text from (tries in order)
-                descField: ["ProductDescription", "ProdDesc"],
-                // how your description field is stored:
-                pairSeparator: " — ",   // use " - " if you want a hyphen
-                pairJoinWith: " | "
+
+            // Show ONLY CODES as chips
+            formatter: function (cell) {
+                const raw = cell.getValue();
+                const codes = Array.isArray(raw)
+                    ? raw
+                    : String(raw || "").split(',').map(s => s.trim()).filter(Boolean);
+
+                return codes.join(", ");
             },
+
             editorParams: {
                 url: "/PDITracker/GetCodeSearch",
                 queryParam: "search",
                 minChars: 4,
+
                 valueField: "oldPart_No",
                 descItemField: "description",
                 labelField: "oldPart_No",
 
-                // keep these to ensure the row description is maintained as pairs:
-                descField: ["ProdDesc", "ProductDescription"],
-                descFormat: "pair",
-                descPairSeparator: " — ",
-                descPairJoinWith: " | ",
+                // IMPORTANT: only ProdDesc will be updated with DESC ONLY
+                descField: ["ProdDesc"],
+                descFormat: "desc",      // ONLY descriptions
+                descAsArray: false,
+                descJoinWith: " | ",
 
-                asArray: true,
+                asArray: true,           // ProductCode stored as array of codes
                 joinWith: ", ",
                 maxSelect: 0
             },
+
             widthGrow: 2
         },
         /*editableColumn("Product Description", "ProdDesc", "input"),*/
-        { title: "Product Description", field: "ProdDesc", widthGrow: 3, headerSort: false, headerMenu: headerMenu , headerFilter: "input" },
+        { title: "Product Description", field: "ProdDesc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
+
         editableColumn("LOT QTY(No's)", "LOTQty", "input", "center", "input", {}, 110),
         editableColumn("Project Value(Mn).", "ProjectValue", "input", "left", "input", {}, {}),
         editableColumn("TPI Duration(DAYS)", "Tpi_Duration", "input", "center", "input", {}, {}),
@@ -907,16 +1032,22 @@ function OnTabThirdInsGridLoad(response) {
         });
     })();
 
+    function getDisplayValue(cell) {
+        if (!cell) return "";
+        const v = cell.getValue();
+        return v == null ? "" : String(v);
+    }
 
     // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
     document.getElementById("exportThirdPartyInsButton").addEventListener("click", async function () {
-        // ===== 0) OPTIONS =====
-        const EXPORT_SCOPE = "active";   // "active" | "selected" | "all"
-        const EXPORT_RAW = false;      // false = formatted values exactly as shown in Tabulator
+        const EXPORT_SCOPE = "active"; // "active" | "selected" | "all"
 
-        // ===== 1) COLUMNS from Tabulator (exact view) with EXCLUDES =====
-        if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+        if (!window.table) {
+            console.error("Tabulator 'table' not found.");
+            return;
+        }
 
+        // ===== 1) BUILD COLUMNS FROM TABULATOR (VISIBLE ONLY) =====
         const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
         const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
 
@@ -938,9 +1069,66 @@ function OnTabThirdInsGridLoad(response) {
             return { label, key: def.field, width };
         });
 
-        if (!excelCols.length) { alert("No visible columns to export."); return; }
+        const TOTAL_COLS = excelCols.length;
+        if (!TOTAL_COLS) {
+            alert("No visible columns to export.");
+            return;
+        }
 
-        // ===== 2) DOC DETAILS (will be placed in second-last + last column) =====
+        // find product code / description / remark columns BY TITLE
+        const PRODUCT_CODE_TITLES = new Set(["Product Codes", "Product Code"]);
+        const PRODUCT_DESC_TITLES = new Set(["Product Description", "Product Desc"]);
+        const REMARK_TITLES = new Set(["Remark", "Remarks"]);
+
+        // LOT Qty title set – include exact header from Excel
+        const LOT_QTY_TITLES = new Set([
+            "LOT QTY(No's)",   // exact from your Excel
+            "LOT Qty",
+            "Lot Qty",
+            "LOT Quantity",
+            "Lot Quantity",
+            "LOTQty",
+            "LotQty"
+        ]);
+
+        let codeColKey = null, descColKey = null;
+        let codeColIndex = null, descColIndex = null, remarkColIndex = null; // 1-based for Excel
+
+        let lotQtyColKey = null;
+        let lotQtyColIndex = null; // 1-based
+
+        excelCols.forEach((col, idx) => {
+            const title = (col.label || "").trim();
+            const i = idx + 1;
+
+            if (PRODUCT_CODE_TITLES.has(title)) {
+                codeColKey = col.key;
+                codeColIndex = i;
+            }
+            if (PRODUCT_DESC_TITLES.has(title)) {
+                descColKey = col.key;
+                descColIndex = i;
+            }
+            if (REMARK_TITLES.has(title)) {
+                // last "Remark" column – this matches col 17 in your Excel
+                remarkColIndex = i;
+            }
+            if (LOT_QTY_TITLES.has(title)) {
+                lotQtyColKey = col.key;
+                lotQtyColIndex = i;
+            }
+        });
+
+        if (!codeColKey || !descColKey) {
+            console.warn("Product Codes / Product Description columns not found by title.");
+        }
+
+        // columns that must be LEFT-aligned (data rows)
+        const leftAlignCols = new Set(
+            [codeColIndex, descColIndex, remarkColIndex].filter(Boolean)
+        );
+
+        // ===== 2) DOC DETAILS (last two columns) =====
         const docDetails = [
             ["Document No", "WCIB/LS/QA/R/005"],
             ["Effective Date", "01/10/2022"],
@@ -949,28 +1137,22 @@ function OnTabThirdInsGridLoad(response) {
             ["Page No", "1 of 1"]
         ];
 
-        // ===== 3) LAYOUT =====
-        const TOTAL_COLS = excelCols.length;
-
+        // ===== 3) Layout constants =====
         const HEADER_TOP = 1;
         const HEADER_BOTTOM = 5;
-        const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
-        const TITLE_TEXT = "Third Party Inspection Tracker";
+        const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 6
+        const TITLE_TEXT = "THIRD PARTY INSPECTION TRACKER";
 
-        const LOGO_COL_START = 1;
-        const LOGO_COL_END = 2;
-        const LOGO_ROW_START = HEADER_TOP;
-        const LOGO_ROW_END = HEADER_BOTTOM;
+        const LOGO_COL_START = 1, LOGO_COL_END = 2;
+        const LOGO_ROW_START = HEADER_TOP, LOGO_ROW_END = HEADER_BOTTOM;
 
-        // Title must not overlap the final 2 columns (reserved for details)
         const TITLE_COL_START = Math.min(3, TOTAL_COLS);
         const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
 
-        // Document details strictly in second-last & last column
         const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
         const DETAILS_VALUE_COL = TOTAL_COLS;
 
-        // ===== 4) HELPERS =====
+        // ===== 4) Helpers =====
         async function fetchAsBase64(url) {
             const res = await fetch(url);
             const blob = await res.blob();
@@ -980,35 +1162,80 @@ function OnTabThirdInsGridLoad(response) {
                 reader.readAsDataURL(blob);
             });
         }
+
         function setBorder(cell, style = "thin") {
-            cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+            cell.border = {
+                top: { style },
+                bottom: { style },
+                left: { style },
+                right: { style }
+            };
         }
+
         function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
             for (let c = c1; c <= c2; c++) {
-                const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+                const top = ws.getCell(r1, c);
+                const bottom = ws.getCell(r2, c);
                 top.border = { ...top.border, top: { style } };
                 bottom.border = { ...bottom.border, bottom: { style } };
             }
             for (let r = r1; r <= r2; r++) {
-                const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+                const left = ws.getCell(r, c1);
+                const right = ws.getCell(r, c2);
                 left.border = { ...left.border, left: { style } };
                 right.border = { ...right.border, right: { style } };
             }
         }
 
-        // ===== 5) WORKBOOK / SHEET =====
+        // Product Codes – split by <br>, newline, or ", "
+        function splitCodes(displayValue) {
+            if (!displayValue) return [];
+            let txt = String(displayValue)
+                .replace(/<br\s*\/?>/gi, "\n")
+                .replace(/\r\n/g, "\n");
+            txt = txt.replace(/\s*\|\s*/g, "\n");  // if you ever use " | "
+            return txt
+                .split(/\n|,\s*/g)
+                .map(s => s.trim())
+                .filter(Boolean);
+        }
+
+        // Product Description – split by " | " or newline (keep commas)
+        function splitDescs(displayValue) {
+            if (!displayValue) return [];
+            let txt = String(displayValue)
+                .replace(/<br\s*\/?>/gi, "\n")
+                .replace(/\r\n/g, "\n");
+            txt = txt.replace(/\s*\|\s*/g, "\n");
+            return txt
+                .split("\n")
+                .map(s => s.trim())
+                .filter(Boolean);
+        }
+
+        // LOT Qty – split "30,40,50" into ["30","40","50"]
+        function splitLotQty(displayValue) {
+            if (!displayValue) return [];
+            let txt = String(displayValue)
+                .replace(/<br\s*\/?>/gi, "\n")
+                .replace(/\r\n/g, "\n");
+            return txt
+                .split(/[\n,]+/g)   // split by newline OR comma
+                .map(s => s.trim())
+                .filter(Boolean);
+        }
+
+        // ===== 5) Workbook / Sheet =====
         const wb = new ExcelJS.Workbook();
         const ws = wb.addWorksheet("Third Party Inspection Tracker", {
             properties: { defaultRowHeight: 15 },
-            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }]
         });
 
-        // Set column widths (no header to avoid duplicates)
         ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
 
-        // Give header band height so logo fits
         for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
-            ws.getRow(r).height = 18; // ~34px
+            ws.getRow(r).height = 18;
         }
 
         ws.pageSetup = {
@@ -1016,45 +1243,53 @@ function OnTabThirdInsGridLoad(response) {
             fitToPage: true,
             fitToWidth: 1,
             fitToHeight: 0,
-            margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+            margins: {
+                left: 0.3,
+                right: 0.3,
+                top: 0.5,
+                bottom: 0.5,
+                header: 0.2,
+                footer: 0.2
+            },
             printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
         };
 
-        // ===== 6) HEADER BAND FILL =====
+        // ===== 6) Header band fill (rows 1–5) =====
         for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
             for (let c = 1; c <= TOTAL_COLS; c++) {
                 ws.getCell(r, c).fill = {
-                    type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" }
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FFF7F7F7" }
                 };
             }
         }
 
-        // ===== 7) LOGO — centered in A2:B6 (no stretch) + outline =====
-        // Desired logo size (px)
-        const LOGO_WIDTH_PX = 100;  // adjust as you like
-        const LOGO_HEIGHT_PX = 100;
+        // ===== 7) Logo block =====
+        const LOGO_WIDTH_PX = 100, LOGO_HEIGHT_PX = 100;
+        const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);
+        const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));
 
-        // Approx column/row pixel helpers
-        const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);       // ~7px per char width
-        const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));  // pt -> px
+        let rectWpx = 0;
+        for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+        let rectHpx = 0;
+        for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
 
-        // Size of A2:B6 rect in px
-        let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
-        let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
-
-        // Average px per column/row in that rectangle
         const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
         const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
 
-        // Convert desired pixel size → fractional col/row units
         const logoCols = LOGO_WIDTH_PX / avgColPx;
         const logoRows = LOGO_HEIGHT_PX / avgRowPx;
 
-        // Centered TL anchor (fractional col/row)
-        const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
-        const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+        const tlCol = (LOGO_COL_START - 1) +
+            ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+        const tlRow = (LOGO_ROW_START - 1) +
+            ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
 
-        const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+        const logoUrl =
+            window.LOGO_URL ||
+            (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+
         if (logoUrl) {
             try {
                 const base64 = await fetchAsBase64(logoUrl);
@@ -1064,25 +1299,24 @@ function OnTabThirdInsGridLoad(response) {
                     ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
                     editAs: "oneCell"
                 });
-            } catch (e) { console.warn("Logo load failed:", e); }
+            } catch (e) {
+                console.warn("Logo load failed:", e);
+            }
         }
         outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
 
-        // ===== 8) TITLE (merge) + outline (from column C to third-last col) =====
+        // ===== 8) Title =====
         ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
         const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
         titleCell.value = TITLE_TEXT;
         titleCell.font = { bold: true, size: 18 };
         titleCell.alignment = { horizontal: "center", vertical: "middle" };
-
         outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
 
-        // ===== 9) DOCUMENT DETAILS in (second-last, last) columns =====
-        // Rows: HEADER_TOP..(HEADER_TOP + docDetails.length - 1)
+        // ===== 9) Document details (top-right) =====
         const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
         docDetails.forEach((pair, i) => {
             const r = HEADER_TOP + i;
-
             const labelCell = ws.getCell(r, DETAILS_LABEL_COL);
             const valueCell = ws.getCell(r, DETAILS_VALUE_COL);
 
@@ -1091,61 +1325,150 @@ function OnTabThirdInsGridLoad(response) {
 
             labelCell.font = { bold: true };
             [labelCell, valueCell].forEach(cell => {
-                cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
-                setBorder(cell, "thin");
+                cell.alignment = {
+                    vertical: "middle",
+                    horizontal: "left",
+                    wrapText: true
+                };
+                setBorder(cell);
             });
         });
-        // Optional: outline the whole two-column details block
         outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
 
-        // ===== 10) MANUAL TABLE HEADER (row 7) =====
-        while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // up to row 6
+        // ===== 10) Table header row =====
+        while (ws.rowCount < GRID_HEADER_ROW - 1) {
+            ws.addRow([]);
+        }
 
         const headerTitles = excelCols.map(c => c.label);
         const headerRow = ws.addRow(headerTitles);
         headerRow.height = 22;
         headerRow.eachCell((cell) => {
             cell.font = { bold: true };
-            cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-            cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+            cell.alignment = {
+                horizontal: "center",
+                vertical: "center",
+                wrapText: true
+            };
+            cell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFD9E1F2" }
+            };
             setBorder(cell);
         });
 
-        // ===== 11) DATA ROWS (exact Tabulator view, minus Action) =====
+        // ===== 11) DATA ROWS WITH MERGED NON-PRODUCT COLUMNS =====
         let tabRows;
         switch (EXPORT_SCOPE) {
-            case "selected": tabRows = table.getSelectedRows(); break;
-            case "all": tabRows = table.getRows(); break;
+            case "selected":
+                tabRows = table.getSelectedRows();
+                break;
+            case "all":
+                tabRows = table.getRows();
+                break;
             case "active":
-            default: tabRows = table.getRows("active"); break;
+            default:
+                tabRows = table.getRows("active");
+                break;
         }
 
         tabRows.forEach(row => {
-            const cells = row.getCells();
-            const byField = {};
-            cells.forEach(cell => {
-                const f = cell.getField();
-                if (!f) return;
-                // Skip excluded
-                const def = cell.getColumn().getDefinition();
-                const title = (def.title || "").trim();
-                if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
-
-                byField[f] = EXPORT_RAW ? row.getData()[f] : cell.getValue(); // exact display value by default
+            const baseValues = {};
+            excelCols.forEach(col => {
+                const cell = row.getCell(col.key);
+                let val = getDisplayValue(cell);
+                baseValues[col.key] = val;
             });
 
-            const values = excelCols.map(c => byField[c.key] ?? "");
-            const xRow = ws.addRow(values);
+            const codeDisplay = codeColKey ? baseValues[codeColKey] : "";
+            const descDisplay = descColKey ? baseValues[descColKey] : "";
+            const lotQtyDisplay = lotQtyColKey ? baseValues[lotQtyColKey] : "";
 
-            xRow.eachCell((cell, colNumber) => {
-                cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "center" : "left", wrapText: true };
-                setBorder(cell);
-            });
+            const codes = splitCodes(codeDisplay);
+            const descs = splitDescs(descDisplay);
+            const lotQtyArr = splitLotQty(lotQtyDisplay);
+
+            const maxLines = Math.max(codes.length, descs.length, lotQtyArr.length, 1);
+            const startRowIdx = ws.rowCount + 1;
+
+            for (let i = 0; i < maxLines; i++) {
+                const isFirst = (i === 0);
+
+                const values = excelCols.map((col) => {
+                    const key = col.key;
+
+                    if (key === codeColKey) {
+                        return codes[i] || "";
+                    }
+                    if (key === descColKey) {
+                        return descs[i] || "";
+                    }
+
+                    // LOT Qty logic:
+                    // - 0 values -> blank
+                    // - 1 value  -> only in first row
+                    // - >1 values -> 1:1 mapping, extra rows blank
+                    if (key === lotQtyColKey) {
+                        if (lotQtyArr.length === 0) {
+                            return "";
+                        }
+                        if (lotQtyArr.length === 1) {
+                            return i === 0 ? lotQtyArr[0] : "";
+                        }
+                        return lotQtyArr[i] || "";
+                    }
+
+                    // non-product columns: only in first row, blank later
+                    return isFirst ? (baseValues[key] ?? "") : "";
+                });
+
+                const xRow = ws.addRow(values);
+
+                // ALIGNMENT:
+                // Product Codes / Product Description / last Remark -> left
+                // Everything else (incl. LOT Qty) -> center
+                xRow.eachCell((cell, colNumber) => {
+                    const horizontal = leftAlignCols.has(colNumber) ? "left" : "center";
+                    cell.alignment = {
+                        vertical: "middle",
+                        horizontal: horizontal,
+                        wrapText: true
+                    };
+                    setBorder(cell);
+                });
+            }
+
+            const endRowIdx = ws.rowCount;
+
+            if (maxLines > 1) {
+                // Merge every column EXCEPT Product Codes, Product Description & LOT Qty
+                const mergeCols = [];
+                for (let i = 1; i <= TOTAL_COLS; i++) {
+                    if (i !== codeColIndex && i !== descColIndex && i !== lotQtyColIndex) {
+                        mergeCols.push(i);
+                    }
+                }
+
+                mergeCols.forEach(colIdx => {
+                    ws.mergeCells(startRowIdx, colIdx, endRowIdx, colIdx);
+                    const cell = ws.getCell(startRowIdx, colIdx);
+                    const horizontal = leftAlignCols.has(colIdx) ? "left" : "center";
+                    cell.alignment = {
+                        vertical: "middle",
+                        horizontal: horizontal,
+                        wrapText: true
+                    };
+                });
+            }
         });
 
         // ===== 12) DOWNLOAD =====
         const buffer = await wb.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const blob = new Blob(
+            [buffer],
+            { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }
+        );
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
         link.download = "Third Party Inspection Tracker.xlsx";
@@ -1153,6 +1476,9 @@ function OnTabThirdInsGridLoad(response) {
         link.click();
         link.remove();
     });
+
+
+
 
     Blockloaderhide();
 }

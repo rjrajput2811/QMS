@@ -1224,6 +1224,22 @@ public class ProductValidationController : Controller
         return View();
     }
     #endregion
+
+    #region HydraulicTestReport
+
+    public IActionResult HydraulicTestReport()
+    {
+
+        return View();
+    }
+
+    public IActionResult HydraulicTestReportDetails()
+    {
+
+        return View();
+    }
+
+    #endregion
 }
 
 

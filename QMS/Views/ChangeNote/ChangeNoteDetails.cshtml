@@ -2,9 +2,6 @@
     ViewData["Title"] = "Change Note";
 }
 
-<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
-<script src="~/js/tabulator.min.js"></script>
-
 <style>
     .req {
         color: #d00;
@@ -26,7 +23,6 @@
             border-bottom-color: #4682B4;
         }
 
-    /* Keep header-table and pv-table collapsed so borders attach */
     .header-table, .pv-table {
         width: 100%;
         border-collapse: collapse;
@@ -90,7 +86,6 @@
                 background: #f5faff;
             }
 
-    /* tabs styling (kept from your CSS) */
     .nav-tabs {
         display: flex;
         gap: 8px;
@@ -113,7 +108,8 @@
             transition: all .16s ease-in-out;
         }
 
-            .nav-tabs .nav-link.active, .nav-tabs .nav-link.show {
+            .nav-tabs .nav-link.active,
+            .nav-tabs .nav-link.show {
                 color: #000 !important;
                 font-weight: 700 !important;
                 font-size: 15.5px !important;
@@ -127,7 +123,6 @@
                 padding-top: 7px;
             }
 
-    /* soft multiselect visuals */
     .soft-multiselect-wrapper {
         font-family: inherit;
     }
@@ -226,7 +221,6 @@
             transform: scale(1.05);
         }
 
-    /* minor helpers */
     .copy-box {
         display: inline-flex;
         align-items: center;
@@ -236,11 +230,6 @@
         border-radius: 6px;
         background: #fff;
         font-weight: 600;
-    }
-
-    #remarksCell:focus, #remarksCell.editing, #categoryCell:focus, #categoryCell.editing {
-        outline: 2px solid rgba(70,130,180,0.25);
-        background: #f8fcff;
     }
 
     .btn {
@@ -268,420 +257,512 @@
     }
 </style>
 
-<!-- Header card (title + Save/Back) -->
-<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-    <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
-        <div><b style="font-size:x-large; color:#4682B4;">CHANGE NOTE</b></div>
+<div class="content">
+    <div class="row">
+        <div class="col-12">
 
-        <div>
-            <button id="saveChangeNoteButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="saveChangeNote()" style="width:120px; font-size:15px;">
-                <i class="fas fa-save mr-1"></i>Save
-            </button>
+            <!-- HEADER -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b style="font-size:x-large; color:#4682B4;">CHANGE NOTE</b>
+                    </div>
 
-            <a href='@Url.Action("ChangeNotee", "ChangeNote")' class="btn btn-outline-primary" style="width:120px; font-size:15px;">
-                <i class="fas fa-arrow-left"></i> BACK
-            </a>
+                    <div>
+                        <button id="saveChangeNoteButton"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2"
+                                onclick="saveChangeNote()"
+                                style="width:120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+
+                        <a href='@Url.Action("ChangeNotee", "ChangeNote")'
+                           class="btn btn-outline-primary"
+                           style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body">
+
+                    <!-- Tabs -->
+                    <ul class="nav nav-tabs" id="changeTabs" role="tablist" style="margin-bottom:0;">
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link active"
+                               id="change-note-tab"
+                               data-bs-toggle="tab"
+                               href="#change-note"
+                               role="tab"
+                               aria-controls="change-note"
+                               aria-selected="true">
+                                Change Note
+                            </a>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a class="nav-link"
+                               id="change-log-tab"
+                               data-bs-toggle="tab"
+                               href="#change-log"
+                               role="tab"
+                               aria-controls="change-log"
+                               aria-selected="false">
+                                Change Note Implementation
+                            </a>
+                        </li>
+                    </ul>
+
+                    <!-- Tab content -->
+                    <div class="tab-content mt-3" id="changeTabsContent">
+
+                        <!-- ================= CHANGE NOTE TAB ================= -->
+                        <div class="tab-pane fade show active" id="change-note" role="tabpanel" aria-labelledby="change-note-tab">
+                            <div class="tables-flush">
+
+                                <!-- header (Description + Vendor) -->
+                                <table class="header-table" style="margin:0;">
+                                    <colgroup>
+                                        <col style="width:50%;">
+                                        <col style="width:50%;">
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <span class="field-label">Description:</span>
+                                                <input type="text"
+                                                       name="ChangeDescription"
+                                                       class="inline-input"
+                                                       placeholder="Enter Change Description"
+                                                       style="width:75%;" />
+                                            </td>
+                                            <td>
+                                                <span class="field-label">Vendor:</span>
+                                                <input type="text"
+                                                       name="Vendor"
+                                                       class="inline-input"
+                                                       placeholder="Enter Vendor Name"
+                                                       style="width:75%;" />
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td colspan="2" style="padding:12px;">
+                                                <button id="addRowBtn"
+                                                        type="button"
+                                                        class="btn btn-outline-success"
+                                                        style="width:120px; font-size:15px; border-radius:6px;">
+                                                    <i class="fas fa-plus"></i> Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- items table for Change Note -->
+                                <table class="pv-table"
+                                       id="changesItemsTable"
+                                       style="margin-top:-1px; margin-bottom:0;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:8%; text-align:center;">Sr. No.</th>
+                                            <th style="width:44%; text-align:center;">CHANGE FROM</th>
+                                            <th style="width:44%; text-align:center;">CHANGE TO</th>
+                                            <th style="width:4%; text-align:center;">CATEGORY*</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="changesItemsTbody">
+                                        <tr>
+                                            <td style="text-align:center;">
+                                                <span class="srno">1</span>
+                                                <button type="button"
+                                                        class="btn btn-link p-0 ml-2 delete-row-btn"
+                                                        title="Delete row"
+                                                        style="color:#c0392b; margin-left:6px;">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </td>
+                                            <td contenteditable="true"></td>
+                                            <td contenteditable="true"></td>
+                                            <td contenteditable="true" style="text-align:center;"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- remarks + category + copy to -->
+                                <table class="header-table" style="margin-top:-1px;">
+                                    <colgroup>
+                                        <col style="width:65%;">
+                                        <col style="width:35%;">
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <!-- REMARKS -->
+                                            <td style="vertical-align:top;">
+                                                <strong style="display:block; margin-bottom:8px;">
+                                                    REMARKS :
+                                                </strong>
+
+                                                <div id="remarksEditable"
+                                                     contenteditable="true"
+                                                     style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;">
+                                                </div>
+                                            </td>
+
+                                            <!-- CATEGORY (rowspan) -->
+                                            <td rowspan="2" style="vertical-align:top;">
+                                                <strong style="display:block; margin-bottom:8px;">
+                                                    * CHANGE NOTE CATEGORY :
+                                                </strong>
+
+                                                <div id="categoryEditable"
+                                                     contenteditable="true"
+                                                     style="min-height:154px; line-height:1.4; white-space:pre-wrap; outline:none;">
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <!-- COPY TO -->
+                                            <td style="vertical-align:top;">
+                                                <strong>COPY TO :</strong>
+
+                                                <div style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap;">
+                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                        <input type="checkbox" name="CopyTo" value="PMG.O" style="transform:scale(1.1);"> PMG.O
+                                                    </label>
+
+                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                        <input type="checkbox" name="CopyTo" value="LSG" style="transform:scale(1.1);"> LSG
+                                                    </label>
+
+                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                        <input type="checkbox" name="CopyTo" value="MATL.S." style="transform:scale(1.1);"> MATL.S.
+                                                    </label>
+
+                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                        <input type="checkbox" name="CopyTo" value="QA" style="transform:scale(1.1);"> QA
+                                                    </label>
+
+                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                        <input type="checkbox" name="CopyTo" value="PDG" style="transform:scale(1.1);"> PDG
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- signature / date / group -->
+                                <table class="header-table" style="margin-top:0;">
+                                    <colgroup>
+                                        <col style="width:15%;">
+                                        <col style="width:85%;">
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Signature:</strong></td>
+                                            <td>
+                                                <input type="file"
+                                                       id="signatureFile"
+                                                       name="signatureFile"
+                                                       accept="image/*"
+                                                       style="border:none; font-size:14px;">
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><strong>Date:</strong></td>
+                                            <td>
+                                                <input type="date"
+                                                       id="signatureDate"
+                                                       name="signatureDate"
+                                                       class="inline-date"
+                                                       style="border:none; width:220px; padding:6px 4px; font-size:14px;">
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><strong>Group :</strong></td>
+                                            <td>
+                                                <div class="soft-multiselect-wrapper" style="max-width:420px;">
+                                                    <select id="groupHiddenSelect"
+                                                            name="groups"
+                                                            multiple
+                                                            style="display:none;">
+                                                        <option value="Product Design">Product Design</option>
+                                                        <option value="Quality Assurance">Quality Assurance</option>
+                                                        <option value="Materials">Materials</option>
+                                                        <option value="PMG">PMG</option>
+                                                        <option value="Lighting Technology">Lighting Technology</option>
+                                                    </select>
+
+                                                    <div class="soft-multiselect" id="groupMulti">
+                                                        <div class="soft-multiselect-value"
+                                                             id="groupValue"
+                                                             tabindex="0"
+                                                             aria-haspopup="listbox"
+                                                             aria-expanded="false">
+                                                            <div class="chips" id="groupChips">
+                                                                <span class="placeholder">Please select...</span>
+                                                            </div>
+                                                            <div class="chev">▾</div>
+                                                        </div>
+
+                                                        <div class="soft-multiselect-dropdown"
+                                                             id="groupDropdown"
+                                                             role="listbox"
+                                                             aria-multiselectable="true">
+                                                            <div class="dropdown-inner"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        </div>
+
+                        <!-- ================= CHANGE LOG / IMPLEMENTATION TAB ================= -->
+                        <div class="tab-pane fade" id="change-log" role="tabpanel" aria-labelledby="change-log-tab">
+
+                            <!-- Implementation header -->
+                            <table class="header-table" style="margin:0;">
+                                <colgroup>
+                                    <col style="width:50%;">
+                                    <col style="width:50%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Change Note Ref. No.</span>
+                                            <input type="text"
+                                                   name="ChangeNoteRef"
+                                                   class="inline-input"
+                                                   placeholder="Enter Note Ref. No"
+                                                   style="width:75%;" />
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Date of Issue:</span>
+                                            <input type="date"
+                                                   name="DateOfIssue"
+                                                   class="inline-date"
+                                                   style="width:75%;" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="2">
+                                            <span class="field-label">Vendor / QA In charge:</span>
+                                            <input type="text"
+                                                   name="VendorQA"
+                                                   class="inline-input"
+                                                   placeholder="Enter Vendor / QA In charge"
+                                                   style="width:40%;" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="2" style="padding:12px;">
+                                            <button id="addRowBtnLog"
+                                                    type="button"
+                                                    class="btn btn-outline-success"
+                                                    style="width:120px; font-size:15px; margin:10px 0;">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Implementation items table -->
+                            <table class="pv-table"
+                                   id="changesItemsTable_Log"
+                                   style="margin-top:-1px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:6%; text-align:center;">Sr.<br />No.</th>
+                                        <th style="width:40%; text-align:center;">ACTION PLANNED</th>
+                                        <th style="width:22%; text-align:center;">WHO WILL DO</th>
+                                        <th style="width:22%; text-align:center;">PROPOSED CUT OFF DATE</th>
+                                        <th style="width:10%; text-align:center;">ACTUAL<br />DATE</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="changesItemsTbody_Log">
+                                    <tr>
+                                        <td style="text-align:center;">
+                                            <span class="srno-log">1</span>
+                                            <button type="button"
+                                                    class="btn btn-link p-0 ml-2 delete-row-btn-log"
+                                                    title="Delete row"
+                                                    style="color:#c0392b; margin-left:6px;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                        <td contenteditable="true" style="min-height:60px;"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true" style="text-align:center;"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <!-- Final QA remarks + signature + note -->
+                            <table class="header-table" style="margin-top:-1px;">
+                                <colgroup>
+                                    <col style="width:5%;">
+                                    <col style="width:95%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="2" style="padding:12px; vertical-align:top;">
+                                            <strong style="display:block; margin-bottom:8px;">
+                                                FINAL REMARKS FROM QA
+                                            </strong>
+
+                                            <div id="finalRemarksQA"
+                                                 contenteditable="true"
+                                                 style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;">
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding:12px; vertical-align:top; font-weight:600;">
+                                            Signature :
+                                        </td>
+                                        <td style="padding:12px; vertical-align:top;">
+                                            <input type="file"
+                                                   id="finalSignatureFile"
+                                                   name="finalSignatureFile"
+                                                   accept="image/*"
+                                                   style="font-size:14px;" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="padding:12px; vertical-align:top; font-weight:600;">
+                                            Note:
+                                        </td>
+                                        <td id="finalRemarksNote"
+                                            style="padding:12px; vertical-align:top; min-height:120px;"
+                                            contenteditable="true">
+                                            QA Team member will provide his final remarks as soon as the changes are<br />
+                                            implemented at vendor location and acknowledge to Product Design Group by sending a copy of this implementation note.<br />
+                                            This is required to update the Technical Specification.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                        </div> 
+
+                    </div> 
+                </div> 
+            </div> 
+
         </div>
     </div>
 </div>
 
-<!-- Main card with tabs and content -->
-<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-    <div class="card-body">
-        <!-- Tabs -->
-        <ul class="nav nav-tabs" id="changeTabs" role="tablist" style="margin-bottom:0;">
-            <li class="nav-item" role="presentation">
-                <a class="nav-link active" id="change-note-tab" data-bs-toggle="tab" href="#change-note" role="tab" aria-controls="change-note" aria-selected="true">Change Note</a>
-            </li>
-            <li class="nav-item" role="presentation">
-                <a class="nav-link" id="change-log-tab" data-bs-toggle="tab" href="#change-log" role="tab" aria-controls="change-log" aria-selected="false">Change Note Implementation</a>
-            </li>
-        </ul>
+@section Scripts {
+    <script>
 
-        <!-- Tab content area -->
-        <div class="tab-content mt-3" id="changeTabsContent">
-
-            <!-- ================= CHANGE NOTE TAB (independent) ================= -->
-            <div class="tab-pane fade show active" id="change-note" role="tabpanel" aria-labelledby="change-note-tab">
-                <div class="tables-flush">
-
-                    <!-- header (Description + Vendor) -->
-                    <table class="header-table" style="margin:0; border-collapse:collapse;">
-                        <colgroup><col style="width:50%;"><col style="width:50%;"></colgroup>
-                        <tbody>
-                            <tr>
-                                <td style="padding:10px 12px; width:50%;">
-                                    <span class="field-label">Description:</span>
-                                    <input type="text" name="ChangeDescription" class="inline-input" placeholder="Enter Change Description" style="width:75%;" />
-                                </td>
-                                <td style="padding:10px 12px; width:50%;">
-                                    <span class="field-label">Vendor:</span>
-                                    <input type="text" name="Vendor" class="inline-input" placeholder="Enter Vendor Name" style="width:75%;" />
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td colspan="2" style="padding:12px; border-top:1px solid #000;">
-                                    <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- items table for Change Note -->
-                    <table class="pv-table" id="changesItemsTable" style="width:100%; border-collapse:collapse; margin-top:-1px; margin-bottom:0;">
-                        <thead>
-                            <tr>
-                                <th style="width:8%; text-align:center;">Sr. No.</th>
-                                <th style="width:44%; text-align:center;">CHANGE FROM</th>
-                                <th style="width:44%; text-align:center;">CHANGE TO</th>
-                                <th style="width:4%; text-align:center;">CATEGORY*</th>
-                            </tr>
-                        </thead>
-                        <tbody id="changesItemsTbody">
-                            <tr>
-                                <td style="padding:8px 10px; text-align:center; vertical-align:middle;">
-                                    <span class="srno">1</span>
-                                    <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn" title="Delete row" style="color:#c0392b; margin-left:6px;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                                <td style="padding:6px 10px;" contenteditable="true"></td>
-                                <td style="padding:6px 10px;" contenteditable="true"></td>
-                                <td style="padding:6px 10px; text-align:center;" contenteditable="true"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                    <!-- remarks + category table attached -->
-                    <table class="header-table" style="margin-top:-1px; border-collapse:collapse;">
-                        <colgroup>
-                            <col style="width:65%;">
-                            <col style="width:35%;">
-                        </colgroup>
-
-                        <tbody>
-                            <!-- ROW 1: REMARKS (left) + CATEGORY (right) - category is merged (rowspan=2) -->
-                            <tr>
-                                <!-- REMARKS: title fixed, editable area below -->
-                                <td style="padding:12px 12px; vertical-align:top;">
-                                    <strong style="display:block; margin-bottom:8px; pointer-events:none;">
-                                        REMARKS :
-                                    </strong>
-
-                                    <div id="remarksEditable"
-                                         contenteditable="true"
-                                         style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;">
-                                    </div>
-                                </td>
-
-                                <!-- CATEGORY: title fixed, contenteditable area; merged vertically with next row -->
-                                <td rowspan="2" style="padding:12px; vertical-align:top;">
-                                    <strong style="display:block; margin-bottom:8px; pointer-events:none;">
-                                        * CHANGE NOTE CATEGORY :
-                                    </strong>
-
-                                    <div id="categoryEditable"
-                                         contenteditable="true"
-                                         style="min-height:154px; line-height:1.4; white-space:pre-wrap; outline:none;">
-                                    </div>
-                                </td>
-                            </tr>
-
-                            <!-- ROW 2: COPY TO (left). Right cell is merged above so omitted here. -->
-                            <tr>
-                                <td style="padding:8px 12px; vertical-align:top;">
-                                    <strong>COPY TO :</strong>
-
-                                    <div style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap;">
-                                        <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                            <input type="checkbox" name="CopyTo" value="PMG.O" style="transform:scale(1.1);"> PMG.O
-                                        </label>
-
-                                        <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                            <input type="checkbox" name="CopyTo" value="LSG" style="transform:scale(1.1);"> LSG
-                                        </label>
-
-                                        <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                            <input type="checkbox" name="CopyTo" value="MATL.S." style="transform:scale(1.1);"> MATL.S.
-                                        </label>
-
-                                        <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                            <input type="checkbox" name="CopyTo" value="QA" style="transform:scale(1.1);"> QA
-                                        </label>
-
-                                        <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                            <input type="checkbox" name="CopyTo" value="PDG" style="transform:scale(1.1);"> PDG
-                                        </label>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-
-                    <!-- signature / date / group table -->
-                    <table class="header-table" style="width:100%; border-collapse:collapse; margin:0;">
-                        <colgroup><col style="width:15%;"><col style="width:85%;"></colgroup>
-                        <tbody>
-                            <tr>
-                                <td style="padding:10px 12px; vertical-align:middle;"><strong>Signature:</strong></td>
-                                <td style="padding:10px 12px; vertical-align:middle;">
-                                    <input type="file" id="signatureFile" name="signatureFile" accept="image/*" style="border:none; font-size:14px;">
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td style="padding:10px 12px; vertical-align:middle;"><strong>Date:</strong></td>
-                                <td style="padding:10px 12px; vertical-align:middle;">
-                                    <input type="date" id="signatureDate" name="signatureDate" class="inline-date" style="border:none; width:220px; padding:6px 4px; font-size:14px;">
-                                </td>
-                            </tr>
-
-                            <tr>
-                                <td style="padding:10px 12px; vertical-align:middle;"><strong>Group :</strong></td>
-                                <td style="padding:10px 12px; vertical-align:middle;">
-                                    <!-- soft multi-select: hidden select + UI -->
-                                    <div class="soft-multiselect-wrapper" style="max-width:420px;">
-                                        <select id="groupHiddenSelect" name="groups" multiple style="display:none;">
-                                            <option value="Product Design">Product Design</option>
-                                            <option value="Quality Assurance">Quality Assurance</option>
-                                            <option value="Materials">Materials</option>
-                                            <option value="PMG">PMG</option>
-                                            <option value="Lighting Technology">Lighting Technology</option>
-                                        </select>
-
-                                        <div class="soft-multiselect" id="groupMulti">
-                                            <div class="soft-multiselect-value" id="groupValue" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
-                                                <div class="chips" id="groupChips"><span class="placeholder">Please select...</span></div>
-                                                <div class="chev">▾</div>
-                                            </div>
-
-                                            <div class="soft-multiselect-dropdown" id="groupDropdown" role="listbox" aria-multiselectable="true">
-                                                <div class="dropdown-inner"><!-- populated by JS --></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                </div> <!-- /.tables-flush -->
-            </div> <!-- /.tab-pane #change-note -->
-            <!-- ================= CHANGE LOG / IMPLEMENTATION TAB (independent) ================= -->
-            <div class="tab-pane fade" id="change-log" role="tabpanel" aria-labelledby="change-log-tab">
-                <!-- Implementation header: ref no + issue date -->
-                <table class="header-table" style="margin:0 0 0 0; border-collapse:collapse;">
-                    <colgroup><col style="width:50%;"><col style="width:50%;"></colgroup>
-                    <tbody>
-                        <tr>
-                            <td style="padding:10px 12px;">
-                                <span class="field-label">Change Note Ref. No.</span>
-                                <input type="text" name="ChangeNoteRef" class="inline-input" placeholder="Enter Note Ref. No" style="width:75%;" />
-                            </td>
-                            <td style="padding:10px 12px;">
-                                <span class="field-label">Date of Issue:</span>
-                                <input type="date" name="DateOfIssue" class="inline-date" placeholder="Enter Date of Issue" style="width:75%;" />
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="2" style="padding:10px 12px;">
-                                <span class="field-label">Vendor / QA In charge:</span>
-                                <input type="text" name="VendorQA" class="inline-input" placeholder="Enter Vendor / QA In charge" style="width:40%;" />
-                            </td>
-                        </tr>
-
-                        <tr>
-                            <td colspan="2" style="padding:12px; border-top:1px solid #000;">
-                                <button id="addRowBtnLog" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; margin:10px 0;">
-                                    <i class="fas fa-plus"></i> Add
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Implementation items table (independent table & IDs) -->
-                <table class="pv-table" id="changesItemsTable_Log" style="width:100%; border-collapse:collapse; margin-top:-1px;">
-                    <thead>
-                        <tr>
-                            <th style="width:6%; text-align:center;">Sr.<br>No.</th>
-                            <th style="width:40%; text-align:center;">ACTION PLANNED</th>
-                            <th style="width:22%; text-align:center;">WHO WILL DO</th>
-                            <th style="width:22%; text-align:center;">PROPOSED CUT OFF DATE</th>
-                            <th style="width:10%; text-align:center;">ACTUAL<br>DATE</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="changesItemsTbody_Log">
-                        <tr>
-                            <td style="padding:8px 10px; text-align:center; vertical-align:middle;">
-                                <span class="srno-log">1</span>
-                                <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn-log" title="Delete row" style="color:#c0392b; margin-left:6px;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-
-                            <td style="padding:6px 10px; min-height:60px;" contenteditable="true"></td>
-                            <td style="padding:6px 10px;" contenteditable="true"></td>
-                            <td style="padding:6px 10px;" contenteditable="true"></td>
-                            <td style="padding:6px 10px; text-align:center;" contenteditable="true"></td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- After implementation table: final remarks block (two-column) -->
-                <table class="header-table" style="width:100%; border-collapse:collapse; margin-top:-1px;">
-                    <colgroup><col style="width:5%;"><col style="width:95%;"></colgroup>
-                    <tbody>
-                        <tr>
-                            <td colspan="2" style="padding:12px 12px; vertical-align:top;">
-
-                                <strong style="display:block; margin-bottom:8px; pointer-events:none;">
-                                    FINAL REMARKS FROM QA
-                                </strong>
-
-                                <div id="remarksEditable"
-                                     contenteditable="true"
-                                     style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;">
-                                </div>
-
-                            </td>
-                        </tr>
-
-
-                 
-               
-                        <!-- SIGNATURE ROW -->
-                        <tr>
-                            <td style="padding:12px; vertical-align:top; font-weight:600;">
-                                Signature :
-                            </td>
-
-                            <td style="padding:12px; vertical-align:top;">
-                                <input type="file" id="finalSignatureFile" name="finalSignatureFile"
-                                       accept="image/*" style="font-size:14px;" />
-                            </td>
-                        </tr>
-
-                        <!-- NOTE ROW -->
-                        <tr>
-                            <td style="padding:12px; vertical-align:top; font-weight:600;">
-                                Note:
-                            </td>
-
-                            <td style="padding:12px; vertical-align:top; min-height:120px;"
-                                contenteditable="true" id="finalRemarksNote">
-                                QA Team member will provide his final remarks as soon as the changes are <br>
-                                implemented at vendor location and acknowledge to Product Design Group by sending a copy of this implementation note.<br>
-                                This is required to update the Technical Specification.
-                            </td>
-                        </tr>
-
-                </table>
-
-            </div> <!-- /.tab-pane #change-log -->
-
-        </div> <!-- /.tab-content -->
-    </div> <!-- /.card-body -->
-</div> <!-- /.card -->
-<!-- JS: add/remove for both tables + signature preview + multi-select -->
-<script>
-    (function () {
-        /* ------------------------------
-           Change Note (main) add/delete
-        -------------------------------*/
-        const addBtn = document.getElementById('addRowBtn');
-        const tbody = document.getElementById('changesItemsTbody');
-
-        function refreshSerials() {
-            const rows = tbody.querySelectorAll('tr');
-            rows.forEach((r, i) => {
-                const sn = r.querySelector('.srno');
-                if (sn) sn.textContent = i + 1;
-            });
-        }
-
-        function createRow() {
-            const tr = document.createElement('tr');
-
-            // Sr no + delete
-            const tdSr = document.createElement('td');
-            tdSr.style.padding = '8px 10px';
-            tdSr.style.textAlign = 'center';
-            tdSr.style.verticalAlign = 'middle';
-
-            const spanNo = document.createElement('span');
-            spanNo.className = 'srno';
-            spanNo.textContent = (tbody.querySelectorAll('tr').length + 1);
-            tdSr.appendChild(spanNo);
-
-            const delBtn = document.createElement('button');
-            delBtn.type = 'button';
-            delBtn.className = 'btn btn-link p-0 delete-row-btn';
-            delBtn.title = 'Delete row';
-            delBtn.style.color = '#c0392b';
-            delBtn.style.marginLeft = '8px';
-            delBtn.innerHTML = '<i class="fas fa-trash"></i>';
-            delBtn.addEventListener('click', function () {
-                tr.remove();
-                refreshSerials();
-            });
-
-            tdSr.appendChild(delBtn);
-            tr.appendChild(tdSr);
-
-            // Change From (editable)
-            const tdFrom = document.createElement('td');
-            tdFrom.style.padding = '6px 10px';
-            tdFrom.setAttribute('contenteditable', 'true');
-            tr.appendChild(tdFrom);
-
-            // Change To (editable)
-            const tdTo = document.createElement('td');
-            tdTo.style.padding = '6px 10px';
-            tdTo.setAttribute('contenteditable', 'true');
-            tr.appendChild(tdTo);
-
-            // Category (editable)
-            const tdCat = document.createElement('td');
-            tdCat.style.padding = '6px 10px';
-            tdCat.style.textAlign = 'center';
-            tdCat.setAttribute('contenteditable', 'true');
-            tr.appendChild(tdCat);
-
-            return tr;
-        }
-
-        addBtn.addEventListener('click', function () {
-            const newRow = createRow();
-            tbody.appendChild(newRow);
-            refreshSerials();
-            newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        $(document).ready(function () {
+            initMainChangeTable();
+            initChangeLogTable();
+            initSignatureInputs();
+            initSoftMultiSelect();
         });
 
-        tbody.addEventListener('click', function (e) {
-            if (e.target.closest('.delete-row-btn')) {
-                const tr = e.target.closest('tr');
-                if (tr) {
+       
+        function initMainChangeTable() {
+            const addBtn = document.getElementById('addRowBtn');
+            const tbody = document.getElementById('changesItemsTbody');
+            if (!addBtn || !tbody) return;
+
+            function refreshSerials() {
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((r, i) => {
+                    const sn = r.querySelector('.srno');
+                    if (sn) sn.textContent = i + 1;
+                });
+            }
+
+            function createRow() {
+                const tr = document.createElement('tr');
+
+                const tdSr = document.createElement('td');
+                tdSr.style.textAlign = 'center';
+                tdSr.style.verticalAlign = 'middle';
+
+                const spanNo = document.createElement('span');
+                spanNo.className = 'srno';
+                spanNo.textContent = tbody.querySelectorAll('tr').length + 1;
+                tdSr.appendChild(spanNo);
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.className = 'btn btn-link p-0 delete-row-btn';
+                delBtn.title = 'Delete row';
+                delBtn.style.color = '#c0392b';
+                delBtn.style.marginLeft = '8px';
+                delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+                delBtn.addEventListener('click', function () {
                     tr.remove();
                     refreshSerials();
-                }
+                });
+
+                tdSr.appendChild(delBtn);
+                tr.appendChild(tdSr);
+
+                const tdFrom = document.createElement('td');
+                tdFrom.setAttribute('contenteditable', 'true');
+                tr.appendChild(tdFrom);
+
+                const tdTo = document.createElement('td');
+                tdTo.setAttribute('contenteditable', 'true');
+                tr.appendChild(tdTo);
+
+                const tdCat = document.createElement('td');
+                tdCat.style.textAlign = 'center';
+                tdCat.setAttribute('contenteditable', 'true');
+                tr.appendChild(tdCat);
+
+                return tr;
             }
-        });
 
-        refreshSerials();
+            addBtn.addEventListener('click', function () {
+                const newRow = createRow();
+                tbody.appendChild(newRow);
+                refreshSerials();
+                newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            });
 
-        /* ------------------------------
-           Implementation (change-log) add/delete (separate)
-        -------------------------------*/
-        (function () {
+         
+            tbody.addEventListener('click', function (e) {
+                if (e.target.closest('.delete-row-btn')) {
+                    const tr = e.target.closest('tr');
+                    if (tr) {
+                        tr.remove();
+                        refreshSerials();
+                    }
+                }
+            });
+
+            refreshSerials();
+        }
+
+     
+        function initChangeLogTable() {
             const addBtnLog = document.getElementById('addRowBtnLog');
             const tbodyLog = document.getElementById('changesItemsTbody_Log');
+            if (!addBtnLog || !tbodyLog) return;
 
             function refreshSerialsLog() {
                 const rows = tbodyLog.querySelectorAll('tr');
@@ -694,17 +775,17 @@
             function createRowLog() {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="padding:8px 10px; text-align:center; vertical-align:middle;">
-                        <span class="srno-log"></span>
-                        <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn-log" style="color:#c0392b;">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                    <td style="padding:6px 10px; min-height:60px;" contenteditable="true"></td>
-                    <td style="padding:6px 10px;" contenteditable="true"></td>
-                    <td style="padding:6px 10px;" contenteditable="true"></td>
-                    <td style="padding:6px 10px; text-align:center;" contenteditable="true"></td>
-                `;
+                            <td style="text-align:center; vertical-align:middle;">
+                                <span class="srno-log"></span>
+                                <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn-log" style="color:#c0392b;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                            <td style="min-height:60px;" contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td style="text-align:center;" contenteditable="true"></td>
+                        `;
                 return tr;
             }
 
@@ -715,30 +796,29 @@
                 r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
 
+            // delete (delegated)
             tbodyLog.addEventListener('click', function (e) {
                 if (e.target.closest('.delete-row-btn-log')) {
                     const tr = e.target.closest('tr');
-                    if (tr) { tr.remove(); refreshSerialsLog(); }
+                    if (tr) {
+                        tr.remove();
+                        refreshSerialsLog();
+                    }
                 }
             });
 
             refreshSerialsLog();
-        })();
+        }
 
-        /* ------------------------------
-           Signature preview (optional) - kept minimal
-        -------------------------------*/
-        (function () {
+    
+        function initSignatureInputs() {
             const sigFile = document.getElementById('signatureFile');
             const finalSigFile = document.getElementById('finalSignatureFile');
-            // we are not forcing preview; just keep inputs available.
-            // If you want a preview, add reader logic here for #signatureFile or #finalSignatureFile.
-        })();
+            // currently no extra logic – kept for future use
+        }
 
-        /* ------------------------------
-           Soft multi-select control initialization
-        -------------------------------*/
-        (function initSoftMultiSelect() {
+       
+        function initSoftMultiSelect() {
             const hidden = document.getElementById('groupHiddenSelect');
             const dropdown = document.getElementById('groupDropdown');
             const inner = dropdown ? dropdown.querySelector('.dropdown-inner') : null;
@@ -748,11 +828,11 @@
 
             if (!hidden || !dropdown || !inner || !valueBox || !chipsWrap || !multiRoot) return;
 
-            // populate dropdown rows from hidden select
+            // build options
             Array.from(hidden.options).forEach((opt) => {
                 const row = document.createElement('div');
                 row.className = 'soft-multiselect-option';
-                row.setAttribute('data-value', opt.value);
+                row.dataset.value = opt.value;
                 row.setAttribute('role', 'option');
                 row.tabIndex = 0;
 
@@ -769,20 +849,28 @@
                 row.appendChild(label);
                 inner.appendChild(row);
 
-                row.addEventListener('click', function (e) {
+                row.addEventListener('click', function () {
                     opt.selected = !opt.selected;
                     cb.checked = opt.selected;
                     updateUI();
                 });
 
                 row.addEventListener('keydown', function (e) {
-                    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); row.click(); }
+                    if (e.key === ' ' || e.key === 'Enter') {
+                        e.preventDefault();
+                        row.click();
+                    }
                 });
             });
+
+            function cssEscape(s) {
+                return String(s).replace(/(["'\\\[\].,:;!\$%\^&\*\(\)\+={}<>\/\?~`])/g, '\\$1');
+            }
 
             function updateUI() {
                 chipsWrap.innerHTML = '';
                 const selected = Array.from(hidden.selectedOptions);
+
                 if (selected.length === 0) {
                     const ph = document.createElement('span');
                     ph.className = 'placeholder';
@@ -792,22 +880,22 @@
                     selected.forEach(opt => {
                         const chip = document.createElement('div');
                         chip.className = 'chip';
-                        chip.setAttribute('data-value', opt.value);
+                        chip.dataset.value = opt.value;
 
                         const txt = document.createElement('span');
                         txt.textContent = opt.text;
-                        txt.style.color = '#000';
 
                         const remove = document.createElement('span');
                         remove.className = 'remove';
                         remove.title = 'Remove';
                         remove.textContent = '×';
-                        remove.style.cursor = 'pointer';
-                        remove.style.marginLeft = '8px';
                         remove.addEventListener('click', function (e) {
                             e.stopPropagation();
-                            Array.from(hidden.options).forEach(o => { if (o.value === opt.value) o.selected = false; });
-                            const row = inner.querySelector(`.soft-multiselect-option[data-value="${cssEscape(opt.value)}"]`);
+                            Array.from(hidden.options).forEach(o => {
+                                if (o.value === opt.value) o.selected = false;
+                            });
+                            const row = inner.querySelector('.soft-multiselect-option[data-value="' +
+                                cssEscape(opt.value) + '"]');
                             if (row) row.querySelector('input[type="checkbox"]').checked = false;
                             updateUI();
                         });
@@ -817,18 +905,29 @@
                         chipsWrap.appendChild(chip);
                     });
                 }
+
                 valueBox.setAttribute('aria-expanded', dropdown.style.display === 'block');
             }
 
-            function openDropdown() { dropdown.style.display = 'block'; valueBox.setAttribute('aria-expanded', 'true'); }
-            function closeDropdown() { dropdown.style.display = 'none'; valueBox.setAttribute('aria-expanded', 'false'); }
+            function openDropdown() {
+                dropdown.style.display = 'block';
+                valueBox.setAttribute('aria-expanded', 'true');
+            }
 
-            valueBox.addEventListener('click', function (e) {
-                if (dropdown.style.display === 'block') closeDropdown(); else openDropdown();
+            function closeDropdown() {
+                dropdown.style.display = 'none';
+                valueBox.setAttribute('aria-expanded', 'false');
+            }
+
+            valueBox.addEventListener('click', function () {
+                if (dropdown.style.display === 'block') closeDropdown();
+                else openDropdown();
             });
 
             document.addEventListener('click', function (e) {
-                if (!multiRoot.contains(e.target)) closeDropdown();
+                if (!multiRoot.contains(e.target)) {
+                    closeDropdown();
+                }
             });
 
             valueBox.addEventListener('keydown', function (e) {
@@ -838,17 +937,15 @@
                     const first = inner.querySelector('.soft-multiselect-option');
                     if (first) first.focus();
                 }
-                if (e.key === 'Escape') closeDropdown();
+                if (e.key === 'Escape') {
+                    closeDropdown();
+                }
             });
 
-            function cssEscape(s) {
-                return String(s).replace(/(["'\\\[\].,:;!\$%\^&\*\(\)\+={}<>\/\?~`])/g, '\\$1');
-            }
-
             updateUI();
-        })();
+        }
+    </script>
+}
 
-    })(); /* end main IIFE */
-</script>
 
 @section HideSidebar { }

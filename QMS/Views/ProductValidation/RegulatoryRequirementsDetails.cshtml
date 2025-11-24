@@ -3,7 +3,7 @@
 }
 
 <style>
-    /* --- same structure & theme as your Impact Test page --- */
+
 
     .underline-input {
         border: 0;
@@ -75,11 +75,7 @@
             color: #000;
             text-align: center;
         }
-    /* ================================
-       Legal / Regulatory Checklist Table
-       ================================ */
 
-    /* Table structure — matches other cards */
     .table-legal {
         width: 100%;
         border-collapse: collapse;
@@ -622,15 +618,33 @@
 @section Scripts {
 
     <script>
-        function showFileName(input) {
-            const wrapper = input.closest('.file-upload-wrapper');
-            const fileNameSpan = wrapper.querySelector('.file-name');
-            if (input.files && input.files.length > 0) {
-                fileNameSpan.textContent = input.files[0].name;
-            } else {
-                fileNameSpan.textContent = "No file chosen";
-            }
+        $(document).ready(function () {
+            initFileNameDisplay();
+        });
+        
+        function initFileNameDisplay() {
+            const inputs = document.querySelectorAll('.file-upload-wrapper input[type="file"]');
+
+            inputs.forEach(input => {
+                input.addEventListener('change', function () {
+                    const wrapper = input.closest('.file-upload-wrapper');
+                    if (!wrapper) return;
+
+                    const fileNameSpan = wrapper.querySelector('.file-name');
+                    if (!fileNameSpan) return;
+
+                    if (input.files && input.files.length > 0) {
+                        fileNameSpan.textContent = input.files[0].name;
+                    } else {
+                        fileNameSpan.textContent = "No file chosen";
+                    }
+                });
+            });
         }
+
+       
+     
     </script>
+
 }
     @section HideSidebar { }

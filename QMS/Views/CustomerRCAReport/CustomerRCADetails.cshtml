@@ -730,107 +730,130 @@
 
 @section Scripts {
     <script>
-        (function () {
-            const tableBody = document.getElementById('monitoringBody');
-            const addBtn = document.getElementById('addRowBtn');
 
-            function createDeleteButton() {
-                const btn = document.createElement('button');
-                btn.className = 'row-del-btn';
-                btn.title = 'Delete this row';
-                btn.innerHTML = '<i class="fa fa-trash"></i>';
-                Object.assign(btn.style, {
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'red',
-                    fontSize: '15px',
-                    marginLeft: '6px'
-                });
-                btn.addEventListener('click', function () {
-                    const tr = btn.closest('tr');
-                    if (tr) {
-                        tr.remove();
-                        renumberRows();
-                    }
-                });
-                return btn;
+        let monitoringBody;
+        let monitoringAddBtn;
+
+        $(document).ready(function () {
+            initMonitoringTable();
+            initPhotoPreviews();
+            initAutoDate();
+        });
+
+
+        function createMonitoringDeleteButton() {
+            const btn = document.createElement('button');
+            btn.className = 'row-del-btn';
+            btn.title = 'Delete this row';
+            btn.innerHTML = '<i class="fa fa-trash"></i>';
+
+            Object.assign(btn.style, {
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'red',
+                fontSize: '15px',
+                marginLeft: '6px'
+            });
+
+            btn.addEventListener('click', () => {
+                const tr = btn.closest('tr');
+                if (tr) tr.remove();
+                refreshMonitoringSerials();
+            });
+
+            return btn;
+        }
+
+        function refreshMonitoringSerials() {
+            if (!monitoringBody) return;
+
+            Array.from(monitoringBody.rows).forEach((row, index) => {
+                const srCell = row.cells[0];
+                if (!srCell) return;
+
+                srCell.innerHTML = '';
+                srCell.textContent = index + 1;
+                srCell.style.textAlign = 'center';
+                srCell.appendChild(createMonitoringDeleteButton());
+            });
+        }
+
+        function addMonitoringRow() {
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                    <td style="border:1.5px solid #000; text-align:center;"></td>
+                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                `;
+
+            monitoringBody.appendChild(tr);
+            refreshMonitoringSerials();
+
+            const newRow = monitoringBody.lastElementChild;
+            if (newRow) newRow.cells[1].focus();
+        }
+
+        function initMonitoringTable() {
+            monitoringBody = document.getElementById('monitoringBody');
+            monitoringAddBtn = document.getElementById('addRowBtn');
+
+            if (!monitoringBody || !monitoringAddBtn) {
+                console.error('monitoringBody or addRowBtn not found.');
+                return;
             }
 
-            function renumberRows() {
-                if (!tableBody) return;
-                Array.from(tableBody.rows).forEach((row, index) => {
-                    const srCell = row.cells[0];
-                    if (!srCell) return;
-                    srCell.innerHTML = '';
-                    srCell.textContent = (index + 1);
-                    srCell.style.textAlign = 'center';
-                    srCell.appendChild(createDeleteButton());
-                });
-            }
+            monitoringAddBtn.addEventListener('click', addMonitoringRow);
+            refreshMonitoringSerials();
+        }
 
-            function addRow() {
-                if (!tableBody) return;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                                    <td style="border:1.5px solid #000; text-align:center;"></td>
-                                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                                `;
-                tableBody.appendChild(tr);
-                renumberRows();
-                const newRow = tableBody.lastElementChild;
-                if (newRow) {
-                    const paramCell = newRow.cells[1];
-                    if (paramCell) paramCell.focus();
+        function setupPreview(inputId, imgId) {
+            const inp = document.getElementById(inputId);
+            const img = document.getElementById(imgId);
+
+            if (!inp || !img) return;
+
+            inp.addEventListener('change', () => {
+                const file = inp.files && inp.files[0];
+
+                if (!file) {
+                    img.src = '';
+                    img.style.display = 'none';
+                    return;
                 }
-            }
 
-            function init() {
-                renumberRows();
-            }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
 
-            if (addBtn) addBtn.addEventListener('click', addRow);
-            document.addEventListener('DOMContentLoaded', init);
-        })();
+                reader.readAsDataURL(file);
+            });
+        }
 
-        (function () {
-            function setupPreview(inputId, imgId) {
-                const inp = document.getElementById(inputId);
-                const img = document.getElementById(imgId);
-                if (!inp || !img) return;
-                inp.addEventListener('change', function () {
-                    const f = this.files && this.files[0];
-                    if (!f) {
-                        img.src = '';
-                        img.style.display = 'none';
-                        return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = function (ev) {
-                        img.src = ev.target.result;
-                        img.style.display = 'block';
-                    };
-                    reader.readAsDataURL(f);
-                });
-            }
-
+        function initPhotoPreviews() {
             setupPreview('photo1', 'preview1');
             setupPreview('photo2', 'preview2');
             setupPreview('photo3', 'preview3');
             setupPreview('photo4', 'preview4');
-        })();
+        }
 
-        (function () {
+        function initAutoDate() {
             const dateInput = document.getElementById("complaintDate");
             if (!dateInput) return;
+
             const today = new Date();
             const yyyy = today.getFullYear();
             const mm = String(today.getMonth() + 1).padStart(2, '0');
             const dd = String(today.getDate()).padStart(2, '0');
-            const formattedDate = `${yyyy}-${mm}-${dd}`;
-            dateInput.value = formattedDate;
-        })();
+
+            dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+
+       
+   
     </script>
 }
 

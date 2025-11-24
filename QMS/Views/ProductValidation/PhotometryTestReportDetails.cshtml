@@ -2,28 +2,26 @@
     ViewData["Title"] = "Photometry Test Report";
 }
 
-
 <style>
     .req {
         color: #d00;
         font-style: normal;
     }
+
     /* thin full-width spacer row (yellow) */
     .pv-table .spacer-row td {
-        background: #fff; /* soft yellow */
-        height: 14px; /* tweak as needed */
-        padding: 0; /* no padding so it stays thin */
+        background: #fff;
+        height: 14px;
+        padding: 0;
         border-top: 1px solid #000;
         border-bottom: 1px solid #000;
     }
 
-    /* make the sign-off row taller with extra space for signatures */
     .pv-table .sign-row td {
         vertical-align: top;
-        padding: 6px 10px 25px 10px; /* small signature space */
+        padding: 6px 10px 25px 10px;
     }
 
-    /* underline-only input style (reuse) */
     .same-input {
         border: none;
         border-bottom: 1.5px solid #666;
@@ -49,6 +47,8 @@
         border-collapse: collapse;
         font-size: 14px;
         border: 1px solid #000;
+        margin-bottom: 0 !important; /* no gap under first table */
+        border-bottom: none !important; /* join with second table border */
     }
 
         .header-table td {
@@ -58,13 +58,16 @@
             vertical-align: middle;
         }
 
+        .header-table + hr {
+            margin-top: 0 !important;
+        }
+
     .field-label {
         font-weight: 600;
         color: #000;
         margin-right: 6px;
     }
 
-    /* Inline underline-style inputs */
     .inline-input,
     .inline-date {
         display: inline-block;
@@ -85,7 +88,6 @@
             border-bottom-color: #4682B4;
         }
 
-        /* Keep native calendar icon visible and styled */
         .inline-date::-webkit-calendar-picker-indicator {
             opacity: 1;
             cursor: pointer;
@@ -97,19 +99,12 @@
             display: none;
         }
 
-    .header-table {
-        margin-bottom: 5px !important; /* increase for more space (try 16–24px) */
-    }
-
-        .header-table + hr {
-            margin-top: 0 !important; /* ensures the hr doesn’t add extra space */
-        }
-
     .pv-table {
         width: 100%;
         border-collapse: collapse;
         font-size: 14px;
-        margin-top: 0px;
+        margin-top: 0;
+        border-top: none !important; /* share border with header-table */
     }
 
         .pv-table th,
@@ -157,10 +152,10 @@
     .pretty-select {
         width: 100%;
         padding: 6px 25px 6px 10px;
-        border: none; /* remove all borders */
-        border-bottom: 1.5px solid #cbd5e1; /* thin bottom border */
-        border-radius: 6px; /* soft curved edges */
-        background-color: #fff; /* pure white */
+        border: none;
+        border-bottom: 1.5px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #fff;
         font-size: 14px;
         color: #000;
         appearance: none;
@@ -171,17 +166,17 @@
         background-position: right 10px center;
         cursor: pointer;
         transition: all 0.25s ease-in-out;
-        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.05); /* subtle soft shadow */
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.05);
     }
 
         .pretty-select:focus {
             outline: none;
-            border-bottom-color: #4a90e2; /* blue highlight */
-            box-shadow: 0 2px 4px rgba(70, 130, 180, 0.25); /* blue glow */
+            border-bottom-color: #4a90e2;
+            box-shadow: 0 2px 4px rgba(70, 130, 180, 0.25);
         }
 
         .pretty-select:hover {
-            border-bottom-color: #93b4d8; /* lighter blue on hover */
+            border-bottom-color: #93b4d8;
         }
 
         .pretty-select option {
@@ -192,10 +187,10 @@
     .result-select {
         width: 100%;
         padding: 8px 30px 8px 12px;
-        border: none; /* remove all borders */
-        border-bottom: 2px solid #4682B4; /* keep only bottom border */
-        border-radius: 0; /* no rounded corners */
-        background-color: transparent; /* flat background */
+        border: none;
+        border-bottom: 2px solid #4682B4;
+        border-radius: 0;
+        background-color: transparent;
         font-size: 14px;
         color: #000;
         appearance: none;
@@ -209,14 +204,19 @@
         .result-select:hover,
         .result-select:focus {
             outline: none;
-            border-bottom-color: #2f5c8a; /* darker blue on hover/focus */
+            border-bottom-color: #2f5c8a;
         }
 
         .result-select::-ms-expand {
-            display: none; /* hide IE dropdown arrow */
+            display: none;
         }
-</style>
 
+    /* Make both tables align perfectly inside the card */
+    .card.shadow-sm .card-body .table-responsive {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+</style>
 
 <div class="content">
     <div class="row">
@@ -254,14 +254,14 @@
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
                 <div class="card-body">
                     <div class="table-responsive">
+                        <!-- FIRST TABLE (HEADER) -->
                         <table class="header-table">
                             <colgroup>
-                                <col style="width:33%;">
-                                <col style="width:34%;">
-                                <col style="width:33%;">
+                                <col style="width:33%;" />
+                                <col style="width:34%;" />
+                                <col style="width:33%;" />
                             </colgroup>
                             <tbody>
-
                                 <tr>
                                     <td>
                                         <span class="field-label">Product Cat Ref :</span><em class="req">*</em>
@@ -279,8 +279,6 @@
                                                placeholder="Enter Report Number" required />
                                     </td>
                                 </tr>
-
-
                                 <tr>
                                     <td>
                                         <span class="field-label">Driver :</span><em class="req">*</em>
@@ -301,313 +299,292 @@
                             </tbody>
                         </table>
 
+                        <!-- SECOND TABLE (ATTACHED DIRECTLY UNDER, SAME WIDTH, SHARED BORDER) -->
+                        <table class="pv-table">
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" style="width:10%"></th>
+                                    <th rowspan="2" style="width:22%">Parameter</th>
+                                    <th rowspan="2" style="width:18%">Specification</th>
+                                    <th colspan="5" class="subhead">Measured Values</th>
+                                    <th rowspan="2" style="width:18%" class="result-header">
+                                        Result ( Pass / Fail / Not Applicable )
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th style="width:8%">Sample-1</th>
+                                    <th style="width:8%">Sample-2</th>
+                                    <th style="width:8%">Sample-3</th>
+                                    <th style="width:8%">Sample-4</th>
+                                    <th style="width:8%">Sample-5</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="group-cell" rowspan="5">with<br />Sphere</td>
+                                    <td contenteditable="true">Input Wattage (W)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">Luminous Flux (lm)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">CCT (K)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">CRI</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">System Efficacy (lm/W)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
 
+                                <tr>
+                                    <td class="group-cell" rowspan="9">With<br />Gonio</td>
+                                    <td contenteditable="true">Input Wattage (W)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">Luminous Flux (lm)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">CCT (K)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">CRI</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">System Efficacy (lm/W)</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">UGR Value</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">Distribution</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">NABL 79 Report</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td contenteditable="true">NABL 79 Report of Other Cat Ref as per PPS</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="padding:10px;">
+                                        <select class="pretty-select">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                            <option value="Not Applicable">Not Applicable</option>
+                                        </select>
+                                    </td>
+                                </tr>
 
+                                <tr class="spacer-row">
+                                    <td colspan="12"></td>
+                                </tr>
 
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="pv-table">
-                                    <thead>
-                                        <tr>
-                                            <th rowspan="2" style="width:10%"></th>
-                                            <th rowspan="2" style="width:22%">Parameter</th>
-                                            <th rowspan="2" style="width:18%">Specification</th>
-                                            <th colspan="5" class="subhead">Measured Values</th>
-                                            <th rowspan="2" style="width:18%" class="result-header">
-                                                Result ( Pass / Fail / Not Applicable )
-                                            </th>
-                                        </tr>
-                                        <tr>
-                                            <th style="width:8%">Sample-1</th>
-                                            <th style="width:8%">Sample-2</th>
-                                            <th style="width:8%">Sample-3</th>
-                                            <th style="width:8%">Sample-4</th>
-                                            <th style="width:8%">Sample-5</th>
-                                        </tr>
-                                    </thead>
+                                <tr class="sign-row">
+                                    <td colspan="4" style="font-weight:bold; border:1px solid #000;">
+                                        Tested By:&nbsp;
+                                        <input type="text" name="checkedBy" class="same-input" placeholder="" />
+                                    </td>
+                                    <td colspan="5" style="font-weight:bold; border:1px solid #000;">
+                                        Verified By:&nbsp;
+                                        <input type="text" name="verifiedBy" class="same-input" placeholder="" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                    <tbody>
-
-                                        <tr>
-                                            <td class="group-cell" rowspan="5">with<br>Sphere</td>
-                                            <td contenteditable="true">Input Wattage (W)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">Luminous Flux (lm)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">CCT (K)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">CRI</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">System Efficacy (lm/W)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-
-
-                                        <tr>
-                                            <td class="group-cell" rowspan="9">With<br>Gonio</td>
-                                            <td contenteditable="true">Input Wattage (W)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">Luminous Flux (lm)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">CCT (K)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">CRI</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">System Efficacy (lm/W)</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">UGR Value</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">Distribution</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">NABL 79 Report</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td contenteditable="true">NABL 79 Report of Other Cat Ref as per PPS</td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td style="padding:10px;">
-                                                <select class="pretty-select">
-                                                    <option value="">Select</option>
-                                                    <option value="Pass">Pass</option>
-                                                    <option value="Fail">Fail</option>
-                                                    <option value="Not Applicable">Not Applicable</option>
-
-                                                </select>
-                                            </td>
-                                        </tr>
-                                        <tr class="spacer-row">
-                                            <td colspan="12"></td>
-                                        </tr>
-
-
-                                        <tr class="sign-row">
-                                            <td colspan="4" style="font-weight:bold; border:1px solid #000;">
-                                                Tested By:&nbsp;
-                                                <input type="text" name="checkedBy" class="same-input" placeholder="" />
-                                            </td>
-                                            <td colspan="5" style="font-weight:bold; border:1px solid #000;">
-                                                Verified By:&nbsp;
-                                                <input type="text" name="verifiedBy" class="same-input" placeholder="" />
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
 
-
-
-                        @section HideSidebar { }
+@section HideSidebar { }

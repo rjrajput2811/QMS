@@ -364,69 +364,85 @@
 
 
 <script>
-    (function () {
-        const tbody = document.querySelector('#ipTestTable tbody');
+
+    $(document).ready(function () {
         const addBtn = document.getElementById('addRowBtn');
+        if (addBtn) {
+            addBtn.addEventListener('click', ipAddRow);
+        }
+    });
 
-        function getRows() {
-            return Array.from(tbody.querySelectorAll('tr')).filter(r => !r.cells[0].hasAttribute('colspan'));
+    function ipCreateRow() {
+        const tr = document.createElement('tr');
+
+        // Sr No + delete button
+        const tdSr = document.createElement('td');
+        tdSr.textContent = '0 ';
+        tdSr.appendChild(ipCreateDeleteButton());
+        tr.appendChild(tdSr);
+
+        // 4 editable cells
+        for (let i = 0; i < 4; i++) {
+            const td = document.createElement('td');
+            td.contentEditable = true;
+            td.style.textAlign = 'left';
+            tr.appendChild(td);
         }
 
-        function renumber() {
-            getRows().forEach((r, i) => {
-                const td = r.cells[0];
-                const btn = td.querySelector('.row-del-btn');
-                td.textContent = (i + 1) + ' ';
-                td.appendChild(btn);
-            });
-        }
+        // last cell with select
+        const tdLast = document.createElement('td');
+        tdLast.innerHTML = `
+                <select class="soft-select" style="width:95%">
+                    <option value="">Select</option>
+                    <option>Pass</option>
+                    <option>Fail</option>
+                    <option>Not Applicable</option>
+                </select>`;
+        tr.appendChild(tdLast);
 
-        function createDeleteButton() {
-            const btn = document.createElement('button');
-            btn.className = 'row-del-btn';
-            btn.innerHTML = '<i class="fa fa-trash"></i>';
-            btn.onclick = () => {
-                btn.closest('tr').remove();
-                renumber();
-            };
-            return btn;
-        }
+        return tr;
+    }
 
-        function buildRow() {
-            const tr = document.createElement('tr');
 
-            const td0 = document.createElement('td');
-            td0.textContent = '0 ';
-            td0.appendChild(createDeleteButton());
-            tr.appendChild(td0);
+    function ipCreateDeleteButton() {
+        const btn = document.createElement('button');
+        btn.className = 'row-del-btn';
+        btn.innerHTML = '<i class="fa fa-trash"></i>';
+        btn.onclick = () => {
+            btn.closest('tr').remove();
+            ipRenumber();
+        };
+        return btn;
+    }
 
-            for (let i = 0; i < 4; i++) {
-                const td = document.createElement('td');
-                td.contentEditable = true;
-                td.style.textAlign = 'left';
-                tr.appendChild(td);
-            }
+ 
 
-            const tdLast = document.createElement('td');
-            tdLast.innerHTML =
-                `<select class="soft-select" style="width:95%">
-                        <option value="">Select</option>
-                        <option>Pass</option>
-                        <option>Fail</option>
-                        <option>Not Applicable</option>
-                     </select>`;
-            tr.appendChild(tdLast);
+    function ipGetRows() {
+        const tbody = document.querySelector('#ipTestTable tbody');
+        return Array.from(tbody.querySelectorAll('tr'))
+            .filter(r => !r.cells[0].hasAttribute('colspan'));
+    }
 
-            return tr;
-        }
+  
+    function ipRenumber() {
+        ipGetRows().forEach((r, i) => {
+            const td = r.cells[0];
+            const delBtn = td.querySelector('.row-del-btn');
+            td.textContent = (i + 1) + ' ';
+            td.appendChild(delBtn);
+        });
+    }
 
-        function addRow() {
-            tbody.appendChild(buildRow());
-            renumber();
-        }
 
-        addBtn.addEventListener('click', addRow);
-    })();
+    function ipAddRow() {
+        const tbody = document.querySelector('#ipTestTable tbody');
+        tbody.appendChild(ipCreateRow());
+        ipRenumber();
+    }
+
+  
+  
 </script>
+
 
 @section HideSidebar { }

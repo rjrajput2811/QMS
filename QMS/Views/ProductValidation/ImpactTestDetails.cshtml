@@ -251,11 +251,11 @@
                 </div>
 
 
-                <!-- MAIN FORM TABLES -->
+                
                 <div class="card shadow-sm mb-3" style="border:1.5px solid #000;">
                     <div class="card-body" style="padding:18px 20px;">
 
-                        <!-- TOP INFO TABLE -->
+                        
                         <div class="table-responsive">
                             <table class="table table-bordered">
 
@@ -280,7 +280,7 @@
                                         </td>
                                     </tr>
 
-                                    <!-- PRODUCT DETAILS -->
+                               
                                     <tr>
                                         <td>
                                             <b>Product Cat Ref :</b>
@@ -306,7 +306,7 @@
                         </div>
 
 
-                        <!-- IK RATING TABLE -->
+                    
                         <div class="table-responsive" style="margin-top:0;">
                             <table class="table table-bordered text-center">
 
@@ -391,14 +391,14 @@
                         </div>
 
 
-                        <!-- OBSERVATION + PHOTO -->
+                       
                         <div class="table-responsive" style="margin-top:0;">
                             <table class="table table-bordered">
 
                                 <tbody>
                                     <tr>
 
-                                        <!-- LEFT COLUMN -->
+                                     
                                         <td style="width:50%; vertical-align:top; padding:18px;">
 
                                             <b>Observation :</b><br /><br />
@@ -440,7 +440,6 @@
                                         </td>
 
 
-                                        <!-- RIGHT COLUMN (PHOTO) -->
                                         <td style="width:50%; vertical-align:top;">
 
                                             <div id="photoContainer" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
@@ -493,49 +492,71 @@
 
 
 @section Scripts {
-
     <script>
-        (function () {
 
+        $(document).ready(function () {
+            initPhotoSelect();
+            initPhotoChange();
+        });
+       
+        function initPhotoSelect() {
             const chooseBtn = document.getElementById('chooseFileBtn');
+            const fileInput = document.getElementById('photoInput');
+
+            if (!chooseBtn || !fileInput) return;
+
+            chooseBtn.addEventListener('click', function () {
+                fileInput.click();
+            });
+        }
+
+        
+        function initPhotoChange() {
             const fileInput = document.getElementById('photoInput');
             const fileNameEl = document.getElementById('fileName');
             const preview = document.getElementById('photoPreview');
             const photoSpace = document.getElementById('photoSpace');
 
-            chooseBtn.addEventListener('click', () => fileInput.click());
+            if (!fileInput || !fileNameEl || !preview || !photoSpace) return;
 
-            fileInput.addEventListener('change', (e) => {
-                const f = e.target.files[0];
-                if (!f) {
-                    fileNameEl.textContent = 'No file chosen';
-                    preview.style.display = 'none';
-                    photoSpace.style.display = 'block';
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+
+               
+                if (!file) {
+                    fileNameEl.textContent = "No file chosen";
+                    preview.style.display = "none";
+                    photoSpace.style.display = "block";
                     return;
                 }
 
-                if (f.size > 5 * 1024 * 1024) {
-                    alert('File is too large. Max 5MB.');
-                    fileInput.value = '';
+               
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("File is too large. Max 5MB.");
+                    fileInput.value = "";
                     return;
                 }
 
-                fileNameEl.textContent = f.name;
+               
+                fileNameEl.textContent = file.name;
 
-                if (f.type.startsWith('image/')) {
+               
+                if (file.type.startsWith("image/")) {
                     const reader = new FileReader();
-                    reader.onload = (ev) => {
+                    reader.onload = function (ev) {
                         preview.src = ev.target.result;
-                        preview.style.display = 'block';
-                        photoSpace.style.display = 'none';
+                        preview.style.display = "block";
+                        photoSpace.style.display = "none";
                     };
-                    reader.readAsDataURL(f);
+                    reader.readAsDataURL(file);
                 }
             });
+        }
 
-        })();
+     
+
     </script>
-
 }
+
 
 @section HideSidebar { }

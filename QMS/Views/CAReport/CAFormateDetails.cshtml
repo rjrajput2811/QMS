@@ -221,16 +221,16 @@
                         <span class="header-title">CA Format Details</span>
                     </div>
 
-            <div style="display:flex; gap:10px;">
-                <button id="saveBtn" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                    <i class="fas fa-save" aria-hidden="true"></i> Save
-                </button>
-                <a href="@Url.Action("CAFormatee","CAReport")" class="btn btn-outline-primary" style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                    <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
-                </a>
+                    <div style="display:flex; gap:10px;">
+                        <button id="saveBtn" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                            <i class="fas fa-save" aria-hidden="true"></i> Save
+                        </button>
+                        <a href="@Url.Action("CAFormatee","CAReport")" class="btn btn-outline-primary" style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
+                        </a>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
 
             <!-- Info Card -->
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0px;">
@@ -566,7 +566,7 @@
                         </table>
                     </div>
 
-                    <!-- ✅ INSERTED TABLE: Monitoring of Action Plan -->
+                
                     <div class="table-responsive" style="margin-top:0;">
                         <table id="monitoringTable" class="table table-bordered"
                                style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
@@ -620,7 +620,7 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <!-- BEFORE COLUMN -->
+                              
                                     <td style="border:1.5px solid #000; vertical-align:middle;">
                                         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:250px;">
                                             <p><b>Photo</b></p>
@@ -629,7 +629,7 @@
                                         </div>
                                     </td>
 
-                                    <!-- AFTER COLUMN -->
+                               
                                     <td style="border:1.5px solid #000; vertical-align:middle;">
                                         <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:250px;">
                                             <p><b>Photo</b></p>
@@ -671,83 +671,94 @@
                         </table>
                     </div>
 
-                </div> 
-            </div> 
-        </div> 
-    </div> 
-</div> 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
-        (function () {
-            const tableBody = document.getElementById('monitoringBody');
-            const addBtn = document.getElementById('addRowBtn'); // assumes your Add button has this ID
 
-            // 🔹 Create delete (trash) button beside Sr. No
-            function createDeleteButton() {
-                const btn = document.createElement('button');
-                btn.className = 'row-del-btn';
-                btn.title = 'Delete this row';
-                btn.innerHTML = '<i class="fa fa-trash"></i>';
-                Object.assign(btn.style, {
-                    background: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: 'red',
-                    fontSize: '15px',
-                    marginLeft: '6px'
-                });
-                btn.addEventListener('click', function () {
-                    const tr = btn.closest('tr');
-                    if (tr) {
-                        tr.remove();
-                        renumberRows();
-                    }
-                });
-                return btn;
+        let monitoringBody;
+        let monitoringAddBtn;
+
+        $(document).ready(function () {
+            initMonitoringTable();
+        });
+
+        function createMonitoringDeleteButton() {
+            const btn = document.createElement('button');
+            btn.className = 'row-del-btn';
+            btn.title = 'Delete this row';
+            btn.innerHTML = '<i class="fa fa-trash"></i>';
+
+            Object.assign(btn.style, {
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'red',
+                fontSize: '15px',
+                marginLeft: '6px'
+            });
+
+            btn.addEventListener('click', () => {
+                const tr = btn.closest('tr');
+                if (tr) tr.remove();
+                refreshMonitoringSerials();
+            });
+
+            return btn;
+        }
+
+        function refreshMonitoringSerials() {
+            Array.from(monitoringBody.rows).forEach((row, index) => {
+                const srCell = row.cells[0];
+                srCell.innerHTML = '';
+                srCell.textContent = index + 1;
+                srCell.appendChild(createMonitoringDeleteButton());
+            });
+        }
+
+        function addMonitoringRow() {
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                    <td style="border:1.5px solid #000; text-align:center;"></td>
+                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                    <td style="border:1.5px solid #000; text-align:center;">
+                        <select class="soft-select small">
+                            <option value="Select" selected>Select</option>
+                            <option value="Closed">Closed</option>
+                            <option value="Open">Open</option>
+                        </select>
+                    </td>
+                `;
+
+            monitoringBody.appendChild(tr);
+            refreshMonitoringSerials();
+        }
+
+        function initMonitoringTable() {
+            monitoringBody = document.getElementById('monitoringBody');
+            monitoringAddBtn = document.getElementById('addRowBtn');
+
+            if (!monitoringBody || !monitoringAddBtn) {
+                console.error("monitoringBody or addRowBtn not found.");
+                return;
             }
 
-            // 🔹 Renumber Sr. No. and attach bin beside number
-            function renumberRows() {
-                if (!tableBody) return;
-                Array.from(tableBody.rows).forEach((row, index) => {
-                    const srCell = row.cells[0];
-                    if (!srCell) return;
-                    srCell.innerHTML = '';
-                    srCell.textContent = index + 1;
-                    srCell.appendChild(createDeleteButton());
-                });
-            }
+            monitoringAddBtn.addEventListener('click', addMonitoringRow);
+            refreshMonitoringSerials();
+        }
 
-            // 🔹 Add new row with styled dropdown (.soft-select small)
-            function addRow() {
-                if (!tableBody) return;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                            <td style="border:1.5px solid #000; text-align:center;"></td>
-                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                            <td style="border:1.5px solid #000; text-align:center;">
-                                <select class="soft-select small">
-                                    <option value="Select" selected>Select</option>
-                                    <option value="Closed">Closed</option>
-                                    <option value="Open">Open</option>
-                                </select>
-                            </td>
-                        `;
-                tableBody.appendChild(tr);
-                renumberRows();
-            }
+    
+    
 
-            // 🔹 Initialize existing rows
-            function init() {
-                renumberRows();
-            }
-
-            if (addBtn) addBtn.addEventListener('click', addRow);
-            document.addEventListener('DOMContentLoaded', init);
-        })();
     </script>
 }
+
 
 @section HideSidebar { }

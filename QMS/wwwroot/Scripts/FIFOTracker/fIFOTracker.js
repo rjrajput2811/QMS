@@ -951,6 +951,17 @@ function OnTabGridLoad(response) {
 
         // existing Delayed_Days logic stays...
 
+        if (["Delayed_Days"].includes(field)) {
+            return;
+        }
+
+        if (["Sample_Recv_Date", "Test_Completion_Date"].includes(field)) {
+            const start = parseDate(data.Sample_Recv_Date);
+            const end = parseDate(data.Test_Completion_Date);
+            const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
+            row.update({ Delayed_Days: diff.toString() });
+        }
+
         // Extra safety: if dependency empty but value entered, clear it back
         if (field === "Test_Completion_Date" &&
             isEmpty(data.Sample_Recv_Date) &&
@@ -976,16 +987,7 @@ function OnTabGridLoad(response) {
             return;
         }
 
-        if (["Delayed_Days"].includes(field)) {
-            return;
-        }
-
-        if (["Sample_Recv_Date", "Test_Completion_Date"].includes(field)) {
-            const start = parseDate(data.Sample_Recv_Date);
-            const end = parseDate(data.Test_Completion_Date);
-            const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
-            row.update({ Delayed_Days: diff.toString() });
-        }
+        
 
         InsertUpdateFIFO(cell.getRow().getData());
     });

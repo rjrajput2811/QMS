@@ -1,0 +1,333 @@
+﻿@{
+    ViewData["Title"] = "General Observation / Open Points";
+}
+
+<style>
+    /* core styles (same as Needle Flame) */
+    .header-table, .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .header-table {
+        border: 1px solid #000;
+    }
+
+        .header-table td, .pv-table td, .pv-table th {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            vertical-align: middle;
+            box-sizing: border-box;
+            white-space: normal;
+        }
+
+    .field-label {
+        font-weight: 600;
+        margin-right: 6px;
+        color: #000;
+    }
+
+    .inline-input, .inline-date {
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        padding: 2px 4px;
+        outline: none;
+        transition: border-color .2s;
+    }
+
+        .inline-input:focus, .inline-date:focus {
+            border-bottom-color: #4682B4;
+        }
+
+    .pv-table th {
+        background: #f8f9fa;
+        font-weight: 700;
+        text-align: center;
+        padding: 8px 10px;
+    }
+
+    .pv-table td[contenteditable="true"] {
+        min-height: 28px;
+        cursor: text;
+        text-align: left;
+    }
+
+    .result-select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 140px;
+        padding: 8px 28px 8px 10px;
+        font-size: 14px;
+        background: #fff;
+        border: none;
+        outline: none;
+        text-align-last: center;
+        border-bottom: 2px solid transparent;
+        border-radius: 0 0 10px 10px;
+        box-shadow: inset 0 -2px 0 #d5dce5, 0 2px 4px rgba(0,0,0,0.05);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'><path fill='black' d='M5 7l5 5 5-5'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 14px;
+    }
+
+        .result-select:focus {
+            box-shadow: inset 0 -2px 0 #4682B4, 0 2px 6px rgba(70,130,180,0.15);
+        }
+
+    .btn {
+        margin: 0;
+    }
+
+    .pv-table + .pv-table {
+        margin-top: 0;
+        border-top-width: 1px;
+    }
+</style>
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- HEADER CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b style="font-size:x-large; color:#4682B4;">General Observation / OPEN POINTS</b>
+                    </div>
+
+                    <div>
+                        <button id="saveOpenPointsButton"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2"
+                                onclick="saveOpenPoints()"
+                                style="width:120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-primary"
+                                style="width:120px; font-size:15px;"
+                                onclick="location.href='@Url.Action("GeneralObservation", "ProductValidation")'">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body">
+
+                    <!-- HEADER TABLES (same structure as Needle Flame) -->
+                    <table class="header-table" style="margin:0;">
+                        <tbody>
+
+                            <!-- ROW 1 : PRODUCT CAT REF | PRODUCT DESCRIPTION | REPORT NO -->
+                            <tr>
+                                <td style="padding:10px 12px; width:33%;">
+                                    <span class="field-label">Product Cat Ref :</span>
+                                    <input type="text"
+                                           name="ProductCatRef"
+                                           class="inline-input"
+                                           placeholder="Enter Product Cat Ref"
+                                           style="width:60%;" />
+                                </td>
+
+                                <td style="padding:10px 12px; width:33%;">
+                                    <span class="field-label">Product Description :</span>
+                                    <input type="text"
+                                           name="ProductDescription"
+                                           class="inline-input"
+                                           placeholder="Enter Product Description"
+                                           style="width:60%;" />
+                                </td>
+
+                                <td style="padding:10px 12px; width:34%;">
+                                    <span class="field-label">Report No. :</span>
+                                    <input type="text"
+                                           name="ReportNo"
+                                           class="inline-input"
+                                           placeholder="Enter Report No."
+                                           style="width:60%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW 2 : EMPTY CELLS + DATE -->
+                            <tr>
+                                <td style="padding:10px 12px;"></td>
+                                <td style="padding:10px 12px;"></td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Date :</span>
+                                    <input id="ReportDate"
+                                           type="date"
+                                           class="inline-date"
+                                           style="width:60%;" />
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                    <!-- ADD BUTTON ROW (same location as Needle Flame) -->
+                    <table class="header-table" style="margin-top:-1px;">
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                    <button id="addOpenPointRowBtn"
+                                            type="button"
+                                            class="btn btn-outline-success"
+                                            style="width:120px; font-size:15px;">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- OPEN POINTS TABLE (replaces Needle Flame test table) -->
+                    <table class="pv-table" id="openPointsTable" style="margin-top:0;">
+                        <thead>
+                            <tr>
+                                <th style="width:6%; text-align:center;">Sr. No.</th>
+                                <th style="width:26%; text-align:center;">Requirement/ specification</th>
+                                <th style="width:28%; text-align:center;">Actual findings</th>
+                                <th style="width:14%; text-align:center; color:red;">Open / Closed</th>
+                                <th style="width:16%; text-align:center;">Closure Responsibility</th>
+                                <th style="width:10%; text-align:center;">Upload File</th>
+                            </tr>
+                        </thead>
+                        <tbody id="openPointsTbody">
+                            <!-- rows added by script -->
+                        </tbody>
+                    </table>
+
+         
+                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
+                        <tbody>
+                            <tr>
+                                <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
+                                    <span class="field-label">Checked By :</span>
+                                    <input type="text"
+                                           name="CheckedBy"
+                                           class="inline-input"
+                                           placeholder="Enter Name"
+                                           style="width:60%;" />
+                                </td>
+
+                                <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                    <span class="field-label">Verified By :</span>
+                                    <input type="text"
+                                           name="VerifiedBy"
+                                           class="inline-input"
+                                           placeholder="Enter Name"
+                                           style="width:60%;" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // open points globals
+        let openPointsTbody;
+        let openAddBtn;
+
+        $(document).ready(function () {
+            try { initOpenPoints(); } catch (e) { console.error(e); }
+        });
+
+        function createOpenPointRow() {
+            const tr = document.createElement('tr');
+            tr.className = 'open-point-row';
+
+            tr.innerHTML = `
+                        <td style="text-align:center;">
+                            <span class="srno-open"></span>
+                            <button type="button"
+                                    class="delete-open-row"
+                                    style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                <i class="fas fa-trash" style="color:#c0392b;"></i>
+                            </button>
+                        </td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td style="text-align:center;">
+                            <select class="result-select" style="width:130px;">
+                                <option value="">Select</option>
+                                <option value="Open">Open</option>
+                                <option value="Closed">Closed</option>
+                            </select>
+                        </td>
+                        <td contenteditable="true"></td>
+                        <td style="text-align:center;">
+                            <input type="file" />
+                        </td>
+                    `;
+            return tr;
+        }
+
+        function addOpenPointRow() {
+            const row = createOpenPointRow();
+            openPointsTbody.appendChild(row);
+            refreshOpenPointsSerials();
+            const firstEditable = row.querySelector('td[contenteditable="true"]');
+            if (firstEditable) firstEditable.focus();
+        }
+
+        function removeOpenPointRow(tr) {
+            tr.remove();
+            refreshOpenPointsSerials();
+        }
+
+        function refreshOpenPointsSerials() {
+            const rows = openPointsTbody.querySelectorAll('.open-point-row');
+            rows.forEach((tr, index) => {
+                const sn = tr.querySelector('.srno-open');
+                if (sn) sn.textContent = index + 1;
+            });
+        }
+
+        function initOpenPoints() {
+            openPointsTbody = document.getElementById('openPointsTbody');
+            openAddBtn = document.getElementById('addOpenPointRowBtn');
+
+            if (!openPointsTbody || !openAddBtn) {
+                console.error("Open Points table or Add button missing.");
+                return;
+            }
+
+            openAddBtn.addEventListener('click', addOpenPointRow);
+
+            openPointsTbody.addEventListener('click', function (e) {
+                const del = e.target.closest('.delete-open-row');
+                if (!del) return;
+                const tr = del.closest('tr.open-point-row');
+                if (tr) removeOpenPointRow(tr);
+            });
+
+            // start with one empty row
+            if (openPointsTbody.children.length === 0) {
+                addOpenPointRow();
+            } else {
+                refreshOpenPointsSerials();
+            }
+        }
+
+       
+    </script>
+}
+
+@section HideSidebar { }

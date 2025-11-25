@@ -26,6 +26,34 @@ $(document).ready(function () {
         var url = '/Vendor/UploadCertiExcel';
         handleImportExcelFile(url, expectedColumns);
     });
+
+    $("#User_Name").on("blur", function () {
+        debugger
+        Blockloadershow();
+        const username = $(this).val().trim();
+
+        if (!username) {
+            Blockloaderhide();
+            return;
+        }
+
+        $.ajax({
+            url: '/Vendor/CheckDuplicateUserName',  // Replace with your server endpoint
+            type: 'GET',
+            data: { username: username },
+            success: function (response) {
+                Blockloaderhide();
+                if (response.success === true) {
+                    // $("#NewPart_No").val('');
+                    showDangerAlert(response.message);
+                }
+            },
+            error: function (xhr, ststus, errors) {
+                Blockloaderhide();
+                showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
+            }
+        });
+    });
 });
 
 let searchTimeout; // Timeout variable for debounce

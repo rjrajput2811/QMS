@@ -69,7 +69,7 @@ namespace QMS.Controllers
                 if (ModelState.IsValid)
                 {
                     var operationResult = new OperationResult();
-                    bool existingResult = await _vendorRepository.CheckDuplicate(model.Name.Trim(), 0);
+                    bool existingResult = await _vendorRepository.CheckDuplicate(model.Name.Trim(),model.User_Name.Trim(), 0);
                     if (!existingResult)
                     {
                         model.CreatedDate = DateTime.Now;
@@ -123,6 +123,30 @@ namespace QMS.Controllers
             var operationResult = await _vendorRepository.DeleteAsync(id);
             return Json(operationResult);
         }
+
+        [HttpGet]
+        public async Task<JsonResult> CheckDuplicateUserName(string username)
+        {
+            try
+            {
+                string user_name = username?.Trim() ?? string.Empty;
+
+                var existingResult = await _vendorRepository.CheckDuplicateUserName(user_name, 0);
+
+                if (existingResult.Any())
+                {
+                    return Json(new { success = true, message = "User Name already exists in the system." });
+                }
+
+                return Json(new { Success = false, message = "" });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> DeleteCertificate(int id)
         {

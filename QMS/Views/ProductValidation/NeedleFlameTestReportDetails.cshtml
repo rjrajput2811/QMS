@@ -1,0 +1,471 @@
+﻿@{
+    ViewData["Title"] = "Needle Flame Test Report";
+}
+
+<style>
+    /* core styles (kept from your page) */
+    .header-table, .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .header-table {
+        border: 1px solid #000;
+    }
+
+        .header-table td, .pv-table td, .pv-table th {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            vertical-align: middle;
+            box-sizing: border-box;
+            white-space: normal;
+        }
+
+    .field-label {
+        font-weight: 600;
+        margin-right: 6px;
+        color: #000;
+    }
+
+    .inline-input, .inline-date {
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        padding: 2px 4px;
+        outline: none;
+        transition: border-color .2s;
+    }
+
+        .inline-input:focus, .inline-date:focus {
+            border-bottom-color: #4682B4;
+        }
+
+    .pv-table th {
+        background: #f8f9fa;
+        font-weight: 700;
+        text-align: center;
+        padding: 8px 10px;
+    }
+
+    .pv-table td[contenteditable="true"] {
+        min-height: 28px;
+        cursor: text;
+        text-align: left;
+    }
+
+    .result-select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 140px;
+        padding: 8px 28px 8px 10px;
+        font-size: 14px;
+        background: #fff;
+        border: none;
+        outline: none;
+        text-align-last: center;
+        border-bottom: 2px solid transparent;
+        border-radius: 0 0 10px 10px;
+        box-shadow: inset 0 -2px 0 #d5dce5, 0 2px 4px rgba(0,0,0,0.05);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'><path fill='black' d='M5 7l5 5 5-5'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 14px;
+    }
+
+        .result-select:focus {
+            box-shadow: inset 0 -2px 0 #4682B4, 0 2px 6px rgba(70,130,180,0.15);
+        }
+
+    /* Photo input layout */
+    .photo-input-wrap-left,
+    .photo-input-wrap-right {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 160px;
+    }
+
+        .photo-input-wrap-left input[type="file"],
+        .photo-input-wrap-right input[type="file"] {
+            display: inline-block;
+        }
+
+    .btn {
+        margin: 0;
+    }
+
+    .pv-table + .pv-table {
+        margin-top: 0;
+        border-top-width: 1px;
+    }
+</style>
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- HEADER CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b style="font-size:x-large; color:#4682B4;">Needle Flame Test Report</b>
+                    </div>
+
+                    <div>
+                        <button id="saveNeedleTestButton"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2"
+                                onclick="saveNeedleFlameTest()"
+                                style="width:120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+
+                        <a href='@Url.Action("NeedleFlameTestReport", "ProductValidation")'
+                           class="btn btn-outline-primary"
+                           style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body">
+
+                    <!-- HEADER TABLES -->
+                    <table class="header-table" style="margin:0;">
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align:center; padding:10px 12px;">
+                                    <span class="field-label">Reference Standard :</span>
+                                    <input type="text"
+                                           name="ReferenceStandard"
+                                           class="inline-input"
+                                           placeholder="Enter Reference Standard"
+                                           style="width:20%; text-align:center;" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="3"></td>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Report No.:</span>
+                                    <input type="text"
+                                           name="ReportNo"
+                                           class="inline-input"
+                                           style="width:60%;"
+                                           placeholder="Enter Report No." />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="3" style="padding:10px 12px;">
+                                    <span class="field-label">Customer / Project Name :</span>
+                                    <input type="text"
+                                           name="CustomerName"
+                                           class="inline-input"
+                                           style="width:70%;"
+                                           placeholder="Enter Customer / Project" />
+                                </td>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Date :</span>
+                                    <input type="date"
+                                           name="ReportDate"
+                                           class="inline-date"
+                                           style="width:70%;" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Product Cat Ref :</span>
+                                    <input type="text"
+                                           name="ProductCatRef"
+                                           class="inline-input"
+                                           placeholder="Enter Product Cat Ref"
+                                           style="width:50%;" />
+                                </td>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Product Description :</span>
+                                    <input type="text"
+                                           name="ProductDescription"
+                                           class="inline-input"
+                                           placeholder="Enter Product Description"
+                                           style="width:50%;" />
+                                </td>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Batch Code :</span>
+                                    <input type="text"
+                                           name="BatchCode"
+                                           class="inline-input"
+                                           placeholder="Enter Batch Code"
+                                           style="width:50%;" />
+                                </td>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Quantity :</span>
+                                    <input type="number"
+                                           name="Quantity"
+                                           class="inline-input"
+                                           placeholder="0"
+                                           style="width:50%;" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="2" style="padding:10px 12px;">
+                                    <span class="field-label">Part Description :</span>
+                                    <input type="text"
+                                           name="PartDescription"
+                                           class="inline-input"
+                                           placeholder="Enter Part Description"
+                                           style="width:70%;" />
+                                </td>
+                                <td colspan="2" style="padding:10px 12px;">
+                                    <span class="field-label">PKD :</span>
+                                    <input type="text"
+                                           name="PKD"
+                                           class="inline-input"
+                                           placeholder="Enter PKD"
+                                           style="width:60%;" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="header-table" style="margin-top:-1px;">
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                    <button id="addNeedleTestRowBtn"
+                                            type="button"
+                                            class="btn btn-outline-success"
+                                            style="width:120px; font-size:15px;">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- COMBINED TEST + PHOTO TABLES -->
+                    <table class="pv-table" id="needleCombinedTable" style="margin-top:0;">
+                        <thead>
+                            <tr>
+                                <th style="width:6%; text-align:center;">Sr. No.</th>
+                                <th style="width:36%; text-align:center;">TESTS WITH CLAUSE REFERENCE</th>
+                                <th style="width:28%; text-align:center;">SPECIFIED REQUIREMENTS</th>
+                                <th style="width:18%; text-align:center;">Observation</th>
+                                <th style="width:12%; text-align:center; color:#c0392b;">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody id="needleCombinedTbody">
+                            <!-- rows added by script -->
+                        </tbody>
+                    </table>
+
+                    <!-- optional extra table (kept for future use) -->
+                    <table class="pv-table" id="needlePhotosTable" style="margin-top:0;">
+                        <thead>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+
+                    <!-- FINAL RESULT -->
+                    <table class="pv-table" style="margin-top:0; width:100%; border-collapse:collapse;">
+                        <tbody>
+                            <tr>
+                                <td style="padding:10px 12px; white-space:nowrap;">
+                                    <span style="color:#c0392b; font-weight:700; margin-right:20px;">
+                                        Test Result:
+                                    </span>
+
+                                    <select id="needleFinalTestResult" class="result-select" style="width:180px;">
+                                        <option value="">Select</option>
+                                        <option value="Pass">Pass</option>
+                                        <option value="Fail">Fail</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- SIGNATURE ROW -->
+                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
+                        <tbody>
+                            <tr>
+                                <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
+                                    <span class="field-label">Tested By :</span>
+                                    <input type="text"
+                                           name="TestedBy"
+                                           class="inline-input"
+                                           placeholder="Enter Name"
+                                           style="width:60%;" />
+                                </td>
+
+                                <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                    <span class="field-label">Verified By :</span>
+                                    <input type="text"
+                                           name="VerifiedBy"
+                                           class="inline-input"
+                                           placeholder="Enter Name"
+                                           style="width:60%;" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // needle flame globals
+        let needleTbody;
+        let needleAddBtn;
+        let needleGroupCounter = 0;
+
+        $(document).ready(function () {
+            try { initNeedleFlame(); } catch (e) { console.error(e); }
+        });
+
+        function needleCreateTestRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'needle-group-test-row';
+
+            tr.innerHTML = `
+                        <td style="text-align:center;">
+                            <span class="srno-test"></span>
+                            <button type="button" class="delete-needle-group"
+                                    style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td style="text-align:center;">
+                            <select class="result-select">
+                                <option value="">Select</option>
+                                <option>Pass</option>
+                                <option>Fail</option>
+                                <option>Not Applicable</option>
+                            </select>
+                        </td>
+                    `;
+            return tr;
+        }
+
+        function needleCreatePhotoHeaderRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'needle-group-photo-header-row';
+
+            tr.innerHTML = `
+                        <td style="background:#f8f9fa;"></td>
+                        <td colspan="1" style="width:50%; text-align:center; font-weight:700; background:#f8f9fa;">
+                            Photo during testing
+                        </td>
+                        <td colspan="3" style="width:50%; text-align:center; font-weight:700; background:#f8f9fa;">
+                            Photo after testing
+                        </td>
+                    `;
+            return tr;
+        }
+
+        function needleCreatePhotoInputRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'needle-group-photo-input-row';
+
+            tr.innerHTML = `
+                        <td></td>
+                        <td colspan="1" style="width:50%; padding:10px;">
+                            <div class="photo-input-wrap-left">
+                                <input type="file" accept="image/*" class="photo-input-left" />
+                            </div>
+                        </td>
+                        <td colspan="3" style="width:50%; padding:10px;">
+                            <div class="photo-input-wrap-right">
+                                <input type="file" accept="image/*" class="photo-input-right" />
+                            </div>
+                        </td>
+                    `;
+            return tr;
+        }
+
+        function needleAddGroup() {
+            const gid = "ng" + (++needleGroupCounter);
+
+            const rowA = needleCreateTestRow(gid);
+            const rowB = needleCreatePhotoHeaderRow(gid);
+            const rowC = needleCreatePhotoInputRow(gid);
+
+            needleTbody.appendChild(rowA);
+            needleTbody.appendChild(rowB);
+            needleTbody.appendChild(rowC);
+
+            needleRefreshSerials();
+
+            const editCell = rowA.querySelector('td[contenteditable="true"]');
+            if (editCell) editCell.focus();
+        }
+
+        function needleRemoveGroup(groupId) {
+            const rows = needleTbody.querySelectorAll(`tr[data-group="${groupId}"]`);
+            rows.forEach(r => r.remove());
+            needleRefreshSerials();
+        }
+
+        function needleRefreshSerials() {
+            const rows = needleTbody.querySelectorAll('.needle-group-test-row');
+            rows.forEach((tr, index) => {
+                const sn = tr.querySelector('.srno-test');
+                if (sn) sn.textContent = index + 1;
+            });
+        }
+
+        function initNeedleFlame() {
+            needleTbody = document.getElementById('needleCombinedTbody');
+            needleAddBtn = document.getElementById('addNeedleTestRowBtn');
+
+            if (!needleTbody || !needleAddBtn) {
+                console.error("Needle Flame table or Add button missing.");
+                return;
+            }
+
+            needleAddBtn.addEventListener('click', needleAddGroup);
+
+            needleTbody.addEventListener('click', function (e) {
+                const del = e.target.closest('.delete-needle-group');
+                if (!del) return;
+                const tr = del.closest('tr');
+                const gid = tr.dataset.group;
+                needleRemoveGroup(gid);
+            });
+
+            if (needleTbody.children.length === 0) {
+                needleAddGroup();
+            } else {
+                needleRefreshSerials();
+            }
+        }
+
+        // stub save – hook into your actual save logic
+        function saveNeedleFlameTest() {
+            // TODO: collect form data & submit via AJAX or form post
+            alert('Needle Flame Test save not implemented yet.');
+        }
+    </script>
+}
+
+@section HideSidebar { }

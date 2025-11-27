@@ -1225,6 +1225,18 @@ public class ProductValidationController : Controller
     }
     #endregion
 
+    #region GlowWireTestReport
+    public IActionResult GlowWireTestReport()
+    {
+        return View();
+    }
+    public IActionResult GlowWireTestReportDetails()
+    {
+        return View();
+    }
+
+    #endregion
+
     #region HydraulicTestReport
 
     public IActionResult HydraulicTestReport()
@@ -1234,6 +1246,59 @@ public class ProductValidationController : Controller
     }
 
     public IActionResult HydraulicTestReportDetails()
+    {
+
+        return View();
+    }
+
+    #endregion
+
+    #region NeedleFlameTestReport
+    public IActionResult NeedleFlameTestReportDetails()
+    {
+
+        return View();
+    }
+    public IActionResult NeedleFlameTestReport()
+    {
+        return View();
+    }
+
+    #endregion
+
+    #region GeneralObservation
+    public IActionResult GeneralObservationDetails()
+    {
+
+        return View();
+    }
+    public IActionResult GeneralObservation()
+    {
+        return View();
+    }
+
+    #endregion
+
+    #region ValidationReport
+    public IActionResult ValidationReport()
+    {
+        return View();
+    }
+    public IActionResult ValidationReportDetails()
+    {
+        return View();
+    }
+    #endregion
+
+    #region OpenPointClousre
+
+    public IActionResult OpenPointClosureReport()
+    {
+
+        return View();
+    }
+
+    public IActionResult OpenPointClosureReportDetails()
     {
 
         return View();

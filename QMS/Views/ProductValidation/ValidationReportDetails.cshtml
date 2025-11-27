@@ -1,0 +1,1093 @@
+﻿@{
+    ViewData["Title"] = "Luminaire Validation Report";
+}
+
+<style>
+    /* core styles (same as your page) */
+    .header-table, .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .header-table {
+        border: 1px solid #000;
+    }
+
+        .header-table td, .pv-table td, .pv-table th {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            vertical-align: middle;
+            box-sizing: border-box;
+            white-space: normal;
+        }
+
+    .field-label {
+        font-weight: 600;
+        margin-right: 6px;
+        color: #000;
+    }
+
+    .inline-input, .inline-date {
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        padding: 2px 4px;
+        outline: none;
+        transition: border-color .2s;
+    }
+
+        .inline-input:focus, .inline-date:focus {
+            border-bottom-color: #4682B4;
+        }
+
+    .pv-table th {
+        background: #f8f9fa;
+        font-weight: 700;
+        text-align: center;
+        padding: 8px 10px;
+    }
+
+    .pv-table td[contenteditable="true"] {
+        min-height: 28px;
+        cursor: text;
+        text-align: left;
+    }
+
+    .result-select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 140px;
+        padding: 8px 28px 8px 10px;
+        font-size: 14px;
+        background: #fff;
+        border: none;
+        outline: none;
+        text-align-last: center;
+        border-bottom: 2px solid transparent;
+        border-radius: 0 0 10px 10px;
+        box-shadow: inset 0 -2px 0 #d5dce5, 0 2px 4px rgba(0,0,0,0.05);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'><path fill='black' d='M5 7l5 5 5-5'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 14px;
+    }
+
+        .result-select:focus {
+            box-shadow: inset 0 -2px 0 #4682B4, 0 2px 6px rgba(70,130,180,0.15);
+        }
+
+    /* Photo input layout */
+    .photo-input-wrap-left,
+    .photo-input-wrap-right {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 160px;
+    }
+
+        .photo-input-wrap-left input[type="file"],
+        .photo-input-wrap-right input[type="file"] {
+            display: inline-block;
+        }
+
+    .btn {
+        margin: 0;
+    }
+
+    .pv-table + .pv-table {
+        margin-top: 0;
+        border-top-width: 1px;
+    }
+</style>
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- HEADER CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b style="font-size:x-large; color:#4682B4;">Luminaire Validation Report</b>
+                    </div>
+
+                    <div>
+                        <button id="saveLuminaireButton"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2"
+                                onclick="saveLuminaireValidation()"
+                                style="width:120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-outline-primary"
+                                style="width:120px; font-size:15px;"
+                                onclick="location.href='@Url.Action("ValidationReport", "ProductValidation")'">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body">
+
+                    <!-- HEADER TABLE -->
+                    <table class="header-table" style="margin:0;">
+                        <tbody>
+
+                            <!-- ROW 1 — Vendor Name & Report No -->
+                            <tr>
+                                <td colspan="4" style="padding:10px 12px;">
+                                    <span class="field-label">Vendor Name & Location :-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Vendor Name & Location" style="width:70%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Report no.</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Report No." style="width:60%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW 2 — Vendor QA person / Validation Done -->
+                            <tr>
+                                <td colspan="4" style="padding:10px 12px;">
+                                    <span class="field-label">Vendor QA person Present :-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Vendor QA Person Name" style="width:70%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Validation Done by Wipro QA</span>
+                                </td>
+                            </tr>
+
+                            <!-- ROW 3 — Product Code / Quantity Offered + CHECKBOX CELL (rowspan=2) -->
+                            <tr>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Product Code :-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Product Code" style="width:60%;" />
+                                </td>
+
+                                <td colspan="3" style="padding:10px 12px;">
+                                    <span class="field-label">Quantity Offered :-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Quantity Offered" style="width:40%;" />
+                                </td>
+
+                                <!-- merged cell (covers this row + next row) -->
+                                <td style="padding:10px 12px; white-space:nowrap;" rowspan="2">
+
+                                    <label style="margin-right:25px;">
+                                        <input type="checkbox" name="InitialSample" />
+                                        <span class="field-label">Initial Sample</span>
+                                    </label>
+
+                                    <label style="margin-right:25px;">
+                                        <input type="checkbox" name="PilotLot" />
+                                        <span class="field-label">Pilot Lot</span>
+                                    </label>
+
+                                    <label>
+                                        <input type="checkbox" name="ProductionLot" />
+                                        <span class="field-label">Production Lot</span>
+                                    </label>
+
+                                </td>
+                            </tr>
+
+                            <!-- ROW 4 — Product Description / Product specification (no last td now) -->
+                            <tr>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Product Description:-:-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Product Description" style="width:60%;" />
+                                </td>
+
+                                <td colspan="3" style="padding:10px 12px;">
+                                    <span class="field-label">Product specification:-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Product specification" style="width:40%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW — Driver / LED / Lens -->
+                            <tr>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Driver make & rating :-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Driver make & rating" style="width:70%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">LED make & rating :-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter LED make & rating" style="width:70%;" />
+                                </td>
+
+                                <td colspan="3" style="padding:10px 12px;">
+                                    <span class="field-label">LENS/ diffuser make</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Lens / Diffuser make" style="width:70%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW — SPD / Gasket -->
+                            <tr>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">SPD make / Rating</span>
+                                    <input type="text" class="inline-input" placeholder="Enter SPD make / rating" style="width:70%;" />
+                                </td>
+
+                                <td colspan="4" style="padding:10px 12px;">
+                                    <span class="field-label">Gasket Details</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Gasket details" style="width:70%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW — Product Category / IP Driver / IP Product -->
+                            <tr>
+                                <td style="padding:10px 12px; white-space:nowrap;">
+                                    <span class="field-label" style="color:red;">Product Category ( Make/ buy/ clean ray ) :</span>
+                                    <select class="result-select" style="width:160px; display:inline-block;">
+                                        <option value="">Select</option>
+                                        <option value="Make">Make</option>
+                                        <option value="Buy">Buy</option>
+                                        <option value="Clean Ray">Clean Ray</option>
+                                    </select>
+                                </td>
+
+                                <td colspan="2" style="padding:10px 12px;">
+                                    <span class="field-label">IP rating of Driver :</span>
+                                    <input type="text" class="inline-input" placeholder="Enter IP Rating" style="width:70%;" />
+                                </td>
+
+                                <td colspan="2" style="padding:10px 12px;">
+                                    <span class="field-label">IP rating of Product :</span>
+                                    <input type="text" class="inline-input" placeholder="Enter IP Rating" style="width:70%;" />
+                                </td>
+                            </tr>
+
+                            <!-- REFERENCE DOCUMENTS -->
+                            <tr>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label" style="color:red;">Reference documents: NPI SHEET (Y/N):</span>
+                                    <select class="result-select" style="width:120px;">
+                                        <option value="">Select</option>
+                                        <option>Yes</option>
+                                        <option>No</option>
+                                    </select>
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label" style="color:red;">PPS (Y/N):</span>
+                                    <select class="result-select" style="width:120px;">
+                                        <option value="">Select</option>
+                                        <option>Yes</option>
+                                        <option>No</option>
+                                    </select>
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label" style="color:red;">TDS (Y/N):</span>
+                                    <select class="result-select" style="width:120px;">
+                                        <option value="">Select</option>
+                                        <option>Yes</option>
+                                        <option>No</option>
+                                    </select>
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label" style="color:red;">DOCKET (Y/N):</span>
+                                    <select class="result-select" style="width:120px;">
+                                        <option value="">Select</option>
+                                        <option>Yes</option>
+                                        <option>No</option>
+                                    </select>
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label" style="color:red;">If Yes: CPS Ref No. :</span>
+                                    <input type="text" class="inline-input" placeholder="Enter CPS Reference No." style="width:70%;" />
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+
+                    <!-- ADD BUTTON -->
+                    <!-- ADD BUTTON FOR PRODUCT PHOTO -->
+                    <table class="header-table" style="margin-top:-1px;">
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="padding:10px 12px;">
+                                    <button id="addLuminaireRowBtn" type="button" class="btn btn-outline-success" style="width:120px;">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- A. PRODUCT PHOTO TABLE -->
+                    <table class="pv-table" style="width:100%; margin-top:0; border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th colspan="4" style="text-align:center; font-weight:700; font-size:16px;">
+                                    A. Product Photo
+                                </th>
+                            </tr>
+                            <tr>
+                                <th style="width:10%; text-align:center;">SL No</th>
+                                <th style="width:30%; text-align:center;">Photo From Front Side</th>
+                                <th style="width:30%; text-align:center;">Photo From Back Side</th>
+                                <th style="width:30%; text-align:center;">Photo From Internal Assy</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="productPhotoBody">
+                            <tr class="luminaire-photo-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="photo-srno">1</span>
+                                    <button type="button" class="delete-photo-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+
+                                <td style="padding:10px;">
+                                    <input type="file" accept="image/*" />
+                                </td>
+
+                                <td style="padding:10px;">
+                                    <input type="file" accept="image/*" />
+                                </td>
+
+                                <td style="padding:10px;">
+                                    <input type="file" accept="image/*" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- ADD BUTTON FOR TEST SUMMARY -->
+                    <table class="header-table" style="margin-top:-1px;">
+                        <tbody>
+                            <tr>
+                                <td colspan="5" style="padding:10px 12px;">
+                                    <button id="addLuminaireRowBtn2" type="button" class="btn btn-outline-success" style="width:120px;">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- TEST SUMMARY TABLE -->
+                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0px;">
+                        <thead>
+                            <tr>
+                                <th colspan="8" style="text-align:center; font-weight:700; font-size:18px;">
+                                    Test Summary
+                                </th>
+                            </tr>
+                            <tr>
+                                <th rowspan="2" style="text-align:center;">SL.no.</th>
+                                <th rowspan="2" style="text-align:center;">Test Details</th>
+                                <th colspan="5" style="text-align:center;">Observation</th>
+                                <th rowspan="2" style="text-align:center; color:red; width:200px;">
+                                    Test Result ( Pass / Fail / Not Applicable / Pending )
+                                </th>
+                            </tr>
+                            <tr>
+                                <th style="text-align:center; width:10%;">Sample-1</th>
+                                <th style="text-align:center; width:10%;">Sample-2</th>
+                                <th style="text-align:center; width:10%;">Sample-3</th>
+                                <th style="text-align:center; width:10%;">Sample-4</th>
+                                <th style="text-align:center; width:10%;">Sample-5</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="testSummaryBody">
+
+                            <!-- 1 -->
+                            <!-- 1 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">1</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Physical Check &amp; Visual Inspection</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 2 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">2</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Electrical Performance ( Input/ Output )</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 3 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">3</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Electrical Protection, Safety Test &amp; Reliability Test</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 4 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">4</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Ripple Test Report</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 5 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">5</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Surge Without SPD</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 6 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">6</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Surge With SPD</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 7 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">7</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Temperature Rise Test ( TRT )</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 8 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">8</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Photometry</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 9 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">9</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Installation Trial</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 10 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">10</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Drop Test Report</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 11 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">11</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Impact Test Report ( IK )</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 12 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">12</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Ingress Protection (IP) Test Report</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 13 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">13</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Legal/ Regulatory Requirement and Documents verification</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 14 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">14</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Glow Wire Test Report</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 15 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">15</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Hydraulic Test for Flame Proof</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 16 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">16</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">Wind load test</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <!-- 17 -->
+                            <tr class="test-summary-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="summary-srno">17</span>
+                                    <button type="button" class="delete-summary-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true">General Observation / OPEN POINTS</td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select">
+                                        <option value="">Select</option>
+                                        <option>Pass</option>
+                                        <option>Fail</option>
+                                        <option>Not Applicable</option>
+                                        <option>Pending</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="8" style="padding:10px 12px; white-space:nowrap;">
+                                    <span style="font-weight:700; color:#000;">
+                                        Wipro- QA : Final Comments -
+                                    </span>
+
+                                    <span style="color:red; font-weight:700; margin-left:10px;">
+                                        ( Release for Pilot Lot Production / Not Release / Subjected to Closure of Open Points )
+                                    </span>
+
+                                    <select class="result-select" style="width:420px; margin-left:20px;">
+                                        <option value="">Select</option>
+                                        <option value="Release">Release for Pilot Lot Production</option>
+                                        <option value="NotRelease">Not Release for Pilot Lot Production</option>
+                                        <option value="ConditionalRelease">
+                                            Release for Pilot Lot Production Subjected to closure of all Open Points
+                                        </option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <!-- LEFT 50% -->
+                                <td colspan="4" style="padding:10px 12px; width:50%; white-space:nowrap;">
+                                    <span class="field-label">Tested By :</span>
+                                    <input type="text"
+                                           name="TestedBy"
+                                           class="inline-input"
+                                           placeholder="Enter Name"
+                                           style="width:60%; margin-left:10px;" />
+                                </td>
+
+                                <!-- RIGHT 50% -->
+                                <td colspan="4" style="padding:10px 12px; width:50%; white-space:nowrap;">
+                                    <span class="field-label">Verified By :</span>
+                                    <input type="text"
+                                           name="VerifiedBy"
+                                           class="inline-input"
+                                           placeholder="Enter Name"
+                                           style="width:60%; margin-left:10px;" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="8" style="padding:10px 12px;">
+                                    <div style="display:flex; align-items:center; gap:15px; white-space:nowrap;">
+                                        <span class="field-label" style="font-weight:600;">
+                                            Report attached :-
+                                        </span>
+
+                                        <input type="file"
+                                               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                               style="width:300px;" />
+                                    </div>
+                                </td>
+                            </tr>
+
+
+                        </tbody>
+                    </table>
+            </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+       
+@section Scripts {
+    <script>
+        let photoBody, addPhotoBtn;
+        let summaryBody, addSummaryBtn;
+
+        $(document).ready(function () {
+            try { initLuminaireValidation(); } catch (e) { console.error(e); }
+        });
+
+        /* -------------------- PRODUCT PHOTO TABLE -------------------- */
+
+        function createPhotoRow() {
+            const tr = document.createElement('tr');
+            tr.className = 'luminaire-photo-row';
+
+            tr.innerHTML = `
+                        <td style="text-align:center; white-space:nowrap;">
+                            <span class="photo-srno"></span>
+                            <button type="button" class="delete-photo-row"
+                                    style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        <td style="padding:10px;">
+                            <input type="file" accept="image/*" />
+                        </td>
+                        <td style="padding:10px;">
+                            <input type="file" accept="image/*" />
+                        </td>
+                        <td style="padding:10px;">
+                            <input type="file" accept="image/*" />
+                        </td>
+                    `;
+
+            return tr;
+        }
+
+        function addPhotoRow() {
+            const row = createPhotoRow();
+            photoBody.appendChild(row);
+            refreshPhotoSerials();
+        }
+
+        function deletePhotoRow(btn) {
+            const tr = btn.closest('tr');
+            if (!tr) return;
+            tr.remove();
+            refreshPhotoSerials();
+        }
+
+        function refreshPhotoSerials() {
+            const rows = photoBody.querySelectorAll('.luminaire-photo-row');
+            rows.forEach((tr, index) => {
+                const sn = tr.querySelector('.photo-srno');
+                if (sn) sn.textContent = index + 1;
+            });
+        }
+
+        /* -------------------- TEST SUMMARY TABLE -------------------- */
+
+        function createSummaryRow() {
+            const tr = document.createElement('tr');
+            tr.className = 'test-summary-row';
+
+            tr.innerHTML = `
+                        <td style="text-align:center; white-space:nowrap;">
+                            <span class="summary-srno"></span>
+                            <button type="button" class="delete-summary-row"
+                                    style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td contenteditable="true"></td>
+                        <td style="text-align:center;">
+                            <select class="result-select">
+                                <option value="">Select</option>
+                                <option>Pass</option>
+                                <option>Fail</option>
+                                <option>Not Applicable</option>
+                                <option>Pending</option>
+                            </select>
+                        </td>
+                    `;
+            return tr;
+        }
+
+        function addSummaryRow() {
+            const row = createSummaryRow();
+
+            // Insert BEFORE the first non-test row (Final Comments / Tested By / Report attached)
+            const footerStart = summaryBody.querySelector('tr:not(.test-summary-row)');
+            if (footerStart) {
+                summaryBody.insertBefore(row, footerStart);
+            } else {
+                summaryBody.appendChild(row);
+            }
+
+            refreshSummarySerials();
+        }
+
+        function deleteSummaryRow(btn) {
+            const tr = btn.closest('tr');
+            if (!tr) return;
+            tr.remove();
+            refreshSummarySerials();
+        }
+
+        function refreshSummarySerials() {
+            const rows = summaryBody.querySelectorAll('.test-summary-row');
+            rows.forEach((tr, index) => {
+                const sn = tr.querySelector('.summary-srno');
+                if (sn) sn.textContent = index + 1;
+            });
+        }
+
+        /* -------------------- INIT -------------------- */
+
+        function initLuminaireValidation() {
+            // Product photo
+            photoBody = document.getElementById('productPhotoBody');
+            addPhotoBtn = document.getElementById('addLuminaireRowBtn');
+
+            // Test summary
+            summaryBody = document.getElementById('testSummaryBody');
+            addSummaryBtn = document.getElementById('addLuminaireRowBtn2');
+
+            // --- Product photo init ---
+            if (!photoBody || !addPhotoBtn) {
+                console.error("Product photo tbody or Add button missing.");
+            } else {
+                addPhotoBtn.addEventListener('click', addPhotoRow);
+
+                photoBody.addEventListener('click', function (e) {
+                    const del = e.target.closest('.delete-photo-row');
+                    if (del) deletePhotoRow(del);
+                });
+
+                if (photoBody.children.length === 0) {
+                    addPhotoRow();
+                } else {
+                    refreshPhotoSerials();
+                }
+            }
+
+            // --- Test summary init ---
+            if (!summaryBody || !addSummaryBtn) {
+                console.error("Test summary tbody or Add button missing.");
+            } else {
+                addSummaryBtn.addEventListener('click', addSummaryRow);
+
+                summaryBody.addEventListener('click', function (e) {
+                    const del = e.target.closest('.delete-summary-row');
+                    if (del) deleteSummaryRow(del);
+                });
+
+                if (summaryBody.children.length === 0) {
+                    addSummaryRow();
+                } else {
+                    refreshSummarySerials();
+                }
+            }
+        }
+
+  
+    </script>
+}
+
+
+            @section HideSidebar { }

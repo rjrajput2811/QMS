@@ -1,0 +1,470 @@
+﻿@{
+    ViewData["Title"] = "Validation Open Points Closure Report";
+}
+
+<style>
+    /* core styles */
+    .header-table, .pv-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .header-table {
+        border: 1px solid #000;
+    }
+
+        .header-table td,
+        .pv-table td,
+        .pv-table th {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            vertical-align: middle;
+            box-sizing: border-box;
+            white-space: normal;
+        }
+
+    .field-label {
+        font-weight: 600;
+        margin-right: 6px;
+        color: #000;
+    }
+
+    .inline-input, .inline-date {
+        border: none;
+        border-bottom: 1.5px solid #666;
+        background: transparent;
+        padding: 2px 4px;
+        outline: none;
+        transition: border-color .2s;
+    }
+
+        .inline-input:focus, .inline-date:focus {
+            border-bottom-color: #4682B4;
+        }
+
+    .pv-table th {
+        background: #f8f9fa;
+        font-weight: 700;
+        text-align: center;
+        padding: 8px 10px;
+    }
+
+    .pv-table td[contenteditable="true"] {
+        min-height: 28px;
+        cursor: text;
+        text-align: left;
+    }
+
+    .final-comments-wrapper {
+        border: 1px solid #000;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .final-comments-textarea {
+        width: 100%;
+        height: 120px;
+        border: none;
+        resize: none;
+        padding: 10px;
+        box-sizing: border-box;
+        font-size: 14px;
+        outline: none;
+        background: #fff;
+    }
+
+    .final-comments-title {
+        font-weight: 600;
+        margin-right: 6px;
+        color: #000;
+        font-size: 14px;
+    }
+
+
+    .result-select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 140px;
+        padding: 8px 28px 8px 10px;
+        font-size: 14px;
+        background: #fff;
+        border: none;
+        outline: none;
+        text-align-last: center;
+        border-bottom: 2px solid transparent;
+        border-radius: 0 0 10px 10px;
+        box-shadow: inset 0 -2px 0 #d5dce5, 0 2px 4px rgba(0,0,0,0.05);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'><path fill='black' d='M5 7l5 5 5-5'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 14px;
+    }
+
+        .result-select:focus {
+            box-shadow: inset 0 -2px 0 #4682B4, 0 2px 6px rgba(70,130,180,0.15);
+        }
+
+    .btn {
+        margin: 0;
+    }
+
+    .pv-table + .pv-table {
+        margin-top: 0;
+        border-top-width: 1px;
+    }
+</style>
+
+<div class="content">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- HEADER CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b style="font-size:x-large; color:#4682B4;">Validation open points closure Report</b>
+                    </div>
+
+                    <div>
+                        <button id="OpenPointClosureReportDetails"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2"
+                                onclick="saveNeedleFlameTest()"
+                                style="width:120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+
+                        <a href='@Url.Action("OpenPointClosureReport", "ProductValidation")'
+                           class="btn btn-outline-primary"
+                           style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MAIN CARD -->
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body">
+
+                    <!-- HEADER TABLE (TOP) -->
+                    <table class="header-table" style="width:100%; border-collapse:collapse; border:1px solid #000; margin-bottom:0;">
+                        <tbody>
+                            <!-- ROW 1 -->
+                            <tr>
+                                <td colspan="2" style="padding:10px 12px;">
+                                    <span class="field-label">Product Cat Ref-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Product Catalog Reference" style="width:70%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Report no.-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Report Number" style="width:60%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Date -</span>
+                                    <input type="text" class="inline-input"
+                                           placeholder="DD-MM-YYYY"
+                                           maxlength="10"
+                                           oninput="this.value=this.value.replace(/[^0-9\-]/g,'')"
+                                           style="width:70%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW 2 -->
+                            <tr>
+                                <td colspan="2" style="padding:10px 12px;">
+                                    <span class="field-label">Product Description-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Product Description" style="width:80%;" />
+                                </td>
+
+                                <td colspan="2" style="padding:10px 12px;">
+                                    <span class="field-label">Validation Done by Wipro QA -</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Validation" style="width:80%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW 3 -->
+                            <tr>
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Batch code</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Batch Code" style="width:80%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">PKD</span>
+                                    <input type="text" class="inline-input" placeholder="Enter PKD" style="width:80%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Quantity Offered:-</span>
+                                    <input type="text" class="inline-input" placeholder="Enter Quantity Offered" style="width:60%;" />
+                                </td>
+
+                                <td style="padding:10px 12px;">
+                                    <span class="field-label">Closure Date:-</span>
+                                    <input type="text" id="closureDate" class="inline-input" placeholder="DD-MM-YYYY" style="width:70%;" />
+                                </td>
+                            </tr>
+
+                            <!-- ROW 4: ADD BUTTON -->
+                            <tr>
+                                <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                    <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px;">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- OPEN POINTS CLOSURE TABLE -->
+                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:-1px;">
+                        <thead>
+                            <tr>
+                                <th style="width:5%; text-align:center;">SL. No.</th>
+                                <th style="width:35%; text-align:center;">Open Points During Validation</th>
+                                <th style="width:35%; text-align:center;">Action taken by stakeholder</th>
+                                <th style="width:15%; text-align:center;">Stake Holder</th>
+                                <th style="width:10%; text-align:center;">Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="openPointsBody">
+                            <!-- INITIAL GROUP -->
+                            <tr class="open-row">
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="sl-no">1</span>
+                                    <button type="button" class="delete-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+
+                                <td style="text-align:center;">
+                                    <select class="result-select" style="width:110px;">
+                                        <option value="">Select</option>
+                                        <option>Open</option>
+                                        <option>Closed</option>
+                                        <option>In Progress</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;"></td>
+                                <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                    <label class="field-label" style="margin-right:10px;">Evidence picture if any :-</label>
+                                    <input type="file"
+                                           accept="image/*"
+                                           style="width:250px; display:inline-block;" />
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;"></td>
+                                <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                    <label class="field-label" style="margin-right:10px;">Attached Annexure :-</label>
+                                    <input type="file"
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                           style="width:250px; display:inline-block;" />
+                                </td>
+                            </tr>
+
+                            <!-- FOOTER START MARKER: new groups are inserted before THIS row -->
+                            <tr id="openPointsFooterStart">
+                                <td colspan="5" class="final-comments-wrapper">
+                                    <div class="final-comments-title">Vendor QA : Final Comments -</div>
+                                    <textarea class="final-comments-textarea"></textarea>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="5" style="padding:10px 12px; font-weight:700; color:red;">
+                                    Wipro- QA : Final Comments– Release for Pilot Lot Production
+                                    (OK / NOT OK / OK With Deviations)
+                                    <select class="result-select" style="width:380px; margin-left:20px;">
+                                        <option value="">Select</option>
+                                        <option>OK</option>
+                                        <option>NOT OK</option>
+                                        <option>OK With Deviations</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- SIGNATURE & REPORT ATTACHED TABLE -->
+                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:-1px;">
+                        <tbody>
+                            <!-- SIGNATURE ROW -->
+                            <tr>
+                                <!-- LEFT 50% -->
+                                <td colspan="3" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                    <span class="field-label" style="margin-right:10px;">
+                                        Vendor - QA Signature :-
+                                    </span>
+                                    <input type="file"
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                           style="width:260px; display:inline-block; vertical-align:middle;" />
+                                </td>
+
+                                <!-- RIGHT 50% -->
+                                <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                    <span class="field-label" style="margin-right:10px;">
+                                        Wipro- QA Signature :-
+                                    </span>
+                                    <input type="file"
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                           style="width:260px; display:inline-block; vertical-align:middle;" />
+                                </td>
+                            </tr>
+
+                            <!-- REPORT ATTACHED ROW -->
+                            <tr>
+                                <td colspan="5" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                    <span class="field-label" style="margin-right:10px;">
+                                        Report attached :-
+                                    </span>
+                                    <input type="file"
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                           style="width:260px; display:inline-block; vertical-align:middle;" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let openPointsTbody;
+        let addRowBtn;
+
+        $(document).ready(function () {
+            try { initOpenPointsClosure(); } catch (e) { console.error(e); }
+        });
+
+        function initOpenPointsClosure() {
+            openPointsTbody = document.getElementById('openPointsBody');
+            addRowBtn = document.getElementById('addRowBtn');
+
+            if (!openPointsTbody || !addRowBtn) {
+                console.error("Open points tbody or Add button missing.");
+                return;
+            }
+
+            addRowBtn.addEventListener('click', function () {
+                createRowGroup();
+                refreshSlNos();
+            });
+
+            
+            openPointsTbody.addEventListener('click', function (e) {
+                const del = e.target.closest('.delete-row');
+                if (!del) return;
+
+                const mainRow = del.closest('tr');
+                if (!mainRow) return;
+
+                const evidenceRow = mainRow.nextElementSibling;
+                const annexRow = evidenceRow ? evidenceRow.nextElementSibling : null;
+
+                mainRow.remove();
+                if (evidenceRow) evidenceRow.remove();
+                if (annexRow) annexRow.remove();
+
+                refreshSlNos();
+            });
+
+            refreshSlNos();
+        }
+
+        function refreshSlNos() {
+            const rows = openPointsTbody.querySelectorAll('.open-row');
+            rows.forEach((row, index) => {
+                const span = row.querySelector('.sl-no');
+                if (span) span.textContent = index + 1;
+            });
+        }
+
+        function createRowGroup() {
+          
+            const main = document.createElement('tr');
+            main.className = 'open-row';
+            main.innerHTML = `
+                                <td style="text-align:center; white-space:nowrap;">
+                                    <span class="sl-no"></span>
+                                    <button type="button" class="delete-row"
+                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td contenteditable="true"></td>
+                                <td style="text-align:center;">
+                                    <select class="result-select" style="width:110px;">
+                                        <option value="">Select</option>
+                                        <option>Open</option>
+                                        <option>Closed</option>
+                                        <option>In Progress</option>
+                                    </select>
+                                </td>
+                            `;
+
+            const evidence = document.createElement('tr');
+            evidence.innerHTML = `
+                                <td style="text-align:center;"></td>
+                                <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                    <label class="field-label" style="margin-right:10px;">Evidence picture if any :-</label>
+                                    <input type="file"
+                                           accept="image/*"
+                                           style="width:250px; display:inline-block;" />
+                                </td>
+                            `;
+
+            const annex = document.createElement('tr');
+            annex.innerHTML = `
+                                <td style="text-align:center;"></td>
+                                <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                    <label class="field-label" style="margin-right:10px;">Attached Annexure :-</label>
+                                    <input type="file"
+                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                           style="width:250px; display:inline-block;" />
+                                </td>
+                            `;
+
+            // Insert the group BEFORE the footer section
+            const footerStart = document.getElementById('openPointsFooterStart');
+
+            if (footerStart) {
+                openPointsTbody.insertBefore(annex, footerStart);
+                openPointsTbody.insertBefore(evidence, annex);
+                openPointsTbody.insertBefore(main, evidence);
+            } else {
+                // Fallback: append at the end if marker not found
+                openPointsTbody.appendChild(main);
+                openPointsTbody.appendChild(evidence);
+                openPointsTbody.appendChild(annex);
+            }
+        }
+    </script>
+}
+
+
+@section HideSidebar { }

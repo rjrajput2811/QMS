@@ -1,0 +1,497 @@
+﻿@{
+    ViewData["Title"] = "CSO";
+}
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+
+<style>
+
+    .form-control {
+        padding: 0 10px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #0056b3;
+    }
+
+    #scrollToTopBtn {
+        outline: none;
+    }
+
+    .card .card-body .page-title {
+        color: #4682B4;
+        font-weight: 700;
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 8px 8px;
+        font-size: 14px;
+        min-height: 36px;
+        line-height: 18px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
+
+    .calendar-container {
+        cursor: pointer;
+        padding: 8px 8px;
+        width: 100%;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        gap: 8px;
+        border: 1px solid slategray;
+    }
+
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+            padding-left: 6px;
+        }
+
+        .calendar-container span {
+            color: #4682B4;
+            margin: 0;
+            font-size: 14px;
+        }
+
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+
+        100% {
+            background-color: transparent;
+        }
+    }
+
+    .row-flash {
+        animation: flash-bg 2s ease-out forwards;
+    }
+
+    .tabulator-row.row-flash {
+        transition: background-color 2s ease-out;
+    }
+
+</style>
+
+<div class="content">
+    <div class="card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <b style="font-size: large;color: #4682B4;">CSO Tracking</b>
+            </div>
+            <div class="col-md-3">
+                <div id="customDateTriggerCSO" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeCSO">Select Date Range</span>
+                </div>
+            </div>
+            <div>
+                <button id="exportPayButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
+                </button>
+                <button id="backButton" class="btn btn-outline-primary legitRipple mr-2" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div class="form-group row">
+                            <div id="cso_Table" class="col-12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+
+    <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+
+    <!-- Moment.js and Litepicker -->
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="~/js/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+    <script>
+        let filterStartPaymentDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndPaymentDate = moment().endOf('month').format('YYYY-MM-DD');
+
+        $(document).ready(function () {
+            $('#dateRangeCSO').text(
+                moment(filterStartPaymentDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndPaymentDate).format('MMMM D, YYYY')
+            );
+
+            const picker = new Litepicker({
+                element: document.getElementById('customDateTriggerCSO'),
+                singleMode: false,
+                format: 'DD-MM-YYYY',
+                numberOfMonths: 2,
+                numberOfColumns: 2,
+                dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
+                plugins: ['ranges'],
+                setup: (picker) => {
+                    picker.on('selected', (start, end) => {
+                        // Litepicker gives Date objects -> wrap in moment
+                        const startMoment = moment(start.getTime());
+                        const endMoment = moment(end.getTime());
+
+                        filterStartPaymentDate = startMoment.format('YYYY-MM-DD');
+                        filterEndPaymentDate = endMoment.format('YYYY-MM-DD');
+
+                        $('#dateRangeCSO').text(`${startMoment.format('MMMM D, YYYY')} - ${endMoment.format('MMMM D, YYYY')}`);
+                        // loadData();
+                    });
+
+                    picker.on('clear', () => {
+                        filterStartPaymentDate = "";
+                        filterEndPaymentDate = "";
+                        $('#dateRangeCSO').text("Select Date Range");
+                        // loadData();
+                    });
+                },
+                ranges: {
+                    Today: [moment(), moment()],
+                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                startDate: moment().startOf('month').format('DD-MM-YYYY'),
+                endDate: moment().endOf('month').format('DD-MM-YYYY')
+            });
+
+            $('#customDateTriggerCSO').on('click', function () {
+                picker.show();
+            });
+
+            loadCustomerGrid(null);
+        });
+
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        e.stopPropagation();
+                        column.toggle();
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+        function loadCustomerGrid(response) {
+            Blockloadershow();
+
+            tabledata = [];
+            let columns = [];
+            columns.push(
+                {
+                    title: "Sr No",
+                    field: "SrNo",
+                    width: 100,
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+
+                {
+                    title: "Complaint No.",
+                    field: "ComplaintNo",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Reported Date",
+                    field: "ReportedDate",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Complaint Type",
+                    field: "ComplaintType",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Customer Name & Location",
+                    field: "CustomerNameLocation",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Source of Complaint",
+                    field: "SourceOfComplaint",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Product Code & Description",
+                    field: "ProductCodeDescription",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Description of Complaint",
+                    field: "ComplaintDescription",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Batch code",
+                    field: "BatchCode",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "PKD code",
+                    field: "PKDCode",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Supplied Qty",
+                    field: "SuppliedQty",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "right",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Failed Qty",
+                    field: "FailedQty",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "right",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Problem Statement",
+                    field: "ProblemStatement",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Problem Basket",
+                    field: "ProblemBasket",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Interim Corrective action",
+                    field: "InterimCorrectiveAction",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Total Time Taken to Interim Corrective action",
+                    field: "TTC_InterimAction",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Root Cause Analysis",
+                    field: "RootCauseAnalysis",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Total Time Taken to RCA",
+                    field: "TTC_RCA",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Corrective Action",
+                    field: "CorrectiveAction",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Total Time Taken to Corrective Action",
+                    field: "TTC_CorrectiveAction",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Complaint Closure Date",
+                    field: "ComplaintClosureDate",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Total Time Taken to Closure of Complaint",
+                    field: "TTC_Closure",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Attachments (CAPA report)",
+                    field: "CapaReportAttachments",
+                    width: 200,
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                }
+            );
+
+            table = new Tabulator("#cso_Table", {
+                data: [],
+                layout: "fitColumns",
+                movableColumns: true,
+                pagination: "local",
+                paginationSize: 10,
+                paginationSizeSelector: [10, 50, 100, 500],
+                paginationCounter: "rows",
+                placeholder: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>",
+                columns: columns
+            });
+
+            Blockloaderhide();
+        }
+
+    </script>
+
+}
+
+@section HideSidebar { }

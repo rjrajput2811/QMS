@@ -305,7 +305,7 @@ namespace QMS.Core.Repositories.VendorRepository
             }
         }
 
-        public async Task<bool> CheckDuplicate(string searchText, int Id)
+        public async Task<bool> CheckDuplicate(string searchText,string username, int Id)
         {
             try
             {
@@ -313,7 +313,7 @@ namespace QMS.Core.Repositories.VendorRepository
                 int? existingId = null;
 
                 IQueryable<int> query = _dbContext.Vendor
-                    .Where(x => x.Deleted == false && x.Name.ToString() == searchText)
+                    .Where(x => x.Deleted == false && x.Name == searchText && x.User_Name == username)
                     .Select(x => x.Id);
 
                 // Add additional condition if Id is not 0
@@ -321,7 +321,7 @@ namespace QMS.Core.Repositories.VendorRepository
                 {
                     query = _dbContext.Vendor
                         .Where(x => x.Deleted == false &&
-                               x.Name.ToString() == searchText
+                               x.Name == searchText && x.User_Name == username
                                && x.Id != Id)
                         .Select(x => x.Id);
                 }
@@ -342,6 +342,37 @@ namespace QMS.Core.Repositories.VendorRepository
                 throw;
             }
         }
+
+        public async Task<List<string>> CheckDuplicateUserName(string userName, int Id)
+        {
+            try
+            {
+                List<string> duplicateFields = new List<string>();
+
+                bool duplicateExists = await _dbContext.Vendor
+                                               .Where(lM => lM.Deleted == false &&
+                                                            lM.User_Name == userName &&
+                                                            (Id == 0 || lM.Id != Id)) // Exclude current record for updates
+                                               .AnyAsync();
+
+                bool oldPartExists = await _dbContext.Vendor
+                                    .Where(lM => lM.Deleted == false && (Id == 0 || lM.Id != Id))
+                                    .AnyAsync(lM => lM.User_Name == userName);
+
+                if (oldPartExists)
+                {
+                    duplicateFields.Add("- User Name" + "<br>");
+                }
+
+                return duplicateFields;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
         //Certification Details
         public async Task<List<CertificationDetailViewModel>> CertGetAllAsync(int? venId)
         {

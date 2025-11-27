@@ -16,7 +16,8 @@ namespace QMS.Core.Repositories.VendorRepository
         Task<OperationResult> UpdateAsync(Vendor vendor, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int userId);
         Task<VendorViewModel?> GetByIdAsync(int userId);
-        Task<bool> CheckDuplicate(string searchText, int Id);
+        Task<bool> CheckDuplicate(string searchText, string username, int Id);
+        Task<List<string>> CheckDuplicateUserName(string userName, int Id);
         Task<CertificationDetail> CertGetByIdAsync(int id);
         Task<OperationResult> CertCreateAsync(CertificationDetail cert);
         Task<OperationResult> CertUpdateAsync(CertificationDetail cert);

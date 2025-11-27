@@ -48,6 +48,10 @@ namespace QMS.Controllers
         {
             return View();
         }
+        public IActionResult CSOTracking()
+        {
+            return View();
+        }
     }
 }
 

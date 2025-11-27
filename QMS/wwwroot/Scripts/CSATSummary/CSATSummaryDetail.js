@@ -5,6 +5,12 @@ var table = '';
 
 $(document).ready(function () {
     OnTabGridLoad();
+
+    const csatId = parseInt($("#hdnCsatId").val() || "0", 10);
+
+    if (csatId > 0) {
+        loadCsatSummary(csatId);
+    }
 });
 
 function OnTabGridLoad() {
@@ -306,7 +312,7 @@ function saveCsatSummary() {
 
     // Base entity – rest of the properties will be added in the loop
     const entity = {
-        CsatSum_Id: csatId,
+        Id: csatId,
         IsDeleted: false,
         CreatedBy: currentUser,
         UpdatedBy: currentUser
@@ -503,7 +509,7 @@ function saveCsatSummary() {
         }
     });
 
-    const isNew = !entity.CsatSum_Id || entity.CsatSum_Id === 0;
+    const isNew = !entity.Id || entity.Id === 0;
     const url = isNew ? "/CSATSummary/Create" : "/CSATSummary/Update";   // adjust to your controller
 
     $.ajax({
@@ -514,19 +520,30 @@ function saveCsatSummary() {
         success: function (data) {
             if (data && data.success) {
 
-                if (isNew && (data.id || data.CsatSum_Id)) {
-                    const newId = data.id ?? data.CsatSum_Id;
-                    $("#hdnCsatId").val(newId);
+                //if (isNew && (data.id || data.Id)) {
+                //    const newId = data.id ?? data.Id;
+                //    $("#hdnCsatId").val(newId);
 
-                    // Push Id into all rows
-                    table.getRows().forEach(r => {
-                        const d = r.getData();
-                        d.Id = newId;
-                        r.update(d);
-                    });
+                //    // Push Id into all rows
+                //    table.getRows().forEach(r => {
+                //        const d = r.getData();
+                //        d.Id = newId;
+                //        r.update(d);
+                //    });
+                //}
+
+                if ($("#hdnCsatId").val() != "0") {
+                    showSuccessAlert("CSAT summary is updated successfully!");
+                }
+                else {
+                    showSuccessAlert("CSAT summary is Saved Successfully!");
+
                 }
 
-                showSuccessAlert("CSAT summary saved successfully.");
+                setTimeout(function () {
+                    window.location.href = '/CSATSummary/CSATSUMMARY';
+                }, 2500);
+
             } else {
                 let errorMessg = "";
                 if (data && data.errors) {
@@ -544,3 +561,227 @@ function saveCsatSummary() {
         }
     });
 }
+
+function loadCsatSummary(id) {
+    debugger;
+    Blockloadershow();
+
+    $.ajax({
+        url: "/CSATSummary/GetById",
+        type: "GET",
+        dataType: "json",
+        data: { id: id },
+        success: function (entity) {
+            Blockloaderhide();
+
+            if (!entity) {
+                showDangerAlert("No CSAT summary found for this Id.");
+                return;
+            }
+
+            bindCsatEntityToTable(entity);
+        },
+        error: function (xhr, status, error) {
+            Blockloaderhide();
+            showDangerAlert("Error loading CSAT summary: " + (error || xhr.responseText));
+        }
+    });
+}
+
+function bindCsatEntityToTable(entity) {
+    if (!table) return;
+
+    const rows = table.getRows();
+    const csatId = entity.id || 0;
+
+    rows.forEach(row => {
+        const d = row.getData();
+        const pc = (d.pc || "").toString().trim();
+        const q = (d.quarter || "").toString().trim();
+
+        d.Id = csatId;
+
+        switch (pc) {
+            // ---------- Q1 ----------
+            case "PC1":
+                d.reqSent =    entity.q1Pc1_ReqSent;
+                d.resRec =     entity.q1Pc1_ResRece;
+                d.promoters =  entity.q1Pc1_Promoter;
+                d.collection = entity.q1Pc1_Collection;
+                d.detractors = entity.q1Pc1_Detractor;
+                d.nps =        entity.q1Pc1_Nps;
+                d.detDetails = entity.q1Pc1_Detractor_Detail;
+                break;
+
+            case "PC2":
+                d.reqSent =     entity.q1Pc2_ReqSent;
+                d.resRec =      entity.q1Pc2_ResRece;
+                d.promoters =   entity.q1Pc2_Promoter;
+                d.collection =  entity.q1Pc2_Collection;
+                d.detractors =  entity.q1Pc2_Detractor;
+                d.nps =         entity.q1Pc2_Nps;
+                d.detDetails =  entity.q1Pc2_Detractor_Detail;
+                break;
+
+            case "PC3":
+                d.reqSent =   entity.q1Pc3_ReqSent;
+                d.resRec =    entity.q1Pc3_ResRece;
+                d.promoters = entity.q1Pc3_Promoter;
+                d.collection = entity.q1Pc3_Collection;
+                d.detractors = entity.q1Pc3_Detractor;
+                d.nps =        entity.q1Pc3_Nps;
+                d.detDetails = entity.q1Pc3_Detractor_Detail;
+                break;
+
+            case "Q1":
+                d.reqSent =  entity.q1Q1_ReqSent;
+                d.resRec =   entity.q1Q1_ResRece;
+                d.promoters =  entity.q1Q1_Promoter;
+                d.collection = entity.q1Q1_Collection;
+                d.detractors = entity.q1Q1_Detractor;
+                d.nps =        entity.q1Q1_Nps;
+                d.detDetails = entity.q1Q1_Detractor_Detail;
+                break;
+
+            // ---------- Q2 ----------
+            case "PC4":
+                d.reqSent =     entity.q2Pc4_ReqSent;
+                d.resRec =      entity.q2Pc4_ResRece;
+                d.promoters =   entity.q2Pc4_Promoter;
+                d.collection =  entity.q2Pc4_Collection;
+                d.detractors =  entity.q2Pc4_Detractor;
+                d.nps =         entity.q2Pc4_Nps;
+                d.detDetails =  entity.q2Pc4_Detractor_Detail;
+                break;
+
+            case "PC5":
+                d.reqSent =  entity.q2Pc5_ReqSent;
+                d.resRec =   entity.q2Pc5_ResRece;
+                d.promoters =  entity.q2Pc5_Promoter;
+                d.collection = entity.q2Pc5_Collection;
+                d.detractors = entity.q2Pc5_Detractor;
+                d.nps =        entity.q2Pc5_Nps;
+                d.detDetails = entity.q2Pc5_Detractor_Detail;
+                break;
+
+            case "PC6":
+                d.reqSent =     entity.q2Pc6_ReqSent;
+                d.resRec =      entity.q2Pc6_ResRece;
+                d.promoters =   entity.q2Pc6_Promoter;
+                d.collection =  entity.q2Pc6_Collection;
+                d.detractors =  entity.q2Pc6_Detractor;
+                d.nps =         entity.q2Pc6_Nps;
+                d.detDetails =  entity.q2Pc6_Detractor_Detail;
+                break;
+
+            case "Q2":
+                d.reqSent =     entity.q2Q2_ReqSent;
+                d.resRec =      entity.q2Q2_ResRece;
+                d.promoters =   entity.q2Q2_Promoter;
+                d.collection =  entity.q2Q2_Collection;
+                d.detractors =  entity.q2Q2_Detractor;
+                d.nps =         entity.q2Q2_Nps;
+                d.detDetails =  entity.q2Q2_Detractor_Detail;
+                break;
+
+            // ---------- Q3 ----------
+            case "PC7":
+                d.reqSent =     entity.q3Pc7_ReqSent;
+                d.resRec =      entity.q3Pc7_ResRece;
+                d.promoters =   entity.q3Pc7_Promoter;
+                d.collection =  entity.q3Pc7_Collection;
+                d.detractors =  entity.q3Pc7_Detractor;
+                d.nps =         entity.q3Pc7_Nps;
+                d.detDetails =  entity.q3Pc7_Detractor_Detail;
+                break;
+
+            case "PC8":
+                d.reqSent =     entity.q3Pc8_ReqSent;
+                d.resRec =      entity.q3Pc8_ResRece;
+                d.promoters =   entity.q3Pc8_Promoter;
+                d.collection =  entity.q3Pc8_Collection;
+                d.detractors =  entity.q3Pc8_Detractor;
+                d.nps =         entity.q3Pc8_Nps;
+                d.detDetails =  entity.q3Pc8_Detractor_Detail;
+                break;
+
+            case "PC9":
+                d.reqSent =     entity.q3Pc9_ReqSent;
+                d.resRec =      entity.q3Pc9_ResRece;
+                d.promoters =   entity.q3Pc9_Promoter;
+                d.collection =  entity.q3Pc9_Collection;
+                d.detractors =  entity.q3Pc9_Detractor;
+                d.nps =         entity.q3Pc9_Nps;
+                d.detDetails =  entity.q3Pc9_Detractor_Detail;
+                break;
+
+            case "Q3":
+                d.reqSent = entity.Q3Q3_ReqSent;
+                d.resRec = entity.Q3Q3_ResRece;
+                d.promoters = entity.Q3Q3_Promoter;
+                d.collection = entity.Q3Q3_Collection;
+                d.detractors = entity.Q3Q3_Detractor;
+                d.nps = entity.Q3Q3_Nps;
+                d.detDetails = entity.Q3Q3_Detractor_Detail;
+                break;
+
+            // ---------- Q4 ----------
+            case "PC10":
+                d.reqSent = entity.Q4Pc10_ReqSent;
+                d.resRec = entity.Q4Pc10_ResRece;
+                d.promoters = entity.Q4Pc10_Promoter;
+                d.collection = entity.Q4Pc10_Collection;
+                d.detractors = entity.Q4Pc10_Detractor;
+                d.nps = entity.Q4Pc10_Nps;
+                d.detDetails = entity.Q4Pc10_Detractor_Detail;
+                break;
+
+            case "PC11":
+                d.reqSent = entity.Q4Pc11_ReqSent1;
+                d.resRec = entity.Q4Pc11_ResRece1;
+                d.promoters = entity.Q4Pc11_Promoter1;
+                d.collection = entity.Q4Pc11_Collection1;
+                d.detractors = entity.Q4Pc11_Detractor1;
+                d.nps = entity.Q4Pc11_Nps1;
+                d.detDetails = entity.Q4Pc11_Detractor_Detail1;
+                break;
+
+            case "PC12":
+                d.reqSent = entity.Q4Pc12_ReqSent1;
+                d.resRec = entity.Q4Pc12_ResRece1;
+                d.promoters = entity.Q4Pc12_Promoter1;
+                d.collection = entity.Q4Pc12_Collection1;
+                d.detractors = entity.Q4Pc12_Detractor1;
+                d.nps = entity.Q4Pc12_Nps1;
+                d.detDetails = entity.Q4Pc12_Detractor_Detail1;
+                break;
+
+            case "Q4":
+                d.reqSent = entity.Q4Q4_ReqSent1;
+                d.resRec = entity.Q4Q4_ResRece1;
+                d.promoters = entity.Q4Q4_Promoter1;
+                d.collection = entity.Q4Q4_Collection1;
+                d.detractors = entity.Q4Q4_Detractor1;
+                d.nps = entity.Q4Q4_Nps1;
+                d.detDetails = entity.Q4Q4_Detractor_Detail1;
+                break;
+        }
+
+        // YTD row
+        if (q === "YTD") {
+            d.reqSent = entity.Ytd_ReqSent11;
+            d.resRec = entity.Ytd_ResRece11;
+            d.promoters = entity.Ytd_Promoter11;
+            d.collection = entity.Ytd_Collection11;
+            d.detractors = entity.Ytd_Detractor11;
+            d.nps = entity.Ytd_Nps11;
+            d.detDetails = entity.Ytd_Detractor_Detail11;
+        }
+
+        row.update(d);
+    });
+
+    // Optional – recalc to ensure formulas refreshed
+    calculateAllSummaries();
+}
+

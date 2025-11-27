@@ -1,7 +1,60 @@
 ﻿var tabledata = [];
 var table = '';
+let filterStartDate = moment().startOf('month').format('YYYY-MM-DD');
+let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
 const searchTerms = {};
 $(document).ready(function () {
+
+
+    $('#dateRangeText').text(
+        moment(filterStartDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndDate).format('MMMM D, YYYY')
+    );
+
+    // Initialize Litepicker and store reference
+    const picker = new Litepicker({
+        element: document.getElementById('customDateTrigger'),
+        singleMode: false,
+        format: 'DD-MM-YYYY',
+        numberOfMonths: 2,
+        numberOfColumns: 2,
+        dropdowns: {
+            minYear: 2020,
+            maxYear: null,
+            months: true,
+            years: true
+        },
+        plugins: ['ranges'],
+        setup: (picker) => {
+            picker.on('selected', (start, end) => {
+                filterStartDate = start.format('YYYY-MM-DD');
+                filterEndDate = end.format('YYYY-MM-DD');
+                $('#dateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                loadData();
+            });
+
+            picker.on('clear', () => {
+                filterStartDate = "";
+                filterEndDate = "";
+                $('#dateRangeText').text("Select Date Range");
+                loadData();
+            });
+        },
+        ranges: {
+            Today: [moment(), moment()],
+            Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+        },
+        startDate: moment().startOf('month').format('DD-MM-YYYY'),
+        endDate: moment().endOf('month').format('DD-MM-YYYY')
+    });
+
+    // 🔑 Ensure calendar opens on click
+    $('#customDateTrigger').on('click', function () {
+        picker.show();
+    });
 
     document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('backButton').addEventListener('click', function () {
@@ -17,6 +70,11 @@ function loadData() {
     $.ajax({
         url: '/CSATSummary/GetAll',
         type: 'GET',
+        dataType: 'json',
+        data: {
+            startDate: filterStartDate,
+            endDate: filterEndDate
+        },
         success: function (data) {
             Blockloaderhide();
             if (data && Array.isArray(data)) {
@@ -92,8 +150,6 @@ function OnTabGridLoad(response) {
 
             let formattedDate = "";
             let updatedDate = "";
-            let date_of_Issue = "";
-            let rev_date = "";
             if (item.createdDate) {
                 const dateObj = new Date(item.createdDate);
                 formattedDate = dateObj.toLocaleDateString("en-GB");
@@ -106,12 +162,12 @@ function OnTabGridLoad(response) {
             tabledata.push({
                 Sr_No: index + 1,
                 Id: item.id,
-                Name: item.name,
-                Email: item.email,
-                MobileNo: item.mobileNo,
-                GstNo: item.gstNo,
-                Contact_Persons: item.contact_Persons,
-                User_Name: item.user_Name,
+                Ytd_ReqSent11: item.ytd_ReqSent11,
+                Ytd_ResRece11: item.ytd_ResRece11,
+                Ytd_Promoter11: item.ytd_Promoter11,
+                Ytd_Collection11: item.ytd_Collection11,
+                Ytd_Detractor11: item.ytd_Detractor11,
+                Ytd_Nps11: item.ytd_Nps11,
                 CreatedDate: formattedDate,
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
@@ -139,11 +195,12 @@ function OnTabGridLoad(response) {
             {
                 title: "SNo", field: "Sr_No", sorter: "number", width: 35, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
             },
-            { title: "Name", field: "Name", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "center" },
-            { title: "Email", field: "Email", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-            { title: "Mobile No", field: "MobileNo", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-            { title: "Gst No", field: "GstNo", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-            { title: "User Name", field: "User_Name", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "Request Sent", field: "Ytd_ReqSent11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "Response Received", field: "Ytd_ResRece11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "Promoters ", field: "Ytd_Promoter11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "% Collection", field: "Ytd_Collection11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "Detractors", field: "Ytd_Detractor11", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            { title: "NPS", field: "Ytd_Nps11", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
             { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
             { title: "Create Date", field: "CreatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
             { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
@@ -151,7 +208,7 @@ function OnTabGridLoad(response) {
         );
 
         // // Initialize Tabulator
-        table = new Tabulator("#ven_Table", {
+        table = new Tabulator("#sum_Table", {
             data: tabledata,
             renderHorizontal: "virtual",
             movableColumns: true,

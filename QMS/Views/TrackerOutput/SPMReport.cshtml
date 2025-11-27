@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "Payment Summary";
+    ViewData["Title"] = "SPM Report";
 }
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
@@ -30,6 +30,14 @@
     label {
         margin-bottom: 0;
         margin-top: .3rem;
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #0056b3;
+    }
+
+    #scrollToTopBtn {
+        outline: none;
     }
 
     .card .card-body .page-title {
@@ -91,6 +99,23 @@
             font-size: 14px;
         }
 
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+
+        100% {
+            background-color: transparent;
+        }
+    }
+
+    .row-flash {
+        animation: flash-bg 2s ease-out forwards;
+    }
+
+    .tabulator-row.row-flash {
+        transition: background-color 2s ease-out;
+    }
 
 </style>
 
@@ -98,38 +123,42 @@
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <b style="font-size: large;color: #4682B4;">Payment Summary</b>
+                <b style="font-size: large;color: #4682B4;">SPM Report</b>
             </div>
             <div class="col-md-3">
-                <div id="customDateTriggerPaymentSummary" class="calendar-container">
+                <div id="customDateTriggerSPM" class="calendar-container">
                     <i class="fa fa-calendar"></i>
-                    <span id="dateRangePaymentSummary">Select Date Range</span>
+                    <span id="dateRangeSPM">Select Date Range</span>
                 </div>
             </div>
             <div>
-                <button id="exportPaymentButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                <button id="exportSPMButton" type="button"
+                        class="btn btn-outline-danger legitRipple mr-2"
+                        style="width: 140px;font-size:15px">
                     <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
                 </button>
-                <button id="backButton" class="btn btn-outline-primary legitRipple mr-2" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                <button id="backButton" class="btn btn-outline-primary legitRipple mr-2"
+                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row mt-3">
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
                     <div class="chart-container">
                         <div class="form-group row">
-                            <div id="paymentSummary_Table" class="col-12"></div>
+                            <div id="spm_Table" class="col-12"></div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 </div>
 
 @section Scripts {
@@ -137,23 +166,23 @@
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
 
+    <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script src="~/js/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
     <script>
-        let filterStart = moment().startOf('month').format('YYYY-MM-DD');
-        let filterEnd = moment().endOf('month').format('YYYY-MM-DD');
+        let filterStartSPMDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndSPMDate = moment().endOf('month').format('YYYY-MM-DD');
 
         $(document).ready(function () {
-
-            $('#dateRangePaymentSummary').text(
-                moment(filterStart).format('MMMM D, YYYY') + ' - ' + moment(filterEnd).format('MMMM D, YYYY')
+            $('#dateRangeSPM').text(
+                moment(filterStartSPMDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndSPMDate).format('MMMM D, YYYY')
             );
 
             const picker = new Litepicker({
-                element: document.getElementById('customDateTriggerPaymentSummary'),
+                element: document.getElementById('customDateTriggerSPM'),
                 singleMode: false,
                 format: 'DD-MM-YYYY',
                 numberOfMonths: 2,
@@ -162,17 +191,21 @@
                 plugins: ['ranges'],
                 setup: (picker) => {
                     picker.on('selected', (start, end) => {
-                        filterStart = start.format('YYYY-MM-DD');
-                        filterEnd = end.format('YYYY-MM-DD');
-                        $('#dateRangePaymentSummary').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                        // loadData();
+                        const startMoment = moment(start.getTime());
+                        const endMoment = moment(end.getTime());
+
+                        filterStartSPMDate = startMoment.format('YYYY-MM-DD');
+                        filterEndSPMDate = endMoment.format('YYYY-MM-DD');
+
+                        $('#dateRangeSPM').text(`${startMoment.format('MMMM D, YYYY')} - ${endMoment.format('MMMM D, YYYY')}`);
+                        // loadSPMData(); // hook your API call here if needed
                     });
 
                     picker.on('clear', () => {
-                        filterStart = "";
-                        filterEnd = "";
-                        $('#dateRangePaymentSummary').text("Select Date Range");
-                        // loadData();
+                        filterStartSPMDate = "";
+                        filterEndSPMDate = "";
+                        $('#dateRangeSPM').text("Select Date Range");
+                        // loadSPMData();
                     });
                 },
                 ranges: {
@@ -187,11 +220,12 @@
                 endDate: moment().endOf('month').format('DD-MM-YYYY')
             });
 
-            $('#customDateTriggerPaymentSummary').on('click', function () {
+            $('#customDateTriggerSPM').on('click', function () {
                 picker.show();
             });
 
-            loadCustomerGrid();
+            // Initial grid load
+            loadSPMGrid(null);
         });
 
         var headerMenu = function () {
@@ -229,45 +263,79 @@
             return menu;
         };
 
-        function loadCustomerGrid() {
+        function loadSPMGrid(response) {
+            Blockloadershow();
 
+            let tabledata = []; // replace with response later
             let columns = [];
+
             columns.push(
                 {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
+                    title: "S.No",
+                    field: "SrNo",
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
-                    title: "From",
-                    field: "From",
+                    title: "Vendor Detail",
+                    field: "VendorDetail",
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "FY",
+                    field: "FY",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
-                    title: "To",
-                    field: "To",
+                    title: "Quarter",
+                    field: "Quarter",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
-                    title: "Total Payment",
-                    field: "Total_Payment",
+                    title: "Final Star Rating",
+                    field: "FinalStarRating",
                     headerFilter: "input",
-                    hozAlign: "right",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Top 2 Parameter",
+                    field: "TopTwoParameter",
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Lowest 2 Parameter",
+                    field: "LowestTwoParameter",
+                    headerFilter: "input",
+                    hozAlign: "left",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                {
+                    title: "Remarks",
+                    field: "Remarks",
+                    headerFilter: "input",
+                    hozAlign: "left",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 }
             );
 
-            new Tabulator("#paymentSummary_Table", {
+            let table = new Tabulator("#spm_Table", {
                 data: [],
                 layout: "fitColumns",
                 movableColumns: true,
@@ -275,12 +343,14 @@
                 paginationSize: 10,
                 paginationSizeSelector: [10, 50, 100, 500],
                 paginationCounter: "rows",
-                placeholder: "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
+                placeholder: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>",
                 columns: columns
             });
-        }
-    </script>
 
+            Blockloaderhide();
+        }
+
+    </script>
 }
 
 @section HideSidebar { }

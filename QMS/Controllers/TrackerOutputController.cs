@@ -52,6 +52,35 @@ namespace QMS.Controllers
         {
             return View();
         }
+		
+		public IActionResult CustomerRCATracker()
+	   {
+		   return View();
+	   }
+	   public IActionResult SPMReport()
+	   {
+		   return View();
+	   }
+	   public IActionResult BISProkectTracker()
+	   {
+		   return View();
+	   }
+	   public IActionResult ContinualImprovementTracker()
+	   {
+		   return View();
+	   }
+	   public IActionResult ChangeNoteTracker()
+	   {
+		   return View();
+	   }
+	   public IActionResult PDISummary()
+	   {
+		   return View();
+	   }
+	   public IActionResult SMPComparision()
+	   {
+		   return View();
+	   }
     }
 }
 

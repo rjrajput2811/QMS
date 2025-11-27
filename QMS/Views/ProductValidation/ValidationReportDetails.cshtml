@@ -111,7 +111,7 @@
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
                 <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
                     <div>
-                        <b style="font-size:x-large; color:#4682B4;">Luminaire Validation Report</b>
+                        <b style="font-size:large; color:#4682B4;">Luminaire Validation Report</b>
                     </div>
 
                     <div>
@@ -926,7 +926,6 @@
             try { initLuminaireValidation(); } catch (e) { console.error(e); }
         });
 
-        /* -------------------- PRODUCT PHOTO TABLE -------------------- */
 
         function createPhotoRow() {
             const tr = document.createElement('tr');
@@ -975,7 +974,7 @@
             });
         }
 
-        /* -------------------- TEST SUMMARY TABLE -------------------- */
+        
 
         function createSummaryRow() {
             const tr = document.createElement('tr');
@@ -1011,7 +1010,7 @@
         function addSummaryRow() {
             const row = createSummaryRow();
 
-            // Insert BEFORE the first non-test row (Final Comments / Tested By / Report attached)
+          
             const footerStart = summaryBody.querySelector('tr:not(.test-summary-row)');
             if (footerStart) {
                 summaryBody.insertBefore(row, footerStart);
@@ -1037,18 +1036,18 @@
             });
         }
 
-        /* -------------------- INIT -------------------- */
+       
 
         function initLuminaireValidation() {
-            // Product photo
+           
             photoBody = document.getElementById('productPhotoBody');
             addPhotoBtn = document.getElementById('addLuminaireRowBtn');
 
-            // Test summary
+           
             summaryBody = document.getElementById('testSummaryBody');
             addSummaryBtn = document.getElementById('addLuminaireRowBtn2');
 
-            // --- Product photo init ---
+        
             if (!photoBody || !addPhotoBtn) {
                 console.error("Product photo tbody or Add button missing.");
             } else {
@@ -1066,7 +1065,7 @@
                 }
             }
 
-            // --- Test summary init ---
+            
             if (!summaryBody || !addSummaryBtn) {
                 console.error("Test summary tbody or Add button missing.");
             } else {

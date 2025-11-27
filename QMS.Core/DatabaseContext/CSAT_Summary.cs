@@ -16,7 +16,7 @@ namespace QMS.Core.DatabaseContext
         // SqlTable override
         //-----------------------------------
         [Key]
-        [Column("CsatSum_Id ")]
+        [Column("CsatSum_Id")]
         public override int Id { get; set; }
 
         [Column("IsDeleted")]

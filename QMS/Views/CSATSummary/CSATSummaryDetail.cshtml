@@ -1,4 +1,7 @@
-﻿@{
+﻿@using QMS.Core.Models
+@model Csat_SummaryViewModel
+
+@{
     ViewData["Title"] = "CSAT Summary Report";
 }
 
@@ -79,7 +82,7 @@
                 </button>
 
                 <button id="backButton" class="btn btn-outline-primary"
-                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'"
+                        onclick="location.href='@Url.Action("CSATSUMMARY", "CSATSummary")'"
                         style="width: 120px; font-size:15px">
                     <i class="fas fa-arrow-left mr-1"></i>BACK
                 </button>
@@ -89,7 +92,7 @@
 
 
     <div class="card shadow-sm">
-        <input type="hidden" id="hdnCsatId" value="0" />
+        <input type="hidden" id="hdnCsatId" value="@Model.Id" />
         <div class="card-body">
             <div id="csatTable"></div>
         </div>

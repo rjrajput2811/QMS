@@ -1264,6 +1264,17 @@ public class ProductValidationController : Controller
         return View();
     }
 
+    #region DropTestReport
+    public IActionResult DroptTestDetails()
+    {
+
+        return View();
+    }
+    public IActionResult DropTestReport()
+    {
+        return View();
+    }
+
     #endregion
 
     #region GeneralObservation
@@ -1304,6 +1315,7 @@ public class ProductValidationController : Controller
         return View();
     }
 
+    #endregion
     #endregion
 }
 

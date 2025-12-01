@@ -38,6 +38,8 @@ using QMS.Core.Repositories.InternalTypeTestRepo;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.CSATSummaryRepository;
+using QMS.Core.Repositories.CAReportRepository;
+using QMS.Core.Repositories.RCAReportRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -83,12 +85,14 @@ builder.Services.AddTransient<IContiImproveRespository, ContiImproveRespository>
 builder.Services.AddTransient<ICSATCommentRepository, CSATCommentRepository>();
 builder.Services.AddTransient<IPhysicalCheckAndVisualInspectionRepository, PhysicalCheckAndVisualInspectionRepository>();
 builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerformanceRepository>();
-builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 builder.Services.AddScoped<IElectricalProtectionRepository, ElectricalProtectionRepository>();
 builder.Services.AddScoped<IInternalTypeTestRepository, InternalTypeTestRepository>();
 builder.Services.AddTransient<ICSATSummaryRepository, CSATSummaryRepository>();
+builder.Services.AddTransient<ICAReportRepository, CAReportRepository>();
+builder.Services.AddTransient<IRCAReportRepository, RCAReportRepository>();
 
 
+//builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 
 //
 

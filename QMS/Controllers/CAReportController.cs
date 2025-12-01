@@ -1,16 +1,484 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ClosedXML.Excel.Drawings;
+using ClosedXML.Excel;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
+using QMS.Core.Models;
+using QMS.Core.ViewModels;
+using System.Text.RegularExpressions;
+using QMS.Core.Repositories.BisProjectTracRepository;
+using QMS.Core.Services.SystemLogs;
+using QMS.Core.Repositories.CAReportRepository;
+using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace QMS.Controllers
 {
     public class CAReportController : Controller
     {
+        private readonly ICAReportRepository _cAReportRepository;
+        private readonly ISystemLogService _systemLogService;
+        private readonly IWebHostEnvironment _env;
+
+        public CAReportController(ICAReportRepository cAReportRepository, ISystemLogService systemLogService, IWebHostEnvironment env)
+        {
+            _cAReportRepository = cAReportRepository;
+            _systemLogService = systemLogService;
+            _env = env;
+        }
         public IActionResult CAFormatee()
         {
             return View();
         }
-        public IActionResult CAFormateDetails()
+
+
+        public async Task<JsonResult> GetCAReportAsync(DateTime? startDate, DateTime? endDate)
         {
-            return View();
+            var result = await _cAReportRepository.GetCAReportAsync(startDate, endDate);
+            return Json(result);
         }
+
+        [HttpGet]
+        public async Task<ActionResult> GetCAReportByIdAsync(int internalTypeId)
+        {
+            var result = await _cAReportRepository.GetCAReportByIdAsync(internalTypeId);
+            return Json(result);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> CAFormateDetails(int caReportId)
+        {
+            CAReportViewModel model;
+
+            if (caReportId == 0)
+            {
+                model = new CAReportViewModel
+                {
+                    Date = DateTime.Now
+                };
+            }
+            else
+            {
+                model = await _cAReportRepository.GetCAReportByIdAsync(caReportId);
+
+                if (model == null)
+                {
+                    return NotFound();
+                }
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> Delete(int id)
+        {
+            var operationResult = await _cAReportRepository.DeleteAsync(id);
+            return Json(operationResult);
+        }
+
+        //[HttpPost]
+        //public async Task<IActionResult> InsertCAReportAsync(CAReportViewModel model)
+        //{
+        //    try
+        //    {
+        //        if (!ModelState.IsValid)
+        //        {
+        //            var errors = ModelState.Values
+        //                .SelectMany(v => v.Errors)
+        //                .Select(e => e.ErrorMessage)
+        //                .ToList();
+        //            return Json(new { Success = false, Errors = errors });
+        //        }
+
+        //        bool exists = await _cAReportRepository.CheckDuplicate(model.Complaint_No.Trim(), 0);
+        //        if (exists)
+        //        {
+        //            return Json(new { success = false, message = "CA Report Detail already exists." });
+        //        }
+
+        //        var user = HttpContext.Session.GetString("FullName") ?? "System";
+
+        //        OperationResult result;
+
+        //        if (model == null)
+        //        {
+        //            return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+        //        }
+
+        //        if (model.Id > 0)
+        //        {
+        //            model.UpdatedBy = user;
+
+        //            result = await _cAReportRepository.UpdateCAReportAsync(model);
+        //            if (result == null) 
+        //                result = new OperationResult { Success = false, Message = "Update failed." };
+
+        //            if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+        //                result.Message = "CA Report Detail updated successfully.";
+        //        }
+        //        else
+        //        {
+        //            // Insert path
+        //            model.CreatedBy = user;
+
+        //            result = await _cAReportRepository.InsertCAReportAsync(model);
+        //            if (result == null)
+        //                result = new OperationResult { Success = false, Message = "Insert failed." };
+
+        //            if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+        //                result.Message = "CA Report Detail created successfully.";
+        //        }
+
+        //        return Json(result);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _systemLogService.WriteLog(ex.Message);
+        //        return Json(new { Success = false, Errors = new[] { "Failed to save ca report detail." }, Exception = ex.Message });
+        //    }
+        //}
+
+
+        [HttpPost]
+        public async Task<IActionResult> InsertCAReportAsync(CAReportViewModel model)
+        {
+            try
+            {
+                if (model == null)
+                {
+                    return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+                }
+
+                // ---- Save uploaded images to folder and set string paths ----
+                if (model.Problem_Visual_ImgAFile != null && model.Problem_Visual_ImgAFile.Length > 0)
+                {
+                    model.Problem_Visual_ImgA = await SaveImageAsync(
+                        model.Problem_Visual_ImgAFile, "ProbA", model.Complaint_No);
+                }
+
+                if (model.Problem_Visual_ImgBFile != null && model.Problem_Visual_ImgBFile.Length > 0)
+                {
+                    model.Problem_Visual_ImgB = await SaveImageAsync(
+                        model.Problem_Visual_ImgBFile, "ProbB", model.Complaint_No);
+                }
+
+                if (model.Problem_Visual_ImgCFile != null && model.Problem_Visual_ImgCFile.Length > 0)
+                {
+                    model.Problem_Visual_ImgC = await SaveImageAsync(
+                        model.Problem_Visual_ImgCFile, "ProbC", model.Complaint_No);
+                }
+
+                if (model.Before_PhotoFile != null && model.Before_PhotoFile.Length > 0)
+                {
+                    model.Before_Photo = await SaveImageAsync(
+                        model.Before_PhotoFile, "Before", model.Complaint_No);
+                }
+
+                if (model.After_PhotoFile != null && model.After_PhotoFile.Length > 0)
+                {
+                    model.After_Photo = await SaveImageAsync(
+                        model.After_PhotoFile, "After", model.Complaint_No);
+                }
+                // ------------------------------------------------------------
+
+                if (!ModelState.IsValid)
+                {
+                    var errors = ModelState.Values
+                        .SelectMany(v => v.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .ToList();
+                    return Json(new { Success = false, Errors = errors });
+                }
+
+                bool exists = await _cAReportRepository.CheckDuplicate(model.Complaint_No!.Trim(), 0);
+                if (exists)
+                {
+                    return Json(new { Success = false, Errors = new[] { "CA Report Detail already exists." } });
+                }
+
+                var user = HttpContext.Session.GetString("FullName") ?? "System";
+                OperationResult result;
+
+                if (model.Id > 0)
+                {
+                    model.UpdatedBy = user;
+
+                    result = await _cAReportRepository.UpdateCAReportAsync(model)
+                             ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                    if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                        result.Message = "CA Report Detail updated successfully.";
+                }
+                else
+                {
+                    model.CreatedBy = user;
+
+                    result = await _cAReportRepository.InsertCAReportAsync(model)
+                             ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                    if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                        result.Message = "CA Report Detail created successfully.";
+                }
+
+                return Json(new
+                {
+                    Success = result.Success,
+                    Message = result.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.ToString());
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { "Failed to save CA report detail." },
+                    Exception = ex.Message
+                });
+            }
+        }
+
+        private async Task<string> SaveImageAsync(IFormFile file, string prefix, string complaintNo)
+        {
+            if (file == null || file.Length == 0)
+                return string.Empty;
+
+            // Make complaint no safe for folder/file name
+            var safeComplaintNo = (complaintNo ?? string.Empty)
+                .Replace(" ", "_")
+                .Replace("/", "_")
+                .Replace("\\", "_")
+                .Replace(":", "_");
+
+            // Physical folder path: wwwroot/CAReport_Attach/{ComplaintNo}
+            var folderPhysical = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "CAReport_Attach",
+                safeComplaintNo
+            );
+
+            if (!Directory.Exists(folderPhysical))
+                Directory.CreateDirectory(folderPhysical);
+
+            var ext = Path.GetExtension(file.FileName);
+            if (string.IsNullOrWhiteSpace(ext))
+                ext = ".jpg";
+
+            var fileName = $"{safeComplaintNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+            var fullPath = Path.Combine(folderPhysical, fileName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            // Correct relative path for browser
+            // /CAReport_Attach/Complaint123/Complaint123_ProbA_2025.....
+            var relativeForDb = $"/CAReport_Attach/{safeComplaintNo}/{fileName}";
+
+            return relativeForDb;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportCAReportToExcel(int id)
+        {
+            var model = await _cAReportRepository.GetCAReportByIdAsync(id);
+            if (model == null)
+                return NotFound();
+
+            // 1. Load template
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "01.CA_Format.xlsx");
+
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("CA template not found at " + templatePath);
+
+            using var wb = new XLWorkbook(templatePath);
+
+            // Use sheet index or exact sheet name from template
+            var ws = wb.Worksheet(1);  // or wb.Worksheet("CA Format");
+
+            // 2. Fill fields – ONLY set .Value, don’t change style/merge/width
+
+            // These cell addresses must match your template layout.
+            // (Below are typical positions – adjust if any cell is different.)
+
+            // Complaint No (top row, left)
+            ws.Cell("A11").Value = "Complaint No:- " + model.Complaint_No ?? "";
+
+            // Reported Date (top row, right)
+            ws.Cell("F11").Value = "Reported Date :" + model.Report_Date?.ToString("dd-MMM-yyyy") ?? "";
+
+            // Customer Name & Location
+            ws.Cell("A13").Value = "Customer Name and Location: -  " + model.Cust_Name_Location ?? "";
+
+            // Source of Complaint
+            ws.Cell("A14").Value = "Source of Complaint:-" + model.Source_Complaint ?? "";
+
+            // Product Code & Description
+            ws.Cell("A15").Value = "Product Code and Description:- " + model.Prod_Code_Desc ?? "";
+
+            ws.Cell("A16").Value = "Description of Complaint:-" + model.Desc_Complaint ?? "";
+
+            // Batch Code
+            ws.Cell("A17").Value = "Batch Code:- " + model.Batch_Code ?? "";
+
+            // PKD
+            ws.Cell("G17").Value = "PKD:- " + model.Pkd ?? "";
+
+            // Supplied Qty
+            ws.Cell("A18").Value = "Supplied Qty: - " + model.Supp_Qty?.ToString() ?? "";
+
+            // Failure Qty
+            ws.Cell("G18").Value = "Failure Qty: - " + model.Failure_Qty?.ToString() ?? "";
+
+            // % Failure
+            ws.Cell("A19").Value = "% Failure -   " + model.Failure?.ToString() ?? "";
+
+            // Age of Installation
+            ws.Cell("G19").Value = "Age of Installation: " + model.Age_Install ?? "";
+
+            // Site Observations
+            ws.Cell("A20").Value = model.Description ?? "";
+
+            // Problem Statement
+            ws.Cell("A22").Value = model.Problem_State ?? "";
+
+            ws.Cell("A28").Value = "Initial observations:  \n" + model.Initial_Observ ?? "";
+
+            // ---- Problem Basket (checkbox row) ----
+            // Here we just write "✓" before text if true.
+            ws.Cell("A31").Value = model.Man_Issue_Prob
+                ? "✓ Manufacturing Issue" : "Manufacturing Issue";
+
+            ws.Cell("B31").Value = model.Design_Prob
+                ? "✓ Design" : "Design";
+
+            ws.Cell("D31").Value = model.Site_Issue_Prob
+                ? "✓ Site Issue" : "Site Issue";
+
+            ws.Cell("E31").Value = model.Com_Gap_Prob
+                ? "✓ Communication gap" : "Communication gap";
+
+            ws.Cell("F31").Value = model.Install_Issues_Prov
+                ? "✓ Installation issues" : "Installation issues";
+
+            ws.Cell("G31").Value = model.Wrong_App_Prob
+                ? "✓ Wrong Application" : "Wrong Application";
+
+            // Initial / Interim / RCA / Corrective etc.
+            ws.Cell("A33").Value = model.Interim_Corrective ?? "";
+            ws.Cell("A36").Value = model.Root_Cause_Anal ?? "";
+            ws.Cell("A38").Value = model.Corrective_Action ?? "";
+
+            // ======================================================
+            // 4. Monitoring of Action Plan – DYNAMIC ROWS
+            //    Template:
+            //      row 40: title
+            //      row 41: header
+            //      row 42: detail row template (Sr. No / Action Plan / Target date / Resp / Status)
+            //      row 43: "Before / After"
+            //      row 44: "Photo / Photo"
+            //      row 45: "RCA Prepared By / Date"
+            // ======================================================
+
+            const int templateDetailRow = 42; // first detail row (template)
+            var details = model.Details ?? new List<CAReportDetailViewModel>(); // replace with your detail type
+            int detailCount = details.Count;
+
+            var templateMergedRanges = new List<(int firstCol, int lastCol)>();
+
+            foreach (var range in ws.MergedRanges)
+            {
+                if (range.FirstRow().RowNumber() == templateDetailRow &&
+                    range.LastRow().RowNumber() == templateDetailRow)
+                {
+                    templateMergedRanges.Add(
+                        (range.FirstColumn().ColumnNumber(),
+                         range.LastColumn().ColumnNumber())
+                    );
+                }
+            }
+
+            // 2. Insert extra rows for N details
+            if (detailCount > 1)
+            {
+                ws.Row(templateDetailRow).InsertRowsBelow(detailCount - 1);
+            }
+
+            // 3. Re-apply merge structure + fill values in every detail row
+            for (int i = 0; i < detailCount; i++)
+            {
+                int row = templateDetailRow + i;
+                var d = details[i];
+
+                // Recreate template merges for this row
+                foreach (var m in templateMergedRanges)
+                {
+                    ws.Range(row, m.firstCol, row, m.lastCol).Merge();
+                }
+
+                // Fill values
+                ws.Cell(row, 1).Value = i + 1;                                 // Sr. No
+                ws.Cell(row, 2).Value = d.Action_Plan ?? "";                   // Action Plan (merged B–E)
+                ws.Cell(row, 6).Value = d.Target_Date?.ToString("dd-MMM-yyyy") ?? "";
+                ws.Cell(row, 7).Value = d.Resp ?? "";
+                ws.Cell(row, 8).Value = d.Status ?? "";
+            }
+
+            // ======================================================
+            // 5. Position "Before / Photo / RCA" AFTER last detail
+            // ======================================================
+
+            // After insertion:
+            //  - last detail row index:
+            int lastDetailRow = templateDetailRow + detailCount - 1;
+
+            //  - "Before / After" row should be just after details
+            //  - "Photo / Photo" row next
+            //  - "RCA Prepared By / Date" row next
+            int beforeRow = lastDetailRow + 1;
+            int photoRow = lastDetailRow + 2;
+            int rcaRow = lastDetailRow + 3;
+
+            // Set "Before / After"
+            ws.Cell(beforeRow, 1).Value = "Before";
+            ws.Cell(beforeRow, 6).Value = "After";
+
+            // Set "Photo / Photo"
+            ws.Cell(photoRow, 1).Value = "Photo";
+            ws.Cell(photoRow, 6).Value = "Photo";
+
+
+
+            // Footer – RCA Prepared By / Name & Designation / Date
+            ws.Cell(rcaRow, 1).Value =
+       "RCA Prepared By:- " + (model.Rca_Prepared_By ?? "") +
+       Environment.NewLine +
+       "Name and Designation : " + (model.Name_Designation ?? "");
+
+            ws.Cell(rcaRow, 6).Value =
+                "Date:- " + (model.Date?.ToString("dd-MM-yyyy") ?? "");
+
+            // Optional: clear anything below RCA if template had extra text
+            for (int r = rcaRow + 1; r <= rcaRow + 10; r++)
+            {
+                ws.Row(r).Cells().Clear(XLClearOptions.Contents);
+            }
+
+
+            // 3. Return file
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"CA_{model.Complaint_No}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+
+
+
     }
 }

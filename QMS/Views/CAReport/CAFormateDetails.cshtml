@@ -1,4 +1,8 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model CAReportViewModel
+
+@{
     ViewData["Title"] = "CA Format Details";
 }
 
@@ -222,457 +226,575 @@
                     </div>
 
                     <div style="display:flex; gap:10px;">
-                        <button id="saveBtn" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                        <button id="saveBtn" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;" onclick="saveCAReport()">
                             <i class="fas fa-save" aria-hidden="true"></i> Save
                         </button>
                         <a href="@Url.Action("CAFormatee","CAReport")" class="btn btn-outline-primary" style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                            <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Back
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Info Card -->
-            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0px;">
-                <div class="card-body" style="padding:16px;">
+            <form id="caReportForm" method="post" enctype="multipart/form-data" asp-controller="CAReport" asp-action="InsertCAReport">
+                @Html.HiddenFor(m => m.Id)
 
-                    <div class="table-responsive" style="margin-bottom:0;">
-                        <!-- TABLE 1 -->
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-bottom:0;">
-                            <thead>
-                                <tr style="background-color:#ffffff;">
-                                    <!-- Complaint No -->
-                                    <th colspan="2"
-                                        style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
-                                        Complaint No:-
-                                        <input type="text"
-                                               placeholder="Enter Complaint No"
-                                               style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;">
-                                    </th>
+                <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0px;">
+                    <div class="card-body" style="padding:16px;">
 
-                                    <!-- Date -->
-                                    <th colspan="2"
-                                        style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
-                                        Date:-
-                                        <input type="date"
-                                               id="complaintDate"
-                                               style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;">
-                                    </th>
-                                </tr>
-                            </thead>
+                        <div class="table-responsive" style="margin-bottom:0;">
+                            <!-- TABLE 1 -->
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-bottom:0;">
+                                <thead>
+                                    <tr style="background-color:#ffffff;">
+                                        <!-- Complaint No -->
+                                        <th colspan="2"
+                                            style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                                            Complaint No:-
+                                            <input type="text" name="Complaint_No"
+                                                   placeholder="Enter Complaint No"
+                                                   style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:60%; margin-left:8px;" value="@Model?.Complaint_No">
+                                        </th>
 
-                            <!-- Checkbox row -->
-                            <tr>
-                                <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
-                                    <label style="font-weight:600;">
-                                        <input type="checkbox" id="chkCustomerComplaints" style="margin-right:6px;" />
-                                        Customer Complaints
-                                    </label>
-                                </td>
+                                        <!-- Date -->
+                                        <th colspan="2"
+                                            style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                                            Report Date:-
+                                            @if (Model?.Id > 0)
+                                            {
+                                                <input type="date" name="Report_Date"
+                                                       id="complaintDate"
+                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@Model?.Report_Date">
+                                            }
+                                            else
+                                            {
+                                                <input type="date" name="Report_Date"
+                                                       id="complaintDate"
+                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                            }
 
-                                <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
-                                    <label style="font-weight:600;">
-                                        <input type="checkbox" id="chkNPIValidations" style="margin-right:6px;" />
-                                        NPI Validations
-                                    </label>
-                                </td>
-
-                                <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
-                                    <label style="font-weight:600;">
-                                        <input type="checkbox" id="chkPDIObservations" style="margin-right:6px;" />
-                                        PDI Observations
-                                    </label>
-                                </td>
-
-                                <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
-                                    <label style="font-weight:600;">
-                                        <input type="checkbox" id="chkSystemProcess" style="margin-right:6px;" />
-                                        System / Process Improvements
-                                    </label>
-                                </td>
-                            </tr>
-                        </table>
-                    </div>
-
-                    <!-- SECOND TABLE (Directly after first, no spacing) -->
-                    <div class="table-responsive" style="margin-top:0x;">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
-                            <tbody>
-                                <!-- First four single-column rows -->
-                                <tr>
-                                    <td colspan="4" style="padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Customer Name and Location:</label>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter customer name and location" />
-                                    </td>
-                                </tr>
+                                        </th>
+                                    </tr>
+                                </thead>
 
                                 <tr>
-                                    <td colspan="4" style="padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Source of Complaint:</label>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter source of complaint" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="4" style="padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Product Code and Description:</label>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter product code and description" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="4" style="padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Description of Complaint:</label>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter complaint description" />
-                                    </td>
-                                </tr>
-
-                                <!-- Next rows with left/right paired cells -->
-                                <tr>
-                                    <td style="width:50%; padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Batch Code:</label>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter batch code" />
-                                    </td>
-                                    <td style="width:50%; padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">PKD:</label>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter PKD" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td style="width:50%; padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Supplied Qty:</label>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter supplied quantity" />
-                                    </td>
-                                    <td style="width:50%; padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Failure Qty:</label>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter failure quantity" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td style="width:50%; padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">% Failure:</label>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter failure percentage" />
-                                    </td>
-                                    <td style="width:50%; padding:8px; border:1.5px solid #000;">
-                                        <label style="font-weight:600;">Age of Installation:</label>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter age of installation" />
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-                    <!-- Problem Statement Section -->
-                    <div class="table-responsive" style="margin-top:0px;">
-                        <table class="table table-bordered"
-                               style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
-                            <thead>
-                                <tr>
-                                    <th colspan="4"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
-                                        Description
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td colspan="4"
-                                        contenteditable="true"
-                                        style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th colspan="4"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
-                                        Problem Statement
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td colspan="4"
-                                        contenteditable="true"
-                                        style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                    </td>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-
-                    <div class="table-responsive" style="margin-top:0px;">
-                        <table class="table table-bordered"
-                               style="width:100%; border-collapse:collapse; text-align:center; font-size:14px; margin-top:-1.5px; margin-bottom:0;">
-                            <thead style="border-collapse:collapse;">
-                                <tr style="border:1.5px solid #000;">
-                                    <th colspan="3"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
-                                        Problem Visualization (snaps of defective units):-
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;">
-                                        <input type="file" accept="image/*" id="imgA" style="display:block; margin:0 auto;" />
-                                        <div id="previewA" style="margin-top:8px;"></div>
-                                    </td>
-                                    <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;">
-                                        <input type="file" accept="image/*" id="imgB" style="display:block; margin:0 auto;" />
-                                        <div id="previewB" style="margin-top:8px;"></div>
-                                    </td>
-                                    <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;">
-                                        <input type="file" accept="image/*" id="imgC" style="display:block; margin:0 auto;" />
-                                        <div id="previewC" style="margin-top:8px;"></div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="border:1.5px solid #000; font-weight:600;">Image a</td>
-                                    <td style="border:1.5px solid #000; font-weight:600;">Image b</td>
-                                    <td style="border:1.5px solid #000; font-weight:600;">Image c</td>
-                                </tr>
-                                <tr>
-                                    <th colspan="4"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
-                                        Initial Observations
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td colspan="4"
-                                        contenteditable="true"
-                                        style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- ✅ REMOVED ALL EXTRA SPACING BELOW -->
-                    <div class="table-responsive" style="margin-top:0px;">
-                        <table class="table table-bordered"
-                               style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px; margin-bottom:0;">
-                            <thead style="border-collapse:collapse;">
-                                <tr style="border:1.5px solid #000;">
-                                    <th colspan="6"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
-                                        Problem Basket
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                    <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
                                         <label style="font-weight:600;">
-                                            <input type="checkbox" id="chkManufacturing" style="margin-right:6px;">
-                                            Manufacturing Issue
+                                            <input type="checkbox" id="chkCustomerComplaints" style="margin-right:6px;" @(Model?.Cust_Complaints == true ? "checked" : "") name="Cust_Complaints" />
+                                            Customer Complaints
                                         </label>
                                     </td>
-                                    <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+
+                                    <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
                                         <label style="font-weight:600;">
-                                            <input type="checkbox" id="chkDesign" style="margin-right:6px;">
-                                            Design
+                                            <input type="checkbox" id="chkNPIValidations" style="margin-right:6px;" @(Model?.NPI_Validations == true ? "checked" : "") name="NPI_Validations" />
+                                            NPI Validations
                                         </label>
                                     </td>
-                                    <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+
+                                    <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
                                         <label style="font-weight:600;">
-                                            <input type="checkbox" id="chkSiteIssue" style="margin-right:6px;">
-                                            Site Issue
+                                            <input type="checkbox" id="chkPDIObservations" style="margin-right:6px;" @(Model?.PDI_Obser == true ? "checked" : "") name="PDI_Obser" />
+                                            PDI Observations
                                         </label>
                                     </td>
-                                    <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+
+                                    <td style="width:25%; vertical-align:middle; padding:10px; border:1.5px solid #000;">
                                         <label style="font-weight:600;">
-                                            <input type="checkbox" id="chkCommunication" style="margin-right:6px;">
-                                            Communication Gap
-                                        </label>
-                                    </td>
-                                    <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
-                                        <label style="font-weight:600;">
-                                            <input type="checkbox" id="chkInstallation" style="margin-right:6px;">
-                                            Installation Issues
-                                        </label>
-                                    </td>
-                                    <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
-                                        <label style="font-weight:600;">
-                                            <input type="checkbox" id="chkWrongApplication" style="margin-right:6px;">
-                                            Wrong Application
+                                            <input type="checkbox" id="chkSystemProcess" style="margin-right:6px;" @(Model?.System == true ? "checked" : "") name="System" />
+                                            System / Process Improvements
                                         </label>
                                     </td>
                                 </tr>
-                            </tbody>
-                        </table>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive" style="margin-top:0x;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
+                                <tbody>
+                                    <!-- First four single-column rows -->
+                                    <tr>
+                                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Customer Name and Location:</label>
+                                            <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter customer name and location" value="@Model?.Cust_Name_Location" name="Cust_Name_Location" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Source of Complaint:</label>
+                                            <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter source of complaint" value="@Model?.Source_Complaint" name="Source_Complaint" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Product Code and Description:</label>
+                                            <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter product code and description" value="@Model?.Prod_Code_Desc" name="Prod_Code_Desc" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td colspan="4" style="padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Description of Complaint:</label>
+                                            <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter complaint description" value="@Model?.Desc_Complaint" name="Desc_Complaint" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Batch Code:</label>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter batch code" value="@Model?.Batch_Code" name="Batch_Code" />
+                                        </td>
+                                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">PKD:</label>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter PKD" value="@Model?.Pkd" name="Pkd" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Supplied Qty:</label>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter supplied quantity" value="@Model?.Supp_Qty" name="Supp_Qty" />
+                                        </td>
+                                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Failure Qty:</label>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter failure quantity" value="@Model?.Failure_Qty" name="Failure_Qty" />
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">% Failure:</label>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter failure percentage" value="@Model?.Failure" name="Failure" />
+                                        </td>
+                                        <td style="width:50%; padding:8px; border:1.5px solid #000;">
+                                            <label style="font-weight:600;">Age of Installation:</label>
+                                            <input type="text" class="underline-input" style="width:60%; margin-left:6px;" placeholder="Enter age of installation" value="@Model?.Age_Install" name="Age_Install" />
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <!-- Problem Statement Section -->
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="4"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
+                                            Description
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"
+                                            contenteditable="true"
+                                            style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Description">
+                                            @Model?.Description
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="4"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
+                                            Problem Statement
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"
+                                            contenteditable="true"
+                                            style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Problem_State">
+                                            @Model?.Problem_State
+                                        </td>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:center; font-size:14px; margin-top:-1.5px; margin-bottom:0;">
+                                <thead style="border-collapse:collapse;">
+                                    <tr style="border:1.5px solid #000;">
+                                        <th colspan="3"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                                            Problem Visualization (snaps of defective units):-
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;">
+                                            <input type="file"
+                                                   accept="image/*"
+                                                   id="imgA"
+                                                   name="Problem_Visual_ImgAFile"
+                                                   style="display:block; margin:0 auto;" />
+                                            <div id="previewA" style="margin-top:8px;">
+                                                @if (!string.IsNullOrEmpty(Model?.Problem_Visual_ImgA))
+                                                {
+                                                    <img src="@Model.Problem_Visual_ImgA"
+                                                         style="max-width:90%; max-height:160px;" />
+                                                }
+                                            </div>
+                                        </td>
+                                        <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;" value="@Model?.Problem_Visual_ImgB" name="Problem_Visual_ImgB">
+                                            <input type="file"
+                                                   accept="image/*"
+                                                   id="imgB"
+                                                   name="Problem_Visual_ImgBFile"
+                                                   style="display:block; margin:0 auto;" />
+                                            <div id="previewB" style="margin-top:8px;">
+                                                @if (!string.IsNullOrEmpty(Model?.Problem_Visual_ImgB))
+                                                {
+                                                    <img src="@Model.Problem_Visual_ImgB"
+                                                         style="max-width:90%; max-height:160px;" />
+                                                }
+                                            </div>
+                                        </td>
+                                        <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;" value="@Model?.Problem_Visual_ImgC" name="Problem_Visual_ImgC">
+                                            <input type="file"
+                                                   accept="image/*"
+                                                   id="imgC"
+                                                   name="Problem_Visual_ImgCFile"
+                                                   style="display:block; margin:0 auto;" />
+                                            <div id="previewC" style="margin-top:8px;">
+                                                @if (!string.IsNullOrEmpty(Model?.Problem_Visual_ImgC))
+                                                {
+                                                    <img src="@Model.Problem_Visual_ImgC"
+                                                         style="max-width:90%; max-height:160px;" />
+                                                }
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border:1.5px solid #000; font-weight:600;">Image a</td>
+                                        <td style="border:1.5px solid #000; font-weight:600;">Image b</td>
+                                        <td style="border:1.5px solid #000; font-weight:600;">Image c</td>
+                                    </tr>
+                                    <tr>
+                                        <th colspan="4"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                                            Initial Observations
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"
+                                            contenteditable="true"
+                                            style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Initial_Observ">
+                                            @Model?.Initial_Observ
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px; margin-bottom:0;">
+                                <thead style="border-collapse:collapse;">
+                                    <tr style="border:1.5px solid #000;">
+                                        <th colspan="6"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                                            Problem Basket
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                            <label style="font-weight:600;">
+                                                <input type="checkbox" id="chkManufacturing" style="margin-right:6px;" @(Model?.Man_Issue_Prob == true ? "checked" : "")>
+                                                Manufacturing Issue
+                                            </label>
+                                        </td>
+                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;" @(Model?.Design_Prob == true ? "checked" : "")>
+                                            <label style="font-weight:600;">
+                                                <input type="checkbox" id="chkDesign" style="margin-right:6px;">
+                                                Design
+                                            </label>
+                                        </td>
+                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                            <label style="font-weight:600;">
+                                                <input type="checkbox" id="chkSiteIssue" style="margin-right:6px;" @(Model?.Site_Issue_Prob == true ? "checked" : "")>
+                                                Site Issue
+                                            </label>
+                                        </td>
+                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                            <label style="font-weight:600;">
+                                                <input type="checkbox" id="chkCommunication" style="margin-right:6px;" @(Model?.Com_Gap_Prob == true ? "checked" : "")>
+                                                Communication Gap
+                                            </label>
+                                        </td>
+                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                            <label style="font-weight:600;">
+                                                <input type="checkbox" id="chkInstallation" style="margin-right:6px;" @(Model?.Install_Issues_Prov == true ? "checked" : "")>
+                                                Installation Issues
+                                            </label>
+                                        </td>
+                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                            <label style="font-weight:600;">
+                                                <input type="checkbox" id="chkWrongApplication" style="margin-right:6px;" @(Model?.Wrong_App_Prob == true ? "checked" : "")>
+                                                Wrong Application
+                                            </label>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive" style="margin-top:-1.5px;">
+                            <table class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin:0;">
+                                <tbody>
+                                    <!-- Interim Corrective Action -->
+                                    <tr>
+                                        <th colspan="4"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
+                                            Interim Corrective Action:-
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"
+                                            contenteditable="true"
+                                            style="border:1.5px solid #000; height:60px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Interim_Corrective">
+                                            @Model?.Interim_Corrective
+                                        </td>
+                                    </tr>
+
+                                    <!-- Root Cause Analysis -->
+                                    <tr>
+                                        <th colspan="4"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
+                                            Root Cause Analysis:-
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"
+                                            contenteditable="true"
+                                            style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Root_Cause_Anal">
+                                            @Model?.Root_Cause_Anal
+                                        </td>
+                                    </tr>
+
+                                    <!-- Corrective Action -->
+                                    <tr>
+                                        <th colspan="4"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
+                                            Corrective Action:-
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4"
+                                            contenteditable="true"
+                                            style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Corrective_Action">
+                                            @Model?.Corrective_Action
+                                        </td>
+                                    </tr>
+
+
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" style="padding:12px; text-align:left;">
+                                            <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+
+                        <div class="table-responsive" style="margin-top:0;">
+                            @if (Model?.Details != null && Model.Details.Count > 0)
+                            {
+                                for (int i = 0; i < Model.Details.Count; i++)
+                                {
+                                    @Html.HiddenFor(m => m.Details[i].Moni_Plan_Id)
+                                }
+                            }
+                            <table id="monitoringTable" class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="5"
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
+                                            Monitoring of Action Plan:-
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:8%; border:1.5px solid #000; text-align:center;">Sr. No</th>
+                                        <th style="width:42%; border:1.5px solid #000; text-align:center;">Action Plan</th>
+                                        <th style="width:20%; border:1.5px solid #000; text-align:center;">Target Date</th>
+                                        <th style="width:15%; border:1.5px solid #000; text-align:center;">Resp.</th>
+                                        <th style="width:15%; border:1.5px solid #000; text-align:center; color:red;">Status (Open/Closed)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="monitoringBody">
+                                    @{
+                                        var details = Model?.Details ?? new List<QMS.Core.Models.CAReportDetailViewModel>();
+                                        int idx = 1;
+                                    }
+
+                                    @if (details.Any())
+                                    {
+                                        foreach (var item in details)
+                                        {
+                                            <tr style="height:120px;">
+                                                <td class="sr-cell" style="border:1.5px solid #000; text-align:center;">
+                                                    @idx
+                                                    <button class="row-del-btn" title="Delete row">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </td>
+
+                                                <!-- Particular Of Test -->
+                                                <td contenteditable="true" data-name="Action_Plan" style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(item.Action_Plan ?? "")
+                                                </td>
+
+                                                <!-- Target Date -->
+                                                <td contenteditable="true" data-name="Target_Date" style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(item.Target_Date?.ToString("dd-MM-yyyy") ?? "")
+                                                </td>
+
+                                                <!-- Responsible (HTML) -->
+                                                <td class="test-req-cell" contenteditable="true" data-name="Resp" style="border:1.5px solid #000; vertical-align:top;">
+                                                    @Html.Raw(item.Resp ?? "")
+                                                </td>
+
+                                                <!-- Status -->
+                                                <td style="border:1.5px solid #000; text-align:center; padding:6px;">
+                                                    <select class="soft-select small" data-name="Status">
+                                                        <option value="" selected="@(item.Status == "")">Select</option>
+                                                        <option value="Closed" selected="@(item.Status == "Closed")">Closed</option>
+                                                        <option value="Open" selected="@(item.Status == "Open")">Open</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
+
+                                            idx++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <!-- Blank first row -->
+                                        <tr style="height:120px;">
+                                            <td style="border:1.5px solid #000; text-align:center;">1</td>
+                                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                                            <td style="border:1.5px solid #000; text-align:center; padding:6px;">
+                                                <select class="soft-select small" data-name="Status">
+                                                    <option value="" selected>Select</option>
+                                                    <option value="Closed">Closed</option>
+                                                    <option value="Open">Open</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive" style="margin-top:0;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="table-responsive" style="margin-top:0x;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center;">
+                                <thead>
+                                    <tr style="background-color:#c7d7ee;">
+                                        <th style="width:50%; border:1.5px solid #000; text-align:center;">Before</th>
+                                        <th style="width:50%; border:1.5px solid #000; text-align:center;">After</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+
+                                        <td style="border:1.5px solid #000; vertical-align:middle;">
+                                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:250px;">
+                                                <p><b>Photo</b></p>
+                                                <input type="file"
+                                                       accept="image/*"
+                                                       id="beforePhoto"
+                                                       name="Before_PhotoFile"
+                                                       style="margin-top:10px;">
+                                                <img id="beforePreview"
+                                                     alt="Before Photo"
+                                                     src="@Model?.Before_Photo"
+                                                     style="margin-top:10px; max-width:90%; max-height:180px;
+                                @(string.IsNullOrEmpty(Model?.Before_Photo) ? "display:none;" : "display:block;")
+                                border:1px solid #aaa; border-radius:5px;">
+                                            </div>
+                                        </td>
+
+
+                                        <td style="border:1.5px solid #000; vertical-align:middle;">
+                                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:250px;">
+                                                <p><b>Photo</b></p>
+                                                <input type="file"
+                                                       accept="image/*"
+                                                       id="afterPhoto"
+                                                       name="After_PhotoFile"
+                                                       style="margin-top:10px;">
+                                                <img id="afterPreview"
+                                                     alt="After Photo"
+                                                     src="@Model?.After_Photo"
+                                                     style="margin-top:10px; max-width:90%; max-height:180px;
+                                @(string.IsNullOrEmpty(Model?.After_Photo) ? "display:none;" : "display:block;")
+                                border:1px solid #aaa; border-radius:5px;">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
+                                <tbody>
+                                    <tr>
+                                        <!-- Left column -->
+                                        <td style="width:70%; border:1.5px solid #000; padding:8px; text-align:left;">
+                                            <strong>RCA Prepared By:-</strong>
+                                            <input type="text" name="Rca_Prepared_By"
+                                                   placeholder="Enter RCA Prepared By"
+                                                   style="width:60%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Rca_Prepared_By">
+
+                                            <br><br>
+
+                                            <strong>Name and Designation :</strong>
+                                            <input type="text" name="Name_Designation"
+                                                   placeholder="Enter Name and Designation"
+                                                   style="width:70%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Name_Designation">
+                                        </td>
+
+                                        <!-- Right column -->
+                                        <td style="width:30%; border:1.5px solid #000; padding:8px; text-align:left;">
+                                            <strong>Date:-</strong>
+                                            <input type="date" name="Date"
+                                                   style="width:80%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Date?.ToString("yyyy-MM-dd")">
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
-
-                    <!-- Corrective Action & Root Cause Section -->
-                    <div class="table-responsive" style="margin-top:-1.5px;">
-                        <table class="table table-bordered"
-                               style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin:0;">
-                            <tbody>
-                                <!-- Interim Corrective Action -->
-                                <tr>
-                                    <th colspan="4"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
-                                        Interim Corrective Action:-
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td colspan="4"
-                                        contenteditable="true"
-                                        style="border:1.5px solid #000; height:60px; vertical-align:top; padding:8px; background-color:#fff;">
-                                    </td>
-                                </tr>
-
-                                <!-- Root Cause Analysis -->
-                                <tr>
-                                    <th colspan="4"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
-                                        Root Cause Analysis:-
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td colspan="4"
-                                        contenteditable="true"
-                                        style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                    </td>
-                                </tr>
-
-                                <!-- Corrective Action -->
-                                <tr>
-                                    <th colspan="4"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
-                                        Corrective Action:-
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <td colspan="4"
-                                        contenteditable="true"
-                                        style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                    </td>
-                                </tr>
-
-                                <!-- Monitoring of Action Plan -->
-
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
-                            <tbody>
-                                <tr>
-                                    <td colspan="6" style="padding:12px; text-align:left;">
-                                        <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                                            <i class="fas fa-plus"></i> Add
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                
-                    <div class="table-responsive" style="margin-top:0;">
-                        <table id="monitoringTable" class="table table-bordered"
-                               style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
-                            <thead>
-                                <tr>
-                                    <th colspan="5"
-                                        style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
-                                        Monitoring of Action Plan:-
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th style="width:8%; border:1.5px solid #000; text-align:center;">Sr. No</th>
-                                    <th style="width:42%; border:1.5px solid #000; text-align:center;">Action Plan</th>
-                                    <th style="width:20%; border:1.5px solid #000; text-align:center;">Target Date</th>
-                                    <th style="width:15%; border:1.5px solid #000; text-align:center;">Resp.</th>
-                                    <th style="width:15%; border:1.5px solid #000; text-align:center; color:red;">Status (Open/Closed)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="monitoringBody">
-                                <tr>
-                                    <td style="border:1.5px solid #000; text-align:center;">1</td>
-                                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                                    <td style="border:1.5px solid #000; text-align:center; padding:6px;">
-                                        <select class="soft-select small">
-                                            <option value="Select" selected>Select</option>
-                                            <option value="Closed">Closed</option>
-                                            <option value="Open">Open</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="table-responsive" style="margin-top:0;">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
-                            <tbody>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="table-responsive" style="margin-top:0x;">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; text-align:center;">
-                            <thead>
-                                <tr style="background-color:#c7d7ee;">
-                                    <th style="width:50%; border:1.5px solid #000; text-align:center;">Before</th>
-                                    <th style="width:50%; border:1.5px solid #000; text-align:center;">After</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                              
-                                    <td style="border:1.5px solid #000; vertical-align:middle;">
-                                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:250px;">
-                                            <p><b>Photo</b></p>
-                                            <input type="file" accept="image/*" id="beforePhoto" style="margin-top:10px;">
-                                            <img id="beforePreview" alt="Before Photo" style="margin-top:10px; max-width:90%; max-height:180px; display:none; border:1px solid #aaa; border-radius:5px;">
-                                        </div>
-                                    </td>
-
-                               
-                                    <td style="border:1.5px solid #000; vertical-align:middle;">
-                                        <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:250px;">
-                                            <p><b>Photo</b></p>
-                                            <input type="file" accept="image/*" id="afterPhoto" style="margin-top:10px;">
-                                            <img id="afterPreview" alt="After Photo" style="margin-top:10px; max-width:90%; max-height:180px; display:none; border:1px solid #aaa; border-radius:5px;">
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive" style="margin-top:0px;">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
-                            <tbody>
-                                <tr style="background-color:#c7d7ee;">
-                                    <!-- Left column -->
-                                    <td style="width:70%; border:1.5px solid #000; padding:8px; text-align:left;">
-                                        <strong>RCA Prepared By:-</strong>
-                                        <input type="text"
-                                               placeholder="Enter RCA Prepared By"
-                                               style="width:60%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;">
-
-                                        <br><br>
-
-                                        <strong>Name and Designation :</strong>
-                                        <input type="text"
-                                               placeholder="Enter Name and Designation"
-                                               style="width:70%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;">
-                                    </td>
-
-                                    <!-- Right column -->
-                                    <td style="width:30%; border:1.5px solid #000; padding:8px; text-align:left;">
-                                        <strong>Date:-</strong>
-                                        <input type="date"
-                                               style="width:80%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;">
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
                 </div>
-            </div>
+
+            </form>
         </div>
     </div>
 </div>
@@ -730,9 +852,9 @@
                     <td style="border:1.5px solid #000;" contenteditable="true"></td>
                     <td style="border:1.5px solid #000; text-align:center;">
                         <select class="soft-select small">
-                            <option value="Select" selected>Select</option>
-                            <option value="Closed">Closed</option>
-                            <option value="Open">Open</option>
+                           <option value="" selected>Select</option>
+                           <option value="Closed">Closed</option>
+                           <option value="Open">Open</option>
                         </select>
                     </td>
                 `;
@@ -754,8 +876,195 @@
             refreshMonitoringSerials();
         }
 
-    
-    
+        async function saveCAReport() {
+            const saveBtn = document.getElementById('saveBtn');
+            if (!saveBtn) return;
+
+            // Required fields list
+            const requiredFields = [
+                { name: "Complaint_No", label: "Complaint No" },
+            ];
+
+            // Validate required fields
+            const missing = [];
+            requiredFields.forEach(f => {
+                const el = document.querySelector(`[name="${f.name}"]`);
+                const value = el?.value?.trim();
+                if (!value) {
+                    missing.push(f.label);
+                }
+            });
+
+            if (missing.length > 0) {
+                const listHTML = missing.map(m => `<li>${m}</li>`).join("");
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${listHTML}</ul>`
+                );
+                return;
+            }
+
+            const origHTML = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin spinner-inline"></i> Saving...';
+            Blockloadershow();
+
+            try {
+                const form = document.getElementById('caReportForm');
+                if (!form) throw new Error('Form element not found (id="caReportForm").');
+
+                const formData = new FormData(form);
+
+                // Ensure Id is always sent to server (Razor value)
+                const currentCaReportId = @(Model?.Id ?? 0);
+                formData.set('Id', String(currentCaReportId));
+
+                const boolCheckboxes = [
+
+                    { id: 'chkCustomerComplaints', name: 'Cust_Complaints' },
+                    { id: 'chkNPIValidations',     name: 'NPI_Validations' },
+                    { id: 'chkPDIObservations',    name: 'PDI_Obser' },
+                    { id: 'chkSystemProcess',      name: 'System' },
+                    { id: 'chkManufacturing',      name: 'Man_Issue_Prob' },
+                    { id: 'chkDesign',             name: 'Design_Prob' },
+                    { id: 'chkSiteIssue',          name: 'Site_Issue_Prob' },
+                    { id: 'chkCommunication',      name: 'Com_Gap_Prob' },
+                    { id: 'chkInstallation',       name: 'Install_Issues_Prov' },
+                    { id: 'chkWrongApplication',   name: 'Wrong_App_Prob' }
+                ];
+
+                boolCheckboxes.forEach(cb => {
+                    const el = document.getElementById(cb.id);
+                    if (!el) return;
+                    formData.set(cb.name, el.checked ? 'true' : 'false');
+                });
+
+                const editableCells = document.querySelectorAll('[contenteditable="true"][data-name]');
+                editableCells.forEach(cell => {
+                    const key = cell.getAttribute('data-name');
+                    if (!key) return;
+
+                    // Use innerHTML if you want formatting, or innerText for plain text
+                    let val = (cell.innerHTML || '').trim();
+
+                    // Remove &nbsp; noise
+                    val = val.replace(/&nbsp;/g, ' ').trim();
+
+                    formData.set(key, val);
+                });
+
+                // Build Details array from table rows
+                const details = [];
+                const rows = Array.from(document.querySelectorAll('#monitoringBody tr'));
+                rows.forEach((row, idx) => {
+                    const cells = row.querySelectorAll('td');
+                    if (!cells || cells.length < 5) return;
+
+                    const statusSelect = cells[4].querySelector('select.soft-select');
+                    const statusValue = statusSelect ? statusSelect.value : '';
+
+                    details.push({
+                        SeqNo: idx + 1,
+                        Action_Plan: (cells[1].innerText || '').trim(),
+                        Target_Date: (cells[2].innerText || '').trim(),
+                        Resp: (cells[3].innerHTML || '').trim(), // keep formatting
+                        Status: statusValue,
+                        Deleted: false
+                    });
+                });
+
+                // Append Details to form data for model binding
+                details.forEach((d, i) => {
+                    formData.append(`Details[${i}].SeqNo`, d.SeqNo != null ? d.SeqNo.toString() : '');
+                    formData.append(`Details[${i}].Action_Plan`, d.Action_Plan || '');
+                    formData.append(`Details[${i}].Target_Date`, d.Target_Date || '');
+                    formData.append(`Details[${i}].Resp`, d.Resp || '');
+                    formData.append(`Details[${i}].Status`, d.Status || '');
+                    formData.append(`Details[${i}].Deleted`, d.Deleted ? 'true' : 'false');
+                });
+
+                // JSON backup (optional, for server-side manual parsing)
+                formData.set('DetailsJson', JSON.stringify(details));
+
+                // jQuery AJAX instead of fetch
+                $.ajax({
+                    url: form.action,
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    xhrFields: { withCredentials: true },
+                    success: function (json, textStatus, xhr) {
+                        json = json || {};
+
+                        if (json.Success === true || json.success === true) {
+                            const currentId = parseInt(formData.get('Id') || "0", 10);
+                            if (currentId > 0) {
+                                showSuccessAlert(json.Message || 'Updated successfully.');
+                            } else {
+                                showSuccessAlert(json.Message || 'Saved successfully.');
+                            }
+
+                            const navigateBack = () => {
+                                if (json.RedirectUrl) {
+                                    window.location.href = json.RedirectUrl;
+                                    return;
+                                }
+                                try {
+                                    const ref = document.referrer;
+                                    if (ref && ref !== '' && ref !== window.location.href) {
+                                        window.location.href = ref;
+                                        return;
+                                    }
+                                } catch (e) { }
+
+                                history.back();
+                            };
+
+                            setTimeout(navigateBack, 800);
+                            return;
+                        }
+
+                        if (Array.isArray(json.errors) && json.errors.length) {
+                            showDangerAlert(json.errors.join('<br/>'));
+                        } else if (Array.isArray(json.Errors) && json.Errors.length) {
+                            showDangerAlert(json.Errors.join('<br/>'));
+                        } else if (json.Message || json.message) {
+                            showDangerAlert(json.Message || json.message);
+                        } else {
+                            console.error('Unexpected server response:', json);
+                            showDangerAlert('Save failed — see console for details.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        let msg = 'Server error: ' + status;
+                        try {
+                            if (xhr.responseText) {
+                                msg += ' — ' + xhr.responseText;
+                            }
+                        } catch (e) { }
+                        console.error('Save error:', error, xhr);
+                        showDangerAlert(msg);
+                    },
+                    complete: function () {
+                        Blockloaderhide();
+                        if (saveBtn) {
+                            saveBtn.disabled = false;
+                            saveBtn.innerHTML = origHTML;
+                        }
+                    }
+                });
+
+            } catch (err) {
+                console.error('Save error:', err);
+                showDangerAlert('Error saving data: ' + (err && err.message ? err.message : err));
+                Blockloaderhide();
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHTML;
+                }
+            }
+        }
 
     </script>
 }

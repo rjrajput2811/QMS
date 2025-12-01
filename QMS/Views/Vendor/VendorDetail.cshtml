@@ -26,49 +26,102 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.6.2/js/bootstrap.bundle.min.js"></script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
 <style>
-    .nav-pills .nav-link {
-        text-align: left;
-        border-radius: 0;
-        border-left: 4px solid transparent;
-        font-weight: 500;
-        width: 100%;
-        padding: 12px;
-        background-color: #fff;
-        color: #333;
-        margin-bottom: 4px;
-    }
-
-        .nav-pills .nav-link.active {
-            background-color: #f4f3f8;
-            border-left: 4px solid #4682B4;
-            color: #4682B4;
-            font-weight: bold;
-        }
-
-    .nav-tabs .nav-link.active {
-        color: #333;
-        background-color: #fff;
-        border-color: #ddd #ddd #fff;
-        border: 2px solid #0c83ff !important;
-        border-bottom: none !important;
-    }
-
-    .nav-link.active {
-        color: black !important;
-        font-weight: bold;
-        background-color: #e9ecef;
+    .form-label {
         font-size: 14px;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 6px;
     }
 
     .form-control {
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        height: 42px;
+        font-size: 14px;
         padding: 0 6px !important;
-        border: 0;
-        border-bottom: 1px solid #cccccc;
-        border-radius: 0px;
+    }
+
+    textarea.form-control {
+        height: auto !important;
+    }
+
+    .form-control:focus {
+        border-color: #3b82f6 !important; /* blue border */
+        background-color: #eaf3ff !important; /* light blue fill */
+        box-shadow: none;
+    }
+
+
+    .btn-back {
+        background: #ffffff;
+        color: #1b2d4f;
+        font-weight: 500;
+        padding: 8px 22px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+        .btn-back i {
+            margin-right: 6px;
+        }
+
+    .btn-save {
+        background: #16a34a;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 8px 28px;
+        border-radius: 10px;
+        border: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.10);
+        margin-right: 14px;
+    }
+
+        .btn-save i {
+            margin-right: 10px;
+        }
+
+    .button-bar {
+        margin-top: -55px;
+        margin-right: 25px;
+    }
+
+    .tabs-bar {
+        border-bottom: 1px solid #e5e7eb;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Normal tab */
+    #v-tabs .nav-link {
+        border: none;
+        border-bottom: 3px solid transparent;
+        border-radius: 0;
+        background-color: transparent;
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.95rem;
+        padding: 0.75rem 1.5rem;
+        margin: 0 0.5rem;
+    }
+
+        /* Active tab */
+        #v-tabs .nav-link.active {
+            border-bottom-color: #2563eb;
+            color: #2563eb !important;
+            background-color: transparent !important;
+            font-weight: 600;
+        }
+
+        #v-tabs .nav-link:hover {
+            color: #2563eb;
+        }
+
+    #v-tabContent {
+        padding-top: 0.5rem;
     }
 
     label {
@@ -77,7 +130,7 @@
     }
 
     .form-group {
-        margin-bottom: 0.5rem; /* Reduce space between each input group */
+        margin-bottom: 0.5rem;
     }
 
     .custome-body {
@@ -86,26 +139,13 @@
         margin-top: -17px !important;
     }
 
-    /*  .form-control {
-                        padding: 0 10px !important;
-                        border: 0;
-                        border-bottom: 1px solid #cccccc;
-                        border-radius: 0px;
-                    } */
-
-    label {
-        margin-bottom: 0;
-        margin-top: .3rem;
-    }
-
     #scrollToTopBtn:hover {
-        background-color: #0056b3; /* Darker blue */
+        background-color: #0056b3;
     }
 
     #scrollToTopBtn {
-        outline: none; /* Removes the focus border */
+        outline: none;
     }
-
 
     .tabulator .tabulator-header .tabulator-col {
         font-size: 14px;
@@ -126,7 +166,6 @@
         font-weight: bold;
     }
 
-
     .tabulator-row .tabulator-cell.tabulator-frozen.tabulator-frozen-left {
         border-right: 1px solid #ccc;
     }
@@ -135,12 +174,121 @@
         border-right: 1px solid #ccc;
     }
 
-    .form-group {
-        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    .vendor-card {
+        border: none;
+        border-radius: 8px;
+        margin-top: 1px;
     }
+
+        .vendor-card .card-body {
+            padding: 5px 10px;
+        }
+
+    .vendor-title {
+        margin-top: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1b2d4f;
+        margin-bottom: 4px;
+    }
+
+    .vendor-info span {
+        margin-right: 14px;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .vendor-info i {
+        margin-right: 5px;
+        color: #1b2d4f;
+    }
+
+    .status-badge {
+        padding: 3px 12px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+        .status-badge.active {
+            background-color: #ccf8e2;
+            color: #1b7f4b;
+            margin-right: 20px;
+        }
+
+    .role-badge {
+        background: #e8f0ff;
+        color: #2d6cdf;
+        font-weight: 600;
+        padding: 6px 18px;
+        border-radius: 999px;
+        font-size: 14px;
+        display: inline-block;
+    }
+
+    .vendor-wrapper {
+        padding: 1.5rem;
+        border-radius: 12px;
+    }
+
+    .qms-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px; /* slightly tighter padding */
+        margin-bottom: 16px;
+    }
+
+        .qms-card .card-header {
+            background: #ffffff !important;
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            padding: 12px 10px;
+        }
+
+        .qms-card .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+    .contact-actions i {
+        font-size: 14px;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+        .contact-actions i:last-child {
+            margin-right: 0;
+        }
+
+        .contact-actions i:hover {
+            opacity: 0.8;
+        }
+
+    /* ↓↓ NEW: reduce width & padding of Vendor Contact Master card only ↓↓ */
+    .qms-card.vendor-contact-card {
+        max-width: 1410px;
+        margin: 0 auto 16px;
+        padding: 8px 12px;
+        margin-top: 15px !important;
+    }
+
+        .qms-card.vendor-contact-card .card-body {
+            padding: 20px 10px 8px;
+   
+        }
+
+    .contact-actions .bi-pencil {
+        font-size: 16px;
+        color: #3b82f6; /* thin blue like screenshot */
+        font-weight: 400;
+        cursor: pointer;
+    }
+
+
+
 </style>
-
-
 
 <div class="content">
     <input type="hidden" id="hdnId" name="Id" value="@Model?.Id" />
@@ -148,363 +296,464 @@
     <input type="hidden" id="hdnCreateBy" name="CreateBy" value="@Model?.CreatedBy" />
     <input type="hidden" id="hdnVendorCode" name="Vendor_Code" value="@Model?.Vendor_Code" />
     <input type="hidden" id="hdnUserRole" value="@((HttpContextAccessor.HttpContext.Session.GetInt32("UserRole") ?? 0))" />
-    <div class="card mb-3">
+
+    <div class="card vendor-card mb-3">
         <div class="card-body d-flex justify-content-between align-items-center">
             @if (Model?.Id > 0)
             {
-                <h5 class="card-title custome-body" style="color:#4682B4;font-size:larger;font-weight:650">@Model?.Name</h5>
-                <h5 class="card-title custome-body" style="color:#4682B4;font-size:larger;"><span style="font-weight:650">Email :</span> @Model?.Email</h5>
-                <h5 class="card-title custome-body" style="color:#4682B4;font-size:larger;"><span style="font-weight:650">Mobile :</span> @Model?.MobileNo</h5>
+                <div>
+                    <h4 class="vendor-title">@Model?.Name</h4>
+                    <div class="vendor-info">
+                        <span><i class="bi bi-envelope"></i> @Model?.Email</span>
+                        <span><i class="bi bi-telephone"></i> @Model?.MobileNo</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="status-badge active">Active</span>
+                </div>
             }
             else
             {
-                <b style="font-size:larger;color: #4682B4;">Vendor Details</b>
+               
+                    <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                        <div>
+                            <b style="font-size:large; color:#4682B4;">
+                                Vendor Details
+                            </b>
+                        </div>
+                    </div>
+                
             }
         </div>
     </div>
 
     <div class="card">
         <div class="card-body">
-
-            <div class="nav nav-tabs" id="v-tabs" role="tablist">
-                <a class="nav-link active" id="v-tab1" data-bs-toggle="pill" href="#tab1" role="tab">Vendor Details</a>
-                @if (Model?.Vendor_Code == null || Model?.Vendor_Code == "")
-                {
-                    <a class="nav-link disabled" id="v-tab2" href="#" role="tab" tabindex="-1" aria-disabled="true">Certificates</a>
-                    <a class="nav-link disabled" id="v-tab3" href="#" role="tab" tabindex="-1" aria-disabled="true">Products</a>
-                    @*   <a class="nav-link disabled" id="v-tab4" href="#" role="tab" tabindex="-1" aria-disabled="true">Third Party Testing Report</a> *@
-                    <a class="nav-link disabled" id="v-tab5" href="#" role="tab" tabindex="-1" aria-disabled="true">BIS Certification<br>(Product Wise)</a>
-                    @*  <a class="nav-link disabled" id="v-tab6" href="#" role="tab" tabindex="-1" aria-disabled="true">Products</a> 
-                            <a class="nav-link disabled" id="v-tab7" href="#" role="tab" tabindex="-1" aria-disabled="true">Validation Reports of Products</a>
-                            <a class="nav-link disabled" id="v-tab8" href="#" role="tab" tabindex="-1" aria-disabled="true">NPI Tracker</a>
-                            <a class="nav-link disabled" id="v-tab9" href="#" role="tab" tabindex="-1" aria-disabled="true">CSO Tracker</a>
-                            <a class="nav-link disabled" id="v-tab10" href="#" role="tab" tabindex="-1" aria-disabled="true">Supplier Performance<br>Management (SPM)</a>
-                            <a class="nav-link disabled" id="v-tab11" href="#" role="tab" tabindex="-1" aria-disabled="true">Overall Quality Level(OQL)</a>
-                            <a class="nav-link disabled" id="v-tab12" href="#" role="tab" tabindex="-1" aria-disabled="true">Replacement Lead Time (RLT)</a>
-                            <a class="nav-link disabled" id="v-tab13" href="#" role="tab" tabindex="-1" aria-disabled="true">PPM (Parts Per Million)</a>
-                            <a class="nav-link disabled" id="v-tab14" href="#" role="tab" tabindex="-1" aria-disabled="true">Audit Score</a>
-                            <a class="nav-link disabled" id="v-tab15" href="#" role="tab" tabindex="-1" aria-disabled="true">PDI</a>
-                            <a class="nav-link disabled" id="v-tab16" href="#" role="tab" tabindex="-1" aria-disabled="true">RM TC</a>
-                            <a class="nav-link disabled" id="v-tab17" href="#" role="tab" tabindex="-1" aria-disabled="true">Service Spare tracker</a> *@
-                }
-                else
-                {
-                    <a class="nav-link" id="v-tab2" data-bs-toggle="pill" href="#tab2" role="tab">Certificates</a>
-                    <a class="nav-link" id="v-tab3" data-bs-toggle="pill" href="#tab3" role="tab">Products</a>
-                    @*       <a class="nav-link" id="v-tab4" data-bs-toggle="pill" href="#tab4" role="tab">Third Party Testing Report</a> *@
-                    <a class="nav-link" id="v-tab5" data-bs-toggle="pill" href="#tab5" role="tab">BIS Certification<br>(Product Wise)</a>
-                    @*  <a class="nav-link" id="v-tab6"  data-bs-toggle="pill" href="#tab6" role="tab">Products</a> 
-                            <a class="nav-link" id="v-tab7"  data-bs-toggle="pill" href="#tab7" role="tab">Validation Reports of Products</a>
-                            <a class="nav-link" id="v-tab8"  data-bs-toggle="pill" href="#tab8" role="tab">NPI Tracker</a>
-                            <a class="nav-link" id="v-tab9"  data-bs-toggle="pill" href="#tab9" role="tab">CSO Tracker</a>
-                            <a class="nav-link" id="v-tab10" data-bs-toggle="pill" href="#tab10" role="tab">Supplier Performance<br>Management (SPM)</a>
-                            <a class="nav-link" id="v-tab11" data-bs-toggle="pill" href="#tab11" role="tab">Overall Quality Level(OQL)</a>
-                            <a class="nav-link" id="v-tab12" data-bs-toggle="pill" href="#tab12" role="tab">Replacement Lead Time (RLT)</a>
-                            <a class="nav-link" id="v-tab13" data-bs-toggle="pill" href="#tab13" role="tab">PPM (Parts Per Million)</a>
-                            <a class="nav-link" id="v-tab14" data-bs-toggle="pill" href="#tab14" role="tab">Audit Score</a>
-                            <a class="nav-link" id="v-tab15" data-bs-toggle="pill" href="#tab15" role="tab">PDI</a>
-                            <a class="nav-link" id="v-tab16" data-bs-toggle="pill" href="#tab15" role="tab">RM TC</a>
-                            <a class="nav-link" id="v-tab17" data-bs-toggle="pill" href="#tab17" role="tab">Service Spare tracker</a> *@
-                }
-
+ 
+            <div class="nav nav-tabs tabs-bar" id="v-tabs" role="tablist">
+                <a class="nav-link active" id="v-tab1" data-toggle="tab" href="#tab1" role="tab">Vendor Details</a>
+                <a class="nav-link" id="v-tab2" data-toggle="tab" href="#tab2" role="tab">Certificates</a>
+                <a class="nav-link" id="v-tab3" data-toggle="tab" href="#tab3" role="tab">Products</a>
+                <a class="nav-link" id="v-tab4" data-toggle="tab" href="#tab4" role="tab">Third Party Testing Report</a>
+                <a class="nav-link" id="v-tab5" data-toggle="tab" href="#tab5" role="tab">BIS Certification (Product Wise)</a>
             </div>
         </div>
 
         <div>
             <div class="tab-content col-12" id="v-tabContent">
+
                 <div class="tab-pane fade show active" id="tab1" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center" style="padding: 0.7rem;">
                         <div style="font-size:large;color:#4682B4">
                             <b hidden>Vendor Details</b>
                         </div>
-                        @* <div>
-                                    <button type="button" id="saveButton" onclick="InsertUpdateVendorDetail()" class="btn btn-outline-success legitRipple">
-                                        <i class="fas fa-floppy-disk mr-2"></i>Save
-                                    </button>&nbsp;
-
-                                    <button type="button" class="btn btn-outline-warning legitRipple" onclick="history.back()">
-                                        <i class="fas fa-arrow-left mr-2"></i>Back
-                                    </button>
-                                </div> *@
                     </div>
-                    <div class="col-12 row">
-                        <div class="col-12" style="margin-top:-30px;">
-                            <div class="card" style="border-radius:10px;border:1px solid #4682B4;">
-                                <div class="card-header d-flex justify-content-between align-items-center" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
-                                    <h5 class="card-title" style="font-weight:640;">Vendor Details</h5>
-                                    <div>
-                                        <button type="button" id="saveButton" onclick="InsertUpdateVendorDetail()" class="btn btn-success legitRipple mr-2">
-                                            <i class="fas fa-floppy-disk mr-2"></i>Save
-                                        </button>
 
-                                        <button type="button" class="btn btn-outline-primary" onclick="history.back()">
-                                            <i class="fas fa-arrow-left mr-2"></i>Back
-                                        </button>
-                                    </div>
+                    <div class="button-bar d-flex justify-content-end mb-3">
+                        <button type="button" id="saveButton" onclick="InsertUpdateVendorDetail()"
+                                class="btn btn-save me-3">
+                            <i class="fas fa-floppy-disk"></i> Save
+                        </button>
+
+                        <button type="button" class="btn btn-back" onclick="history.back()">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    </div>
+
+          
+                    <div class="card qms-card mb-4" style="max-width:1400px; margin:auto;">
+                        <div class="card-header d-flex align-items-center mb-3">
+                            <h5 class="card-title m-0">Company Information</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <label class="form-label">Company Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" placeholder="Enter Company Name">
                                 </div>
-                                <div class="col-md-12 row">
-                                    <div class="col-md-6">
-                                        <div class=" card card-body" style="margin-top: 15px;">
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Vendor Code <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" placeholder="Enter Vendor Code">
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">GST Number <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" placeholder="Enter GST Number">
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <label class="form-label">
+                                    <i class="bi bi-geo-alt me-1"></i> Address <span class="text-danger">*</span>
+                                </label>
+                                <textarea class="form-control" rows="3" placeholder="Enter Address"></textarea>
+                            </div>
+                        </div>
+                    </div>
 
 
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Name</b></label>
-                                                <div class="col-5 mr-4">
+                    <div class="row" style="max-width:1425px; margin:auto;">
+                        <div class="col-12">
+                            <div class="row">
+                     
+                                <div class="col-md-6">
+                                    <div class="card qms-card">
+                                        <div class="card-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-7">
+                                                    <label class="form-label">Name</label>
                                                     <input name="Name" id="Name" class="form-control" required value="@Model?.Name" />
                                                 </div>
-                                                <label class="col-1"><b>Code</b></label>
-                                                <div class="col-3">
+                                                <div class="col-md-5">
+                                                    <label class="form-label">Code</label>
                                                     <input name="Vendor_Code" id="Vendor_Code" class="form-control" required value="@Model?.Vendor_Code" />
                                                 </div>
                                             </div>
 
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Address</b></label>
-                                                <div class="col-10 ">
-                                                    <input name="Address" id="Address" class="form-control" required value="@Model?.Address" rows="2" />
+                                            <div class="row mb-3">
+                                                <div class="col-md-12">
+                                                    <label class="form-label">Address</label>
+                                                    <input name="Address" id="Address" class="form-control" required value="@Model?.Address" />
                                                 </div>
                                             </div>
 
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-3"><b>Contact Person</b></label>
-                                                <div class="col-3">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Contact Person</label>
                                                     <input name="Contact_Persons" id="Contact_Persons" class="form-control" required value="@Model?.Contact_Persons" />
                                                 </div>
-
-                                                <label class="col-2"><b>Mobile</b></label>
-                                                <div class="col-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Mobile</label>
                                                     <input name="MobileNo" id="MobileNo" class="form-control" required value="@Model?.MobileNo" />
                                                 </div>
-
-
                                             </div>
-
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div class="col-md-6">
-                                        <div class=" card card-body" style="margin-top: 15px;">
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>GST No.</b></label>
-                                                <div class="col-4">
+               
+                                <div class="col-md-6">
+                                    <div class="card qms-card">
+                                        <div class="card-body">
+                                            <div class="row mb-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">GST No.</label>
                                                     <input name="GstNo" id="GstNo" class="form-control" required value="@Model?.GstNo" />
                                                     <span id="GstNo_Error" class="text-danger"></span>
                                                 </div>
-                                                <label class="col-1.5"><b>Email</b></label>
-                                                <div class="col-5">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Email</label>
                                                     <input name="Email" id="Email" class="form-control" required value="@Model?.Email" />
                                                 </div>
                                             </div>
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2" style="color:#4682B4"><b>User Name</b></label>
-                                                <div class="col-6">
+
+                                            <div class="row mb-3">
+                                                <div class="col-md-12">
+                                                    <label class="form-label">User Name</label>
                                                     <input name="User_Name" id="User_Name" class="form-control" required value="@Model?.User_Name" />
                                                     <span id="User_Name_Error" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2" style="color:#4682B4"><b>Password</b></label>
-                                                <div class="col-6">
+
+                                            <div class="row mb-3">
+                                                <div class="col-md-12">
+                                                    <label class="form-label">Password</label>
                                                     <input name="Password" id="Password" class="form-control" required value="@Model?.Password" />
                                                 </div>
                                             </div>
                                         </div>
-
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="col-12">
-                                <div class="card" style="border-radius:10px;border:1px solid #4682B4;">
-                                    <div class="card-header" style="border-radius: 10px 10px 0px 0px;border-bottom-color:#4682B4;">
-                                        <h5 class="card-title" style="font-weight:640">Vendor Contact Master</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="form-group">
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Owner</b></label>
-                                                <div class="col-4">
-                                                    <input name="Owner" id="Owner" class="form-control" required value="@Model?.Owner" placeholder="Owner Name" />
-                                                    <span id="Owner_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3 mr-1">
-                                                    <input name="Owner_Email" id="Owner_Email" class="form-control" required value="@Model?.Owner_Email" placeholder="Owner Email" />
-                                                    <span id="Owner_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2 mr-1">
-                                                    <input name="Owner_Mobile" id="Owner_Mobile" class="form-control" required value="@Model?.Owner_Mobile" placeholder="Owner Mobile No." />
-                                                    <span id="Owner_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Plant Head</b></label>
-                                                <div class="col-4">
-                                                    <input name="Plant_Head" id="Plant_Head" class="form-control" required value="@Model?.Plant_Head" placeholder="Plant Head Name" />
-                                                    <span id="Plant_Head_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3 mr-1">
-                                                    <input name="Plant_Email" id="Plant_Email" class="form-control" required value="@Model?.Plant_Email" placeholder="Plant Head Email" />
-                                                    <span id="Plant_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2 mr-1">
-                                                    <input name="Plant_Mobile" id="Plant_Mobile" class="form-control" required value="@Model?.Plant_Mobile" placeholder="Plant Head Mobile No." />
-                                                    <span id="Plant_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Quality Manager</b></label>
-                                                <div class="col-4">
-                                                    <input name="Quality_Manger" id="Quality_Manger" class="form-control" value="@Model?.Quality_Manager" placeholder="Quality Manager Name" />
-                                                    <span id="Quality_Manger_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3 mr-1">
-                                                    <input name="Quality_Email" id="Quality_Email" class="form-control" value="@Model?.Quality_Email" placeholder="Quality Manager Email" />
-                                                    <span id="Quality_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2 mr-1">
-                                                    <input name="Quality_Mobile" id="Quality_Mobile" class="form-control" value="@Model?.Quality_Mobile" placeholder="Quality Manager Mobile No." />
-                                                    <span id="Quality_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>PDG Manager</b></label>
-                                                <div class="col-4">
-                                                    <input name="PDG_Manager" id="PDG_Manager" class="form-control" required value="@Model?.PDG_Manager" placeholder="PDG Manager Name" />
-                                                    <span id="PDG_Manager_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3">
-                                                    <input name="PDG_Email" id="PDG_Email" class="form-control" required value="@Model?.PDG_Email" placeholder="PDG Manager Email" />
-                                                    <span id="PDG_Manager_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2">
-                                                    <input name="PDG_Mobile" id="PDG_Mobile" class="form-control" required value="@Model?.PDG_Mobile" placeholder="PDG Manager Mobile No." />
-                                                    <span id="PDG_Manager_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>SCM Manager</b></label>
-                                                <div class="col-4">
-                                                    <input name="SCM_Manager" id="SCM_Manager" class="form-control" required value="@Model?.SCM_Manager" placeholder="SCM Manager Name" />
-                                                    <span id="SCM_Manager_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3">
-                                                    <input name="SCM_Email" id="SCM_Email" class="form-control" required value="@Model?.SCM_Email" placeholder="SCM Manager Email" />
-                                                    <span id="SCM_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2">
-                                                    <input name="SCM_Mobile" id="SCM_Mobile" class="form-control" required value="@Model?.SCM_Mobile" placeholder="SCM Manager Mobile No." />
-                                                    <span id="SCM_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>PRD Manager</b></label>
-                                                <div class="col-4">
-                                                    <input name="PRD_Manager" id="PRD_Manager" class="form-control" required value="@Model?.PRD_Manager" placeholder="PRD Manager Name" />
-                                                    <span id="PRD_Manager_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3">
-                                                    <input name="PRD_Email" id="PRD_Email" class="form-control" required value="@Model?.PRD_Email" placeholder="PRD Manager Email" />
-                                                    <span id="PRD_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2">
-                                                    <input name="PRD_Mobile" id="PRD_Mobile" class="form-control" required value="@Model?.PRD_Mobile" placeholder="PRD Manager Mobile No." />
-                                                    <span id="PRD_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Service Manager</b></label>
-                                                <div class="col-4">
-                                                    <input name="Service_Manager" id="Service_Manager" class="form-control" required value="@Model?.Service_Manager" placeholder="Service Manager Name" />
-                                                    <span id="Service_Manager_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3">
-                                                    <input name="Service_Email" id="Service_Email" class="form-control" required value="@Model?.Service_Email" placeholder="Service Manager Email" />
-                                                    <span id="Service_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2">
-                                                    <input name="Service_Mobile" id="Service_Mobile" class="form-control" required value="@Model?.Service_Mobile" placeholder="Service Manager Mobile No." />
-                                                    <span id="Service_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Other Contact 1</b></label>
-                                                <div class="col-4">
-                                                    <input name="Other_Cont_One" id="Other_Cont_One" class="form-control" required value="@Model?.Other_Cont_One" placeholder="Contact One Name" />
-                                                    <span id="Other_Cont_One_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3">
-                                                    <input name="Other_Cont_OneEmail" id="Other_Cont_OneEmail" class="form-control" required value="@Model?.Other_Cont_OneEmail" placeholder="Contact One Email" />
-                                                    <span id="Other_Cont_One_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2">
-                                                    <input name="Other_Cont_OneMobile" id="Other_Cont_OneMobile" class="form-control" required value="@Model?.Other_Cont_OneMobile" placeholder="Contact One Mobile No." />
-                                                    <span id="Other_Cont_One_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="row form-group align-items-center mb-2">
-                                                <label class="col-2"><b>Other Contact 2</b></label>
-                                                <div class="col-4">
-                                                    <input name="Other_Cont_Two" id="Other_Cont_Two" class="form-control" required value="@Model?.Other_Cont_Two" placeholder="Contact Two Name" />
-                                                    <span id="Other_Cont_Two_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-3">
-                                                    <input name="Other_Cont_TwoEmail" id="Other_Cont_TwoEmail" class="form-control" required value="@Model?.Other_Cont_TwoEmail" placeholder="Contact Two Email" />
-                                                    <span id="Other_Cont_Two_Email_Error" class="text-danger"></span>
-                                                </div>
-
-                                                <div class="col-2">
-                                                    <input name="Other_Cont_TwoMobile" id="Other_Cont_TwoMobile" class="form-control" required value="@Model?.Other_Cont_TwoMobile" placeholder="Contact Two Mobile No." />
-                                                    <span id="Other_Cont_Two_Mobile_Error" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
                         </div>
                     </div>
+
+
+                    <div class="card qms-card vendor-contact-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="card-title">Vendor Contact Master</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="form-group">
+
+                                <div class="row mb-2 px-2" style="margin-left:4px;">
+                                    <div class="col-md-2"><label class="form-label m-0">Role</label></div>
+                                    <div class="col-md-3"><label class="form-label m-0">Name</label></div>
+                                    <div class="col-md-3"><label class="form-label m-0">Email</label></div>
+                                    <div class="col-md-3"><label class="form-label m-0">Mobile Number</label></div>
+                                    <div class="col-md-1 text-right"><label class="form-label m-0">Actions</label></div>
+                                </div>
+
+                                <hr class="mt-0 mb-3" />
+
+                                <!-- Owner -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">Owner</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Owner" id="Owner" class="form-control" required value="@Model?.Owner" placeholder="Owner Name" />
+                                        <span id="Owner_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Owner_Email" id="Owner_Email" class="form-control" required value="@Model?.Owner_Email" placeholder="Owner Email" />
+                                        <span id="Owner_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Owner_Mobile" id="Owner_Mobile" class="form-control" required value="@Model?.Owner_Mobile" placeholder="Owner Mobile No." />
+                                        <span id="Owner_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- Plant Head -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">Plant Head</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Plant_Head" id="Plant_Head" class="form-control" required value="@Model?.Plant_Head" placeholder="Plant Head Name" />
+                                        <span id="Plant_Head_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Plant_Email" id="Plant_Email" class="form-control" required value="@Model?.Plant_Email" placeholder="Plant Head Email" />
+                                        <span id="Plant_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Plant_Mobile" id="Plant_Mobile" class="form-control" required value="@Model?.Plant_Mobile" placeholder="Plant Head Mobile No." />
+                                        <span id="Plant_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- Quality Manager -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">Quality Manager</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Quality_Manger" id="Quality_Manger" class="form-control" value="@Model?.Quality_Manager" placeholder="Quality Manager Name" />
+                                        <span id="Quality_Manger_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Quality_Email" id="Quality_Email" class="form-control" value="@Model?.Quality_Email" placeholder="Quality Manager Email" />
+                                        <span id="Quality_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Quality_Mobile" id="Quality_Mobile" class="form-control" value="@Model?.Quality_Mobile" placeholder="Quality Manager Mobile No." />
+                                        <span id="Quality_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- PDG Manager -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">PDG Manager</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="PDG_Manager" id="PDG_Manager" class="form-control" required value="@Model?.PDG_Manager" placeholder="PDG Manager Name" />
+                                        <span id="PDG_Manager_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="PDG_Email" id="PDG_Email" class="form-control" required value="@Model?.PDG_Email" placeholder="PDG Manager Email" />
+                                        <span id="PDG_Manager_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="PDG_Mobile" id="PDG_Mobile" class="form-control" required value="@Model?.PDG_Mobile" placeholder="PDG Manager Mobile No." />
+                                        <span id="PDG_Manager_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- SCM Manager -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">SCM Manager</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="SCM_Manager" id="SCM_Manager" class="form-control" required value="@Model?.SCM_Manager" placeholder="SCM Manager Name" />
+                                        <span id="SCM_Manager_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="SCM_Email" id="SCM_Email" class="form-control" required value="@Model?.SCM_Email" placeholder="SCM Manager Email" />
+                                        <span id="SCM_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="SCM_Mobile" id="SCM_Mobile" class="form-control" required value="@Model?.SCM_Mobile" placeholder="SCM Manager Mobile No." />
+                                        <span id="SCM_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- PRD Manager -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">PRD Manager</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="PRD_Manager" id="PRD_Manager" class="form-control" required value="@Model?.PRD_Manager" placeholder="PRD Manager Name" />
+                                        <span id="PRD_Manager_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="PRD_Email" id="PRD_Email" class="form-control" required value="@Model?.PRD_Email" placeholder="PRD Manager Email" />
+                                        <span id="PRD_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="PRD_Mobile" id="PRD_Mobile" class="form-control" required value="@Model?.PRD_Mobile" placeholder="PRD Manager Mobile No." />
+                                        <span id="PRD_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- Service Manager -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">Service Manager</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Service_Manager" id="Service_Manager" class="form-control" required value="@Model?.Service_Manager" placeholder="Service Manager Name" />
+                                        <span id="Service_Manager_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Service_Email" id="Service_Email" class="form-control" required value="@Model?.Service_Email" placeholder="Service Manager Email" />
+                                        <span id="Service_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Service_Mobile" id="Service_Mobile" class="form-control" required value="@Model?.Service_Mobile" placeholder="Service Manager Mobile No." />
+                                        <span id="Service_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- Other Contact 1 -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">Other Contact 1</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Other_Cont_One" id="Other_Cont_One" class="form-control" required value="@Model?.Other_Cont_One" placeholder="Contact One Name" />
+                                        <span id="Other_Cont_One_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Other_Cont_OneEmail" id="Other_Cont_OneEmail" class="form-control" required value="@Model?.Other_Cont_OneEmail" placeholder="Contact One Email" />
+                                        <span id="Other_Cont_One_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Other_Cont_OneMobile" id="Other_Cont_OneMobile" class="form-control" required value="@Model?.Other_Cont_OneMobile" placeholder="Contact One Mobile No." />
+                                        <span id="Other_Cont_One_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+                                    </div>
+                                </div>
+
+                                <hr class="my-2" />
+
+                                <!-- Other Contact 2 -->
+                                <div class="row mb-3 px-2 contact-row">
+                                    <div class="col-md-2 d-flex align-items-center">
+                                        <span class="role-badge">Other Contact 2</span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Other_Cont_Two" id="Other_Cont_Two" class="form-control" required value="@Model?.Other_Cont_Two" placeholder="Contact Two Name" />
+                                        <span id="Other_Cont_Two_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Other_Cont_TwoEmail" id="Other_Cont_TwoEmail" class="form-control" required value="@Model?.Other_Cont_TwoEmail" placeholder="Contact Two Email" />
+                                        <span id="Other_Cont_Two_Email_Error" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-3 pl-1">
+                                        <input name="Other_Cont_TwoMobile" id="Other_Cont_TwoMobile" class="form-control" required value="@Model?.Other_Cont_TwoMobile" placeholder="Contact Two Mobile No." />
+                                        <span id="Other_Cont_Two_Mobile_Error" class="text-danger"></span>
+                                    </div>
+
+                                    <div class="col-md-1 d-flex align-items-center justify-content-end contact-actions">
+                                        <i class="bi bi-pencil" title="Edit"></i>
+                                        <i class="fas fa-trash-alt text-danger delete-contact" title="Delete"></i>
+
+
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
                 </div>
 
-                @* //// Certificate tab /////*@
+   
                 <div class="tab-pane fade" id="tab2" role="tabpanel">
-                    <div class="" style="margin-top: -20px">
+                    <div style="margin-top: -20px">
                         <div class="d-flex justify-content-between align-items-center" style="padding: 0.7rem;">
                             <div style="font-size:large;color:#4682B4">
                                 <b hidden>Certificate Details</b>
                             </div>
                             <div>
-                                <button type="button" id="saveCertButton" class="btn btn-outline-success legitRipple" data-bs-toggle="modal" data-bs-target="#certificateModal">
+                                <button type="button" id="saveCertButton" class="btn btn-outline-success legitRipple"
+                                        data-toggle="modal" data-target="#certificateModal">
                                     <i class="fas fa-plus mr-2"></i>Add
                                 </button>
-                                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 136px;font-size:14px">
+                                <button type="button" class="btn btn-outline-primary legitRipple"
+                                        onclick="openUpload()" style="margin: 1px 0px; width: 136px;font-size:14px">
                                     <i class="fas fa-upload mr-2"></i>Upload Xl
                                 </button>
                                 <button type="button" id="download-template" class="btn btn-outline-secondary">
@@ -523,21 +772,23 @@
                     </div>
                 </div>
 
-                @* //// Product tab /////*@
-                <div class="tab-pane fade" id="tab3" role="tabpanel">Products content</div>
+          
+                <div class="tab-pane fade" id="tab3" role="tabpanel">
+                    Products content
+                </div>
 
-                @* //// Third Party Testing Report tab /////*@
+      
                 <div class="tab-pane fade" id="tab4" role="tabpanel">
-                    <div class="" style="margin-top: -20px">
+                    <div style="margin-top: -20px">
                         <div class="d-flex justify-content-between align-items-center" style="padding: 0.7rem;">
                             <div style="font-size:large;color:#4682B4">
                                 <b hidden>Third Party Testing Report</b>
                             </div>
                             <div>
-                                <button type="button" id="saveTPTButton" class="btn btn-outline-success legitRipple" data-bs-toggle="modal" data-bs-target="#TPTReportModal">
+                                <button type="button" id="saveTPTButton" class="btn btn-outline-success legitRipple"
+                                        data-toggle="modal" data-target="#TPTReportModal">
                                     <i class="fas fa-plus mr-2"></i>Add
                                 </button>
-
                                 <button type="button" class="btn btn-outline-warning legitRipple" onclick="history.back()">
                                     <i class="fas fa-arrow-left mr-2"></i>Back
                                 </button>
@@ -550,17 +801,21 @@
                         </div>
                     </div>
                 </div>
+
+         
                 <div class="tab-pane fade" id="tab5" role="tabpanel">
-                    <div class="" style="margin-top: -20px">
+                    <div style="margin-top: -20px">
                         <div class="d-flex justify-content-between align-items-center" style="padding: 0.7rem;">
                             <div style="font-size:large;color:#4682B4">
                                 <b hidden>BIS Certificate Details</b>
                             </div>
                             <div>
-                                <button type="button" id="saveBISButton" class="btn btn-outline-success legitRipple" data-bs-toggle="modal" data-bs-target="#BISCertificateModal">
+                                <button type="button" id="saveBISButton" class="btn btn-outline-success legitRipple"
+                                        data-toggle="modal" data-target="#BISCertificateModal">
                                     <i class="fas fa-plus mr-2"></i>Add
                                 </button>
-                                <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 136px;font-size:14px">
+                                <button type="button" class="btn btn-outline-primary legitRipple"
+                                        onclick="openUpload()" style="margin: 1px 0px; width: 136px;font-size:14px">
                                     <i class="fas fa-upload mr-2"></i>Upload Xl
                                 </button>
                                 <button type="button" id="download-template" class="btn btn-outline-secondary">
@@ -576,25 +831,11 @@
                 </div>
 
             </div>
-            @* <div class="tab-pane fade" id="tab6" role="tabpanel">Customer Complaints content</div> *@
-            @* <div class="tab-pane fade" id="tab7" role="tabpanel">Validation Reports of Products content</div>
-            <div class="tab-pane fade" id="tab8" role="tabpanel">NPI Tracker content</div>
-            <div class="tab-pane fade" id="tab9" role="tabpanel">CSO Tracker content</div>
-            <div class="tab-pane fade" id="tab10" role="tabpanel">Supplier Performance Management (SPM) content</div>
-            <div class="tab-pane fade" id="tab11" role="tabpanel">Overall Quality Level(OQL) content</div>
-            <div class="tab-pane fade" id="tab12" role="tabpanel">Replacement Lead Time (RLT) content</div>
-            <div class="tab-pane fade" id="tab13" role="tabpanel">PPM (Parts Per Million) content</div>
-            <div class="tab-pane fade" id="tab14" role="tabpanel">Audit Score content</div>
-            <div class="tab-pane fade" id="tab15" role="tabpanel">PDI content</div>
-            <div class="tab-pane fade" id="tab16" role="tabpanel">RM TC content</div>
-            <div class="tab-pane fade" id="tab17" role="tabpanel">Service Spare tracker content</div> *@
         </div>
     </div>
 </div>
 
 
-
-<!-- Add Certificate Modal -->
 <div id="certificateModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-md">
         <div class="modal-content">
@@ -611,40 +852,18 @@
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">Certificate</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
                                 <div class="col-lg-7">
-
                                     <select class="form-control form-control-border txt Ph" id="certificateID" required>
-                                        <!-- Options will be populated dynamically -->
                                     </select>
                                 </div>
                             </div>
-                            @* <div class="form-group row" style="margin: 5px;">
-                        <label class="col-lg-5 col-form-label Ph" style="padding-top: 10px;">
-                            Product Code
-                        </label>
-                        <div class="Ph" style="padding-top: 10px;">:</div>
-                        <div class="col-4 Ph">
-                            <input type="text" id="productCodeInput" class="form-control form-control-border txt Ph" placeholder="Enter Product code…" autocomplete="off" required />
-                        </div>
-                        <div class="col-2">
-                            <input name="sear_Code" id="sear_Code" class="form-control" placeholder="Search Code" oninput="handleSearch(this)" style="text-transform: uppercase;margin-top: -17px;" />
-                        </div>
-                    </div> *@
 
                             <div class="form-group row" style="margin: 5px;">
-                                <!-- Label -->
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">
                                     Product Code
                                 </label>
-
-                                <!-- Colon -->
                                 <div class="col-lg-0.5 text-end pe-2" style="padding-top: 10px;">:</div>
-
-                                <!-- Inputs Column -->
                                 <div class="col-lg-7 Ph">
                                     <div class="row">
-
-
-                                        <!-- Search Code Input -->
                                         <div class="col-md-5">
                                             <label for="sear_Certi_Code" class="sr-only">Search Code</label>
                                             <input type="text"
@@ -655,9 +874,7 @@
                                                    aria-label="Search Code"
                                                    oninput="handleCertiSearch(this)"
                                                    style="text-transform: uppercase;" />
-
                                         </div>
-                                        <!-- Product Code Input -->
                                         <div class="col-md-7">
                                             <input type="text"
                                                    id="certi_productCodeInput"
@@ -701,10 +918,7 @@
                                 <div class="col-lg-7">
                                     <input type="file" class="form-control form-control-border txt Ph" id="certUpload" required />
                                     <div id="attachmentLinks" class="file-item"></div>
-
-                                    <!-- Hidden input for remaining attachments -->
                                     <input type="hidden" id="remainingAttachments" name="RemainingAttachments" value="">
-
                                     <input type="hidden" id="Attachments" name="Attachments">
                                 </div>
                             </div>
@@ -718,14 +932,13 @@
                         <i class="fas fa-floppy-disk mr-2"></i>Save
                     </button>
                     <button type="button" class="btn btn-outline-success legitRipple" onclick="CloseModel()">Close</button>
-
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-<!-- Add Report Modal -->
+<!-- THIRD PARTY TESTING REPORT MODAL -->
 <div id="TPTReportModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-md">
         <div class="modal-content">
@@ -743,27 +956,17 @@
                                 <div class="Ph" style="padding-top: 10px;">:</div>
                                 <div class="col-lg-7">
                                     <select class="form-control form-control-border txt Ph" id="TPTReportID" required>
-                                        <!-- Options will be populated dynamically -->
                                     </select>
                                 </div>
                             </div>
 
-
                             <div class="form-group row" style="margin: 5px;">
-                                <!-- Label -->
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">
                                     Product Code
                                 </label>
-
-                                <!-- Colon -->
                                 <div class="col-lg-0.5" style="padding-top: 10px;">:</div>
-
-                                <!-- Inputs Column -->
                                 <div class="col-lg-7 Ph">
                                     <div class="row">
-
-
-                                        <!-- Search Code Input -->
                                         <div class="col-md-5">
                                             <label for="TPTRsear_Code" class="sr-only">Search Code</label>
                                             <input type="text"
@@ -774,9 +977,7 @@
                                                    aria-label="Search Code"
                                                    oninput="handleThirdTestingSearch(this)"
                                                    style="text-transform: uppercase;" />
-
                                         </div>
-                                        <!-- Product Code Input -->
                                         <div class="col-md-7">
                                             <input type="text"
                                                    id="tptr_productCodeInput"
@@ -789,7 +990,6 @@
                                     </div>
                                 </div>
                             </div>
-
 
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">Issue Date</label>
@@ -821,8 +1021,6 @@
                                 <div class="col-lg-7">
                                     <input type="file" class="form-control form-control-border txt Ph" id="reportUpload" required />
                                     <div id="tptr_attachmentLinks" class="file-item"></div>
-
-                                    <!-- Hidden input for remaining attachments -->
                                     <input type="hidden" id="tptr_remainingAttachments" name="RemainingAttachments" value="">
                                     <input type="hidden" id="tptr_Attachments" name="Attachments">
                                 </div>
@@ -842,10 +1040,10 @@
         </div>
     </div>
 </div>
-<!-- Add BIS Certificate Modal -->
+
+<!-- BIS CERTIFICATE MODAL -->
 <div id="BISCertificateModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-md" role="document">
-        <!-- Change here -->
         <div class="modal-content">
             <div class="modal-header" style="background-color: #bec6e1; margin-bottom: 10px;">
                 <h5 class="modal-title" id="BIScertificateModalTitle"><strong>Add BIS Certificate</strong></h5>
@@ -858,16 +1056,14 @@
                     <div class="row">
                         <div class="col-md-12">
 
-                            <!-- BIS Certificate dropdown -->
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">BIS Certificate</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
                                 <div class="col-7 Ph">
-
                                     <input type="text" id="BIScertificateID" class="form-control form-control-border txt Ph" placeholder="Enter BIS Certificate Name" required />
-
                                 </div>
                             </div>
+
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">Model Number</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
@@ -875,21 +1071,14 @@
                                     <input type="text" id="ModelNo" class="form-control form-control-border txt Ph" placeholder="Enter Model Number…" />
                                 </div>
                             </div>
+
                             <div class="form-group row" style="margin: 5px;">
-                                <!-- Label -->
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">
                                     Product Code
                                 </label>
-
-                                <!-- Colon -->
                                 <div class="col-lg-0.5" style="padding-top: 10px;">:</div>
-
-                                <!-- Inputs Column -->
                                 <div class="col-lg-7 Ph">
                                     <div class="row">
-
-
-                                        <!-- Search Code Input -->
                                         <div class="col-md-5">
                                             <label for="BISsear_Code" class="sr-only">Search Code</label>
                                             <input type="text"
@@ -900,9 +1089,7 @@
                                                    aria-label="Search Code"
                                                    oninput="handleBisSearch(this)"
                                                    style="text-transform: uppercase;" />
-
                                         </div>
-                                        <!-- Product Code Input -->
                                         <div class="col-md-7">
                                             <input type="text"
                                                    id="BISproductCodeInput"
@@ -916,7 +1103,6 @@
                                 </div>
                             </div>
 
-
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">R Number</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
@@ -925,7 +1111,6 @@
                                 </div>
                             </div>
 
-                            <!-- New Fields Start -->
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">BIS Section</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
@@ -933,7 +1118,6 @@
                                     <input type="text" id="BISSection" class="form-control form-control-border txt Ph" placeholder="Enter BIS Section…" />
                                 </div>
                             </div>
-
 
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">Issue Date</label>
@@ -943,7 +1127,6 @@
                                 </div>
                             </div>
 
-                            <!-- Expiry Date -->
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">Expiry Date</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
@@ -952,7 +1135,6 @@
                                 </div>
                             </div>
 
-                            <!-- Remarks -->
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">Remarks</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
@@ -961,7 +1143,6 @@
                                 </div>
                             </div>
 
-                            <!-- Certificate Upload -->
                             <div class="form-group row" style="margin: 5px;">
                                 <label class="col-lg-4 col-form-label Ph" style="padding-top: 10px;">Certificate Upload</label>
                                 <div class="Ph" style="padding-top: 10px;">:</div>
@@ -978,7 +1159,6 @@
                     </div>
                 </div>
 
-                <!-- Modal Footer -->
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-outline-success btn-labeled" id="BISsaveBtn" onclick="InsertUpdateVendorBIS(event)">
                         <i class="fas fa-floppy-disk mr-2"></i>Save
@@ -989,12 +1169,13 @@
         </div>
     </div>
 </div>
-</div>
 
 @section Scripts {
     <script src="~/scripts/vendor/vendordetails.js" asp-append-version="true"></script>
     <script src="~/scripts/vendor/bis-certificate.js" asp-append-version="true"></script>
     <script src="~/scripts/vendor/thirdPartyTesting.js" asp-append-version="true"></script>
+
+
 }
 
 @section HideSidebar { }

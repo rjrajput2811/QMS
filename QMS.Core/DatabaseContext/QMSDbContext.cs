@@ -65,6 +65,8 @@ namespace QMS.Core.DatabaseContext
         public DbSet<NeedleFlameTestReport> NeedleFlameTestReports { get; set; }
         public DbSet<MainValidationReport> MainValidationReports { get; set; }
         public DbSet<ValidationClosureReport> ValidationClosureReports { get; set; }
+        public DbSet<CAReport> CAReport { get; set; }
+        public DbSet<RCAReport> RCAReport { get; set; }
 
 
 

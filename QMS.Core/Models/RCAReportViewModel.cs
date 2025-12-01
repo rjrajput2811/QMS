@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -73,6 +74,14 @@ namespace QMS.Core.Models
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public List<RCAReportDetailViewModel> Details { get; set; } = new();
+        public IFormFile? Problem_Visual_ImgAFile { get; set; }
+        public IFormFile? Problem_Visual_ImgBFile { get; set; }
+        public IFormFile? Problem_Visual_ImgCFile { get; set; }
+
+        public IFormFile? Images_Failed_Samples1File { get; set; }
+        public IFormFile? Images_Failed_Samples2File { get; set; }
+        public IFormFile? Images_Failed_Samples3File { get; set; }
+        public IFormFile? Images_Failed_Samples4File { get; set; }
     }
 
     public class RCAReportDetailViewModel

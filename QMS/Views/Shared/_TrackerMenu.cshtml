@@ -1,4 +1,4 @@
-﻿@using QMS.Core.Enums
+@using QMS.Core.Enums
 @using Microsoft.AspNetCore.Http
 @inject IHttpContextAccessor HttpContextAccessor
 
@@ -18,7 +18,6 @@
     <link href="~/css/icomoon/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @* <link href="~/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" /> *@
     <link href="~/css/bootstrap_limitless.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/colors.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/components.min.css" rel="stylesheet" asp-append-version="true" />
@@ -28,7 +27,25 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/popper.js/dist/umd/popper.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    
     <style>
+        .header-back-btn {
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            background: #ffffff;
+            color: #1f2937;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+            .header-back-btn:hover {
+                background: #f3f4f6;
+            }
+
+
         :root {
             --border: #e4e7eb;
             --hover-bg: #f8f9fa;
@@ -37,166 +54,308 @@
             --transition: all 0.25s ease-in-out;
         }
 
-
-
-        .card-section {
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            background: #fff;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f9fafb;
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            font-size: 18px;
-            color: #111;
-        }
-
-        .list-group {
+        html, body {
             margin: 0;
             padding: 0;
-            list-style: none;
+            height: 100%;
+            overflow: hidden; /* no scrollbars, no scrolling */
         }
-
-        .list-group-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 24px;
-            border-bottom: 1px dashed var(--border);
-            color: var(--label-color);
-            font-size: 15px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-            .list-group-item:last-child {
-                border-bottom: none;
-            }
-
-            .list-group-item:hover {
-                background: var(--hover-bg);
-                transform: scale(1.01);
-                color: #4682B4;
-            }
-
-        .label {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .badge-pill {
-            font-size: 13px;
-            padding: 5px 10px;
-            border-radius: var(--pill-radius);
-            font-weight: 600;
-            letter-spacing: .3px;
-            min-width: 70px;
-            text-align: center;
-            margin-left: auto;
-        }
-
-        .badge-blue {
-            background: #007bff;
-            color: #fff;
-        }
-
-        .badge-gray {
-            background: #6c757d;
-            color: #fff;
-        }
-
-        .badge-green {
-            background: #198754;
-            color: #fff;
-        }
-
-        .badge-cyan {
-            background: #0dcaf0;
-            color: #fff;
-        }
-
-        .badge-light {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .icon-right {
-            color: #aaa;
-            font-size: 16px;
-            margin-left: 10px;
-        }
-
-        .menu-table {
-            display: grid;
-            grid-template-columns: 220px 1fr; /* left label | right links */
+       
+        
+        .tracker-palette {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
             border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            overflow: hidden;
-            background: #fff;
         }
 
-        .menu-row {
-            display: contents; /* lets child cells draw the borders like a real table row */
+        .tracker-palette .palette-header {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: #fff;
+            padding: 16px 20px;
         }
 
-        .menu-cell {
-            padding: 10px 14px;
+        .tracker-palette .palette-header h5 {
+            margin: 0 0 4px 0;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .tracker-palette .palette-header small {
+            opacity: 0.85;
+            font-size: 13px;
+        }
+
+        .tracker-palette .palette-search {
+            padding: 12px 16px;
             border-bottom: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
         }
 
-            .menu-cell:last-child {
-                border-right: 0;
-            }
-
-        .menu-row:last-child .menu-cell {
-            border-bottom: 0;
-        }
-
-        .menu-section {
-            font-weight: 500;
+        .tracker-palette .search-wrapper {
             display: flex;
             align-items: center;
-            gap: .5rem;
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 8px 14px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
         }
 
-        .menu-links {
-            margin: 0;
+        .tracker-palette .search-wrapper:focus-within {
+            background: #fff;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+        }
+
+        .tracker-palette .search-wrapper input {
+            border: none;
+            background: transparent;
+            outline: none;
+            flex: 1;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        .tracker-palette .search-wrapper .search-icon {
+            color: #9ca3af;
+        }
+
+        .tracker-palette .search-wrapper .clear-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
             padding: 0;
-            list-style: none;
+            display: none;
         }
 
-            .menu-links li + li {
-                margin-top: 6px;
-            }
+        .tracker-palette .search-wrapper .clear-btn.show {
+            display: block;
+        }
 
-            .menu-links a {
-                text-decoration: none;
-                color: #2196f3;
-            }
+        .tracker-palette .palette-content {
+            max-height: 450px;
+            overflow-y: auto;
+        }
 
-                .menu-links a:hover {
-                    text-decoration: underline;
-                    color: blue;
-                }
+        .tracker-palette .section-label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 10px 16px 6px;
+            font-weight: 600;
+        }
 
-        /* Responsive: stack to single column on small screens */
-        @@media (max-width: 576px) {
-            .menu-table {
-                grid-template-columns: 1fr;
-            }
+        .tracker-palette .group-list {
+            padding: 0 8px 8px;
+        }
 
-            .menu-cell {
-                border-right: 0 !important;
-            }
+        .tracker-palette .group-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 2px;
+        }
+
+        .tracker-palette .group-item:hover {
+            background: #e0f2fe;
+        }
+
+        .tracker-palette .group-item .group-icon {
+            font-size: 22px;
+            margin-right: 12px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .tracker-palette .group-item .group-info {
+            flex: 1;
+        }
+
+        .tracker-palette .group-item .group-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .tracker-palette .group-item .group-count {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .tracker-palette .group-item .arrow-icon {
+            color: #d1d5db;
+        }
+
+        .tracker-palette .highlight {
+            background: #fef08a;
+            padding: 0 3px;
+            border-radius: 3px;
+        }
+
+        /* Items View */
+        .tracker-palette .items-view {
+            padding: 16px;
+            display: none;
+        }
+
+        .tracker-palette .items-view.active {
+            display: block;
+        }
+
+        .tracker-palette .back-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 14px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tracker-palette .back-btn {
+            background: none;
+            border: none;
+            padding: 6px;
+            border-radius: 8px;
+            color: #6b7280;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: all 0.2s;
+        }
+
+        .tracker-palette .back-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .tracker-palette .selected-group-icon {
+            font-size: 28px;
+            margin-right: 12px;
+        }
+
+        .tracker-palette .selected-group-name {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .tracker-palette .selected-group-count {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .tracker-palette .tracker-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .tracker-palette .tracker-item:hover {
+            background: #e0f2fe;
+            border-color: #7dd3fc;
+        }
+
+        .tracker-palette .tracker-item .tracker-name {
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .tracker-palette .tracker-item .btn-group-tracker {
+            display: flex;
+            gap: 6px;
+        }
+
+        .tracker-palette .btn-input {
+            background: #22c55e;
+            border: none;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tracker-palette .btn-input:hover {
+            background: #16a34a;
+        }
+
+        .tracker-palette .btn-output {
+            background: #f97316;
+            border: none;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tracker-palette .btn-output:hover {
+            background: #ea580c;
+        }
+
+        .tracker-palette .palette-footer {
+            background: #f9fafb;
+            padding: 10px 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .tracker-palette .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 4px;
+        }
+
+        .tracker-palette .legend-dot.input {
+            background: #22c55e;
+        }
+
+        .tracker-palette .legend-dot.output {
+            background: #f97316;
+        }
+
+        .tracker-palette .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
+
+        .tracker-palette .no-results i {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* Groups View */
+        .tracker-palette .groups-view {
+            display: block;
+        }
+
+        .tracker-palette .groups-view.hidden {
+            display: none;
         }
     </style>
 </head>
@@ -221,7 +380,7 @@
                 </li>
 
                 <div class="navbar-brand">
-                    <span class="h5"><strong>Quality Management System (QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.3.3 01/12/2025</span>
+                    <span class="h5"><strong>Quality Management System (QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.3.2 19/11/2025</span>
                 </div>
 
             </ul>
@@ -261,436 +420,242 @@
 
         </div>
     </div>
+
     <div class="card">
-
-
-        <!-- Back button -->
-        @* <div class="col-md-12 text-right mt-1">
-                <button id="tarcBackButton" type="button" class="btn btn-outline-primary"
-                        onclick="location.href='@Url.Action("WiproMenu", "Home")'">
-                    <i class="fas fa-arrow-left"></i> Back
+        <div class="row p-3">
+            <div class="col-12 d-flex justify-content-end">
+                <button type="button"
+                        class="btn btn-outline-primary"
+                        style="width:120px; font-size:15px"
+                        onclick="window.location.href='@Url.Action("WiproMenu","Home")'">
+                    <i class="fas fa-arrow-left"></i> BACK
                 </button>
-            </div> *@
-
-
-        <div class="row">
-            <!-- -------- Column 1 -------- -->
-            <div class="col-md-4">
-                <div class="card-body">
-                    <div class="card-section tracker-card">
-                        <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
-                            <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Tracker-1</h5>
-
-                            <div class="input-group" style="width:240px;">
-                                <input type="text" id="menuSearch" class="form-control form-control-sm tracker-search" placeholder="Search Tracker..." />
-                                <div class="input-group-append">
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Collapsible group -->
-                        <div class="menu-table tracker-menu">
-
-                            <!-- Corrective Action -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-tools"></i> Corrective Action</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("CAFormatee", "CAReport")'>CA Report</a></li>
-                                        <li><a href='@Url.Action("CustomerRCA", "CustomerRCAReport")'>Customer RCA Report</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Deviation -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-exclamation-triangle"></i> Deviation</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("DNTracker", "DNTracker")'>Deviation Note</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!-- BIS Tracker -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-industry"></i>BIS</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("BisProjectTracker", "BisProjectTrac")'>BIS Working Template</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Continual Improvement -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-chart-line"></i> Continual Improvement</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("ContinualImprovementTrac", "ContiImprove")'>Continual Improvement</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Waluj -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-industry"></i> Waluj</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("FIFOTracker", "FIFOTrac")'>FIFO format of Waluj Testing</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Third Party Testing -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-clipboard-check"></i> Third Party Testing</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("PaymentTracker", "PaymentTracker")'>Payment Tracker</a></li>
-                                        <li><a href='@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")'>Third Party Testing Template</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Kaizen Activity -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-lightbulb"></i> Kaizen Activity</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("KaizenTracker", "KaizenTracker")'>Kaizen Summary</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- Third Party Inspection (TPI) -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-shield-alt"></i> Third Party Inspection (TPI)</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")'>Third Party Inspection Tracker</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <!-- CSAT -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-smile"></i> CSAT</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("CSATSUMMARY", "CSATSummary")'>CSAT Summary</a></li>
-                                        <li><a href='@Url.Action("CSATComment", "CSATComment")'>CSAT Comment Analysis</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!-- PDI -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-shield-alt"></i>PDI</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("PDITracker", "PDITracker")'>PDI Tracker</a></li>
-                                        <li><a href='@Url.Action("PDIAuthSignatory", "PDIAuthSign")'>PDI Authorised Signatory</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-
-
-
-
-                        </div>
-
-
-                    </div>
-                </div>
-            </div>
-
-            <!-- -------- Column 2 -------- -->
-            <div class="col-md-4">
-                <div class="card-body">
-                    <div class="card-section tracker-card">
-                        <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
-                            <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Tracker-2</h5>
-
-                            <div class="input-group" style="width:240px;">
-                                <input type="text" id="menuSearch" class="form-control form-control-sm tracker-search" placeholder="Search Tracker..." />
-                                <div class="input-group-append">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="menu-table tracker-menu">
-                            <!-- AHP Note -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-book"></i> AHP Note</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("AHPNotetracker", "AHPNotetracker")'>AHP Note Format</a></li>
-                                        <li><a href='@Url.Action("SEEIndicees", "SEEIndices")'>SEE Indices</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!-- RMTC -->
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-book"></i> Raw Material Test Certificate
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li>
-                                            <a href='@Url.Action("RMTCTracker", "RMTCTracker")'>
-                                                RM TC Report
-                                            </a>
-                                        </li>
-
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-vial"></i>Internal Type Test</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")'>Internal Type Test Report</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-cogs"></i>SPM Calculation(Supplier Perfomance Matrxi)</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-
-                                        <li><a href='@Url.Action("SPMCalucationMake", "SPMCalculationMake")'>SPM Calculation Sheet :Make</a></li>
-                                        <li><a href='@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")'>SPM Calculation Sheet : Buy</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section"><i class="fas fa-certificate"></i>Test Certificate</div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("TestCertificate", "TestCertificate")'>Test Certificate for Sales Submission</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-            <!-- -------- Column 3 -------- -->
-            <div class="col-md-4">
-                <div class="card-body">
-                    <div class="card-section tracker-card">
-                        <div class="card-header d-flex justify-content-between align-items-center" style="background-color:#e9f2fb;">
-                            <h5 class="mb-0"><i class="fas fa-tasks mr-2 text-primary"></i>Product Validation</h5>
-
-                            <div class="input-group" style="width:240px;">
-                                <input type="text" id="menuSearch" class="form-control form-control-sm tracker-search" placeholder="Search Tracker..." />
-                                <div class="input-group-append">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="menu-table tracker-menu">
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Physical Check
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")'>Physical Check & Visual Inspection</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-
-
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Electrical Performance
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("ElectricalPerformance", "ProductValidation")'>Electrical Performance</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Electrical Protection
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("ElectricalProtection", "ProductValidation")'>Electrical Protection, Safety & Reliability Test</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Ripple Test Reports
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("RippleTestReport", "ProductValidation")'>Ripple Test Reports</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Surge Test Report
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("SURGETestReport", "ProductValidation")'>Surge Test Reports</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Surge Test Report
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("TemperatureRiseTest", "ProductValidation")'>Temperature Rise Test (TRT)</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Photometry
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("Photometry", "ProductValidation")'>Photometry</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Installation Trial
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("InstallationTrial", "ProductValidation")'>Installation Trial</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <div class="menu-row">
-                                <div class="menu-cell">
-                                    <div class="menu-section">
-                                        <i class="fas fa-eye mr-1"></i>Drop Test Report
-                                    </div>
-                                </div>
-                                <div class="menu-cell">
-                                    <ul class="menu-links">
-                                        <li><a href='@Url.Action("DropTestReport", "ProductValidation")'>Drop Test Report</a></li>
-
-                                    </ul>
-                                </div>
-                            </div>
-
-
-                        </div>
-                    </div>
-
-                </div>
             </div>
         </div>
+        <div class="row p-3 d-flex justify-content-center" style="margin-top:-85px;">
+            
+            <!-- ============================================
+                 TRACKER-1: Command Palette Style
+                 ============================================ -->
+            <div class="col-md-4">
+                <div class="tracker-palette" id="tracker1Palette">
+
+                    <!-- Header -->
+                    <div class="palette-header d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <h5 class="m-0">
+                                <i class="fas fa-tasks mr-2"></i>Tracker
+                            </h5>
+                            <small>Click group to view trackers</small>
+                        </div>
+
+                        <!-- 🔵 NEW BUTTON (Always Visible) -->
+                          @*   <button type="button" class="btn btn-light btn-sm" id="expandAllBtn" title="Expand All">
+                                <i class="fas fa-expand"></i>
+                            </button> *@
+
+                    </div>
+
+                    <!-- Search -->
+                    <div class="palette-search">
+                        <div class="search-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="palette-search-input" placeholder="Search group..." data-target="tracker1">
+                            <button type="button" class="clear-btn" data-target="tracker1">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="palette-content">
+
+                        <!-- Groups View -->
+                        <div class="groups-view" id="tracker1GroupsView">
+                            <div class="section-label" id="tracker1Label">ALL GROUPS</div>
+                            <div class="group-list" id="tracker1GroupList">
+                                <!-- Groups rendered by JS -->
+                            </div>
+                            <div class="no-results" id="tracker1NoResults" style="display:none;">
+                                <i class="far fa-frown"></i>
+                                <p>No groups found</p>
+                            </div>
+                        </div>
+
+                        <!-- Items View -->
+                        <div class="items-view" id="tracker1ItemsView">
+                            <div class="back-header">
+                                <button type="button" class="back-btn" onclick="showGroups('tracker1')">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <span class="selected-group-icon" id="tracker1SelectedIcon"></span>
+                                <div>
+                                    <div class="selected-group-name" id="tracker1SelectedName"></div>
+                                    <div class="selected-group-count" id="tracker1SelectedCount"></div>
+                                </div>
+                            </div>
+                            <div id="tracker1ItemsList">
+                                <!-- Items rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="palette-footer">
+                        <div>
+                            <span class="mr-3"><span class="legend-dot input"></span> Input</span>
+                            <span><span class="legend-dot output"></span> Output</span>
+                        </div>
+                        <span id="tracker1GroupCount"></span>
+                    </div>
+
+                </div>
+            </div>
+            
+
+
+
+            <!-- ============================================
+                 TRACKER-2: Command Palette Style
+                 ============================================ -->
+    @*         <div class="col-md-4">
+                <div class="tracker-palette" id="tracker2Palette">
+                    <!-- Header -->
+                    <div class="palette-header">
+                        <h5><i class="fas fa-tasks mr-2"></i>Tracker-2</h5>
+                        <small>Click group to view trackers</small>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="palette-search">
+                        <div class="search-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="palette-search-input" placeholder="Search group..." data-target="tracker2">
+                            <button type="button" class="clear-btn" data-target="tracker2">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="palette-content">
+                        <!-- Groups View -->
+                        <div class="groups-view" id="tracker2GroupsView">
+                            <div class="section-label" id="tracker2Label">ALL GROUPS</div>
+                            <div class="group-list" id="tracker2GroupList">
+                                <!-- Groups rendered by JS -->
+                            </div>
+                            <div class="no-results" id="tracker2NoResults" style="display:none;">
+                                <i class="far fa-frown"></i>
+                                <p>No groups found</p>
+                            </div>
+                        </div>
+
+                        <!-- Items View -->
+                        <div class="items-view" id="tracker2ItemsView">
+                            <div class="back-header">
+                                <button type="button" class="back-btn" onclick="showGroups('tracker2')">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <span class="selected-group-icon" id="tracker2SelectedIcon"></span>
+                                <div>
+                                    <div class="selected-group-name" id="tracker2SelectedName"></div>
+                                    <div class="selected-group-count" id="tracker2SelectedCount"></div>
+                                </div>
+                            </div>
+                            <div id="tracker2ItemsList">
+                                <!-- Items rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="palette-footer">
+                        <div>
+                            <span class="mr-3"><span class="legend-dot input"></span> Input</span>
+                            <span><span class="legend-dot output"></span> Output</span>
+                        </div>
+                        <span id="tracker2GroupCount"></span>
+                    </div>
+                </div>
+            </div> *@
+
+            <!-- ============================================
+                 TRACKER-3 (Product Validation): Command Palette Style
+                 ============================================ -->
+       @*      <div class="col-md-4">
+                <div class="tracker-palette" id="tracker3Palette">
+                    <!-- Header -->
+                    <div class="palette-header">
+                        <h5><i class="fas fa-check-circle mr-2"></i>Product Validation</h5>
+                        <small>Click group to view trackers</small>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="palette-search">
+                        <div class="search-wrapper">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="palette-search-input" placeholder="Search group..." data-target="tracker3">
+                            <button type="button" class="clear-btn" data-target="tracker3">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="palette-content">
+                        <!-- Groups View -->
+                        <div class="groups-view" id="tracker3GroupsView">
+                            <div class="section-label" id="tracker3Label">ALL GROUPS</div>
+                            <div class="group-list" id="tracker3GroupList">
+                                <!-- Groups rendered by JS -->
+                            </div>
+                            <div class="no-results" id="tracker3NoResults" style="display:none;">
+                                <i class="far fa-frown"></i>
+                                <p>No groups found</p>
+                            </div>
+                        </div>
+
+                        <!-- Items View -->
+                        <div class="items-view" id="tracker3ItemsView">
+                            <div class="back-header">
+                                <button type="button" class="back-btn" onclick="showGroups('tracker3')">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <span class="selected-group-icon" id="tracker3SelectedIcon"></span>
+                                <div>
+                                    <div class="selected-group-name" id="tracker3SelectedName"></div>
+                                    <div class="selected-group-count" id="tracker3SelectedCount"></div>
+                                </div>
+                            </div>
+                            <div id="tracker3ItemsList">
+                                <!-- Items rendered by JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="palette-footer">
+                        <div>
+                            <span class="mr-3"><span class="legend-dot input"></span> Input</span>
+                            <span><span class="legend-dot output"></span> Output</span>
+                        </div>
+                        <span id="tracker3GroupCount"></span>
+                    </div>
+                </div>
+            </div> *@
+
+        </div>
     </div>
-
-
-
-
-    <!-- Optional arrow rotation -->
-    <style>
-        .ca-chevron {
-            transition: transform .25s ease;
-        }
-
-            .ca-chevron.rotated {
-                transform: rotate(180deg);
-            }
-    </style>
-    <script>
-        $('#correctiveActionMenu').on('shown.bs.collapse', function () {
-          $(this).prev('a').find('.ca-chevron').addClass('rotated');
-        });
-        $('#correctiveActionMenu').on('hidden.bs.collapse', function () {
-          $(this).prev('a').find('.ca-chevron').removeClass('rotated');
-        });
-    </script>
-
 
     <div class="content-wrapper">
         @RenderBody()
     </div>
 
-
-
-
     <!-- Bootstrap JS -->
-
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <!-- Core JS files -->
     <script src="~/js/app.js" asp-append-version="true"></script>
     <script src="~/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
@@ -713,27 +678,498 @@
     <script src="~/js/components_collapsible.js" asp-append-version="true"></script>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // For every card with its own search box
-            document.querySelectorAll('.tracker-card').forEach(function (card) {
-                const searchInput = card.querySelector('.tracker-search');
-                const rows = card.querySelectorAll('.tracker-menu .menu-row');
+        // ============================================
+        // TRACKER DATA - Update URLs as needed
+        // ============================================
+        
+        // Tracker-1 Groups
+        const tracker1Groups = [
+            {
+                id: 'corrective-action',
+                name: 'Corrective Action',
+                icon: '🔧',
+                items: [
+                    { name: 'CA Report', inputUrl: '@Url.Action("CAFormatee", "CAReport")', outputUrl: '@Url.Action("CAFormatee", "CAReport")' },
+                    { name: 'Customer RCA Report', inputUrl: '@Url.Action("CustomerRCA", "CustomerRCAReport")', outputUrl: '@Url.Action("CustomerRCA", "CustomerRCAReport")' }
+                ]
+            },
+            {
+                id: 'deviation',
+                name: 'Deviation',
+                icon: '⚠️',
+                items: [
+                    { name: 'Deviation Note', inputUrl: '@Url.Action("DNTracker", "DNTracker")', outputUrl: '@Url.Action("DNTracker", "DNTracker")' }
+                ]
+            },
+            {
+                id: 'bis',
+                name: 'BIS',
+                icon: '📜',
+                items: [
+                    { name: 'BIS Working Template', inputUrl: '@Url.Action("BisProjectTracker", "BisProjectTrac")', outputUrl: '@Url.Action("BisProjectTracker", "BisProjectTrac")' }
+                ]
+            },
+            {
+                id: 'continual-improvement',
+                name: 'Continual Improvement',
+                icon: '📈',
+                items: [
+                    { name: 'Continual Improvement', inputUrl: '@Url.Action("ContinualImprovementTrac", "ContiImprove")', outputUrl: '@Url.Action("ContinualImprovementTrac", "ContiImprove")' }
+                ]
+            },
+            {
+                id: 'waluj',
+                name: 'Waluj',
+                icon: '🏭',
+                items: [
+                    { name: 'FIFO format of Waluj Testing', inputUrl: '@Url.Action("FIFOTracker", "FIFOTrac")', outputUrl: '@Url.Action("FIFOTracker", "FIFOTrac")' }
+                ]
+            },
+            {
+                id: 'third-party-testing',
+                name: 'Third Party Testing',
+                icon: '🧪',
+                items: [
+                    { name: 'Payment Tracker', inputUrl: '@Url.Action("PaymentTracker", "PaymentTracker")', outputUrl: '@Url.Action("PaymentTracker", "PaymentTracker")' },
+                    { name: 'Third Party Testing Template', inputUrl: '@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")', outputUrl: '@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")' }
+                ]
+            },
+            {
+                id: 'kaizen',
+                name: 'Kaizen Activity',
+                icon: '💡',
+                items: [
+                    { name: 'Kaizen Summary', inputUrl: '@Url.Action("KaizenTracker", "KaizenTracker")', outputUrl: '@Url.Action("KaizenTracker", "KaizenTracker")' }
+                ]
+            },
+            {
+                id: 'tpi',
+                name: 'Third Party Inspection (TPI)',
+                icon: '🔍',
+                items: [
+                    { name: 'Third Party Inspection Tracker', inputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")', outputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")' }
+                ]
+            },
+            {
+                id: 'csat',
+                name: 'CSAT',
+                icon: '⭐',
+                items: [
+                    { name: 'CSAT Summary', inputUrl: '@Url.Action("CSATSUMMARY", "CSATSummary")', outputUrl: '@Url.Action("CSATSUMMARY", "CSATSummary")' },
+                    { name: 'CSAT Comment Analysis', inputUrl: '@Url.Action("CSATComment", "CSATComment")', outputUrl: '@Url.Action("CSATComment", "CSATComment")' }
+                ]
+            },
+            {
+                id: 'pdi',
+                name: 'PDI',
+                icon: '🛡️',
+                items: [
+                    { name: 'PDI Tracker', inputUrl: '@Url.Action("PDITracker", "PDITracker")', outputUrl: '@Url.Action("PDITracker", "PDITracker")' },
+                    { name: 'PDI Authorised Signatory', inputUrl: '@Url.Action("PDIAuthSignatory", "PDIAuthSign")', outputUrl: '@Url.Action("PDIAuthSignatory", "PDIAuthSign")' }
+                ]
+            },
+            {
+                id: 'ahp-note',
+                name: 'AHP Note',
+                icon: '📝',
+                items: [
+                    { name: 'AHP Note Format', inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")', outputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")' },
+                    { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndicees", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
+                ]
+            },
+            {
+                id: 'rmtc',
+                name: 'Raw Material Test Certificate',
+                icon: '📋',
+                items: [
+                    { name: 'RM TC Report', inputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")', outputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")' }
+                ]
+            },
+            {
+                id: 'internal-type-test',
+                name: 'Internal Type Test',
+                icon: '🧪',
+                items: [
+                    { name: 'Internal Type Test Report', inputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")', outputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")' }
+                ]
+            },
+            {
+                id: 'spm',
+                name: 'SPM Calculation',
+                icon: '⚙️',
+                items: [
+                    { name: 'SPM Calculation Sheet: Make', inputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")', outputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")' },
+                    { name: 'SPM Calculation Sheet: Buy', inputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")', outputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")' }
+                ]
+            },
+            {
+                id: 'test-certificate',
+                name: 'Test Certificate',
+                icon: '📜',
+                items: [
+                    { name: 'Test Certificate for Sales Submission', inputUrl: '@Url.Action("TestCertificate", "TestCertificate")', outputUrl: '@Url.Action("TestCertificate", "TestCertificate")' }
+                ]
+            }
+        ];
 
-                if (!searchInput || rows.length === 0) return;
+        // Tracker-2 Groups
+        const tracker2Groups = [
+            {
+                id: 'ahp-note',
+                name: 'AHP Note',
+                icon: '📝',
+                items: [
+                    { name: 'AHP Note Format', inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")', outputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")' },
+                    { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndicees", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
+                ]
+            },
+            {
+                id: 'rmtc',
+                name: 'Raw Material Test Certificate',
+                icon: '📋',
+                items: [
+                    { name: 'RM TC Report', inputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")', outputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")' }
+                ]
+            },
+            {
+                id: 'internal-type-test',
+                name: 'Internal Type Test',
+                icon: '🧪',
+                items: [
+                    { name: 'Internal Type Test Report', inputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")', outputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")' }
+                ]
+            },
+            {
+                id: 'spm',
+                name: 'SPM Calculation',
+                icon: '⚙️',
+                items: [
+                    { name: 'SPM Calculation Sheet: Make', inputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")', outputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")' },
+                    { name: 'SPM Calculation Sheet: Buy', inputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")', outputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")' }
+                ]
+            },
+            {
+                id: 'test-certificate',
+                name: 'Test Certificate',
+                icon: '📜',
+                items: [
+                    { name: 'Test Certificate for Sales Submission', inputUrl: '@Url.Action("TestCertificate", "TestCertificate")', outputUrl: '@Url.Action("TestCertificate", "TestCertificate")' }
+                ]
+            }
+        ];
 
-                searchInput.addEventListener('input', function () {
-                    const q = this.value.trim().toLowerCase();
+        // Tracker-3 (Product Validation) Groups
+        const tracker3Groups = [
+            {
+                id: 'physical-check',
+                name: 'Physical Check',
+                icon: '👁️',
+                items: [
+                    { name: 'Physical Check & Visual Inspection', inputUrl: '@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")', outputUrl: '@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'electrical-performance',
+                name: 'Electrical Performance',
+                icon: '⚡',
+                items: [
+                    { name: 'Electrical Performance', inputUrl: '@Url.Action("ElectricalPerformance", "ProductValidation")', outputUrl: '@Url.Action("ElectricalPerformance", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'electrical-protection',
+                name: 'Electrical Protection',
+                icon: '🔌',
+                items: [
+                    { name: 'Electrical Protection, Safety & Reliability Test', inputUrl: '@Url.Action("ElectricalProtection", "ProductValidation")', outputUrl: '@Url.Action("ElectricalProtection", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'ripple-test',
+                name: 'Ripple Test Reports',
+                icon: '📊',
+                items: [
+                    { name: 'Ripple Test Reports', inputUrl: '@Url.Action("RippleTestReport", "ProductValidation")', outputUrl: '@Url.Action("RippleTestReport", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'surge-test',
+                name: 'Surge Test Report',
+                icon: '⚡',
+                items: [
+                    { name: 'Surge Test Reports', inputUrl: '@Url.Action("SURGETestReport", "ProductValidation")', outputUrl: '@Url.Action("SURGETestReport", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'trt',
+                name: 'Temperature Rise Test',
+                icon: '🌡️',
+                items: [
+                    { name: 'Temperature Rise Test (TRT)', inputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")', outputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'photometry',
+                name: 'Photometry',
+                icon: '💡',
+                items: [
+                    { name: 'Photometry', inputUrl: '@Url.Action("Photometry", "ProductValidation")', outputUrl: '@Url.Action("Photometry", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'installation-trial',
+                name: 'Installation Trial',
+                icon: '🔧',
+                items: [
+                    { name: 'Installation Trial', inputUrl: '@Url.Action("InstallationTrial", "ProductValidation")', outputUrl: '@Url.Action("InstallationTrial", "ProductValidation")' }
+                ]
+            },
+            {
+                id: 'drop-test',
+                name: 'Drop Test Report',
+                icon: '📦',
+                items: [
+                    { name: 'Drop Test Report', inputUrl: '@Url.Action("DropTestReport", "ProductValidation")', outputUrl: '@Url.Action("DropTestReport", "ProductValidation")' }
+                ]
+            }
+        ];
 
-                    rows.forEach(function (row) {
-                        const text = row.innerText.toLowerCase();
-                        // show / hide entire row based on match
-                        row.style.display = text.includes(q) ? '' : 'none';
-                    });
+        // Store all tracker data
+        const trackerData = {
+            tracker1: tracker1Groups,
+            tracker2: tracker2Groups,
+            tracker3: tracker3Groups
+        };
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all trackers
+            renderGroups('tracker1', tracker1Groups);
+            renderGroups('tracker2', tracker2Groups);
+            renderGroups('tracker3', tracker3Groups);
+
+            // Setup search inputs
+            document.querySelectorAll('.palette-search-input').forEach(function(input) {
+                input.addEventListener('input', function() {
+                    const target = this.getAttribute('data-target');
+                    filterGroups(target);
                 });
             });
+
+            // Setup clear buttons
+            document.querySelectorAll('.clear-btn').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const target = this.getAttribute('data-target');
+                    clearSearch(target);
+                });
+            });
+            const expandAllBtn = document.getElementById('expandAllBtn');
+            if (expandAllBtn) {
+                expandAllBtn.addEventListener('click', function () {
+                    expandAllGroups('tracker1');
+                });
+            }
         });
+        // ============================================
+        // EXPAND ALL GROUPS (show all rows/items)
+        // ============================================
+        function expandAllGroups(trackerId) {
+            const groups = trackerData[trackerId] || [];
+            const itemsList = document.getElementById(trackerId + 'ItemsList');
+            if (!itemsList) return;
+
+            // Total items count
+            let totalItems = 0;
+            groups.forEach(g => totalItems += g.items.length);
+
+            // Update header info
+            const iconEl = document.getElementById(trackerId + 'SelectedIcon');
+            const nameEl = document.getElementById(trackerId + 'SelectedName');
+            const countEl = document.getElementById(trackerId + 'SelectedCount');
+
+            if (iconEl) iconEl.textContent = '📂';
+            if (nameEl) nameEl.textContent = 'All Groups';
+            if (countEl) countEl.textContent = totalItems + ' tracker(s)';
+
+            // Build HTML for all groups + their items
+            let html = '';
+            groups.forEach(function (group) {
+                html += `
+                    <div class="all-group-block">
+                        <div class="all-group-header">
+                            <span class="group-icon">${group.icon}</span>
+                            <span class="group-name">${group.name}</span>
+                            <span class="group-count">${group.items.length} tracker(s)</span>
+                        </div>
+                `;
+
+                group.items.forEach(function (item) {
+                    html += `
+                        <div class="tracker-item">
+                            <span class="tracker-name">${item.name}</span>
+                            <div class="btn-group-tracker">
+                                <button type="button" class="btn-input"
+                                        onclick="window.location.href='${item.inputUrl}'">
+                                    📥 Input
+                                </button>
+                                <button type="button" class="btn-output"
+                                        onclick="window.location.href='${item.outputUrl}'">
+                                    📤 Output
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `</div>`; // close all-group-block
+            });
+
+            itemsList.innerHTML = html;
+
+            // Switch view: hide groups, show items panel
+            document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.add('active');
+        }
+
+        // ============================================
+        // RENDER GROUPS
+        // ============================================
+        function renderGroups(trackerId, groups) {
+            const container = document.getElementById(trackerId + 'GroupList');
+            const noResults = document.getElementById(trackerId + 'NoResults');
+            const label = document.getElementById(trackerId + 'Label');
+            const countEl = document.getElementById(trackerId + 'GroupCount');
+            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+            // Update count
+            countEl.textContent = groups.length + ' groups';
+
+            if (groups.length === 0) {
+                container.innerHTML = '';
+                noResults.style.display = 'block';
+                label.style.display = 'none';
+                return;
+            }
+
+            noResults.style.display = 'none';
+            label.style.display = 'block';
+            label.textContent = searchTerm ? 'Found ' + groups.length + ' group(s)' : 'ALL GROUPS';
+
+            let html = '';
+            groups.forEach(function(group) {
+                const highlightedName = searchTerm
+                    ? group.name.replace(new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi'), '<span class="highlight">$1</span>')
+                    : group.name;
+
+                html += `
+                    <div class="group-item" onclick="showItems('${trackerId}', '${group.id}')">
+                        <span class="group-icon">${group.icon}</span>
+                        <div class="group-info">
+                            <div class="group-name">${highlightedName}</div>
+                            <div class="group-count">${group.items.length} tracker(s)</div>
+                        </div>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ============================================
+        // FILTER GROUPS
+        // ============================================
+        function filterGroups(trackerId) {
+            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+            const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+            const searchTerm = searchInput.value.toLowerCase();
+
+            // Show/hide clear button
+            if (searchTerm) {
+                clearBtn.classList.add('show');
+            } else {
+                clearBtn.classList.remove('show');
+            }
+
+            // Filter groups
+            const allGroups = trackerData[trackerId];
+            const filtered = allGroups.filter(function(group) {
+                return group.name.toLowerCase().includes(searchTerm);
+            });
+
+            renderGroups(trackerId, filtered);
+
+            // Ensure groups view is visible
+            document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+        }
+
+        // ============================================
+        // CLEAR SEARCH
+        // ============================================
+        function clearSearch(trackerId) {
+            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+            const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+            
+            searchInput.value = '';
+            clearBtn.classList.remove('show');
+            renderGroups(trackerId, trackerData[trackerId]);
+        }
+
+        // ============================================
+        // SHOW ITEMS
+        // ============================================
+        function showItems(trackerId, groupId) {
+            const allGroups = trackerData[trackerId];
+            const group = allGroups.find(function(g) { return g.id === groupId; });
+            if (!group) return;
+
+            // Update header
+            document.getElementById(trackerId + 'SelectedIcon').textContent = group.icon;
+            document.getElementById(trackerId + 'SelectedName').textContent = group.name;
+            document.getElementById(trackerId + 'SelectedCount').textContent = group.items.length + ' tracker(s)';
+
+            // Render items
+            let html = '';
+            group.items.forEach(function(item) {
+                html += `
+                    <div class="tracker-item">
+                        <span class="tracker-name">${item.name}</span>
+                        <div class="btn-group-tracker">
+                            <button type="button" class="btn-input" onclick="window.location.href='${item.inputUrl}'">
+                                📥 Input
+                            </button>
+                            <button type="button" class="btn-output" onclick="window.location.href='${item.outputUrl}'">
+                                📤 Output
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById(trackerId + 'ItemsList').innerHTML = html;
+
+            // Toggle views
+            document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.add('active');
+        }
+
+        // ============================================
+        // SHOW GROUPS (Back)
+        // ============================================
+        function showGroups(trackerId) {
+            document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+        }
+
+        // ============================================
+        // HELPER: Escape Regex
+        // ============================================
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
     </script>
 
 </body>
 </html>
-

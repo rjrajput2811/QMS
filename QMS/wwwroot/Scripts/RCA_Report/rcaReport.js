@@ -67,7 +67,7 @@ $(document).ready(function () {
 function loadData() {
     Blockloadershow();
     $.ajax({
-        url: '/CAReport/GetCAReport',
+        url: '/CustomerRCAReport/GetRCAReport',
         type: 'GET',
         dataType: 'json',
         data: {
@@ -217,7 +217,7 @@ function OnTabGridLoad(response) {
     );
 
     // // Initialize Tabulator
-    table = new Tabulator("#ca_Table", {
+    table = new Tabulator("#rca_Table", {
         data: tabledata,
         renderHorizontal: "virtual",
         movableColumns: true,
@@ -234,7 +234,7 @@ function OnTabGridLoad(response) {
 
         if (columnField !== "Action") {
             let rowData = cell.getRow().getData();
-            showEditCAReport(rowData.Id);
+            showEditRCAReport(rowData.Id);
         }
     });
 
@@ -244,9 +244,9 @@ function OnTabGridLoad(response) {
     Blockloaderhide();
 }
 
-function showEditCAReport(id) {
+function showEditRCAReport(id) {
     debugger
-    var url = '/CAReport/CAFormateDetails?caReportId=' + id;
+    var url = '/CustomerRCAReport/CustomerRCADetails?id=' + id;
     window.location.href = url;
 }
 
@@ -270,12 +270,12 @@ function delConfirm(recid) {
         },
     })).get().on('pnotify.confirm', function () {
         $.ajax({
-            url: '/CAReport/Delete',
+            url: '/CustomerRCAReport/Delete',
             type: 'POST',
             data: { id: recid },
             success: function (data) {
                 if (data.success == true) {
-                    showSuccessAlert("CA Report Detail is Deleted successfully.");
+                    showSuccessAlert("Customer RCA Report Detail is Deleted successfully.");
                     setTimeout(function () {
                         window.location.reload();
                     }, 2500);
@@ -298,7 +298,7 @@ function delConfirm(recid) {
 
 function exportToExcel(id) {
 
-    const url = `/CAReport/ExportCAReportToExcel?id=${id}`;
+    const url = `/CustomerRCAReport/ExportRCAReportToExcel?id=${id}`;
 
     // Open file download in new tab (best for Excel)
     window.open(url, "_blank");

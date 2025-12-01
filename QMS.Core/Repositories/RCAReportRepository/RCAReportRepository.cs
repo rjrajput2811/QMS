@@ -413,7 +413,7 @@ namespace QMS.Core.Repositories.RCAReportRepository
                 return new OperationResult
                 {
                     Success = true,
-                    Message = "RCA Report inserted successfully."
+                    Message = "Customer RCA Report inserted successfully."
                 };
             }
             catch (Exception ex)
@@ -422,7 +422,7 @@ namespace QMS.Core.Repositories.RCAReportRepository
                 return new OperationResult
                 {
                     Success = false,
-                    Message = "Failed to insert RCA Report: " + ex.Message
+                    Message = "Failed to insert Customer RCA Report: " + ex.Message
                 };
             }
         }
@@ -651,7 +651,7 @@ namespace QMS.Core.Repositories.RCAReportRepository
                 return new OperationResult
                 {
                     Success = true,
-                    Message = "RCA Report updated successfully."
+                    Message = "Customer RCA Report updated successfully."
                 };
             }
             catch (Exception ex)
@@ -660,7 +660,7 @@ namespace QMS.Core.Repositories.RCAReportRepository
                 return new OperationResult
                 {
                     Success = false,
-                    Message = "Failed to update RCA Report: " + ex.Message
+                    Message = "Failed to update Customer RCA Report: " + ex.Message
                 };
             }
         }

@@ -15,7 +15,7 @@ namespace QMS.Core.Models
         public string? Sample_Cat_Ref { get; set; }
         public string? Sample_Desc { get; set; }
         public string? Vendor { get; set; }
-        public int? Sample_Qty { get; set; }
+        public string? Sample_Qty { get; set; }
         public string? Test_Req { get; set; }
         public string? Test_Status { get; set; }
         public string? Responsbility { get; set; }

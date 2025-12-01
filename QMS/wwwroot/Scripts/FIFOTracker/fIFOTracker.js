@@ -718,6 +718,73 @@ function getDisplayValue(cell) {
     return (typeof v === "string") ? v.replace(/<[^>]*>/g, "").trim() : v;
 }
 
+function vendorEditor(cell, onRendered, success, cancel, editorParams) {
+    const currentValue = cell.getValue() || "";
+
+    // Create a <select> element for Select2
+    const select = document.createElement("select");
+    select.style.width = "100%";
+
+    // Build options from editorParams.values (your vendorOptions dictionary)
+    const values = editorParams && editorParams.values ? editorParams.values : {};
+
+    // Optional empty option
+    const emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.text = "";
+    select.appendChild(emptyOpt);
+
+    Object.keys(values).forEach(key => {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.text = values[key];
+        select.appendChild(opt);
+    });
+
+    // Set initial value (if any)
+    if (currentValue) {
+        // If value does not exist in the list (manual text from before), add it
+        if (!values[currentValue]) {
+            const opt = document.createElement("option");
+            opt.value = currentValue;
+            opt.text = currentValue;
+            select.appendChild(opt);
+        }
+        select.value = currentValue;
+    }
+
+    onRendered(function () {
+        // Initialize Select2 with tags:true so user can type new values
+        $(select).select2({
+            width: "resolve",
+            tags: true,              // 👈 allows manual input
+            placeholder: "",
+            dropdownAutoWidth: true
+        });
+
+        // Ensure Select2 shows current value
+        $(select).val(currentValue).trigger("change.select2");
+
+        // Commit value when user closes Select2
+        $(select).on("select2:close", function () {
+            const val = $(this).val();
+            success(val);           // send final value back to Tabulator
+        });
+    });
+
+    // Handle ESC -> cancel edit
+    select.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            e.stopPropagation();
+            cancel();
+        }
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
+    });
+
+    return select;
+}
 
 function OnTabGridLoad(response) {
   
@@ -833,12 +900,35 @@ function OnTabGridLoad(response) {
 
         { title: "Sample Description", field: "Sample_Desc", widthGrow: 3, headerSort: false, headerMenu: headerMenu, headerFilter: "input" },
         
-        editableColumn("Vendor.Requestor", "Vendor", "select2", "center", "input", {}, {
-            values: vendorOptions
-        }, function (cell) {
-            const val = cell.getValue();
-            return vendorOptions[val] || val;
-        }, 130),
+        //editableColumn("Vendor.Requestor", "Vendor", "select2", "center", "input", {}, {
+        //    values: vendorOptions
+        //}, function (cell) {
+        //    const val = cell.getValue();
+        //    return vendorOptions[val] || val;
+        //}, 130),
+
+        {
+            title: "Requestor",
+            field: "Vendor",
+            headerSort: false,
+            headerMenu: headerMenu,
+            headerFilter: "input",
+            hozAlign: "center",
+            headerHozAlign: "center",
+            width: 130,
+
+            // Display: if value is a key in vendorOptions, show name; else show raw value
+            formatter: function (cell) {
+                const val = cell.getValue();
+                return vendorOptions[val] || val || "";
+            },
+
+            // Custom Select2 editor that allows manual typing
+            editor: vendorEditor,
+            editorParams: {
+                values: vendorOptions      // pass your dictionary here
+            }
+        },
 
         editableColumn("Sample Qty", "Sample_Qty", true),
         //editableColumn("Test Required", "Test_Req", true),
@@ -1334,17 +1424,30 @@ function OnTabGridLoad(response) {
             return;
         }
 
-        // find product code / description / remark columns BY TITLE
+        // ===== 1A) FIND SPECIAL COLUMNS BY TITLE =====
         const PRODUCT_CODE_TITLES = new Set(["Sample Cat Ref.", "Sample Cat Ref"]);
         const PRODUCT_DESC_TITLES = new Set(["Sample Description", "Sample Descriptions"]);
         const REMARK_TITLES = new Set(["Remark", "Remarks"]);
 
+        // NEW: titles for multi-line split columns
+        const SAMPLE_QTY_TITLES = new Set(["Sample Qty", "Sample Quantity"]);
+        const TEST_REQUIRED_TITLES = new Set(["Test Required", "Tests Required"]);
+        const TEST_STATUS_TITLES = new Set(["Testing Status", "Test Status"]);
+        const RESPONSIBILITY_TITLES = new Set(["Responsibility", "Responsbility"]);
+
         let codeColKey = null, descColKey = null;
         let codeColIndex = null, descColIndex = null, remarkColIndex = null; // 1-based for Excel
 
+        // NEW: keys + indexes for 4 more columns
+        let sampleQtyKey = null, sampleQtyIndex = null;
+        let testRequiredKey = null, testRequiredIndex = null;
+        let testStatusKey = null, testStatusIndex = null;
+        let responsibilityKey = null, responsibilityIndex = null;
+
         excelCols.forEach((col, idx) => {
             const title = (col.label || "").trim();
-            const i = idx + 1;
+            const i = idx + 1; // 1-based
+
             if (PRODUCT_CODE_TITLES.has(title)) {
                 codeColKey = col.key;
                 codeColIndex = i;
@@ -1356,6 +1459,24 @@ function OnTabGridLoad(response) {
             if (REMARK_TITLES.has(title)) {
                 remarkColIndex = i;
             }
+
+            // ===== detect extra multi-line columns =====
+            if (SAMPLE_QTY_TITLES.has(title)) {
+                sampleQtyKey = col.key;
+                sampleQtyIndex = i;
+            }
+            if (TEST_REQUIRED_TITLES.has(title)) {
+                testRequiredKey = col.key;
+                testRequiredIndex = i;
+            }
+            if (TEST_STATUS_TITLES.has(title)) {
+                testStatusKey = col.key;
+                testStatusIndex = i;
+            }
+            if (RESPONSIBILITY_TITLES.has(title)) {
+                responsibilityKey = col.key;
+                responsibilityIndex = i;
+            }
         });
 
         if (!codeColKey || !descColKey) {
@@ -1364,7 +1485,14 @@ function OnTabGridLoad(response) {
 
         // columns that must be LEFT-aligned (data rows)
         const leftAlignCols = new Set(
-            [codeColIndex, descColIndex, remarkColIndex].filter(Boolean)
+            [
+                codeColIndex,
+                descColIndex,
+                remarkColIndex,
+                testRequiredIndex,
+                testStatusIndex,
+                responsibilityIndex
+            ].filter(Boolean)
         );
 
         // ===== 2) DOC DETAILS (last two columns) =====
@@ -1439,17 +1567,24 @@ function OnTabGridLoad(response) {
                 .filter(Boolean);
         }
 
-        // Product Description – split by " | " or newline (keep commas)
-        function splitDescs(displayValue) {
+        // Generic multi-line split (for Description, Sample Qty, Test Required, etc.)
+        function splitLines(displayValue) {
             if (!displayValue) return [];
             let txt = String(displayValue)
                 .replace(/<br\s*\/?>/gi, "\n")
-                .replace(/\r\n/g, "\n");
-            txt = txt.replace(/\s*\|\s*/g, "\n");
+                .replace(/\r\n/g, "\n")
+                .replace(/\s*\|\s*/g, "\n");
+
+            // IMPORTANT: also split on comma like "1,2" / "Done,Failed" / "Amit,Anuj"
             return txt
-                .split("\n")
+                .split(/\n|,\s*/g)   // newline OR comma(+optional space)
                 .map(s => s.trim())
                 .filter(Boolean);
+        }
+
+        // Product Description – now just uses generic line split
+        function splitDescs(displayValue) {
+            return splitLines(displayValue);
         }
 
         // ===== 5) Workbook / Sheet =====
@@ -1585,7 +1720,7 @@ function OnTabGridLoad(response) {
             setBorder(cell);
         });
 
-        // ===== 11) DATA ROWS WITH MERGED NON-PRODUCT COLUMNS =====
+        // ===== 11) DATA ROWS WITH MERGED NON-PRODUCT / NON-SPLIT COLUMNS =====
         let tabRows;
         switch (EXPORT_SCOPE) {
             case "selected":
@@ -1607,6 +1742,7 @@ function OnTabGridLoad(response) {
             const baseValues = {};
             excelCols.forEach(col => {
                 const cell = row.getCell(col.key);
+                // you already have getDisplayValue() in your codebase
                 let val = getDisplayValue(cell);
                 baseValues[col.key] = val;
             });
@@ -1617,7 +1753,27 @@ function OnTabGridLoad(response) {
 
             const codes = splitCodes(codeDisplay);
             const descs = splitDescs(descDisplay);
-            const maxLines = Math.max(codes.length, descs.length, 1);
+
+            // NEW: get displays for Sample Qty, Test Required, Testing Status, Responsibility
+            const qtyDisplay = sampleQtyKey ? baseValues[sampleQtyKey] : "";
+            const testReqDisplay = testRequiredKey ? baseValues[testRequiredKey] : "";
+            const testStDisplay = testStatusKey ? baseValues[testStatusKey] : "";
+            const respDisplay = responsibilityKey ? baseValues[responsibilityKey] : "";
+
+            const qtyLines = splitLines(qtyDisplay);
+            const testReqLines = splitLines(testReqDisplay);
+            const testStLines = splitLines(testStDisplay);
+            const respLines = splitLines(respDisplay);
+
+            const maxLines = Math.max(
+                codes.length,
+                descs.length,
+                qtyLines.length,
+                testReqLines.length,
+                testStLines.length,
+                respLines.length,
+                1
+            );
 
             const startRowIdx = ws.rowCount + 1;
 
@@ -1635,14 +1791,27 @@ function OnTabGridLoad(response) {
                         return descs[i] || "";
                     }
 
-                    // non-product columns: only in first row, blank later
+                    // NEW: multi-line behaviour for additional columns
+                    if (key === sampleQtyKey) {
+                        return qtyLines[i] || (isFirst ? (qtyDisplay || "") : "");
+                    }
+                    if (key === testRequiredKey) {
+                        return testReqLines[i] || (isFirst ? (testReqDisplay || "") : "");
+                    }
+                    if (key === testStatusKey) {
+                        return testStLines[i] || (isFirst ? (testStDisplay || "") : "");
+                    }
+                    if (key === responsibilityKey) {
+                        return respLines[i] || (isFirst ? (respDisplay || "") : "");
+                    }
+
+                    // non-split columns: only in first row, blank later
                     return isFirst ? (baseValues[key] ?? "") : "";
                 });
 
                 const xRow = ws.addRow(values);
 
-                // *** ALIGNMENT: only Product Codes / Product Description / Remark left,
-                //     all other data columns center ***
+                // alignment
                 xRow.eachCell((cell, colNumber) => {
                     const horizontal = leftAlignCols.has(colNumber) ? "left" : "center";
                     cell.alignment = {
@@ -1657,10 +1826,18 @@ function OnTabGridLoad(response) {
             const endRowIdx = ws.rowCount;
 
             if (maxLines > 1) {
-                // Merge every column EXCEPT Product Codes & Product Description
+                // Merge every column EXCEPT Product Codes, Product Description,
+                // Sample Qty, Test Required, Testing Status, Responsibility
                 const mergeCols = [];
                 for (let i = 1; i <= TOTAL_COLS; i++) {
-                    if (i !== codeColIndex && i !== descColIndex) {
+                    if (
+                        i !== codeColIndex &&
+                        i !== descColIndex &&
+                        i !== sampleQtyIndex &&
+                        i !== testRequiredIndex &&
+                        i !== testStatusIndex &&
+                        i !== responsibilityIndex
+                    ) {
                         mergeCols.push(i);
                     }
                 }

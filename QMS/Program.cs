@@ -37,6 +37,7 @@ using QMS.Core.Repositories.ElectricalProtectionRepository;
 using QMS.Core.Repositories.InternalTypeTestRepo;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
+using QMS.Core.Repositories.AHPNoteReposotory;
 using QMS.Core.Repositories.CSATSummaryRepository;
 using QMS.Core.Repositories.CAReportRepository;
 using QMS.Core.Repositories.RCAReportRepository;
@@ -87,6 +88,7 @@ builder.Services.AddTransient<IPhysicalCheckAndVisualInspectionRepository, Physi
 builder.Services.AddTransient<IElectricalPerformanceRepository, ElectricalPerformanceRepository>();
 builder.Services.AddScoped<IElectricalProtectionRepository, ElectricalProtectionRepository>();
 builder.Services.AddScoped<IInternalTypeTestRepository, InternalTypeTestRepository>();
+builder.Services.AddScoped<IAHPNoteReposotory, AHPNoteReposotory>();
 builder.Services.AddTransient<ICSATSummaryRepository, CSATSummaryRepository>();
 builder.Services.AddTransient<ICAReportRepository, CAReportRepository>();
 builder.Services.AddTransient<IRCAReportRepository, RCAReportRepository>();

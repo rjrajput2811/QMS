@@ -13,7 +13,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Tracker Menu</title>
+    <title>Product Validation Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/icomoon/styles.min.css" rel="stylesheet" asp-append-version="true" />
@@ -638,8 +638,8 @@
         </div>
     </div>
 
-    <div class="card">
-        <div class="row p-3" style="margin-top:-20px;">
+   
+        <div class="row p-3" style="margin-top:-1px;">
             <div class="col-12 d-flex justify-content-end">
                 <button type="button"
                         class="btn btn-outline-primary"
@@ -650,7 +650,7 @@
             </div>
         </div>
 
-        <div class="row p-3 d-flex justify-content-center" style="margin-top:-80px;">
+        <div class="row p-3 d-flex justify-content-center" style="margin-top:-81px;">
             <div class="col-md-5 col-lg-4">
 
                 <div class="tracker-palette" id="trackerPVPalette">
@@ -907,30 +907,30 @@
             let html = '';
             groups.forEach(function (group) {
                 html += `
-                                <div class="all-group-block">
-                                    <div class="all-group-header">
-                                        <span class="group-icon">${group.icon}</span>
-                                        <span class="group-name">${group.name}</span>
-                                        <span class="group-count">${group.items.length} tracker(s)</span>
-                                    </div>
-                            `;
+                                        <div class="all-group-block">
+                                            <div class="all-group-header">
+                                                <span class="group-icon">${group.icon}</span>
+                                                <span class="group-name">${group.name}</span>
+                                                <span class="group-count">${group.items.length} tracker(s)</span>
+                                            </div>
+                                    `;
 
                 group.items.forEach(function (item) {
                     html += `
-                                    <div class="tracker-item">
-                                        <span class="tracker-name">${item.name}</span>
-                                        <div class="btn-group-tracker">
-                                            <button type="button" class="btn-input"
-                                                    onclick="window.location.href='${item.inputUrl}'">
-                                                📥 Input
-                                            </button>
-                                            <button type="button" class="btn-output"
-                                                    onclick="window.location.href='${item.outputUrl}'">
-                                                📤 Output
-                                            </button>
-                                        </div>
-                                    </div>
-                                `;
+                                            <div class="tracker-item">
+                                                <span class="tracker-name">${item.name}</span>
+                                                <div class="btn-group-tracker">
+                                                    <button type="button" class="btn-input"
+                                                            onclick="window.location.href='${item.inputUrl}'">
+                                                        📥 Input
+                                                    </button>
+                                                    <button type="button" class="btn-output"
+                                                            onclick="window.location.href='${item.outputUrl}'">
+                                                        📤 Output
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        `;
                 });
 
                 html += `</div>`;
@@ -970,15 +970,15 @@
                     : group.name;
 
                 html += `
-                                <div class="group-item" onclick="showItems('${trackerId}', '${group.id}')">
-                                    <span class="group-icon">${group.icon}</span>
-                                    <div class="group-info">
-                                        <div class="group-name">${highlightedName}</div>
-                                        <div class="group-count">${group.items.length} Product Validation(s)</div>
-                                    </div>
-                                    <i class="fas fa-chevron-right arrow-icon"></i>
-                                </div>
-                            `;
+                                        <div class="group-item" onclick="showItems('${trackerId}', '${group.id}')">
+                                            <span class="group-icon">${group.icon}</span>
+                                            <div class="group-info">
+                                                <div class="group-name">${highlightedName}</div>
+                                                <div class="group-count">${group.items.length} Product Validation(s)</div>
+                                            </div>
+                                            <i class="fas fa-chevron-right arrow-icon"></i>
+                                        </div>
+                                    `;
             });
             container.innerHTML = html;
         }
@@ -1033,18 +1033,18 @@
             let html = '';
             group.items.forEach(function (item) {
                 html += `
-                                <div class="tracker-item">
-                                    <span class="tracker-name">${item.name}</span>
-                                    <div class="btn-group-tracker">
-                                        <button type="button" class="btn-input" onclick="window.location.href='${item.inputUrl}'">
-                                            📥 Input
-                                        </button>
-                                        <button type="button" class="btn-output" onclick="window.location.href='${item.outputUrl}'">
-                                            📤 Output
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
+                                        <div class="tracker-item">
+                                            <span class="tracker-name">${item.name}</span>
+                                            <div class="btn-group-tracker">
+                                                <button type="button" class="btn-input" onclick="window.location.href='${item.inputUrl}'">
+                                                    📥 Input
+                                                </button>
+                                                <button type="button" class="btn-output" onclick="window.location.href='${item.outputUrl}'">
+                                                    📤 Output
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `;
             });
             document.getElementById(trackerId + 'ItemsList').innerHTML = html;
 

@@ -3,106 +3,370 @@
 @inject IHttpContextAccessor HttpContextAccessor
 
 @{
+
     var userRole = HttpContextAccessor.HttpContext.Session.GetInt32("UserRole") ?? 0;
     var vendor_Id = HttpContextAccessor.HttpContext.Session.GetInt32("Vendor_Id") ?? 0;
     var userName = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
-    var roleId = Context.Session.GetInt32("RoleId") ?? 0;
+    ViewData["Title"] = "Wipro Menu";
+
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Wipro Selection</title>
+    <title>Product Validation Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap CSS and Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-    <title>@ViewData["Title"] - QMS Module</title>
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/icomoon/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @* <link href="~/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" /> *@
     <link href="~/css/bootstrap_limitless.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/colors.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/components.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/layout.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/all.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/popper.js/dist/umd/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
 
+<style>
+    :root {
+        --border: #e4e7eb;
+        --accent-start: #0ea5e9;
+        --accent-end: #0284c7;
+    }
 
+    html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden; /* no scrollbars, no scrolling */
+        overflow-x: hidden !important;
+    }
 
+    .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
 
-    <style>
-        body {
-            background: #e9ecef;
-        }
-
-        .qms-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            border: none;
-            border-left: 5px solid transparent;
-        }
-
-            .qms-card:hover {
-                transform: scale(1.01);
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-                border-left: 5px solid #0d6efd;
-                background-color: #e9f2ff;
-                cursor: pointer;
-            }
-
-            .qms-card .icon {
-                font-size: 2.5rem;
-                color: #0d6efd;
-                transition: transform 0.3s;
-            }
-
-            .qms-card:hover .icon {
-                transform: rotate(5deg) scale(1.1);
-            }
-
-        .details-section {
-            display: none;
-            animation: fadeIn 0.5s ease-in-out forwards;
+    /* palette container */
+        .tracker-palette {
             background: #fff;
-            border-left: 4px solid #0d6efd;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+            max-width: none !important;
+            width: 100% !important;
+            box-sizing: border-box;
         }
 
-        @@keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
+        .tracker-palette .palette-header {
+            background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+            color: #fff;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .tracker-palette .palette-header h5 {
+                margin: 0;
+                font-weight: 700;
+                font-size: 18px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
+        .tracker-palette .palette-search {
+            padding: 10px 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tracker-palette .search-wrapper {
+            display: flex;
+            align-items: center;
+            background: #f3f4f6;
+            border-radius: 10px;
+            padding: 8px 14px;
+            border: 2px solid transparent;
+        }
+
+            .tracker-palette .search-wrapper:focus-within {
+                background: #fff;
+                border-color: var(--accent-start);
+                box-shadow: 0 0 0 3px rgba(14,165,233,0.12);
             }
+
+            .tracker-palette .search-wrapper input {
+                border: none;
+                background: transparent;
+                outline: none;
+                flex: 1;
+                font-size: 14px;
+                margin-left: 8px;
+            }
+
+        .tracker-palette .palette-content {
+            max-height: 520px;
+            overflow-y: auto;
+            padding-bottom: 8px;
         }
 
-        .menu-active {
-            background-color: #eee !important;
-            color: #0c83ff !important;
-            font-weight: bold;
-            font-size: small;
+        .tracker-palette .section-label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            padding: 10px 16px 6px;
+            font-weight: 600;
         }
 
-        .nav-group-sub {
+        .tracker-palette .group-list {
+            padding: 0 8px 8px;
+        }
+
+        .tracker-palette .group-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all .16s;
+            margin-bottom: 8px;
+        }
+
+            .tracker-palette .group-item:hover {
+                background: #e0f2fe;
+            }
+
+        .tracker-palette .group-icon {
+            background: transparent !important;
+            font-size: 22px;
+            margin-right: 12px;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tracker-palette .group-info {
+            flex: 1;
+        }
+
+        .tracker-palette .group-name {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+            margin-bottom: 2px;
+        }
+
+        .tracker-palette .group-count {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .tracker-palette .items-view {
+            padding: 16px;
             display: none;
         }
 
-            .nav-group-sub.open {
-                display: block; /* Show the submenu when it has the 'open' class */
-                color: #FFFF00 !important;
+            .tracker-palette .items-view.active {
+                display: block;
             }
-    </style>
+
+        .tracker-palette .back-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 14px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .tracker-palette .back-btn {
+            background: none;
+            border: none;
+            padding: 6px;
+            border-radius: 8px;
+            color: #6b7280;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .tracker-palette .selected-group-icon {
+            font-size: 28px;
+            margin-right: 12px;
+        }
+
+        .tracker-palette .selected-group-name {
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 16px;
+            margin-bottom: 2px;
+        }
+
+        .tracker-palette .selected-group-count {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .tracker-palette .tracker-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 14px;
+            background: #f9fafb;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 8px;
+        }
+
+            .tracker-palette .tracker-item .tracker-name {
+                font-weight: 500;
+                color: #374151;
+                font-size: 14px;
+            }
+
+        .tracker-palette .btn-group-tracker {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tracker-palette .btn-input {
+            background: #22c55e;
+            border: none;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .tracker-palette .btn-output {
+            background: #f97316;
+            border: none;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .tracker-palette .palette-footer {
+            background: #f9fafb;
+            padding: 10px 16px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .tracker-palette .group-item .arrow-icon {
+            color: #d1d5db;
+        }
+
+    /* icons background colors for each group */
+    .gi-vendor {
+        background: rgba(13,110,253,0.08);
+        color: #0d6efd;
+    }
+
+    .gi-tracker {
+        background: rgba(220,38,38,0.06);
+        color: #8b1d1d;
+    }
+
+    .gi-product {
+        background: rgba(16,185,129,0.06);
+        color: #10b981;
+    }
+
+    .gi-masters {
+        background: rgba(139,92,246,0.06);
+        color: #8b5cf6;
+    }
+
+    /* small helpers */
+    .hidden {
+        display: none !important;
+    }
+
+    .highlight {
+        background: #fef08a;
+        padding: 0 3px;
+        border-radius: 3px;
+    }
+
+    .custom-control.custom-switch {
+        --switch-width: 40px;
+    }
+
+
+    .custom-control-input ~ .custom-control-label::before {
+        background-color: #ffffff !important;
+        border-color: #cccccc !important;
+        width: var(--switch-width);
+        height: 22px;
+        border-radius: 999px;
+    }
+
+
+    .custom-control-input ~ .custom-control-label::after {
+        background-color: #888888 !important;
+        width: 18px;
+        height: 18px;
+        top: 2px;
+        left: 3px;
+    }
+
+
+    .custom-control-input:checked ~ .custom-control-label::before {
+        background-color: #28a745 !important;
+        border-color: #28a745 !important;
+    }
+
+    .custom-control-input:checked ~ .custom-control-label::after {
+        background-color: #ffffff !important; /* white knob */
+        transform: translateX(calc(var(--switch-width) - 22px)) !important;
+    }
+
+
+    .custom-control-input:focus ~ .custom-control-label::before {
+        box-shadow: 0 0 0 3px rgba(34,197,94,0.12) !important;
+    }
+
+
+    .custom-control-label {
+        min-width: var(--switch-width);
+        display: inline-block;
+        cursor: pointer;
+    }
+
+    .clear-btn {
+        background: none;
+        border: none;
+        color: #9ca3af;
+        cursor: pointer;
+        padding: 0;
+        display: none !important;
+    }
+
+
+        .clear-btn.show {
+            display: block !important;
+        }
+
+</style>
 </head>
 <body>
-
     <div class="navbar navbar-dark navbar-expand-lg navbar-static">
         <div class="d-md-none">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-mobile">
@@ -130,18 +394,9 @@
 
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    @if (userRole == (int)UserRoles.Admin || userRole == (int)UserRoles.Manager || userRole == (int)UserRoles.Staff)
-                    {
-                        <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
-                            <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
-                        </button>
-                    }
-                    else
-                    {
-                        <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("VendorOptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
-                            <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
-                        </button>
-                    }
+                    <button id="wiproBackButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'">
+                        <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
+                    </button>
                 </li>
             </ul>
 
@@ -171,80 +426,292 @@
 
         </div>
     </div>
+<div class="row p-3" style="margin-top:-1px;">
+    <div class="col-12 d-flex justify-content-end">
+        <button type="button" class="btn btn-outline-primary" style="width:120px; font-size:15px"
+                onclick="window.location.href='@Url.Action("OptionSelection","Home")'">
+            <i class="fas fa-arrow-left"></i> BACK
+        </button>
+    </div>
+</div>
 
-    <div class="container py-5" style="max-width:30%;">
-        <div class="d-flex flex-column gap-2">
+<div class="row p-3 d-flex justify-content-center" style="margin-top:-81px;">
+        <div class="col-md-5 col-lg-4">
+        <div class="tracker-palette" id="wiproPalette">
 
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("Vendor","Vendor")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-calendar icon me-3"></i>
-                    <h5 class="mb-0">Vendor</h5>
+            <!-- header -->
+            <div class="palette-header">
+                <div>
+                    <h5><i class="fas fa-th-large"></i> Wipro Menu</h5>
+                </div>
+
+                <div>
                 </div>
             </div>
 
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("TrackerMenu","Home")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred"></i>
-                    <h5 class="mb-0">Tracker</h5>
+            <!-- search -->
+            <div class="palette-search">
+                <div class="search-wrapper">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="palette-search-input" placeholder="Search menu..." data-target="wipro">
+                    <button type="button" class="clear-btn" data-target="wipro"><i class="fas fa-times"></i></button>
                 </div>
             </div>
 
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("ProductValidation","Home")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-person-badge icon me-3" style="color:seagreen"></i>
-                    <h5 class="mb-0">Product Validation</h5>
+            <!-- content -->
+            <div class="palette-content">
+                <!-- groups -->
+                <div class="groups-view" id="wiproGroupsView">
+                    <div class="section-label" id="wiproLabel">ALL WIPRO MENU</div>
+                    <div class="group-list" id="wiproGroupList"></div>
+                    <div class="no-results hidden" id="wiproNoResults"><i class="far fa-frown"></i><p>No menu items</p></div>
+                </div>
+
+                <!-- items -->
+                <div class="items-view" id="wiproItemsView">
+                    <div class="back-header">
+                        <button type="button" class="back-btn" onclick="showGroupsWipro()"><i class="fas fa-arrow-left"></i></button>
+                        <span class="selected-group-icon" id="wiproSelectedIcon"></span>
+                        <div>
+                            <div class="selected-group-name" id="wiproSelectedName"></div>
+                            <div class="selected-group-count" id="wiproSelectedCount"></div>
+                        </div>
+                    </div>
+                    <div id="wiproItemsList"></div>
                 </div>
             </div>
 
-            <div class="card qms-card p-2" onclick="">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-book icon me-3" style="color:blueviolet"></i>
-                    <h5 class="mb-0">Masters</h5>
+            <!-- footer -->
+            <div class="palette-footer">
+                <div>
                 </div>
+                <span id="wiproGroupCount"></span>
             </div>
-
         </div>
     </div>
-
+</div>
     <div class="content-wrapper">
         @RenderBody()
     </div>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <!-- Core JS files -->
-    <script src="~/js/app.js" asp-append-version="true"></script>
-    <script src="~/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
-    <script src="~/js/jquery.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/blockui.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/d3.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/d3_tooltip.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/switchery.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/moment.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/daterangepicker.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/echarts.min.js" asp-append-version="true"></script>
-    <script src="~/js/Dashboard/progress.js" asp-append-version="true"></script>
-    <script src="~/js/Dashboard/pie_basic.js" asp-append-version="true"></script>
-    <script src="~/js/Dashboard/columns_basic.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/noty.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/popupalert.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/pnotify.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/interactions.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/touch.min.js" asp-append-version="true"></script>
-    <script src="~/js/components_collapsible.js" asp-append-version="true"></script>
-
-    <script>
-        function showDetails(title) {
-            const section = document.getElementById("detailsSection");
-            const titleElement = document.getElementById("detailsTitle");
-            section.style.display = 'block';
-            titleElement.textContent = `${title} - Details`;
+<script>
+    // groups definition: four top-level menu groups
+    const wiproGroups = [
+        {
+            id: 'vendor',
+            name: 'Vendor',
+            icon: '📁',
+            iconClass: 'gi-vendor',
+            items: [
+                { name: 'Open Vendor', inputUrl: '@Url.Action("Vendor", "Vendor")', outputUrl: '@Url.Action("Vendor", "Vendor")' }
+            ]
+        },
+        {
+            id: 'tracker',
+            name: 'Tracker',
+            icon: '🗂️',
+            iconClass: 'gi-tracker',
+            items: [
+                { name: 'Open Tracker', inputUrl: '@Url.Action("TrackerMenu", "Home")', outputUrl: '@Url.Action("TrackerMenu", "Home")' }
+            ]
+        },
+        {
+            id: 'product_validation',
+            name: 'Product Validation',
+            icon: '✅',
+            iconClass: 'gi-product',
+            items: [
+                { name: 'Product Validation', inputUrl: '@Url.Action("ProductValidation", "Home")', outputUrl: '@Url.Action("ProductValidation", "Home")' }
+            ]
         }
-    </script>
+    ];
 
+    const wiproData = { wipro: wiproGroups };
+
+    document.addEventListener('DOMContentLoaded', function () {
+        // initial render
+        renderWiproGroups('wipro', wiproGroups);
+
+        // wire up search inputs
+        document.querySelectorAll('.palette-search-input').forEach(function (input) {
+            input.addEventListener('input', function () {
+                const target = this.getAttribute('data-target');
+                filterWiproGroups(target);
+            });
+        });
+
+        // wire up clear buttons
+        document.querySelectorAll('.clear-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                const target = this.getAttribute('data-target');
+                clearWiproSearch(target);
+            });
+        });
+    });
+
+    // Render groups list
+    function renderWiproGroups(trackerId, groups) {
+        const container = document.getElementById(trackerId + 'GroupList');
+        const noResults = document.getElementById(trackerId + 'NoResults');
+        const label = document.getElementById(trackerId + 'Label');
+        const countEl = document.getElementById(trackerId + 'GroupCount');
+        const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+        const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+        // show total number of groups (or selections)
+        countEl.textContent = groups.length + ' Selection(s)';
+
+        if (!groups || groups.length === 0) {
+            container.innerHTML = '';
+            if (noResults) noResults.classList.remove('hidden');
+            if (label) label.style.display = 'none';
+            return;
+        }
+
+        if (noResults) noResults.classList.add('hidden');
+        if (label) label.style.display = 'block';
+        if (label) label.textContent = searchTerm ? ('Found ' + groups.length + ' item(s)') : 'ALL VENDOR SELECTION';
+
+        let html = '';
+        groups.forEach(function (group) {
+            const highlightedName = searchTerm
+                ? group.name.replace(new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi'), '<span class="highlight">$1</span>')
+                : group.name;
+
+            html += `
+                        <div class="group-item" onclick="openGroupDirect('wipro','${group.id}')">
+                            <div class="group-icon ${group.iconClass}">${group.icon}</div>
+                            <div class="group-info">
+                                <div class="group-name">${highlightedName}</div>
+                                <div class="group-count">${group.items.length} Selection(s)</div>
+                            </div>
+                            <i class="fas fa-chevron-right arrow-icon"></i>
+                        </div>
+                    `;
+        });
+
+        container.innerHTML = html;
+    }
+
+    // Filter groups by search term (groups OR their items)
+    function filterWiproGroups(trackerId) {
+        const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+        const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+        if (!searchInput) return;
+
+        const term = searchInput.value.trim().toLowerCase();
+
+        // toggle clear button visibility
+        if (clearBtn) {
+            if (term.length > 0) clearBtn.classList.add('show');
+            else clearBtn.classList.remove('show');
+        }
+
+        // filter logic: match group name OR any item name
+        const allGroups = wiproData[trackerId] || [];
+        if (!term) {
+            // empty search -> render all
+            renderWiproGroups(trackerId, allGroups);
+            // ensure groups view visible
+            document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+            return;
+        }
+
+        const filtered = allGroups.filter(function (g) {
+            const groupMatch = g.name.toLowerCase().includes(term);
+            const itemMatch = (g.items || []).some(it => it.name.toLowerCase().includes(term));
+            return groupMatch || itemMatch;
+        });
+
+        renderWiproGroups(trackerId, filtered);
+        // show groups view if searching
+        document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+        document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+
+        // when no results, show the no-results box
+        const noResults = document.getElementById(trackerId + 'NoResults');
+        if (noResults) {
+            if (!filtered || filtered.length === 0) noResults.classList.remove('hidden');
+            else noResults.classList.add('hidden');
+        }
+    }
+
+    // Clear search
+    function clearWiproSearch(trackerId) {
+        const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+        const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+        if (!searchInput) return;
+        searchInput.value = '';
+        if (clearBtn) clearBtn.classList.remove('show');
+        renderWiproGroups(trackerId, wiproData[trackerId]);
+        // restore views
+        document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+        document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+    }
+
+    // Open group or navigate directly if inputUrl present
+    function openGroupDirect(trackerId, groupId) {
+        const groups = wiproData[trackerId] || [];
+        const group = groups.find(g => g.id === groupId);
+        if (!group) return;
+
+        // Example: if you want NPI to do nothing, you can block here:
+        if (group.id === 'NPI') {
+            // do nothing (or show message)
+            return;
+        }
+
+        if (group.items && group.items.length > 0 && group.items[0].inputUrl) {
+            // navigate to the first item's inputUrl
+            const url = group.items[0].inputUrl;
+            if (url && url.trim().length > 0) {
+                window.location.href = url;
+                return;
+            }
+        }
+
+        // otherwise show items panel
+        showWiproItems(trackerId, groupId);
+    }
+
+    // Show items of chosen group
+    function showWiproItems(trackerId, groupId) {
+        const groups = wiproData[trackerId] || [];
+        const group = groups.find(g => g.id === groupId);
+        if (!group) return;
+
+        document.getElementById(trackerId + 'SelectedIcon').textContent = group.icon || '';
+        document.getElementById(trackerId + 'SelectedName').textContent = group.name || '';
+        document.getElementById(trackerId + 'SelectedCount').textContent = (group.items || []).length + ' action(s)';
+
+        let html = '';
+        (group.items || []).forEach(function (item) {
+            html += `
+                        <div class="tracker-item">
+                            <span class="tracker-name">${item.name}</span>
+                            <div class="btn-group-tracker">
+                                <button type="button" class="btn-input" onclick="window.location.href='${item.inputUrl || '#'}'">📥 Open</button>
+                            </div>
+                        </div>
+                    `;
+        });
+
+        document.getElementById(trackerId + 'ItemsList').innerHTML = html || '<div class="no-results"><p>No actions</p></div>';
+        document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
+        document.getElementById(trackerId + 'ItemsView').classList.add('active');
+    }
+
+    // Back to groups
+    function showGroupsWipro() {
+        document.getElementById('wiproGroupsView').classList.remove('hidden');
+        document.getElementById('wiproItemsView').classList.remove('active');
+    }
+
+    // Escape regex helper
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+</script>
 </body>
 </html>
-
+@section HideSidebar { }

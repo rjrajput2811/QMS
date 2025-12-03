@@ -10,6 +10,9 @@ using QMS.Core.Services.SystemLogs;
 using QMS.Core.Repositories.CAReportRepository;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Wordprocessing;
+//using static System.Net.Mime.MediaTypeNames;
+//using System.Drawing;
+
 
 namespace QMS.Controllers
 {
@@ -53,25 +56,21 @@ namespace QMS.Controllers
         [HttpGet]
         public async Task<IActionResult> CAFormateDetails(int caReportId)
         {
-            CAReportViewModel model;
+            // Always initialize a model first
+            CAReportViewModel model = new CAReportViewModel();
 
-            if (caReportId == 0)
+            if (caReportId > 0)
             {
-                model = new CAReportViewModel
-                {
-                    Date = DateTime.Now
-                };
-            }
-            else
-            {
+                // Fetch existing record
                 model = await _cAReportRepository.GetCAReportByIdAsync(caReportId);
 
                 if (model == null)
                 {
-                    return NotFound();
+                    return NotFound($"CA Report not found for Id: {caReportId}");
                 }
             }
 
+            // Return View with model (either new or fetched)
             return View(model);
         }
 
@@ -464,11 +463,64 @@ namespace QMS.Controllers
             ws.Cell(beforeRow, 1).Value = "Before";
             ws.Cell(beforeRow, 6).Value = "After";
 
-            // Set "Photo / Photo"
-            ws.Cell(photoRow, 1).Value = "Photo";
-            ws.Cell(photoRow, 6).Value = "Photo";
+            // helper to convert "/CAReport_Attach/....png" -> physical path
+            // convert "/CAReport_Attach/....png" -> physical path under wwwroot
+            string MapWebPathToPhysical(string? path)
+            {
+                if (string.IsNullOrWhiteSpace(path))
+                    return null;
 
+                // already physical path?
+                if (Path.IsPathRooted(path))
+                    return path;
 
+                path = path.Replace("~", "").TrimStart('/', '\\');
+                path = path.Replace("/", Path.DirectorySeparatorChar.ToString());
+                return Path.Combine(_env.WebRootPath, path);
+            }
+
+            // constants for the photo box – tune once to match your merged cells
+            const int MAX_WIDTH = 520;  // pixels
+            const int MAX_HEIGHT = 220;  // pixels
+
+            //void InsertImageFit(IXLWorksheet sheet, string? relativePath, IXLRange range)
+            //{
+            //    var physical = MapWebPathToPhysical(relativePath);
+            //    if (string.IsNullOrWhiteSpace(physical) || !System.IO.File.Exists(physical))
+            //        return;
+
+            //    using (var img = System.Drawing.Image.FromFile(physical))
+            //    {
+            //        int origW = img.Width;
+            //        int origH = img.Height;
+
+            //        if (origW <= 0 || origH <= 0)
+            //            return;
+
+            //        // scale so it fits MAX_WIDTH x MAX_HEIGHT, keeping aspect ratio
+            //        double scale = Math.Min((double)MAX_WIDTH / origW,
+            //                                (double)MAX_HEIGHT / origH);
+
+            //        // optional: don’t upscale tiny images
+            //        if (scale > 1.0)
+            //            scale = 1.0;
+
+            //        int finalW = (int)(origW * scale);
+            //        int finalH = (int)(origH * scale);
+
+            //        var pic = sheet.AddPicture(physical);
+            //        pic.MoveTo(range.FirstCell());    // top-left of the box
+            //        pic.WithSize(finalW, finalH);     // final size inside box
+            //    }
+            //}
+
+            //// ranges where images go (adjust columns if your template is different)
+            //var beforeRange = ws.Range(photoRow, 1, photoRow, 5);   // Before box
+            //var afterRange = ws.Range(photoRow, 6, photoRow, 10);  // After box
+
+            //// insert Before / After images
+            //InsertImageFit(ws, model.Before_Photo, beforeRange);
+            //InsertImageFit(ws, model.After_Photo, afterRange);
 
             // Footer – RCA Prepared By / Name & Designation / Date
             ws.Cell(rcaRow, 1).Value =

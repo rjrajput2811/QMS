@@ -7,217 +7,294 @@
     var vendor_Id = HttpContextAccessor.HttpContext.Session.GetInt32("Vendor_Id") ?? 0;
     var userName = HttpContextAccessor.HttpContext.Session.GetString("FullName") ?? "";
     var roleId = Context.Session.GetInt32("RoleId") ?? 0;
+    ViewData["Title"] = "SCM Menu";
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SCM Selection</title>
+    <title>SCM Menu</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Bootstrap CSS and Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
-    <title>@ViewData["Title"] - SCM Module</title>
+    <link href="~/css/bootstrap.min.css" rel="stylesheet" />
     <link href="~/css/icomoon/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    @* <link href="~/css/bootstrap.min.css" rel="stylesheet" asp-append-version="true" /> *@
     <link href="~/css/bootstrap_limitless.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/colors.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/components.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/layout.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/lib/fontawesome/css/all.min.css" rel="stylesheet" asp-append-version="true" />
     <link href="~/css/all.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    @*  <style>
-        body {
-            background: #e9ecef;
-        }
-
-        .qms-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-            border: none;
-            border-left: 5px solid transparent;
-        }
-
-            .qms-card:hover {
-                transform: scale(1.01);
-                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-                border-left: 5px solid #0d6efd;
-                background-color: #e9f2ff;
-                cursor: pointer;
-            }
-
-            .qms-card .icon {
-                font-size: 2.5rem;
-                color: #0d6efd;
-                transition: transform 0.3s;
-            }
-
-            .qms-card:hover .icon {
-                transform: rotate(5deg) scale(1.1);
-            }
-
-        .details-section {
-            display: none;
-            animation: fadeIn 0.5s ease-in-out forwards;
-            background: #fff;
-            border-left: 4px solid #0d6efd;
-        }
-
-        @@keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .menu-active {
-            background-color: #eee !important;
-            color: #0c83ff !important;
-            font-weight: bold;
-            font-size: small;
-        }
-
-        .nav-group-sub {
-            display: none;
-        }
-
-            .nav-group-sub.open {
-                display: block; /* Show the submenu when it has the 'open' class */
-                color: #FFFF00 !important;
-            }
-    </style> *@
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/popper.js/dist/umd/popper.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
 
     <style>
         :root {
             --border: #e4e7eb;
-            --hover-bg: #f8f9fa;
-            --label-color: #222;
-            --pill-radius: 8px;
-            --transition: all 0.25s ease-in-out;
+            --accent-start: #0ea5e9;
+            --accent-end: #0284c7;
         }
 
-        .card-body {
-            background: #f3f4f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            margin-top: -45px;
-        }
-
-        .card-section {
-            border: 1px solid var(--border);
-            border-radius: 18px;
-            background: #fff;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-            width: 520px;
-            max-width: 90%;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 22px;
-            background: #f9fafb;
-            border-bottom: 1px solid var(--border);
-            font-weight: 600;
-            font-size: 18px;
-            color: #111;
-        }
-
-        .list-group {
+        html, body {
             margin: 0;
             padding: 0;
-            list-style: none;
+            height: 100%;
+            /* allow vertical scroll if content taller than viewport */
+            overflow: hidden;
+            overflow-x: hidden !important;
         }
 
-        .list-group-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 24px;
-            border-bottom: 1px dashed var(--border);
-            color: var(--label-color);
-            font-size: 18px;
+        .row {
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+
+        /* palette container (copied Wipro palette styling) */
+        .tracker-palette {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+
+            .tracker-palette .palette-header {
+                background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+                color: #fff;
+                padding: 12px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+                .tracker-palette .palette-header h5 {
+                    margin: 0;
+                    font-weight: 700;
+                    font-size: 18px;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+
+            .tracker-palette .palette-search {
+                padding: 10px 16px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .tracker-palette .search-wrapper {
+                display: flex;
+                align-items: center;
+                background: #f3f4f6;
+                border-radius: 10px;
+                padding: 8px 14px;
+                border: 2px solid transparent;
+            }
+
+                .tracker-palette .search-wrapper:focus-within {
+                    background: #fff;
+                    border-color: var(--accent-start);
+                    box-shadow: 0 0 0 3px rgba(14,165,233,0.12);
+                }
+
+                .tracker-palette .search-wrapper input {
+                    border: none;
+                    background: transparent;
+                    outline: none;
+                    flex: 1;
+                    font-size: 14px;
+                    margin-left: 8px;
+                }
+
+            .tracker-palette .palette-content {
+                max-height: 520px;
+                overflow-y: auto;
+                padding-bottom: 8px;
+            }
+
+            .tracker-palette .section-label {
+                font-size: 11px;
+                color: #9ca3af;
+                text-transform: uppercase;
+                padding: 10px 16px 6px;
+                font-weight: 600;
+            }
+
+            .tracker-palette .group-list {
+                padding: 0 8px 8px;
+            }
+
+            .tracker-palette .group-item {
+                display: flex;
+                align-items: center;
+                padding: 12px 14px;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all .16s;
+                margin-bottom: 8px;
+            }
+
+                .tracker-palette .group-item:hover {
+                    background: #e0f2fe;
+                }
+
+            .tracker-palette .group-icon {
+                background: transparent !important;
+                font-size: 22px;
+                margin-right: 12px;
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .tracker-palette .group-info {
+                flex: 1;
+            }
+
+            .tracker-palette .group-name {
+                font-weight: 600;
+                color: #1f2937;
+                font-size: 14px;
+                margin-bottom: 2px;
+            }
+
+            .tracker-palette .group-count {
+                font-size: 12px;
+                color: #9ca3af;
+            }
+
+            .tracker-palette .items-view {
+                padding: 16px;
+                display: none;
+            }
+
+                .tracker-palette .items-view.active {
+                    display: block;
+                }
+
+            .tracker-palette .back-header {
+                display: flex;
+                align-items: center;
+                padding-bottom: 14px;
+                margin-bottom: 14px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .tracker-palette .back-btn {
+                background: none;
+                border: none;
+                padding: 6px;
+                border-radius: 8px;
+                color: #6b7280;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+
+            .tracker-palette .selected-group-icon {
+                font-size: 28px;
+                margin-right: 12px;
+            }
+
+            .tracker-palette .selected-group-name {
+                font-weight: 700;
+                color: #1f2937;
+                font-size: 16px;
+                margin-bottom: 2px;
+            }
+
+            .tracker-palette .selected-group-count {
+                font-size: 12px;
+                color: #9ca3af;
+            }
+
+            .tracker-palette .tracker-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px 14px;
+                background: #f9fafb;
+                border-radius: 10px;
+                border: 1px solid #e5e7eb;
+                margin-bottom: 8px;
+            }
+
+                .tracker-palette .tracker-item .tracker-name {
+                    font-weight: 500;
+                    color: #374151;
+                    font-size: 14px;
+                }
+
+            .tracker-palette .btn-group-tracker {
+                display: flex;
+                gap: 8px;
+            }
+
+            .tracker-palette .btn-input {
+                background: #22c55e;
+                border: none;
+                color: #fff;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 6px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+
+            .tracker-palette .btn-output {
+                background: #f97316;
+                border: none;
+                color: #fff;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 6px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+            }
+
+            .tracker-palette .palette-footer {
+                background: #f9fafb;
+                padding: 10px 16px;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                color: #6b7280;
+            }
+
+            .tracker-palette .group-item .arrow-icon {
+                color: #d1d5db;
+            }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .highlight {
+            background: #fef08a;
+            padding: 0 3px;
+            border-radius: 3px;
+        }
+
+        .clear-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
             cursor: pointer;
-            transition: var(--transition);
+            padding: 0;
+            display: none !important;
         }
 
-            .list-group-item:last-child {
-                border-bottom: none;
+            .clear-btn.show {
+                display: block !important;
             }
-
-            .list-group-item:hover {
-                background: var(--hover-bg);
-                transform: scale(1.01);
-                color: orange;
-            }
-
-        .label {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .badge-pill {
-            font-size: 13px;
-            padding: 5px 10px;
-            border-radius: var(--pill-radius);
-            font-weight: 600;
-            letter-spacing: .3px;
-            min-width: 70px;
-            text-align: center;
-            margin-left: auto;
-        }
-
-        .badge-blue {
-            background: #007bff;
-            color: #fff;
-        }
-
-        .badge-gray {
-            background: #6c757d;
-            color: #fff;
-        }
-
-        .badge-green {
-            background: #198754;
-            color: #fff;
-        }
-
-        .badge-cyan {
-            background: #0dcaf0;
-            color: #fff;
-        }
-
-        .badge-light {
-            background: #e9ecef;
-            color: #333;
-        }
-
-        .icon-right {
-            color: #aaa;
-            font-size: 16px;
-            margin-left: 10px;
-        }
     </style>
 </head>
 <body>
-
     <div class="navbar navbar-dark navbar-expand-lg navbar-static">
         <div class="d-md-none">
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-mobile">
@@ -237,9 +314,9 @@
                 </li>
 
                 <div class="navbar-brand">
-                    <span class="h5"><strong>Supply Chain Mangamanet(SCM) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.3.3 01/12/2025</span>
+                    <span class="h5"><strong>Supply Chain Management (SCM) </strong></span>
+                    <span id="versionSpan" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.3.2 19/11/2025</span>
                 </div>
-
             </ul>
             <span class="badge ml-md-3 mr-md-auto"> </span>
 
@@ -247,26 +324,23 @@
                 <li class="nav-item">
                     @if (roleId == (int)UserRoles.Admin || roleId == (int)UserRoles.Manager || roleId == (int)UserRoles.Staff)
                     {
-                        <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
+                        <button id="homeButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("OptionSelection", "Home")'">
                             <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
                         </button>
                     }
                     else
                     {
-                        <button id="addButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("VendorOptionSelection", "Home")'" style="margin: 5px 3px;width: 107px; font-size:15px">
+                        <button id="homeButton" type="button" class="btn btn-warning legitRipple" onclick="location.href='@Url.Action("VendorOptionSelection", "Home")'">
                             <i class="fas fa-solid fa-house-user mr-2 fa-1x"></i>Home
                         </button>
                     }
                 </li>
             </ul>
 
-
             <ul class="navbar-nav">
                 <li class="nav-item dropdown dropdown-user">
                     <a href="#" class="navbar-nav-link d-flex align-items-center dropdown-toggle" data-toggle="dropdown">
-                        <span>
-                            <span class="font-weight-bold">@HttpContextAccessor.HttpContext.Session.GetString("FullName")</span>
-                        </span>
+                        <span class="font-weight-bold">@HttpContextAccessor.HttpContext.Session.GetString("FullName")</span>
                     </a>
 
                     <div class="dropdown-menu dropdown-menu-right">
@@ -288,135 +362,65 @@
         </div>
     </div>
 
-    @*  <div class="container py-5" style="max-width:30%;">
-        <div class="d-flex flex-column gap-2">
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("PCCalendar","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-calendar icon me-3"></i>
-                    <h5 class="mb-0">PC Calendar</h5>
-                </div>
-            </div>
-
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("UploadOpenPO","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkred"></i>
-                    <h5 class="mb-0">Upload Po Details</h5>
-                </div>
-            </div>
-
-
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("Vendor","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-person-badge icon me-3" style="color:seagreen"></i>
-                    <h5 class="mb-0">Vendor</h5>
-                </div>
-            </div>
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("OpenPo","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-book icon me-3" style="color:blueviolet"></i>
-                    <h5 class="mb-0">Planner</h5>
-                </div>
-            </div>
-
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("UploadOpenSO","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkorchid"></i>
-                    <h5 class="mb-0">Upload SO Details</h5>
-                </div>
-            </div>
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("MTAMaster","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-layout-text-sidebar-reverse icon me-3" style="color:darkorchid"></i>
-                    <h5 class="mb-0">Upload MTA Master</h5>
-                </div>
-            </div>
-
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("SalesOrder","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
-                    <h5 class="mb-0">Sales Order Details</h5>
-                </div>
-            </div>
-
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("MTO","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
-                    <h5 class="mb-0">MTO</h5>
-                </div>
-            </div>
-
-
-            <div class="card qms-card p-2" onclick="location.href='@Url.Action("MTA","OpenPo")'">
-                <div class="d-flex align-items-center">
-                    <i class="bi bi-tools icon me-3" style="color:blueviolet"></i>
-                    <h5 class="mb-0">MTA</h5>
-                </div>
-            </div>
-
+    <!-- Back button row (same placement as Wipro) -->
+    <div class="row p-3" style="margin-top:-1px;">
+        <div class="col-12 d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-primary" style="width:120px; font-size:15px"
+                    onclick="window.location.href='@Url.Action("VendorOptionSelection","Home")'">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
         </div>
-    </div> *@
+    </div>
 
+    <!-- Centered palette matching Wipro / ProductValidation -->
+    <div class="row p-3 d-flex justify-content-center" style="margin-top:-81px;">
+        <div class="col-md-5 col-lg-4">
+            <div class="tracker-palette" id="scmPalette">
 
-    <div class="card-body">
-        <div class="card-section">
-            <div class="card-header">
-                <span><i class="bi bi-diagram-3 me-2"></i> Core Processes</span>
-                <i class="bi bi-chevron-down"></i>
+                <!-- header -->
+                <div class="palette-header">
+                    <div>
+                        <h5><i class="fas fa-th-large"></i> SCM Menu</h5>
+                    </div>
+                    <div></div>
+                </div>
+
+                <!-- search -->
+                <div class="palette-search">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="palette-search-input" placeholder="Search SCM..." data-target="scm">
+                        <button type="button" class="clear-btn" data-target="scm"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <!-- content -->
+                <div class="palette-content">
+                    <div class="groups-view" id="scmGroupsView">
+                        <div class="section-label" id="scmLabel">ALL SCM MENU</div>
+                        <div class="group-list" id="scmGroupList"></div>
+                        <div class="no-results hidden" id="scmNoResults"><i class="far fa-frown"></i><p>No menu items</p></div>
+                    </div>
+
+                    <div class="items-view" id="scmItemsView">
+                        <div class="back-header">
+                            <button type="button" class="back-btn" onclick="showGroupsSCM()"><i class="fas fa-arrow-left"></i></button>
+                            <span class="selected-group-icon" id="scmSelectedIcon"></span>
+                            <div>
+                                <div class="selected-group-name" id="scmSelectedName"></div>
+                                <div class="selected-group-count" id="scmSelectedCount"></div>
+                            </div>
+                        </div>
+                        <div id="scmItemsList"></div>
+                    </div>
+                </div>
+
+                <!-- footer -->
+                <div class="palette-footer">
+                    <div></div>
+                    <span id="scmGroupCount"></span>
+                </div>
             </div>
-            <ul class="list-group">
-                <li class="list-group-item" onclick="location.href='@Url.Action("PCCalendar","OpenPo")'">
-                    <span class="label"><i class="bi bi-calendar3"></i> PC Calendar</span>
-                    <span class="badge-pill badge-blue">Plan</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("UploadOpenPO","OpenPo")'">
-                    <span class="label"><i class="bi bi-file-earmark-arrow-up"></i> Upload PO Details</span>
-                    <span class="badge-pill badge-gray">CSV/XLS</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("Vendor","OpenPo")'">
-                    <span class="label"><i class="bi bi-people"></i> Vendor Management</span>
-                    <span class="badge-pill badge-green">Profiles</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("OpenPo","OpenPo")'">
-                    <span class="label"><i class="bi bi-calendar2-week"></i> Planner</span>
-                    <span class="badge-pill badge-cyan">Schedule</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("MTAMaster","OpenPo")'">
-                    <span class="label"><i class="bi bi-box-seam"></i> Material Master</span>
-                    <span class="badge-pill badge-light">MTO/MTA tags</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("UploadOpenSO","OpenPo")'">
-                    <span class="label"><i class="bi bi-upload"></i> Upload SO Details</span>
-                    <span class="badge-pill badge-gray">CSV/XLS</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-                <li class="list-group-item" onclick="location.href='@Url.Action("SalesOrder","OpenPo")'">
-                    <span class="label"><i class="bi bi-journal-text"></i> Sales Order Details</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-
-                <li class="list-group-item" onclick="location.href='@Url.Action("MTO","OpenPo")'">
-                    <span class="label"><i class="bi bi-clipboard-check"></i>MTO</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-
-                <li class="list-group-item" onclick="location.href='@Url.Action("MTA","OpenPo")'">
-                    <span class="label"><i class="bi bi-sort-up-alt"></i>MTA</span>
-                    <i class="bi bi-chevron-right icon-right"></i>
-                </li>
-            </ul>
         </div>
     </div>
 
@@ -424,40 +428,185 @@
         @RenderBody()
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <!-- Core JS files -->
-    <script src="~/js/app.js" asp-append-version="true"></script>
-    <script src="~/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js" asp-append-version="true"></script>
-    <script src="~/js/jquery.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/blockui.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/d3.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/d3_tooltip.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/switchery.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/moment.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/daterangepicker.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/echarts.min.js" asp-append-version="true"></script>
-    <script src="~/js/Dashboard/progress.js" asp-append-version="true"></script>
-    <script src="~/js/Dashboard/pie_basic.js" asp-append-version="true"></script>
-    <script src="~/js/Dashboard/columns_basic.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/noty.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/popupalert.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/pnotify.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/interactions.min.js" asp-append-version="true"></script>
-    <script src="~/lib/bootstrap/dist/js/touch.min.js" asp-append-version="true"></script>
-    <script src="~/js/components_collapsible.js" asp-append-version="true"></script>
-
     <script>
-        function showDetails(title) {
-            const section = document.getElementById("detailsSection");
-            const titleElement = document.getElementById("detailsTitle");
-            section.style.display = 'block';
-            titleElement.textContent = `${title} - Details`;
+        // SCM menu groups (kept routes/content exactly as you had)
+        const scmGroups = [
+            { id: 'pc-calendar', name: 'PC Calendar', icon: '📅', items: [{ name: 'PC Calendar', inputUrl: '@Url.Action("PCCalendar", "OpenPo")', outputUrl: '' }] },
+            { id: 'upload-po', name: 'Upload PO Details', icon: '📤', items: [{ name: 'Upload PO Details', inputUrl: '@Url.Action("UploadOpenPO", "OpenPo")', outputUrl: '' }] },
+            { id: 'vendor-management', name: 'Vendor Management', icon: '👥', items: [{ name: 'Vendor Management', inputUrl: '@Url.Action("Vendor", "OpenPo")', outputUrl: '' }] },
+            { id: 'planner', name: 'Planner', icon: '🗓️', items: [{ name: 'Planner', inputUrl: '@Url.Action("OpenPo", "OpenPo")', outputUrl: '' }] },
+            { id: 'material-master', name: 'Material Master', icon: '📦', items: [{ name: 'Material Master', inputUrl: '@Url.Action("MTAMaster", "OpenPo")', outputUrl: '' }] },
+            { id: 'upload-so', name: 'Upload SO Details', icon: '⬆️', items: [{ name: 'Upload SO Details', inputUrl: '@Url.Action("UploadOpenSO", "OpenPo")', outputUrl: '' }] },
+            { id: 'sales-order', name: 'Sales Order Details', icon: '🧾', items: [{ name: 'Sales Order Details', inputUrl: '@Url.Action("SalesOrder", "OpenPo")', outputUrl: '' }] },
+            { id: 'mto', name: 'MTO', icon: '✅', items: [{ name: 'MTO', inputUrl: '@Url.Action("MTO", "OpenPo")', outputUrl: '' }] },
+            { id: 'mta', name: 'MTA', icon: '🔀', items: [{ name: 'MTA', inputUrl: '@Url.Action("MTA", "OpenPo")', outputUrl: '' }] }
+        ];
+
+        const scmData = { scm: scmGroups };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            renderSCMGroups('scm', scmGroups);
+
+            // wire up search inputs
+            document.querySelectorAll('.palette-search-input').forEach(function (input) {
+                input.addEventListener('input', function () {
+                    const target = this.getAttribute('data-target');
+                    filterSCMGroups(target);
+                });
+            });
+
+            // wire up clear buttons
+            document.querySelectorAll('.clear-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    const target = this.getAttribute('data-target');
+                    clearSCMSearch(target);
+                });
+            });
+        });
+
+        function renderSCMGroups(trackerId, groups) {
+            const container = document.getElementById(trackerId + 'GroupList');
+            const noResults = document.getElementById(trackerId + 'NoResults');
+            const label = document.getElementById(trackerId + 'Label');
+            const countEl = document.getElementById(trackerId + 'GroupCount');
+            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+            const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+            countEl.textContent = groups.length + ' Selection(s)';
+
+            if (!groups || groups.length === 0) {
+                container.innerHTML = '';
+                if (noResults) noResults.classList.remove('hidden');
+                if (label) label.style.display = 'none';
+                return;
+            }
+
+            if (noResults) noResults.classList.add('hidden');
+            if (label) label.style.display = 'block';
+            if (label) label.textContent = searchTerm ? ('Found ' + groups.length + ' item(s)') : 'ALL SCM MENU';
+
+            let html = '';
+            groups.forEach(function (group) {
+                const highlightedName = searchTerm
+                    ? group.name.replace(new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi'), '<span class="highlight">$1</span>')
+                    : group.name;
+
+                html += `
+                        <div class="group-item" onclick="openGroupDirectSCM('scm','${group.id}')">
+                            <div class="group-icon">${group.icon}</div>
+                            <div class="group-info">
+                                <div class="group-name">${highlightedName}</div>
+                                <div class="group-count">${group.items.length} Selection(s)</div>
+                            </div>
+                            <i class="fas fa-chevron-right arrow-icon"></i>
+                        </div>
+                    `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function filterSCMGroups(trackerId) {
+            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+            const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+            if (!searchInput) return;
+
+            const term = searchInput.value.trim().toLowerCase();
+
+            if (clearBtn) {
+                if (term.length > 0) clearBtn.classList.add('show');
+                else clearBtn.classList.remove('show');
+            }
+
+            const allGroups = scmData[trackerId] || [];
+            if (!term) {
+                renderSCMGroups(trackerId, allGroups);
+                document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+                document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+                return;
+            }
+
+            const filtered = allGroups.filter(function (g) {
+                const groupMatch = g.name.toLowerCase().includes(term);
+                const itemMatch = (g.items || []).some(it => it.name.toLowerCase().includes(term));
+                return groupMatch || itemMatch;
+            });
+
+            renderSCMGroups(trackerId, filtered);
+
+            const noResults = document.getElementById(trackerId + 'NoResults');
+            if (noResults) {
+                if (!filtered || filtered.length === 0) noResults.classList.remove('hidden');
+                else noResults.classList.add('hidden');
+            }
+
+            document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+        }
+
+        function clearSCMSearch(trackerId) {
+            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+            const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+            if (!searchInput) return;
+            searchInput.value = '';
+            if (clearBtn) clearBtn.classList.remove('show');
+            renderSCMGroups(trackerId, scmData[trackerId]);
+            document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+        }
+
+        function openGroupDirectSCM(trackerId, groupId) {
+            const groups = scmData[trackerId] || [];
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
+
+            if (group.items && group.items.length > 0 && group.items[0].inputUrl) {
+                const url = group.items[0].inputUrl;
+                if (url && url.trim().length > 0) {
+                    window.location.href = url;
+                    return;
+                }
+            }
+
+            showSCMItems(trackerId, groupId);
+        }
+
+        function showSCMItems(trackerId, groupId) {
+            const groups = scmData[trackerId] || [];
+            const group = groups.find(g => g.id === groupId);
+            if (!group) return;
+
+            document.getElementById(trackerId + 'SelectedIcon').textContent = group.icon || '';
+            document.getElementById(trackerId + 'SelectedName').textContent = group.name || '';
+            document.getElementById(trackerId + 'SelectedCount').textContent = (group.items || []).length + ' action(s)';
+
+            let html = '';
+            (group.items || []).forEach(function (item) {
+                html += `
+                        <div class="tracker-item">
+                            <span class="tracker-name">${item.name}</span>
+                            <div class="btn-group-tracker">
+                                <button type="button" class="btn-input" onclick="window.location.href='${item.inputUrl || '#'}'">📥 Open</button>
+                                ${item.outputUrl ? `<button type="button" class="btn-output" onclick="window.location.href='${item.outputUrl}'">📤 Output</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+            });
+
+            document.getElementById(trackerId + 'ItemsList').innerHTML = html || '<div class="no-results"><p>No actions</p></div>';
+            document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
+            document.getElementById(trackerId + 'ItemsView').classList.add('active');
+        }
+
+        function showGroupsSCM() {
+            document.getElementById('scmGroupsView').classList.remove('hidden');
+            document.getElementById('scmItemsView').classList.remove('active');
+        }
+
+        function escapeRegex(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         }
     </script>
-
 </body>
 </html>
+@section HideSidebar { }

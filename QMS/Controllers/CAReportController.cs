@@ -37,6 +37,12 @@ namespace QMS.Controllers
             return Json(result);
         }
 
+        public async Task<JsonResult> GetCSOTrackingAsync(DateTime? startDate, DateTime? endDate)
+        {
+            var result = await _cAReportRepository.GetCSOTrackingAsync(startDate, endDate);
+            return Json(result);
+        }
+
         [HttpGet]
         public async Task<ActionResult> GetCAReportByIdAsync(int internalTypeId)
         {
@@ -190,10 +196,23 @@ namespace QMS.Controllers
                     return Json(new { Success = false, Errors = errors });
                 }
 
-                bool exists = await _cAReportRepository.CheckDuplicate(model.Complaint_No!.Trim(), 0);
-                if (exists)
+                bool exists;
+
+                if (model.Id > 0)
                 {
-                    return Json(new { Success = false, Errors = new[] { "CA Report Detail already exists." } });
+                    // UPDATE: exclude same Id record
+                    exists = await _cAReportRepository.CheckDuplicate(
+                        model.Complaint_No!.Trim(),
+                        model.Id
+                    );
+                }
+                else
+                {
+                    // INSERT: check if complaint already used anywhere
+                    exists = await _cAReportRepository.CheckDuplicate(
+                        model.Complaint_No!.Trim(),
+                        0
+                    );
                 }
 
                 var user = HttpContext.Session.GetString("FullName") ?? "System";

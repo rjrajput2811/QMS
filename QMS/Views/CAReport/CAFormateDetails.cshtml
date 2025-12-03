@@ -264,7 +264,7 @@
                                             {
                                                 <input type="date" name="Report_Date"
                                                        id="complaintDate"
-                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@Model?.Report_Date">
+                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@Model?.Report_Date?.ToString("yyyy-MM-dd")">
                                             }
                                             else
                                             {
@@ -563,6 +563,7 @@
                                             @Model?.Interim_Corrective
                                         </td>
                                     </tr>
+                                        <input type="hidden" id="Interim_Cor_Date" name="Interim_Cor_Date" value="@Model?.Interim_Cor_Date" />
 
                                     <!-- Root Cause Analysis -->
                                     <tr>
@@ -578,6 +579,7 @@
                                             @Model?.Root_Cause_Anal
                                         </td>
                                     </tr>
+                                    <input type="hidden" name="Root_Cause_Date" id="Root_Cause_Date" value="@Model?.Root_Cause_Date" />
 
                                     <!-- Corrective Action -->
                                     <tr>
@@ -593,7 +595,7 @@
                                             @Model?.Corrective_Action
                                         </td>
                                     </tr>
-
+                                    <input type="hidden" name="Corrective_Action_Date" id="Corrective_Action_Date" value="@Model?.Corrective_Action_Date" />
 
                                 </tbody>
                             </table>
@@ -807,6 +809,35 @@
 
         $(document).ready(function () {
             initMonitoringTable();
+
+            // Map data-name => hidden input id
+            const dateMapping = {
+                "Interim_Corrective": "Interim_Cor_Date",
+                "Root_Cause_Anal": "Root_Cause_Date",
+                "Corrective_Action": "Corrective_Action_Date"
+            };
+
+            $("[contenteditable='true']").on("input", function () {
+                const field = $(this).data("name");
+                const hiddenId = dateMapping[field];
+
+                if (!hiddenId) return; // safety
+
+                const hiddenInput = $("#" + hiddenId);
+
+                // Set date only once
+                if (!hiddenInput.val()) {
+
+                    const now = new Date();
+                    const day = String(now.getDate()).padStart(2, "0");
+                    const month = String(now.getMonth() + 1).padStart(2, "0");
+                    const year = now.getFullYear();
+
+                    const formatted = `${day}-${month}-${year}`;
+
+                    hiddenInput.val(formatted);
+                }
+            });
         });
 
         function createMonitoringDeleteButton() {

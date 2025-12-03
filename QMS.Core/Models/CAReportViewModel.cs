@@ -77,6 +77,16 @@ namespace QMS.Core.Models
         public IFormFile? Before_PhotoFile { get; set; }
         public IFormFile? After_PhotoFile { get; set; }
 
+        public string? Issue_Problems { get; set; }   // or any name you like
+
+        public DateTime? Interim_Cor_Date { get; set; }
+        public DateTime? Root_Cause_Date { get; set; }
+        public DateTime? Corrective_Action_Date { get; set; }
+        public int? Closure_Day { get; set; }
+        public int? Interim_Day { get; set; }
+        public int? Root_Cause_Day { get; set; }
+        public int? Corrective_Action_Day { get; set; }
+
     }
 
     public class CAReportDetailViewModel

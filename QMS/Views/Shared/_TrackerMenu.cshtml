@@ -73,7 +73,7 @@
         .tracker-palette .palette-header {
             background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
             color: #fff;
-            padding: 16px 20px;
+            padding: 10px 20px;
         }
 
         .tracker-palette .palette-header h5 {
@@ -88,7 +88,7 @@
         }
 
         .tracker-palette .palette-search {
-            padding: 12px 16px;
+            padding: 10px 16px;
             border-bottom: 1px solid #e5e7eb;
         }
 
@@ -357,6 +357,29 @@
         .tracker-palette .groups-view.hidden {
             display: none;
         }
+
+        /* OFF (unchecked) state → GREEN */
+        /* OFF (unchecked) → WHITE background */
+        .custom-control-input ~ .custom-control-label::before {
+            background-color: #ffffff !important; /* white */
+            border-color: #cccccc !important; /* light grey border */
+        }
+
+        /* Circle knob → GREY */
+        .custom-control-input ~ .custom-control-label::after {
+            background-color: #888888 !important; /* grey */
+        }
+
+        /* ON (checked) → GREEN background */
+        .custom-control-input:checked ~ .custom-control-label::before {
+            background-color: #28a745 !important; /* green */
+            border-color: #28a745 !important;
+        }
+
+        /* ON (checked) → Circle still GREY */
+        .custom-control-input:checked ~ .custom-control-label::after {
+            background-color: #888888 !important; /* grey */
+        }
     </style>
 </head>
 <body>
@@ -447,13 +470,18 @@
                             <h5 class="m-0">
                                 <i class="fas fa-tasks mr-2"></i>Tracker
                             </h5>
-                            <small>Click group to view trackers</small>
+                     
                         </div>
 
-                        <!-- 🔵 NEW BUTTON (Always Visible) -->
-                          @*   <button type="button" class="btn btn-light btn-sm" id="expandAllBtn" title="Expand All">
-                                <i class="fas fa-expand"></i>
-                            </button> *@
+
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="expandAllSwitch" onchange="toggleExpandAll()">
+                          
+                        </div>
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="expandAllSwitch" onchange="toggleExpandAll()">
+                            <label class="custom-control-label" for="expandAllSwitch"></label>
+                        </div>
 
                     </div>
 
@@ -461,7 +489,7 @@
                     <div class="palette-search">
                         <div class="search-wrapper">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="palette-search-input" placeholder="Search group..." data-target="tracker1">
+                            <input type="text" class="palette-search-input" placeholder="Search Tracker..." data-target="tracker1">
                             <button type="button" class="clear-btn" data-target="tracker1">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -473,13 +501,13 @@
 
                         <!-- Groups View -->
                         <div class="groups-view" id="tracker1GroupsView">
-                            <div class="section-label" id="tracker1Label">ALL GROUPS</div>
+                            <div class="section-label" id="tracker1Label">ALL TRACKER</div>
                             <div class="group-list" id="tracker1GroupList">
                                 <!-- Groups rendered by JS -->
                             </div>
                             <div class="no-results" id="tracker1NoResults" style="display:none;">
                                 <i class="far fa-frown"></i>
-                                <p>No groups found</p>
+                                <p>No Tracker found</p>
                             </div>
                         </div>
 
@@ -944,35 +972,27 @@
         // ============================================
         // INITIALIZATION
         // ============================================
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize all trackers
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize ONLY tracker1 (because 2 and 3 are commented out in HTML)
             renderGroups('tracker1', tracker1Groups);
-            renderGroups('tracker2', tracker2Groups);
-            renderGroups('tracker3', tracker3Groups);
 
             // Setup search inputs
-            document.querySelectorAll('.palette-search-input').forEach(function(input) {
-                input.addEventListener('input', function() {
+            document.querySelectorAll('.palette-search-input').forEach(function (input) {
+                input.addEventListener('input', function () {
                     const target = this.getAttribute('data-target');
                     filterGroups(target);
                 });
             });
 
             // Setup clear buttons
-            document.querySelectorAll('.clear-btn').forEach(function(btn) {
-                btn.addEventListener('click', function() {
+            document.querySelectorAll('.clear-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
                     const target = this.getAttribute('data-target');
                     clearSearch(target);
                 });
             });
-            const expandAllBtn = document.getElementById('expandAllBtn');
-            if (expandAllBtn) {
-                expandAllBtn.addEventListener('click', function () {
-                    expandAllGroups('tracker1');
-                });
-            }
         });
-        // ============================================
+
         // EXPAND ALL GROUPS (show all rows/items)
         // ============================================
         function expandAllGroups(trackerId) {
@@ -990,7 +1010,7 @@
             const countEl = document.getElementById(trackerId + 'SelectedCount');
 
             if (iconEl) iconEl.textContent = '📂';
-            if (nameEl) nameEl.textContent = 'All Groups';
+            if (nameEl) nameEl.textContent = 'All Tracker';
             if (countEl) countEl.textContent = totalItems + ' tracker(s)';
 
             // Build HTML for all groups + their items
@@ -1036,47 +1056,52 @@
         // ============================================
         // RENDER GROUPS
         // ============================================
-        function renderGroups(trackerId, groups) {
-            const container = document.getElementById(trackerId + 'GroupList');
-            const noResults = document.getElementById(trackerId + 'NoResults');
-            const label = document.getElementById(trackerId + 'Label');
-            const countEl = document.getElementById(trackerId + 'GroupCount');
-            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
-            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+      function renderGroups(trackerId, groups) {
+    const container = document.getElementById(trackerId + 'GroupList');
+    const noResults = document.getElementById(trackerId + 'NoResults');
+    const label = document.getElementById(trackerId + 'Label');
+    const countEl = document.getElementById(trackerId + 'GroupCount');
+    const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
 
-            // Update count
-            countEl.textContent = groups.length + ' groups';
+    // 🔹 calculate total trackers
+    let totalTrackers = 0;
+    groups.forEach(g => totalTrackers += g.items.length);
 
-            if (groups.length === 0) {
-                container.innerHTML = '';
-                noResults.style.display = 'block';
-                label.style.display = 'none';
-                return;
-            }
+    // 🔹 show trackers instead of groups
+    countEl.textContent = totalTrackers + ' tracker';
 
-            noResults.style.display = 'none';
-            label.style.display = 'block';
-            label.textContent = searchTerm ? 'Found ' + groups.length + ' group(s)' : 'ALL GROUPS';
+    if (groups.length === 0) {
+        container.innerHTML = '';
+        noResults.style.display = 'block';
+        label.style.display = 'none';
+        return;
+    }
 
-            let html = '';
-            groups.forEach(function(group) {
-                const highlightedName = searchTerm
-                    ? group.name.replace(new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi'), '<span class="highlight">$1</span>')
-                    : group.name;
+    noResults.style.display = 'none';
+    label.style.display = 'block';
+    label.textContent = searchTerm ? 'Found ' + groups.length + ' group(s)' : 'ALL TRACKER';
 
-                html += `
-                    <div class="group-item" onclick="showItems('${trackerId}', '${group.id}')">
-                        <span class="group-icon">${group.icon}</span>
-                        <div class="group-info">
-                            <div class="group-name">${highlightedName}</div>
-                            <div class="group-count">${group.items.length} tracker(s)</div>
-                        </div>
-                        <i class="fas fa-chevron-right arrow-icon"></i>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
+    let html = '';
+    groups.forEach(function (group) {
+        const highlightedName = searchTerm
+            ? group.name.replace(new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi'), '<span class="highlight">$1</span>')
+            : group.name;
+
+        html += `
+            <div class="group-item" onclick="showItems('${trackerId}', '${group.id}')">
+                <span class="group-icon">${group.icon}</span>
+                <div class="group-info">
+                    <div class="group-name">${highlightedName}</div>
+                    <div class="group-count">${group.items.length} tracker(s)</div>
+                </div>
+                <i class="fas fa-chevron-right arrow-icon"></i>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
 
         // ============================================
         // FILTER GROUPS
@@ -1117,6 +1142,20 @@
             clearBtn.classList.remove('show');
             renderGroups(trackerId, trackerData[trackerId]);
         }
+        function toggleExpandAll() {
+            const isChecked = document.getElementById("expandAllSwitch").checked;
+
+            if (isChecked) {
+                // Expand ALL
+                expandAllGroups("tracker1");
+            } else {
+                // Restore normal groups list
+                showGroups("tracker1");
+                renderGroups("tracker1", trackerData["tracker1"]);
+            }
+        }
+
+
 
         // ============================================
         // SHOW ITEMS

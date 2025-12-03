@@ -151,6 +151,15 @@ namespace QMS.Core.Repositories.CAReportRepository
                     new SqlParameter("@Date", SqlDbType.DateTime) {
                         Value = (object?)model.Date ?? DBNull.Value
                     },
+                    new SqlParameter("@Interim_Cor_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Interim_Cor_Date ?? DBNull.Value
+                    },
+                    new SqlParameter("@Root_Cause_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Root_Cause_Date ?? DBNull.Value
+                    },
+                    new SqlParameter("@Corrective_Action_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Corrective_Action_Date ?? DBNull.Value
+                    },
                     new SqlParameter("@CreatedBy", SqlDbType.NVarChar, 500) {
                         Value = (object?)model.CreatedBy ?? DBNull.Value
                     },
@@ -169,7 +178,7 @@ namespace QMS.Core.Repositories.CAReportRepository
                     "@Problem_Visual_ImgA, @Problem_Visual_ImgB, @Problem_Visual_ImgC, @Initial_Observ, " +
                     "@Man_Issue_Prob, @Design_Prob, @Site_Issue_Prob, @Com_Gap_Prob, @Install_Issues_Prov, " +
                     "@Wrong_App_Prob, @Interim_Corrective, @Root_Cause_Anal, @Corrective_Action, " +
-                    "@Before_Photo, @After_Photo, @Rca_Prepared_By, @Name_Designation, @Date, @CreatedBy, " +
+                    "@Before_Photo, @After_Photo, @Rca_Prepared_By, @Name_Designation, @Date,@Interim_Cor_Date,@Root_Cause_Date,@Corrective_Action_Date,@CreatedBy, " +
                     "@MoniPlans";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
@@ -320,6 +329,15 @@ namespace QMS.Core.Repositories.CAReportRepository
                     new SqlParameter("@Date", SqlDbType.DateTime) {
                         Value = (object?)model.Date ?? DBNull.Value
                     },
+                    new SqlParameter("@Interim_Cor_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Interim_Cor_Date ?? DBNull.Value
+                    },
+                    new SqlParameter("@Root_Cause_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Root_Cause_Date ?? DBNull.Value
+                    },
+                    new SqlParameter("@Corrective_Action_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Corrective_Action_Date ?? DBNull.Value
+                    },
                     new SqlParameter("@UpdatedBy", SqlDbType.NVarChar, 500) {
                         Value = (object?)model.UpdatedBy ?? DBNull.Value
                     },
@@ -338,7 +356,7 @@ namespace QMS.Core.Repositories.CAReportRepository
                     "@Problem_Visual_ImgA, @Problem_Visual_ImgB, @Problem_Visual_ImgC, @Initial_Observ, " +
                     "@Man_Issue_Prob, @Design_Prob, @Site_Issue_Prob, @Com_Gap_Prob, @Install_Issues_Prov, " +
                     "@Wrong_App_Prob, @Interim_Corrective, @Root_Cause_Anal, @Corrective_Action, " +
-                    "@Before_Photo, @After_Photo, @Rca_Prepared_By, @Name_Designation, @Date, @UpdatedBy, " +
+                    "@Before_Photo, @After_Photo, @Rca_Prepared_By, @Name_Designation, @Date, @Interim_Cor_Date, @Root_Cause_Date, @Corrective_Action_Date, @UpdatedBy, " +
                     "@MoniPlans";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
@@ -403,6 +421,8 @@ namespace QMS.Core.Repositories.CAReportRepository
                 }
 
                 var result = rows
+
+
                     .Select(x => new CAReportViewModel
                     {
                         Id = x.Id,
@@ -419,6 +439,87 @@ namespace QMS.Core.Repositories.CAReportRepository
                         UpdatedBy = x.UpdatedBy,
                         UpdatedDate = x.UpdatedDate
                     })
+                    .ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.ToString());
+                throw;
+            }
+        }
+
+
+        public async Task<List<CAReportViewModel>> GetCSOTrackingAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                var sql = @"EXEC sp_Get_CA_Report";
+
+                var rows = await _dbContext.CAReport.FromSqlRaw(sql).ToListAsync();
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    rows = rows
+                        .Where(data => data.CreatedDate.HasValue
+                                    && data.CreatedDate.Value.Date >= startDate.Value.Date
+                                    && data.CreatedDate.Value.Date <= endDate.Value.Date)
+                        .ToList();
+                }
+
+                var result = rows
+                    .Select(x => new CAReportViewModel
+                    {
+                        Id = x.Id,
+                        Complaint_No = x.Complaint_No,
+                        Report_Date = x.Report_Date,
+                        Cust_Name_Location = x.Cust_Name_Location,
+                        Source_Complaint = x.Source_Complaint,
+                        Prod_Code_Desc = x.Prod_Code_Desc,
+                        Desc_Complaint = x.Desc_Complaint,
+                        Batch_Code = x.Batch_Code,
+                        Pkd = x.Pkd,
+                        Supp_Qty = x.Supp_Qty,
+                        Failure_Qty = x.Failure_Qty,
+                        Problem_State = x.Problem_State,
+                        Interim_Corrective = x.Interim_Corrective,
+                        Root_Cause_Anal = x.Root_Cause_Anal,
+                        Corrective_Action = x.Corrective_Action,
+                        Date = x.Date,
+                        CreatedBy = x.CreatedBy,
+                        CreatedDate = x.CreatedDate,
+                        UpdatedBy = x.UpdatedBy,
+                        UpdatedDate = x.UpdatedDate,
+                        Issue_Problems =
+                            string.Join(", ", new[]
+                            {
+                                x.Man_Issue_Prob        ? "Manufacturing Issue" : null,
+                                x.Design_Prob           ? "Design" : null,
+                                x.Site_Issue_Prob       ? "Site Issue" : null,
+                                x.Com_Gap_Prob          ? "Communication Gap" : null,
+                                x.Install_Issues_Prov   ? "Installation Issues" : null,
+                                x.Wrong_App_Prob        ? "Wrong Application" : null
+                            }.Where(v => v != null)),
+                        Corrective_Action_Date = x.Corrective_Action_Date,
+                        Root_Cause_Date = x.Root_Cause_Date,
+                        Interim_Cor_Date = x.Interim_Cor_Date,
+                        Closure_Day = (x.Date.HasValue && x.Report_Date.HasValue)
+                            ? (int?)(x.Date.Value.Date - x.Report_Date.Value.Date).TotalDays
+                            : null,
+
+                        Interim_Day = (x.Interim_Cor_Date.HasValue && x.Report_Date.HasValue)
+                            ? (int?)(x.Interim_Cor_Date.Value.Date - x.Report_Date.Value.Date).TotalDays
+                            : null,
+
+                        Root_Cause_Day = (x.Root_Cause_Date.HasValue && x.Report_Date.HasValue)
+                            ? (int?)(x.Root_Cause_Date.Value.Date - x.Report_Date.Value.Date).TotalDays
+                            : null,
+
+                        Corrective_Action_Day = (x.Corrective_Action_Date.HasValue && x.Report_Date.HasValue)
+                            ? (int?)(x.Corrective_Action_Date.Value.Date - x.Report_Date.Value.Date).TotalDays
+                            : null,
+                                })
                     .ToList();
 
                 return result;

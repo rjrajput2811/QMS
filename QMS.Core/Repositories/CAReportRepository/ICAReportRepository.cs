@@ -15,6 +15,7 @@ namespace QMS.Core.Repositories.CAReportRepository
         Task<OperationResult> UpdateCAReportAsync(CAReportViewModel model);
         Task<OperationResult> DeleteAsync(int id);
         Task<bool> CheckDuplicate(string searchText, int Id);
+        Task<List<CAReportViewModel>> GetCSOTrackingAsync(DateTime? startDate = null, DateTime? endDate = null);
 
     }
 }

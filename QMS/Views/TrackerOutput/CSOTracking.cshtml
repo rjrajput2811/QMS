@@ -170,12 +170,12 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
     <script>
-        let filterStartPaymentDate = moment().startOf('month').format('YYYY-MM-DD');
-        let filterEndPaymentDate = moment().endOf('month').format('YYYY-MM-DD');
+        let filterStartDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
 
         $(document).ready(function () {
             $('#dateRangeCSO').text(
-                moment(filterStartPaymentDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndPaymentDate).format('MMMM D, YYYY')
+                moment(filterStartDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndDate).format('MMMM D, YYYY')
             );
 
             const picker = new Litepicker({
@@ -192,18 +192,18 @@
                         const startMoment = moment(start.getTime());
                         const endMoment = moment(end.getTime());
 
-                        filterStartPaymentDate = startMoment.format('YYYY-MM-DD');
-                        filterEndPaymentDate = endMoment.format('YYYY-MM-DD');
+                        filterStartDate = startMoment.format('YYYY-MM-DD');
+                        filterEndDate = endMoment.format('YYYY-MM-DD');
 
                         $('#dateRangeCSO').text(`${startMoment.format('MMMM D, YYYY')} - ${endMoment.format('MMMM D, YYYY')}`);
-                        // loadData();
+                        loadData();
                     });
 
                     picker.on('clear', () => {
-                        filterStartPaymentDate = "";
-                        filterEndPaymentDate = "";
+                        filterStartDate = "";
+                        filterEndDate = "";
                         $('#dateRangeCSO').text("Select Date Range");
-                        // loadData();
+                        loadData();
                     });
                 },
                 ranges: {
@@ -222,8 +222,34 @@
                 picker.show();
             });
 
-            loadCustomerGrid(null);
+            loadData();
         });
+
+        function loadData() {
+            Blockloadershow();
+            $.ajax({
+                url: '/CAReport/GetCSOTracking',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartDate,
+                    endDate: filterEndDate
+                },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnTabGridLoad(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
 
         var headerMenu = function () {
             var menu = [];
@@ -260,16 +286,71 @@
             return menu;
         };
 
-        function loadCustomerGrid(response) {
+        function OnTabGridLoad(response) {
             Blockloadershow();
 
             tabledata = [];
             let columns = [];
+
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+
+                    let formattedDate = "";
+                    let updatedDate = "";
+                    let reportDate = "";
+                    let date = "";
+                    if (item.createdDate) {
+                        const dateObj = new Date(item.createdDate);
+                        formattedDate = dateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.updatedDate) {
+                        const updatedateObj = new Date(item.updatedDate);
+                        updatedDate = updatedateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.report_Date) {
+                        const reportDateObj = new Date(item.report_Date);
+                        reportDate = reportDateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.date) {
+                        const dateObj = new Date(item.date);
+                        date = dateObj.toLocaleDateString("en-GB");
+                    }
+
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        Complaint_No: item.complaint_No,
+                        Report_Date: reportDate,
+                        Cust_Name_Location: item.cust_Name_Location,
+                        Source_Complaint :item.source_Complaint,
+                        Prod_Code_Desc: item.prod_Code_Desc,
+                        Desc_Complaint: item.desc_Complaint,
+                        Batch_Code: item.batch_Code,
+                        Pkd: item.pkd,
+                        Supp_Qty: item.supp_Qty,
+                        Failure_Qty: item.failure_Qty,
+                        Problem_State: item.problem_State,
+                        Interim_Corrective: item.interim_Corrective,
+                        Interim_Day :item.interim_Day,
+                        Root_Cause_Anal: item.root_Cause_Anal,
+                        Root_Cause_Day :item.root_Cause_Day,
+                        Corrective_Action: item.corrective_Action,
+                        Corrective_Action_Day :item.corrective_Action_Day,
+                        Date: date,
+                        Closure_Day : item.closure_Day,
+                        ProblemBasket: item.issue_Problems,
+                        CreatedDate: formattedDate,
+                        CreatedBy: item.createdBy,
+                        UpdatedBy: item.updatedBy,
+                        UpdatedDate: updatedDate
+                    });
+                });
+            }
             columns.push(
                 {
                     title: "Sr No",
-                    field: "SrNo",
-                    width: 100,
+                    field: "Sr_No",
+                    width: 50,
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
@@ -277,8 +358,7 @@
 
                 {
                     title: "Complaint No.",
-                    field: "ComplaintNo",
-                    width: 200,
+                    field: "Complaint_No",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -286,8 +366,7 @@
                 },
                 {
                     title: "Reported Date",
-                    field: "ReportedDate",
-                    width: 200,
+                    field: "Report_Date",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -296,7 +375,6 @@
                 {
                     title: "Complaint Type",
                     field: "ComplaintType",
-                    width: 200,
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -304,8 +382,7 @@
                 },
                 {
                     title: "Customer Name & Location",
-                    field: "CustomerNameLocation",
-                    width: 200,
+                    field: "Cust_Name_Location",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -313,17 +390,15 @@
                 },
                 {
                     title: "Source of Complaint",
-                    field: "SourceOfComplaint",
-                    width: 200,
+                    field: "Source_Complaint",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "center",   
                     headerMenu: headerMenu
                 },
                 {
                     title: "Product Code & Description",
-                    field: "ProductCodeDescription",
-                    width: 200,
+                    field: "Prod_Code_Desc",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -331,8 +406,7 @@
                 },
                 {
                     title: "Description of Complaint",
-                    field: "ComplaintDescription",
-                    width: 200,
+                    field: "Desc_ComplaintDesc_Complaint",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -340,8 +414,7 @@
                 },
                 {
                     title: "Batch code",
-                    field: "BatchCode",
-                    width: 200,
+                    field: "Batch_Code",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -349,8 +422,7 @@
                 },
                 {
                     title: "PKD code",
-                    field: "PKDCode",
-                    width: 200,
+                    field: "Pkd",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -358,26 +430,23 @@
                 },
                 {
                     title: "Supplied Qty",
-                    field: "SuppliedQty",
-                    width: 200,
+                    field: "Supp_Qty",
                     headerFilter: "input",
-                    hozAlign: "right",
+                    hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
                     title: "Failed Qty",
-                    field: "FailedQty",
-                    width: 200,
+                    field: "Failure_Qty",
                     headerFilter: "input",
-                    hozAlign: "right",
+                    hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
                     title: "Problem Statement",
-                    field: "ProblemStatement",
-                    width: 200,
+                    field: "Problem_State",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -386,7 +455,6 @@
                 {
                     title: "Problem Basket",
                     field: "ProblemBasket",
-                    width: 200,
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -394,8 +462,7 @@
                 },
                 {
                     title: "Interim Corrective action",
-                    field: "InterimCorrectiveAction",
-                    width: 200,
+                    field: "Interim_Corrective",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -403,8 +470,7 @@
                 },
                 {
                     title: "Total Time Taken to Interim Corrective action",
-                    field: "TTC_InterimAction",
-                    width: 200,
+                    field: "Interim_Day",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -412,8 +478,7 @@
                 },
                 {
                     title: "Root Cause Analysis",
-                    field: "RootCauseAnalysis",
-                    width: 200,
+                    field: "Root_Cause_Anal",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -421,8 +486,7 @@
                 },
                 {
                     title: "Total Time Taken to RCA",
-                    field: "TTC_RCA",
-                    width: 200,
+                    field: "Root_Cause_Day",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -430,8 +494,7 @@
                 },
                 {
                     title: "Corrective Action",
-                    field: "CorrectiveAction",
-                    width: 200,
+                    field: "Corrective_Action",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -439,8 +502,7 @@
                 },
                 {
                     title: "Total Time Taken to Corrective Action",
-                    field: "TTC_CorrectiveAction",
-                    width: 200,
+                    field: "Corrective_Action_Day",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -448,8 +510,7 @@
                 },
                 {
                     title: "Complaint Closure Date",
-                    field: "ComplaintClosureDate",
-                    width: 200,
+                    field: "Date",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -457,8 +518,7 @@
                 },
                 {
                     title: "Total Time Taken to Closure of Complaint",
-                    field: "TTC_Closure",
-                    width: 200,
+                    field: "Closure_Day",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -467,7 +527,6 @@
                 {
                     title: "Attachments (CAPA report)",
                     field: "CapaReportAttachments",
-                    width: 200,
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -476,8 +535,8 @@
             );
 
             table = new Tabulator("#cso_Table", {
-                data: [],
-                layout: "fitColumns",
+                data: tabledata,
+                layout: "fitDataTable",
                 movableColumns: true,
                 pagination: "local",
                 paginationSize: 10,

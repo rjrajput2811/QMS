@@ -79,6 +79,14 @@ namespace QMS.Core.DatabaseContext
 
         public List<CAReportDetail>? Details { get; set; }
 
+        public DateTime? Interim_Cor_Date { get; set; }
+        public DateTime? Root_Cause_Date { get; set; }
+        public DateTime? Corrective_Action_Date { get; set; }
+
+
+
+
+
     }
 
     [Table("tbl_Moni_Plan_Ca")]

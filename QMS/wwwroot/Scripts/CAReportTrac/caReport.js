@@ -169,9 +169,9 @@ function OnTabGridLoad(response) {
                 Complaint_No: item.complaint_No,
                 Report_Date: reportDate,
                 Cust_Name_Location: item.cust_Name_Location,
-                //Ytd_Collection11: item.ytd_Collection11,
-                //Ytd_Detractor11: item.ytd_Detractor11,
-                //Ytd_Nps11: item.ytd_Nps11,
+                Batch_Code: item.batch_Code,
+                Supp_Qty: item.supp_Qty,
+                Failure_Qty: item.failure_Qty,
                 CreatedDate: formattedDate,
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
@@ -207,9 +207,9 @@ function OnTabGridLoad(response) {
         { title: "Complaint No", field: "Complaint_No", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Report Date", field: "Report_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Customer Name and Location ", field: "Cust_Name_Location", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        //{ title: "% Collection", field: "Ytd_Collection11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        //{ title: "Detractors", field: "Ytd_Detractor11", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        //{ title: "NPS", field: "Ytd_Nps11", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Batch Code", field: "Batch_Code", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Supp Qty", field: "Supp_Qty", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Failure Qty", field: "Failure_Qty", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Create Date", field: "CreatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
@@ -296,6 +296,13 @@ function delConfirm(recid) {
     });
 }
 
+
+function openCADetail(id) {
+    debugger
+    var url = '/CAReport/CAFormateDetails';
+    url = url + '?caReportId=' + id
+    window.location.href = url;
+}
 function exportToExcel(id) {
 
     const url = `/CAReport/ExportCAReportToExcel?id=${id}`;

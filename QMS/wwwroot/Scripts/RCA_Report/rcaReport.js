@@ -5,13 +5,13 @@ let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
 $(document).ready(function () {
 
 
-    $('#dateRangeText').text(
+    $('#dateRangeCustomerRCA').text(
         moment(filterStartDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndDate).format('MMMM D, YYYY')
     );
 
     // Initialize Litepicker and store reference
     const picker = new Litepicker({
-        element: document.getElementById('customDateTrigger'),
+        element: document.getElementById('customDateTriggerCustomerRCA'),
         singleMode: false,
         format: 'DD-MM-YYYY',
         numberOfMonths: 2,
@@ -27,14 +27,14 @@ $(document).ready(function () {
             picker.on('selected', (start, end) => {
                 filterStartDate = start.format('YYYY-MM-DD');
                 filterEndDate = end.format('YYYY-MM-DD');
-                $('#dateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                $('#dateRangeCustomerRCA').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
                 loadData();
             });
 
             picker.on('clear', () => {
                 filterStartDate = "";
                 filterEndDate = "";
-                $('#dateRangeText').text("Select Date Range");
+                $('#dateRangeCustomerRCA').text("Select Date Range");
                 loadData();
             });
         },
@@ -51,7 +51,7 @@ $(document).ready(function () {
     });
 
     // 🔑 Ensure calendar opens on click
-    $('#customDateTrigger').on('click', function () {
+    $('#customDateTriggerCustomerRCA').on('click', function () {
         picker.show();
     });
 
@@ -169,9 +169,9 @@ function OnTabGridLoad(response) {
                 Complaint_No: item.complaint_No,
                 Report_Date: reportDate,
                 Cust_Name_Location: item.cust_Name_Location,
-                //Ytd_Collection11: item.ytd_Collection11,
-                //Ytd_Detractor11: item.ytd_Detractor11,
-                //Ytd_Nps11: item.ytd_Nps11,
+                Batch_Code: item.batch_Code,
+                Supp_Qty: item.supp_Qty,
+                Failure_Qty: item.failure_Qty,
                 CreatedDate: formattedDate,
                 CreatedBy: item.createdBy,
                 UpdatedBy: item.updatedBy,
@@ -207,9 +207,9 @@ function OnTabGridLoad(response) {
         { title: "Complaint No", field: "Complaint_No", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Report Date", field: "Report_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Customer Name and Location ", field: "Cust_Name_Location", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        //{ title: "% Collection", field: "Ytd_Collection11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        //{ title: "Detractors", field: "Ytd_Detractor11", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
-        //{ title: "NPS", field: "Ytd_Nps11", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Batch Code", field: "Batch_Code", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Supp Qty", field: "Supp_Qty", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Failure Qty", field: "Failure_Qty", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Create Date", field: "CreatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
         { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
@@ -296,9 +296,16 @@ function delConfirm(recid) {
     });
 }
 
+function openRCADetail(id) {
+    debugger
+    var url = '/CustomerRCAReport/CustomerRCADetails';
+    url = url + '?id=' + id
+    window.location.href = url;
+}
+
 function exportToExcel(id) {
 
-    const url = `/CustomerRCAReport/ExportRCAReportToExcel?id=${id}`;
+    const url = `/CustomerRCAReport/ExportCAReportToExcel?id=${id}`;
 
     // Open file download in new tab (best for Excel)
     window.open(url, "_blank");

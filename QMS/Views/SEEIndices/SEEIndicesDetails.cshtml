@@ -1,0 +1,962 @@
+﻿@model QMS.Core.Models.SixSigmaIndicesViewModel
+@{
+    ViewData["Title"] = "Six Sigma Indices Report";
+}
+
+<style>
+    .nav-tabs {
+        border-bottom: 1px solid #e0e0e0;
+        padding-left: 12px;
+    }
+
+  
+       
+        .nav-tabs .nav-link {
+            border: none;
+            border-radius: 0;
+            margin-right: 6px;
+            margin-bottom: -2px;
+            color: #333;
+            background: transparent;
+            font-weight: 500;
+            font-size: 14px;
+            padding: 8px 20px;
+            transition: color .2s ease-in-out;
+        }
+
+            .nav-tabs .nav-link:hover {
+                color: #000;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: #000 !important;
+                font-weight: 700 !important;
+                background: #fff;
+                border: 3px solid #0c83ff;
+                border-bottom-color: #fff;
+                border-radius: 8px 8px 0 0;
+                font-size: 15px !important;
+            }
+
+    .header-select {
+        appearance: none;
+        width: 160px;
+        padding: 10px 32px 10px 12px;
+        font-size: 15px;
+        background: #fff;
+        border: none;
+        outline: none;
+        text-align-last: center;
+        border-bottom: 2px solid transparent;
+        border-radius: 0 0 10px 10px;
+        box-shadow: inset 0 -2px 0 #d5dce5, 0 2px 4px rgba(0,0,0,0.05);
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 20 20'><path fill='black' d='M5 7l5 5 5-5'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 14px;
+        cursor: pointer;
+    }
+
+        .header-select:focus {
+            box-shadow: inset 0 -2px 0 #4682B4, 0 2px 6px rgba(70,130,180,0.15);
+        }
+
+    .header-input {
+        width: 180px;
+        padding: 2px 4px;
+        font-size: 15px;
+        border: none;
+        border-bottom: 1.5px solid #999;
+        background: transparent;
+        outline: none;
+        transition: border-color .2s ease-in-out;
+    }
+
+        .header-input:focus {
+            border-bottom: 1.5px solid #4682B4;
+        }
+
+    .tabulator {
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        border: 1px solid #000;
+        border-collapse: collapse;
+    }
+
+        .tabulator .tabulator-header {
+            color: #000;
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+        }
+
+        .tabulator .tabulator-cell {
+            border-right: 1px solid #000;
+            border-bottom: 1px solid #000;
+            padding: 6px 8px;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            word-break: break-word !important;
+            line-height: 1.4em;
+            background: #ffffff !important;
+        }
+
+    .tabulator-row {
+        background-color: #ffffff !important;
+    }
+
+    .tabulator-group {
+        background-color: #ffffff !important;
+        font-weight: bold;
+        color: #000;
+        border-top: 1px solid #000;
+        border-bottom: 1px solid #000;
+        padding: 6px;
+        text-align: center !important;
+    }
+
+        .tabulator-group .tabulator-group-toggle {
+            display: none !important;
+            pointer-events: none !important;
+        }
+
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+
+    .card-body {
+        padding: 1rem 1.5rem;
+    }
+
+    #sixSigmaTableEffectiveness .tabulator-header,
+    #sixSigmaTableEngagement .tabulator-header {
+        font-weight: bold;
+    }
+
+    .sixsig-summary-row .tabulator-cell {
+        font-weight: bold;
+        border-top: 2px solid #000;
+    }
+</style>
+
+<div class="card">
+    <div class="card-body d-flex justify-content-between align-items-center">
+        <div>
+            <b style="font-size: large; color: #4682B4;">
+                Six Sigma Indices Report - Segment
+            </b>
+        </div>
+
+        <div>
+            <button id="saveButton" type="button" class="btn btn-outline-success mr-2"
+                    style="width: 120px; font-size:15px">
+                <i class="fas fa-save mr-2"></i>SAVE
+            </button>
+
+            <button id="backButton" class="btn btn-outline-primary"
+                    onclick="location.href='@Url.Action("SEEIndices", "SEEIndices")'"
+                    style="width: 120px; font-size:15px">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
+        </div>
+    </div>
+</div>
+
+
+@Html.HiddenFor(m => m.Id)
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+
+                <!-- FILTER HEADER (INSIDE SAME CARD) -->
+                <div class="d-flex align-items-center mb-3"
+                     style="gap: 30px; padding-bottom:12px; border-bottom:1px solid #ddd;">
+
+                    <div>
+                        <label style="font-weight:600; margin-right:5px;">FY:</label>
+                        @Html.DropDownListFor(
+                            m => m.Fy,
+                            new SelectList(new[]
+                            {
+                                new { Value = "", Text = "Select" },
+                                new { Value = "2023-24", Text = "2023-24" },
+                                new { Value = "2024-25", Text = "2024-25" },
+                                new { Value = "2025-26", Text = "2025-26" }
+                            }, "Value", "Text", Model.Fy),
+                            new { @class = "header-select", @style = "width:160px;" }
+                        )
+                    </div>
+
+                    <div>
+                        <label style="font-weight:600; margin-right:5px;">PC:</label>
+                        @Html.TextBoxFor(
+                            m => m.Pc,
+                            new { @class = "header-input", placeholder = "Enter PC", @style = "width:150px;" }
+                        )
+                    </div>
+
+                    <div>
+                        <label style="font-weight:600; margin-right:5px;">Location:</label>
+                        @Html.TextBoxFor(
+                            m => m.Location,
+                            new { @class = "header-input", placeholder = "Enter Location", @style = "width:150px;" }
+                        )
+                    </div>
+
+                </div>
+
+                <!-- TABS + TABLES INSIDE SAME CARD -->
+                <ul class="nav nav-tabs custom-tabs" id="sixSigmaTabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="tab-seg1" data-toggle="tab" href="#Engagement" role="tab">
+                            Engagement
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" id="tab-seg2" data-toggle="tab" href="#Effectiveness" role="tab">
+                            Effectiveness
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3" id="sixSigmaTabsContent">
+                    <div class="tab-pane fade show active"
+                         id="Engagement"
+                         role="tabpanel"
+                         aria-labelledby="tab-seg1">
+                        <div id="sixSigmaTableEngagement"></div>
+                    </div>
+
+                    <div class="tab-pane fade"
+                         id="Effectiveness"
+                         role="tabpanel"
+                         aria-labelledby="tab-seg2">
+                        <div id="sixSigmaTableEffectiveness"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/js/tabulator.min.js"></script>
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+
+<script>
+    let effectivenessTable;
+    let engagementTable;
+
+    function loadSixSigmaGrid() {
+
+        if (typeof Tabulator === "undefined") {
+            alert("Tabulator failed to load. Check JS file path.");
+            throw new Error("Tabulator not loaded");
+        }
+
+        // Editable only when row id is odd
+        function editableWhenOddId(cell) {
+            const rowData = cell.getRow().getData();
+            const id = Number(rowData.id);
+
+            if (isNaN(id)) return false;  // safety: non-numeric id => freeze
+            return id % 2 !== 0;          // odd => editable, even => not editable
+        }
+
+        /* ---------------- EFFECTIVENESS TEMPLATE ---------------- */
+        var effectivenessTemplate = [
+
+            // SR 1
+            {
+                id: 1, SrNo: 1, group: "Business factor 1 - Customer impact",
+                attribute: "OTIF (AS IS - Curr.level) / As IS - Tgt",
+                data: "@(Model?.Cust_Data_Pc_Ot)", target: "@(Model?.Cust_Target_Tgt)",
+                weightage: "@(Model?.Cust_Weightage_Tgt)", formula: "@(Model?.Cust_Formula_Tgt)",
+                score: "@(Model?.Cust_Weighted_Score_Tgt)", mergeWithPrev: false
+            },
+
+            {
+                id: 2, SrNo: 1, group: "Business factor 1 - Customer impact",
+                attribute: "AS IS",
+                data: "@(Model?.Cust_Data_Pc_As)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 2
+            {
+                id: 3, SrNo: 2, group: "Business factor 1 - Customer impact",
+                attribute: "Closed A Class CSO’s closed in <= 45 days - YTD",
+                data: "@(Model?.Cust_Data_Pc_Close)", target: "@(Model?.Cust_Target_Ytd)",
+                weightage: "@(Model?.Cust_Weightage_Ytd)", formula: "@(Model?.Cust_Formula_Ytd)",
+                score: "@(Model?.Cust_Weighted_Score_Ytd)", mergeWithPrev: false
+            },
+            {
+                id: 4, SrNo: 2, group: "Business factor 1 - Customer impact",
+                attribute: "Total A Class CSO logged in YTD",
+                data: "@(Model?.Cust_Data_Pc_Total)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 3 - Process Improvement
+            {
+                id: 5, SrNo: 3, group: "Business factor 2 - Process Improvement",
+                attribute: "No of NPDs launched on time, within budget and Qty",
+                data: "@(Model?.Proc_Data_Pc_Npd)", target: "@(Model?.Proc_Target)",
+                weightage: "@(Model?.Proc_Weightage)", formula: "@(Model?.Proc_Formula)",
+                score: "@(Model?.Proc_Weighted_Score)", mergeWithPrev: false
+            },
+            {
+                id: 6, SrNo: 3, group: "Business factor 2 - Process Improvement",
+                attribute: "Annual Target",
+                data: "@(Model?.Proc_Data_Pc_Ann)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 4 — Key Result Areas
+            {
+                id: 7, SrNo: 4, group: "Business factor 3 - Key Result areas",
+                attribute: "Customer Satisfaction index (Net Promoter Score)",
+                data: "@(Model?.Key_Data_Pc_Cust)", target: "@(Model?.Key_Target)",
+                weightage: "@(Model?.Key_Weightage)", formula: "@(Model?.Key_Formula)",
+                score: "@(Model?.Key_Weighted_Score)", mergeWithPrev: false
+            },
+            {
+                id: 8, SrNo: 4, group: "Business factor 3 - Key Result areas",
+                attribute: "Annual Target",
+                data: "@(Model?.Key_Data_Pc_Ann)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 5 — Savings
+            {
+                id: 9, SrNo: 5, group: "Business factor 4 - Savings",
+                attribute: "Actual savings realised in C&I YTD",
+                data: "@(Model?.Save_Data_Pc_Actu)", target: "@(Model?.Save_Target)",
+                weightage: "@(Model?.Save_Weightage)", formula: "@(Model?.Save_Formula)",
+                score: "@(Model?.Save_Weighted_Score)", mergeWithPrev: false
+            },
+            {
+                id: 10, SrNo: 5, group: "Business factor 4 - Savings",
+                attribute: "Annual Target",
+                data: "@(Model?.Save_Data_Pc_Ann)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 6 — Outgoing Quality
+            {
+                id: 11, SrNo: 6, group: "Business factor 5 - Out going product quality",
+                attribute: "Sigma level of outgoing product",
+                data: "@(Model?.Out_Data_Pc_Sigma)", target: "@(Model?.Out_Target)",
+                weightage: "@(Model?.Out_Weightage)", formula: "@(Model?.Out_Formula)",
+                score: "@(Model?.Out_Weighted_Score)", mergeWithPrev: false
+            },
+            {
+                id: 12, SrNo: 6, group: "Business factor 5 - Out going product quality",
+                attribute: "AS IS",
+                data: "@(Model?.Out_Data_Pc_As)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 7 — SPM
+            {
+                id: 13, SrNo: 7, group: "Business factor 6 - SPM Rating",
+                attribute: "SPM Scores >= 3 stars",
+                data: "@(Model?.Spm_Data_Pc_Spm)", target: "@(Model?.Spm_Target)",
+                weightage: "@(Model?.Spm_Weightage)", formula: "@(Model?.Spm_Formula)",
+                score: "@(Model?.Spm_Weighted_Score)", mergeWithPrev: false
+            },
+            {
+                id: 14, SrNo: 7, group: "Business factor 6 - SPM Rating",
+                attribute: "AS IS",
+                data: "@(Model?.Spm_Data_Pc_As)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 8 — Project Closure (no scoring)
+            {
+                id: 15, SrNo: 8, group: "Business factor 7 - Project Closure",
+                attribute: "Projects closed this year", data: "@(Model?.Proj_Data_Pc_Close)",
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: false
+            },
+            {
+                id: 16, SrNo: 8, group: "Business factor 7 - Project Closure",
+                attribute: "Projects initiated + CF from last year", data: "@(Model?.Proj_Data_Pc_Dmaic)",
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+            {
+                id: 17, SrNo: 9, group: "Business factor 7 - Project Closure",
+                attribute: "Turbo projects closed", data: "@(Model?.Proj_Data_Pc_Turbo)",
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: false
+            },
+            {
+                id: 18, SrNo: 9, group: "Business factor 7 - Project Closure",
+                attribute: "Projects planned", data: "@(Model?.Proj_Data_Pc_Planned)",
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 9 — SUMMARY
+            {
+                id: 19, SrNo: 9, group: "Weighted Score Summary",
+                attribute: "Weighted Score Target : 100",
+                data: "@(Model?.Eff_Total_Sum)", target: "", weightage: "",
+                formula: "Total Weighted Score", score: "@(Model?.Eff_Total_Weighted_Score)",
+                mergeWithPrev: true
+            }
+        ];
+
+        /* ---------------- ENGAGEMENT TEMPLATE WITH PAIRS ---------------- */
+        var engagementTemplate = [
+
+            // Sr No 1 — Lean
+            {
+                id: 1, SrNo: 1, group: "Lean Engagement",
+                attribute: "No Of People engaged in Turbo and Ideas generation",
+                data: "@(Model?.Lean_Data_Pc_No_People)", target: "@(Model?.Lean_Target)",
+                weightage: "@(Model?.Lean_Weightage)", formula: "@(Model?.Lean_Formula)",
+                score: "@(Model?.Lean_Weighted_Score)", mergeWithPrev: false
+            },
+
+            {
+                id: 2, SrNo: 1, group: "Lean Engagement",
+                attribute: "Total no of people in the location including permanent employees at vendor location",
+                data: "@(Model?.Lean_Data_Pc_Total_People)", target: "", weightage: "",
+                formula: "", score: "", mergeWithPrev: true
+            },
+
+            // Sr No 2 — Six Sigma Tools & Projects
+            {
+                id: 3, SrNo: 2, group: "Six Sigma Engagement -(Tools & Projects)",
+                attribute: "Project Engagement",
+                data: "@(Model?.Six_Sigma_Data_Pc_Proj)", target: "@(Model?.Six_Sigma_Target)",
+                weightage: "@(Model?.Six_Sigma__Weightage)", formula: "@(Model?.Six_Sigma_Formula)",
+                score: "@(Model?.Six_Sigma_Weighted_Score)", mergeWithPrev: false
+            },
+
+            {
+                id: 4, SrNo: 2, group: "Six Sigma Engagement -(Tools & Projects)",
+                attribute: "Annual Target",
+                data: "@(Model?.Six_Sigma_Data_Pc_Ann)", target: "", weightage: "", formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // Sr No 3 — SPM Review
+            {
+                id: 5, SrNo: 3, group: "SPM Review Plan vs. actual",
+                attribute: "No of Vendors audited actually",
+                data: "@(Model?.Review_Data_Pc_Proj_Review)", target: "@(Model?.Review_Target)",
+                weightage: "@(Model?.Review_Weightage)", formula: "@(Model?.Review_Formula)",
+                score: "@(Model?.Review_Weighted_Score)", mergeWithPrev: false
+            },
+
+            {
+                id: 6, SrNo: 3, group: "SPM Review Plan vs. actual",
+                attribute: "No of Vendors covered in the Annual Audit Plan (Make and Buy)",
+                data: "@(Model?.Review_Data_Pc_Proj_Running)", target: "", weightage: "",
+                formula: "", score: "", mergeWithPrev: true
+            },
+
+            // Sr No 4 — Review Engagement
+            {
+                id: 7, SrNo: 4, group: "Review Engagement-All running & closed projects",
+                attribute: "Number of projects reviewed by the champion every PC",
+                data: "@(Model?.Review_Data_Pc_Proj_Review)", target: "", weightage: "",
+                formula: "", score: "", mergeWithPrev: false
+            },
+
+            {
+                id: 8, SrNo: 4, group: "Review Engagement-All running & closed projects",
+                attribute: "Number of projects running",
+                data: "@(Model?.Review_Data_Pc_Proj_Running)", target: "", weightage: "",
+                formula: "", score: "", mergeWithPrev: true
+            },
+
+            // Sr No 5 — Market Engagement
+            {
+                id: 9, SrNo: 5, group: "Market Engagement- Visits with CSO'S",
+                attribute: "CSO captured during Market Visits and Site Audits",
+                data: "@(Model?.Market_Data_Pc_Cap_Cso)", target: "@(Model?.Market_Target)",
+                weightage: "@(Model?.Market_Weightage)", formula: "@(Model?.Market_Formula)",
+                score: "@(Model?.Market_Weighted_Score)", mergeWithPrev: false
+            },
+
+            {
+                id: 10, SrNo: 5, group: "Market Engagement- Visits with CSO'S",
+                attribute: "Target no of CSO",
+                data: "@(Model?.Market_Data_Pc_Tar_Cso)", target: "", weightage: "",
+                formula: "", score: "", mergeWithPrev: true
+            },
+
+            // Sr No 6 — BKPT YTD
+            {
+                id: 11, SrNo: 6, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "Number of Ideas generated till the PC (YTD)",
+                data: "@(Model?.Bkpt_Data_Pc_Ytd)", target: "@(Model?.Bkpt_Target_Ytd)",
+                weightage: "@(Model?.Bkpt_Weightage_Ytd)", formula: "@(Model?.Bkpt_Formula_Ytd)",
+                score: "@(Model?.Bkpt_Weighted_Score_Ytd)", mergeWithPrev: false
+            },
+
+            {
+                id: 12, SrNo: 6, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "Annual Target",
+                data: "@(Model?.Bkpt_Data_Pc_Ann_Ytd)", target: "", weightage: "",
+                formula: "", score: "", mergeWithPrev: true
+            },
+
+            // Sr No 7 — BKPT MFG
+            {
+                id: 13, SrNo: 7, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "MFG: Number of Ideas replicated from competition/industry",
+                data: "@(Model?.Bkpt_Data_Pc_Mfg)", target: "@(Model?.Bkpt_Target_Mfg)",
+                weightage: "@(Model?.Bkpt_Weightage_Mfg)", formula: "@(Model?.Bkpt_Formula_Mfg)",
+                score: "@(Model?.Bkpt_Weighted_Score_Mfg)", mergeWithPrev: false
+            },
+
+            {
+                id: 14, SrNo: 7, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "Annual Target",
+                data: "@(Model?.Bkpt_Data_Pc_Ann_Mfg)", target: "", weightage: "",
+                formula: "", score: "", mergeWithPrev: true
+            },
+
+            // Sr No 8 — Summary
+            {
+                id: 15, SrNo: 8, group: "Weighted Score Summary",
+                attribute: "Weighted Score Target : 100",
+                data: "@(Model?.Eng_Total_Sum)", target: "", weightage: "",
+                formula: "Total Weighted Score", score: "@(Model?.Eng_Total_Weighted_Score)",
+                mergeWithPrev: true
+            }
+        ];
+
+        /* ---------------- COLUMNS: EFFECTIVENESS ---------------- */
+        let effectivenessColumns = [
+            {
+                title: "Sr No.",
+                field: "SrNo",
+                width: 80,
+                hozAlign: "center",
+                headerHozAlign: "center",
+                editor: false,
+                formatter: function (cell) {
+                    const data = cell.getRow().getData();
+                    const el = cell.getElement();
+
+                    if (data.mergeWithPrev) {
+                        el.style.borderTop = "none";
+                        return "";
+                    }
+                    return data.SrNo;
+                }
+            },
+            {
+                title: "Attribute",
+                field: "attribute",
+                hozAlign: "left",
+                widthGrow: 2,
+                formatter: "textarea"
+            },
+            { title: "Data for PC", field: "data", hozAlign: "center", editor: "input" },
+            {
+                title: "Target",
+                field: "target",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            },
+            {
+                title: "Weightage",
+                field: "weightage",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            },
+            {
+                title: "Formula",
+                field: "formula",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            },
+            {
+                title: "Weighted Score",
+                field: "score",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            }
+        ];
+
+        /* ---------------- COLUMNS: ENGAGEMENT ---------------- */
+        let engagementColumns = [
+            {
+                title: "Sr No.",
+                field: "SrNo",
+                width: 80,
+                hozAlign: "center",
+                headerHozAlign: "center",
+                editor: false,
+                formatter: function (cell) {
+                    const data = cell.getRow().getData();
+                    const el = cell.getElement();
+
+                    if (data.mergeWithPrev) {
+                        el.style.borderTop = "none";
+                        return "";
+                    }
+                    return data.SrNo;
+                }
+            },
+            {
+                title: "Attribute",
+                field: "attribute",
+                hozAlign: "left",
+                widthGrow: 2,
+                formatter: "textarea"
+            },
+            { title: "Data for PC", field: "data", hozAlign: "center", editor: "input" },
+            {
+                title: "Target",
+                field: "target",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            },
+            {
+                title: "Weightage",
+                field: "weightage",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            },
+            {
+                title: "Formula",
+                field: "formula",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            },
+            {
+                title: "Weighted Score",
+                field: "score",
+                hozAlign: "center",
+                editor: "input",
+                editable: editableWhenOddId
+            }
+        ];
+
+        /* ---------------- EFFECTIVENESS TABLE ---------------- */
+        effectivenessTable = new Tabulator("#sixSigmaTableEffectiveness", {
+            data: effectivenessTemplate,
+            layout: "fitColumns",
+            groupBy: "group",
+            groupHeader: value =>
+                `<span style='font-weight:bold; font-size:14px; color:#000;'>${value}</span>`,
+            groupToggleElement: false,
+            groupStartOpen: true,
+            movableColumns: false,
+            headerSort: false,
+            height: "auto",
+            columns: effectivenessColumns,
+            cellEdited: function (cell) {
+                const field = cell.getField();
+                if (!["target", "weightage", "formula", "score"].includes(field)) return;
+
+                const data = cell.getRow().getData();
+                const srno = data.SrNo;
+                const value = cell.getValue();
+                const table = cell.getTable();
+
+                table.getRows().forEach(r => {
+                    const d = r.getData();
+                    if (r !== cell.getRow() && d.SrNo === srno) {
+                        r.update({ [field]: value });
+                    }
+                });
+            }
+        });
+
+        /* ---------------- ENGAGEMENT TABLE ---------------- */
+        engagementTable = new Tabulator("#sixSigmaTableEngagement", {
+            data: engagementTemplate,
+            layout: "fitColumns",
+            groupBy: "group",
+            groupHeader: value =>
+                `<span style='font-weight:bold; font-size:14px; color:#000;'>${value}</span>`,
+            groupToggleElement: false,
+            groupStartOpen: true,
+            movableColumns: false,
+            headerSort: false,
+            height: "auto",
+            columns: engagementColumns,
+            cellEdited: function (cell) {
+                const field = cell.getField();
+                if (!["target", "weightage", "formula", "score"].includes(field)) return;
+
+                const data = cell.getRow().getData();
+                const srno = data.SrNo;
+                const value = cell.getValue();
+                const table = cell.getTable();
+
+                table.getRows().forEach(r => {
+                    const d = r.getData();
+                    if (r !== cell.getRow() && d.SrNo === srno) {
+                        r.update({ [field]: value });
+                    }
+                });
+            }
+        });
+    }
+
+    // ---- helper: find row by id ----
+    function getRowById(rows, id) {
+        return rows.find(r => r.id === id) || {};
+    }
+
+    // ---- SAVE FUNCTION ----
+   function saveSixSigma() {
+    if (!effectivenessTable || !engagementTable) {
+        alert("Tables not initialized");
+        return;
+    }
+
+    if (typeof Blockloadershow === "function") {
+        Blockloadershow();
+    }
+
+    const eff = effectivenessTable.getData();
+    const eng = engagementTable.getData();
+
+    const model = {};
+
+    // ---------- EFFECTIVENESS ----------
+    const e1  = getRowById(eff, 1);
+    const e2  = getRowById(eff, 2);
+    const e3  = getRowById(eff, 3);
+    const e4  = getRowById(eff, 4);
+    const e5  = getRowById(eff, 5);
+    const e6  = getRowById(eff, 6);
+    const e7  = getRowById(eff, 7);
+    const e8  = getRowById(eff, 8);
+    const e9  = getRowById(eff, 9);
+    const e10 = getRowById(eff, 10);
+    const e11 = getRowById(eff, 11);
+    const e12 = getRowById(eff, 12);
+    const e13 = getRowById(eff, 13);
+    const e14 = getRowById(eff, 14);
+    const e15 = getRowById(eff, 15);
+    const e16 = getRowById(eff, 16);
+    const e17 = getRowById(eff, 17);
+    const e18 = getRowById(eff, 18);
+    const e19 = getRowById(eff, 19);
+
+    model.Cust_Data_Pc_Ot           = e1.data;
+    model.Cust_Target_Tgt           = e1.target;
+    model.Cust_Weightage_Tgt        = e1.weightage;
+    model.Cust_Formula_Tgt          = e1.formula;
+    model.Cust_Weighted_Score_Tgt   = e1.score;
+
+    model.Cust_Data_Pc_As           = e2.data;
+
+    model.Cust_Data_Pc_Close        = e3.data;
+    model.Cust_Target_Ytd           = e3.target;
+    model.Cust_Weightage_Ytd        = e3.weightage;
+    model.Cust_Formula_Ytd          = e3.formula;
+    model.Cust_Weighted_Score_Ytd   = e3.score;
+
+    model.Cust_Data_Pc_Total        = e4.data;
+
+    model.Proc_Data_Pc_Npd          = e5.data;
+    model.Proc_Target               = e5.target;
+    model.Proc_Weightage            = e5.weightage;
+    model.Proc_Formula              = e5.formula;
+    model.Proc_Weighted_Score       = e5.score;
+
+    model.Proc_Data_Pc_Ann          = e6.data;
+
+    model.Key_Data_Pc_Cust          = e7.data;
+    model.Key_Target                = e7.target;
+    model.Key_Weightage             = e7.weightage;
+    model.Key_Formula               = e7.formula;
+    model.Key_Weighted_Score        = e7.score;
+
+    model.Key_Data_Pc_Ann           = e8.data;
+
+    model.Save_Data_Pc_Actu         = e9.data;
+    model.Save_Target               = e9.target;
+    model.Save_Weightage            = e9.weightage;
+    model.Save_Formula              = e9.formula;
+    model.Save_Weighted_Score       = e9.score;
+
+    model.Save_Data_Pc_Ann          = e10.data;
+
+    model.Out_Data_Pc_Sigma         = e11.data;
+    model.Out_Target                = e11.target;
+    model.Out_Weightage             = e11.weightage;
+    model.Out_Formula               = e11.formula;
+    model.Out_Weighted_Score        = e11.score;
+
+    model.Out_Data_Pc_As            = e12.data;
+
+    model.Spm_Data_Pc_Spm           = e13.data;
+    model.Spm_Target                = e13.target;
+    model.Spm_Weightage             = e13.weightage;
+    model.Spm_Formula               = e13.formula;
+    model.Spm_Weighted_Score        = e13.score;
+
+    model.Spm_Data_Pc_As            = e14.data;
+
+    model.Proj_Data_Pc_Close        = e15.data;
+    model.Proj_Data_Pc_Dmaic        = e16.data;
+    model.Proj_Data_Pc_Turbo        = e17.data;
+    model.Proj_Data_Pc_Planned      = e18.data;
+
+    model.Eff_Total_Sum             = e19.data;
+    model.Eff_Total_Weighted_Score  = e19.score;
+
+    // ---------- ENGAGEMENT ----------
+    const g1  = getRowById(eng, 1);
+    const g2  = getRowById(eng, 2);
+    const g3  = getRowById(eng, 3);
+    const g4  = getRowById(eng, 4);
+    const g5  = getRowById(eng, 5);
+    const g6  = getRowById(eng, 6);
+    const g7  = getRowById(eng, 7);
+    const g8  = getRowById(eng, 8);
+    const g9  = getRowById(eng, 9);
+    const g10 = getRowById(eng, 10);
+    const g11 = getRowById(eng, 11);
+    const g12 = getRowById(eng, 12);
+    const g13 = getRowById(eng, 13);
+    const g14 = getRowById(eng, 14);
+    const g15 = getRowById(eng, 15);
+
+    model.Lean_Data_Pc_No_People    = g1.data;
+    model.Lean_Target               = g1.target;
+    model.Lean_Weightage            = g1.weightage;
+    model.Lean_Formula              = g1.formula;
+    model.Lean_Weighted_Score       = g1.score;
+    model.Lean_Data_Pc_Total_People = g2.data;
+
+    model.Six_Sigma_Data_Pc_Proj    = g3.data;
+    model.Six_Sigma_Target          = g3.target;
+    model.Six_Sigma__Weightage      = g3.weightage;
+    model.Six_Sigma_Formula         = g3.formula;
+    model.Six_Sigma_Weighted_Score  = g3.score;
+    model.Six_Sigma_Data_Pc_Ann     = g4.data;
+
+    model.Review_Data_Pc_Proj_Review = g5.data;
+    model.Review_Target              = g5.target;
+    model.Review_Weightage           = g5.weightage;
+    model.Review_Formula             = g5.formula;
+    model.Review_Weighted_Score      = g5.score;
+    model.Review_Data_Pc_Proj_Running= g6.data;
+
+    model.Market_Data_Pc_Cap_Cso    = g9.data;
+    model.Market_Target             = g9.target;
+    model.Market_Weightage          = g9.weightage;
+    model.Market_Formula            = g9.formula;
+    model.Market_Weighted_Score     = g9.score;
+    model.Market_Data_Pc_Tar_Cso    = g10.data;
+
+    model.Bkpt_Data_Pc_Ytd          = g11.data;
+    model.Bkpt_Target_Ytd           = g11.target;
+    model.Bkpt_Weightage_Ytd        = g11.weightage;
+    model.Bkpt_Formula_Ytd          = g11.formula;
+    model.Bkpt_Weighted_Score_Ytd   = g11.score;
+    model.Bkpt_Data_Pc_Ann_Ytd      = g12.data;
+
+    model.Bkpt_Data_Pc_Mfg          = g13.data;
+    model.Bkpt_Target_Mfg           = g13.target;
+    model.Bkpt_Weightage_Mfg        = g13.weightage;
+    model.Bkpt_Formula_Mfg          = g13.formula;
+    model.Bkpt_Weighted_Score_Mfg   = g13.score;
+    model.Bkpt_Data_Pc_Ann_Mfg      = g14.data;
+
+    model.Eng_Total_Sum             = g15.data;
+    model.Eng_Total_Weighted_Score  = g15.score;
+
+    model.Fy       = $("#Fy").val();
+    model.Pc       = $("#Pc").val();
+    model.Location = $("#Location").val();
+    // ---- Anti-forgery token ----
+    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+    const formData = new FormData();
+
+    for (const key in model) {
+        if (Object.prototype.hasOwnProperty.call(model, key)) {
+            formData.append(key, model[key] == null ? "" : model[key]);
+        }
+    }
+
+    if (tokenInput) {
+        formData.append("__RequestVerificationToken", tokenInput.value);
+    }
+
+    // If you have an Id field in the view model bound to a hidden input:
+    const idInput = document.querySelector("#Id");
+    if (idInput) {
+        formData.append("Id", idInput.value);
+    }
+
+    $.ajax({
+        url: '@Url.Action("InsertUpdateSEEIndices", "SEEIndices")',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            if (typeof Blockloaderhide === "function") {
+                Blockloaderhide();
+            }
+
+            if (!response || response.success === false) {
+                let errorMsg = "";
+
+                if (response && response.errors !== undefined) {
+                    for (let error of response.errors) {
+                        errorMsg += error + "\n";
+                    }
+                    if (errorMsg !== "") {
+                        showDangerAlert(errorMsg);
+                    }
+                } else if (response && response.message) {
+                    showDangerAlert(response.message);
+                } else {
+                    showDangerAlert("Error while saving data.");
+                }
+
+                return false;
+            } else {
+                // same pattern your company uses
+                if ($("#Id").val() > 0) {
+                    showSuccessAlert("Updated Successfully.");
+                } else {
+                    showSuccessAlert("Saved Successfully.");
+                }
+
+                // redirect similar to your other screen (adjust target as needed)
+                setTimeout(function () {
+                    window.open('@Url.Action("SEEIndices", "SEEIndices")', '_self');
+                }, 2500);
+            }
+        },
+        error: function (xhr, status, error) {
+            if (typeof Blockloaderhide === "function") {
+                Blockloaderhide();
+            }
+            showDangerAlert('Error saving data: ' + error);
+        }
+    });
+}
+
+    $(document).ready(function () {
+        loadSixSigmaGrid();
+
+        $("#saveButton").on("click", function () {
+            saveSixSigma();
+        });
+    });
+</script>
+
+@section HideSidebar { }

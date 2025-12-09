@@ -772,7 +772,8 @@
                 name: 'Third Party Inspection (TPI)',
                 icon: '🔍',
                 items: [
-                    { name: 'Third Party Inspection Tracker', inputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")', outputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")' }
+                    { name: 'Third Party Inspection Tracker', inputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")', outputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")' },
+                   
                 ]
             },
             {
@@ -798,10 +799,31 @@
                 name: 'AHP Note',
                 icon: '📝',
                 items: [
-                    { name: 'AHP Note Format', inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")', outputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")' },
-                    { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndicees", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
+                    { name: 'AHP Note Format', inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")', outputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")' }
+                                   
                 ]
             },
+
+                              {
+                                id: 'SEE-Indices',
+                                name: 'SEE Indices',
+                        icon: '📝',
+                        items: [
+                   
+                                            { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndices", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
+                        ]
+                    },
+
+
+                    {
+                        id: 'Change-note',
+                        name: 'Change Note',
+                        icon: '📝',
+                        items: [
+                                      { name: 'Change Note Format', inputUrl: '@Url.Action("ChangeNotee", "ChangeNote")', outputUrl: '@Url.Action("ChangeNotee", "ChangeNote")' }
+                      
+                        ]                  
+                    },
             {
                 id: 'rmtc',
                 name: 'Raw Material Test Certificate',

@@ -68,6 +68,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<AHP_Note> AHPNote { get; set; }
         public DbSet<CAReport> CAReport { get; set; }
         public DbSet<RCAReport> RCAReport { get; set; }
+        public DbSet<SixSigmaIndices> SixSigmaIndices { get; set; }
 
 
 

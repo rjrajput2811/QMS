@@ -174,37 +174,44 @@
                      style="gap: 30px; padding-bottom:12px; border-bottom:1px solid #ddd;">
 
                     <div>
-                        <label style="font-weight:600; margin-right:5px;">FY:</label>
+                        <label style="font-weight:600; margin-right:5px;">
+                            FY: <span style="color:red;">*</span>
+                        </label>
                         @Html.DropDownListFor(
-                            m => m.Fy,
-                            new SelectList(new[]
-                            {
-                                new { Value = "", Text = "Select" },
-                                new { Value = "2023-24", Text = "2023-24" },
-                                new { Value = "2024-25", Text = "2024-25" },
-                                new { Value = "2025-26", Text = "2025-26" }
-                            }, "Value", "Text", Model.Fy),
-                            new { @class = "header-select", @style = "width:160px;" }
-                        )
+                                 m => m.Fy,
+                                 new SelectList(new[]
+                                 {
+                        new { Value = "", Text = "Select" },
+                        new { Value = "2023-24", Text = "2023-24" },
+                        new { Value = "2024-25", Text = "2024-25" },
+                        new { Value = "2025-26", Text = "2025-26" }
+                        }, "Value", "Text", Model.Fy),
+                                 new { @class = "header-select", @style = "width:160px;" }
+                                 )
                     </div>
 
                     <div>
-                        <label style="font-weight:600; margin-right:5px;">PC:</label>
+                        <label style="font-weight:600; margin-right:5px;">
+                            PC: <span style="color:red;">*</span>
+                        </label>
                         @Html.TextBoxFor(
-                            m => m.Pc,
-                            new { @class = "header-input", placeholder = "Enter PC", @style = "width:150px;" }
-                        )
+                                 m => m.Pc,
+                                 new { @class = "header-input", placeholder = "Enter PC", @style = "width:150px;" }
+                                 )
                     </div>
 
                     <div>
-                        <label style="font-weight:600; margin-right:5px;">Location:</label>
+                        <label style="font-weight:600; margin-right:5px;">
+                            Location: <span style="color:red;">*</span>
+                        </label>
                         @Html.TextBoxFor(
-                            m => m.Location,
-                            new { @class = "header-input", placeholder = "Enter Location", @style = "width:150px;" }
-                        )
+                                 m => m.Location,
+                                 new { @class = "header-input", placeholder = "Enter Location", @style = "width:150px;" }
+                                 )
                     </div>
 
                 </div>
+
 
                 <!-- TABS + TABLES INSIDE SAME CARD -->
                 <ul class="nav nav-tabs custom-tabs" id="sixSigmaTabs" role="tablist">
@@ -261,10 +268,10 @@
             const id = Number(rowData.id);
 
             if (isNaN(id)) return false;  // safety: non-numeric id => freeze
-            return id % 2 !== 0;          // odd => editable, even => not editable
+            return id % 2 !== 0;          
         }
 
-        /* ---------------- EFFECTIVENESS TEMPLATE ---------------- */
+   
         var effectivenessTemplate = [
 
             // SR 1
@@ -528,8 +535,20 @@
                 mergeWithPrev: true
             }
         ];
+        function mergedCellFormatter(cell) {
+            const data = cell.getRow().getData();
+            const el = cell.getElement();
 
-        /* ---------------- COLUMNS: EFFECTIVENESS ---------------- */
+            if (data.mergeWithPrev) {
+                // visually merge with previous row
+                el.style.borderTop = "none";
+                return "";      // no text in the second row
+            }
+
+            return cell.getValue(); // normal for the first row of the pair
+        }
+
+
         let effectivenessColumns = [
             {
                 title: "Sr No.",
@@ -556,38 +575,52 @@
                 widthGrow: 2,
                 formatter: "textarea"
             },
-            { title: "Data for PC", field: "data", hozAlign: "center", editor: "input" },
+       
+            {
+                title: "Data for PC",
+                field: "data",
+                hozAlign: "center",
+                editor: "input",          
+                validator: ["numeric"]     
+            },
             {
                 title: "Target",
                 field: "target",
                 hozAlign: "center",
-                editor: "input",
-                editable: editableWhenOddId
+                editor: "input",         
+                editable: editableWhenOddId,
+                validator: ["numeric"],
+                formatter: mergedCellFormatter
+
             },
             {
                 title: "Weightage",
                 field: "weightage",
                 hozAlign: "center",
                 editor: "input",
-                editable: editableWhenOddId
+                editable: editableWhenOddId,
+                validator: ["numeric"]
             },
             {
                 title: "Formula",
                 field: "formula",
                 hozAlign: "center",
                 editor: "input",
-                editable: editableWhenOddId
+                editable: editableWhenOddId,
+                validator: ["numeric"]
             },
             {
                 title: "Weighted Score",
                 field: "score",
                 hozAlign: "center",
                 editor: "input",
-                editable: editableWhenOddId
+                editable: editableWhenOddId,
+                validator: ["numeric"]
             }
         ];
 
-        /* ---------------- COLUMNS: ENGAGEMENT ---------------- */
+
+
         let engagementColumns = [
             {
                 title: "Sr No.",
@@ -614,38 +647,50 @@
                 widthGrow: 2,
                 formatter: "textarea"
             },
-            { title: "Data for PC", field: "data", hozAlign: "center", editor: "input" },
+      
+            {
+                title: "Data for PC",
+                field: "data",
+                hozAlign: "center",
+                editor: "input",
+                validator: ["numeric"]
+            },
             {
                 title: "Target",
                 field: "target",
                 hozAlign: "center",
                 editor: "input",
-                editable: editableWhenOddId
+                editable: editableWhenOddId,
+                validator: ["numeric"]
             },
             {
                 title: "Weightage",
                 field: "weightage",
                 hozAlign: "center",
                 editor: "input",
-                editable: editableWhenOddId
+                editable: editableWhenOddId,
+                validator: ["numeric"]
             },
             {
                 title: "Formula",
                 field: "formula",
                 hozAlign: "center",
-                editor: "input",
-                editable: editableWhenOddId
+                editor: "input",         
+                editable: editableWhenOddId,
+                validator: ["numeric"]
             },
             {
                 title: "Weighted Score",
                 field: "score",
                 hozAlign: "center",
                 editor: "input",
-                editable: editableWhenOddId
+                editable: editableWhenOddId,
+                validator: ["numeric"]
             }
         ];
 
-        /* ---------------- EFFECTIVENESS TABLE ---------------- */
+
+ 
         effectivenessTable = new Tabulator("#sixSigmaTableEffectiveness", {
             data: effectivenessTemplate,
             layout: "fitColumns",
@@ -708,247 +753,269 @@
         });
     }
 
-    // ---- helper: find row by id ----
+   
     function getRowById(rows, id) {
         return rows.find(r => r.id === id) || {};
     }
 
-    // ---- SAVE FUNCTION ----
-   function saveSixSigma() {
-    if (!effectivenessTable || !engagementTable) {
-        alert("Tables not initialized");
-        return;
-    }
 
-    if (typeof Blockloadershow === "function") {
-        Blockloadershow();
-    }
+    function saveSixSigma() {
 
-    const eff = effectivenessTable.getData();
-    const eng = engagementTable.getData();
+      
+        const requiredHeaderFields = [
+            { id: "Fy", name: "FY" },
+            { id: "Pc", name: "PC" },
+            { id: "Location", name: "Location" }
+        ];
 
-    const model = {};
+        let missingHeaderFields = [];
 
-    // ---------- EFFECTIVENESS ----------
-    const e1  = getRowById(eff, 1);
-    const e2  = getRowById(eff, 2);
-    const e3  = getRowById(eff, 3);
-    const e4  = getRowById(eff, 4);
-    const e5  = getRowById(eff, 5);
-    const e6  = getRowById(eff, 6);
-    const e7  = getRowById(eff, 7);
-    const e8  = getRowById(eff, 8);
-    const e9  = getRowById(eff, 9);
-    const e10 = getRowById(eff, 10);
-    const e11 = getRowById(eff, 11);
-    const e12 = getRowById(eff, 12);
-    const e13 = getRowById(eff, 13);
-    const e14 = getRowById(eff, 14);
-    const e15 = getRowById(eff, 15);
-    const e16 = getRowById(eff, 16);
-    const e17 = getRowById(eff, 17);
-    const e18 = getRowById(eff, 18);
-    const e19 = getRowById(eff, 19);
-
-    model.Cust_Data_Pc_Ot           = e1.data;
-    model.Cust_Target_Tgt           = e1.target;
-    model.Cust_Weightage_Tgt        = e1.weightage;
-    model.Cust_Formula_Tgt          = e1.formula;
-    model.Cust_Weighted_Score_Tgt   = e1.score;
-
-    model.Cust_Data_Pc_As           = e2.data;
-
-    model.Cust_Data_Pc_Close        = e3.data;
-    model.Cust_Target_Ytd           = e3.target;
-    model.Cust_Weightage_Ytd        = e3.weightage;
-    model.Cust_Formula_Ytd          = e3.formula;
-    model.Cust_Weighted_Score_Ytd   = e3.score;
-
-    model.Cust_Data_Pc_Total        = e4.data;
-
-    model.Proc_Data_Pc_Npd          = e5.data;
-    model.Proc_Target               = e5.target;
-    model.Proc_Weightage            = e5.weightage;
-    model.Proc_Formula              = e5.formula;
-    model.Proc_Weighted_Score       = e5.score;
-
-    model.Proc_Data_Pc_Ann          = e6.data;
-
-    model.Key_Data_Pc_Cust          = e7.data;
-    model.Key_Target                = e7.target;
-    model.Key_Weightage             = e7.weightage;
-    model.Key_Formula               = e7.formula;
-    model.Key_Weighted_Score        = e7.score;
-
-    model.Key_Data_Pc_Ann           = e8.data;
-
-    model.Save_Data_Pc_Actu         = e9.data;
-    model.Save_Target               = e9.target;
-    model.Save_Weightage            = e9.weightage;
-    model.Save_Formula              = e9.formula;
-    model.Save_Weighted_Score       = e9.score;
-
-    model.Save_Data_Pc_Ann          = e10.data;
-
-    model.Out_Data_Pc_Sigma         = e11.data;
-    model.Out_Target                = e11.target;
-    model.Out_Weightage             = e11.weightage;
-    model.Out_Formula               = e11.formula;
-    model.Out_Weighted_Score        = e11.score;
-
-    model.Out_Data_Pc_As            = e12.data;
-
-    model.Spm_Data_Pc_Spm           = e13.data;
-    model.Spm_Target                = e13.target;
-    model.Spm_Weightage             = e13.weightage;
-    model.Spm_Formula               = e13.formula;
-    model.Spm_Weighted_Score        = e13.score;
-
-    model.Spm_Data_Pc_As            = e14.data;
-
-    model.Proj_Data_Pc_Close        = e15.data;
-    model.Proj_Data_Pc_Dmaic        = e16.data;
-    model.Proj_Data_Pc_Turbo        = e17.data;
-    model.Proj_Data_Pc_Planned      = e18.data;
-
-    model.Eff_Total_Sum             = e19.data;
-    model.Eff_Total_Weighted_Score  = e19.score;
-
-    // ---------- ENGAGEMENT ----------
-    const g1  = getRowById(eng, 1);
-    const g2  = getRowById(eng, 2);
-    const g3  = getRowById(eng, 3);
-    const g4  = getRowById(eng, 4);
-    const g5  = getRowById(eng, 5);
-    const g6  = getRowById(eng, 6);
-    const g7  = getRowById(eng, 7);
-    const g8  = getRowById(eng, 8);
-    const g9  = getRowById(eng, 9);
-    const g10 = getRowById(eng, 10);
-    const g11 = getRowById(eng, 11);
-    const g12 = getRowById(eng, 12);
-    const g13 = getRowById(eng, 13);
-    const g14 = getRowById(eng, 14);
-    const g15 = getRowById(eng, 15);
-
-    model.Lean_Data_Pc_No_People    = g1.data;
-    model.Lean_Target               = g1.target;
-    model.Lean_Weightage            = g1.weightage;
-    model.Lean_Formula              = g1.formula;
-    model.Lean_Weighted_Score       = g1.score;
-    model.Lean_Data_Pc_Total_People = g2.data;
-
-    model.Six_Sigma_Data_Pc_Proj    = g3.data;
-    model.Six_Sigma_Target          = g3.target;
-    model.Six_Sigma__Weightage      = g3.weightage;
-    model.Six_Sigma_Formula         = g3.formula;
-    model.Six_Sigma_Weighted_Score  = g3.score;
-    model.Six_Sigma_Data_Pc_Ann     = g4.data;
-
-    model.Review_Data_Pc_Proj_Review = g5.data;
-    model.Review_Target              = g5.target;
-    model.Review_Weightage           = g5.weightage;
-    model.Review_Formula             = g5.formula;
-    model.Review_Weighted_Score      = g5.score;
-    model.Review_Data_Pc_Proj_Running= g6.data;
-
-    model.Market_Data_Pc_Cap_Cso    = g9.data;
-    model.Market_Target             = g9.target;
-    model.Market_Weightage          = g9.weightage;
-    model.Market_Formula            = g9.formula;
-    model.Market_Weighted_Score     = g9.score;
-    model.Market_Data_Pc_Tar_Cso    = g10.data;
-
-    model.Bkpt_Data_Pc_Ytd          = g11.data;
-    model.Bkpt_Target_Ytd           = g11.target;
-    model.Bkpt_Weightage_Ytd        = g11.weightage;
-    model.Bkpt_Formula_Ytd          = g11.formula;
-    model.Bkpt_Weighted_Score_Ytd   = g11.score;
-    model.Bkpt_Data_Pc_Ann_Ytd      = g12.data;
-
-    model.Bkpt_Data_Pc_Mfg          = g13.data;
-    model.Bkpt_Target_Mfg           = g13.target;
-    model.Bkpt_Weightage_Mfg        = g13.weightage;
-    model.Bkpt_Formula_Mfg          = g13.formula;
-    model.Bkpt_Weighted_Score_Mfg   = g13.score;
-    model.Bkpt_Data_Pc_Ann_Mfg      = g14.data;
-
-    model.Eng_Total_Sum             = g15.data;
-    model.Eng_Total_Weighted_Score  = g15.score;
-
-    model.Fy       = $("#Fy").val();
-    model.Pc       = $("#Pc").val();
-    model.Location = $("#Location").val();
-    // ---- Anti-forgery token ----
-    const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
-    const formData = new FormData();
-
-    for (const key in model) {
-        if (Object.prototype.hasOwnProperty.call(model, key)) {
-            formData.append(key, model[key] == null ? "" : model[key]);
-        }
-    }
-
-    if (tokenInput) {
-        formData.append("__RequestVerificationToken", tokenInput.value);
-    }
-
-    // If you have an Id field in the view model bound to a hidden input:
-    const idInput = document.querySelector("#Id");
-    if (idInput) {
-        formData.append("Id", idInput.value);
-    }
-
-    $.ajax({
-        url: '@Url.Action("InsertUpdateSEEIndices", "SEEIndices")',
-        type: 'POST',
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-            if (typeof Blockloaderhide === "function") {
-                Blockloaderhide();
+        requiredHeaderFields.forEach(field => {
+            const value = $("#" + field.id).val();
+            if (!value || value.trim() === "") {
+                missingHeaderFields.push(field.name);
             }
+        });
 
-            if (!response || response.success === false) {
-                let errorMsg = "";
+        if (missingHeaderFields.length > 0) {
+            const listHTML = missingHeaderFields.map(f => `<li>${f}</li>`).join("");
+            showDangerAlert(`
+            <p>Please fill out the following required field(s):</p>
+            <ul>${listHTML}</ul>
+        `);
+            return false;    // ⛔ stop further processing (do NOT call Blockloadershow yet)
+        }
 
-                if (response && response.errors !== undefined) {
-                    for (let error of response.errors) {
-                        errorMsg += error + "\n";
-                    }
-                    if (errorMsg !== "") {
-                        showDangerAlert(errorMsg);
-                    }
-                } else if (response && response.message) {
-                    showDangerAlert(response.message);
-                } else {
-                    showDangerAlert("Error while saving data.");
+        if (typeof Blockloadershow === "function") {
+            Blockloadershow();
+        }
+
+        const eff = effectivenessTable.getData();
+        const eng = engagementTable.getData();
+
+        const model = {};
+
+        // ---------- EFFECTIVENESS ----------
+        const e1 = getRowById(eff, 1);
+        const e2 = getRowById(eff, 2);
+        const e3 = getRowById(eff, 3);
+        const e4 = getRowById(eff, 4);
+        const e5 = getRowById(eff, 5);
+        const e6 = getRowById(eff, 6);
+        const e7 = getRowById(eff, 7);
+        const e8 = getRowById(eff, 8);
+        const e9 = getRowById(eff, 9);
+        const e10 = getRowById(eff, 10);
+        const e11 = getRowById(eff, 11);
+        const e12 = getRowById(eff, 12);
+        const e13 = getRowById(eff, 13);
+        const e14 = getRowById(eff, 14);
+        const e15 = getRowById(eff, 15);
+        const e16 = getRowById(eff, 16);
+        const e17 = getRowById(eff, 17);
+        const e18 = getRowById(eff, 18);
+        const e19 = getRowById(eff, 19);
+
+        model.Cust_Data_Pc_Ot = e1.data;
+        model.Cust_Target_Tgt = e1.target;
+        model.Cust_Weightage_Tgt = e1.weightage;
+        model.Cust_Formula_Tgt = e1.formula;
+        model.Cust_Weighted_Score_Tgt = e1.score;
+
+        model.Cust_Data_Pc_As = e2.data;
+
+        model.Cust_Data_Pc_Close = e3.data;
+        model.Cust_Target_Ytd = e3.target;
+        model.Cust_Weightage_Ytd = e3.weightage;
+        model.Cust_Formula_Ytd = e3.formula;
+        model.Cust_Weighted_Score_Ytd = e3.score;
+
+        model.Cust_Data_Pc_Total = e4.data;
+
+        model.Proc_Data_Pc_Npd = e5.data;
+        model.Proc_Target = e5.target;
+        model.Proc_Weightage = e5.weightage;
+        model.Proc_Formula = e5.formula;
+        model.Proc_Weighted_Score = e5.score;
+
+        model.Proc_Data_Pc_Ann = e6.data;
+
+        model.Key_Data_Pc_Cust = e7.data;
+        model.Key_Target = e7.target;
+        model.Key_Weightage = e7.weightage;
+        model.Key_Formula = e7.formula;
+        model.Key_Weighted_Score = e7.score;
+
+        model.Key_Data_Pc_Ann = e8.data;
+
+        model.Save_Data_Pc_Actu = e9.data;
+        model.Save_Target = e9.target;
+        model.Save_Weightage = e9.weightage;
+        model.Save_Formula = e9.formula;
+        model.Save_Weighted_Score = e9.score;
+
+        model.Save_Data_Pc_Ann = e10.data;
+
+        model.Out_Data_Pc_Sigma = e11.data;
+        model.Out_Target = e11.target;
+        model.Out_Weightage = e11.weightage;
+        model.Out_Formula = e11.formula;
+        model.Out_Weighted_Score = e11.score;
+
+        model.Out_Data_Pc_As = e12.data;
+
+        model.Spm_Data_Pc_Spm = e13.data;
+        model.Spm_Target = e13.target;
+        model.Spm_Weightage = e13.weightage;
+        model.Spm_Formula = e13.formula;
+        model.Spm_Weighted_Score = e13.score;
+
+        model.Spm_Data_Pc_As = e14.data;
+
+        model.Proj_Data_Pc_Close = e15.data;
+        model.Proj_Data_Pc_Dmaic = e16.data;
+        model.Proj_Data_Pc_Turbo = e17.data;
+        model.Proj_Data_Pc_Planned = e18.data;
+
+        model.Eff_Total_Sum = e19.data;
+        model.Eff_Total_Weighted_Score = e19.score;
+
+        // ---------- ENGAGEMENT ----------
+        const g1 = getRowById(eng, 1);
+        const g2 = getRowById(eng, 2);
+        const g3 = getRowById(eng, 3);
+        const g4 = getRowById(eng, 4);
+        const g5 = getRowById(eng, 5);
+        const g6 = getRowById(eng, 6);
+        const g7 = getRowById(eng, 7);
+        const g8 = getRowById(eng, 8);
+        const g9 = getRowById(eng, 9);
+        const g10 = getRowById(eng, 10);
+        const g11 = getRowById(eng, 11);
+        const g12 = getRowById(eng, 12);
+        const g13 = getRowById(eng, 13);
+        const g14 = getRowById(eng, 14);
+        const g15 = getRowById(eng, 15);
+
+        model.Lean_Data_Pc_No_People = g1.data;
+        model.Lean_Target = g1.target;
+        model.Lean_Weightage = g1.weightage;
+        model.Lean_Formula = g1.formula;
+        model.Lean_Weighted_Score = g1.score;
+        model.Lean_Data_Pc_Total_People = g2.data;
+
+        model.Six_Sigma_Data_Pc_Proj = g3.data;
+        model.Six_Sigma_Target = g3.target;
+        model.Six_Sigma__Weightage = g3.weightage;
+        model.Six_Sigma_Formula = g3.formula;
+        model.Six_Sigma_Weighted_Score = g3.score;
+        model.Six_Sigma_Data_Pc_Ann = g4.data;
+
+        model.Review_Data_Pc_Proj_Review = g5.data;
+        model.Review_Target = g5.target;
+        model.Review_Weightage = g5.weightage;
+        model.Review_Formula = g5.formula;
+        model.Review_Weighted_Score = g5.score;
+        model.Review_Data_Pc_Proj_Running = g6.data;
+
+        model.Market_Data_Pc_Cap_Cso = g9.data;
+        model.Market_Target = g9.target;
+        model.Market_Weightage = g9.weightage;
+        model.Market_Formula = g9.formula;
+        model.Market_Weighted_Score = g9.score;
+        model.Market_Data_Pc_Tar_Cso = g10.data;
+
+        model.Bkpt_Data_Pc_Ytd = g11.data;
+        model.Bkpt_Target_Ytd = g11.target;
+        model.Bkpt_Weightage_Ytd = g11.weightage;
+        model.Bkpt_Formula_Ytd = g11.formula;
+        model.Bkpt_Weighted_Score_Ytd = g11.score;
+        model.Bkpt_Data_Pc_Ann_Ytd = g12.data;
+
+        model.Bkpt_Data_Pc_Mfg = g13.data;
+        model.Bkpt_Target_Mfg = g13.target;
+        model.Bkpt_Weightage_Mfg = g13.weightage;
+        model.Bkpt_Formula_Mfg = g13.formula;
+        model.Bkpt_Weighted_Score_Mfg = g13.score;
+        model.Bkpt_Data_Pc_Ann_Mfg = g14.data;
+
+        model.Eng_Total_Sum = g15.data;
+        model.Eng_Total_Weighted_Score = g15.score;
+
+        model.Fy = $("#Fy").val();
+        model.Pc = $("#Pc").val();
+        model.Location = $("#Location").val();
+        // ---- Anti-forgery token ----
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const formData = new FormData();
+
+        for (const key in model) {
+            if (Object.prototype.hasOwnProperty.call(model, key)) {
+                formData.append(key, model[key] == null ? "" : model[key]);
+            }
+        }
+
+        if (tokenInput) {
+            formData.append("__RequestVerificationToken", tokenInput.value);
+        }
+
+        // If you have an Id field in the view model bound to a hidden input:
+        const idInput = document.querySelector("#Id");
+        if (idInput) {
+            formData.append("Id", idInput.value);
+        }
+
+        $.ajax({
+            url: '@Url.Action("InsertUpdateSEEIndices", "SEEIndices")',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (typeof Blockloaderhide === "function") {
+                    Blockloaderhide();
                 }
 
-                return false;
-            } else {
-                // same pattern your company uses
-                if ($("#Id").val() > 0) {
-                    showSuccessAlert("Updated Successfully.");
-                } else {
-                    showSuccessAlert("Saved Successfully.");
-                }
+                if (!response || response.success === false) {
+                    let errorMsg = "";
 
-                // redirect similar to your other screen (adjust target as needed)
-                setTimeout(function () {
-                    window.open('@Url.Action("SEEIndices", "SEEIndices")', '_self');
-                }, 2500);
+                    if (response && response.errors !== undefined) {
+                        for (let error of response.errors) {
+                            errorMsg += error + "\n";
+                        }
+                        if (errorMsg !== "") {
+                            showDangerAlert(errorMsg);
+                        }
+                    } else if (response && response.message) {
+                        showDangerAlert(response.message);
+                    } else {
+                        showDangerAlert("Error while saving data.");
+                    }
+
+                    return false;
+                } else {
+                    // same pattern your company uses
+                    if ($("#Id").val() > 0) {
+                        showSuccessAlert("Updated Successfully.");
+                    } else {
+                        showSuccessAlert("Saved Successfully.");
+                    }
+
+                    // redirect similar to your other screen (adjust target as needed)
+                    setTimeout(function () {
+                        window.open('@Url.Action("SEEIndices", "SEEIndices")', '_self');
+                    }, 2500);
+                }
+            },
+            error: function (xhr, status, error) {
+                if (typeof Blockloaderhide === "function") {
+                    Blockloaderhide();
+                }
+                showDangerAlert('Error saving data: ' + error);
             }
-        },
-        error: function (xhr, status, error) {
-            if (typeof Blockloaderhide === "function") {
-                Blockloaderhide();
-            }
-            showDangerAlert('Error saving data: ' + error);
-        }
-    });
-}
+        });
+    }
+
 
     $(document).ready(function () {
         loadSixSigmaGrid();

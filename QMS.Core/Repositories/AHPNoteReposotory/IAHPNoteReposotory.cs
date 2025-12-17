@@ -4,7 +4,7 @@ namespace QMS.Core.Repositories.AHPNoteReposotory;
 
 public interface IAHPNoteReposotory
 {
-    Task<List<AHPNoteViewModel>> GetAHPNotesAsync();
+    Task<List<AHPNoteViewModel>> GetAHPNotesAsync(int financialYear);
     Task<AHPNoteViewModel> GetAHPNotesByIdAsync(int Id);
     Task<OperationResult> InsertAHPNotesAsync(AHPNoteViewModel model);
     Task<OperationResult> UpdateAHPNotesAsync(AHPNoteViewModel model);

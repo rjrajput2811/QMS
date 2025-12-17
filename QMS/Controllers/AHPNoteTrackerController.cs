@@ -1,16 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using QMS.Core.Models;
 using QMS.Core.Repositories.AHPNoteReposotory;
+using QMS.Core.Repositories.VendorRepository;
 
 namespace QMS.Controllers;
 
 public class AHPNoteTrackerController : Controller
 {
     private readonly IAHPNoteReposotory _ahpNoteRepository;
+    private readonly IVendorRepository _vendorRepository;
 
-    public AHPNoteTrackerController(IAHPNoteReposotory ahpNoteRepository)
+    public AHPNoteTrackerController(IAHPNoteReposotory ahpNoteRepository, IVendorRepository vendorRepository)
     {
         _ahpNoteRepository = ahpNoteRepository;
+        _vendorRepository = vendorRepository;
     }
 
     public IActionResult AHPNotetracker()
@@ -18,15 +22,24 @@ public class AHPNoteTrackerController : Controller
         return View();
     }
 
-    public async Task<ActionResult> GetAHPNoteListAsync()
+    public async Task<ActionResult> GetAHPNoteListAsync(int financialYear)
     {
-        var result = await _ahpNoteRepository.GetAHPNotesAsync();
+        var result = await _ahpNoteRepository.GetAHPNotesAsync(financialYear);
         return Json(result);
     }
 
-    public async Task<IActionResult> AHPNotetrackerDetailsAsync(int Id)
+    public async Task<IActionResult> AHPNotetrackerDetailsAsync(int Id, int financialYear)
     {
         var model = new AHPNoteViewModel();
+        var supplierList = await _vendorRepository.GetListAsync();
+        var suppliers = supplierList.Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.Name
+        })
+        .ToList();
+        ViewBag.SupplierList = suppliers;
+        if(financialYear > 0) { model.FinancialYear = financialYear; }
         if(Id > 0)
         {
             model = await _ahpNoteRepository.GetAHPNotesByIdAsync(Id);

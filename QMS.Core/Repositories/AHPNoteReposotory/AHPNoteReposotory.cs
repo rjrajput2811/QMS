@@ -19,7 +19,7 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
         _systemLogService = systemLogService;
     }
 
-    public async Task<List<AHPNoteViewModel>> GetAHPNotesAsync()
+    public async Task<List<AHPNoteViewModel>> GetAHPNotesAsync(int financialYear)
     {
         try
         {
@@ -28,10 +28,11 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                 new SqlParameter("@Id", SqlDbType.Int)
                 {
                     Value = 0
-                }
+                },
+                new SqlParameter("@FinancialYear", financialYear)
             };
 
-            var sql = @"EXEC sp_Get_AHPNote";
+            var sql = @"EXEC sp_Get_AHPNote @Id, @FinancialYear";
 
             var result = await Task.Run(() => _dbContext.AHPNote.FromSqlRaw(sql, parameters)
                 .AsEnumerable()
@@ -63,200 +64,283 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
             var parameters = new[]
             {
                 new SqlParameter("@Id", Id),
+                new SqlParameter("@FinancialYear", SqlDbType.Int)
+                {
+                    Value = 0
+                }
             };
 
-            var sql = @"EXEC sp_Get_AHPNote";
+            var sql = @"EXEC sp_Get_AHPNote @Id, @FinancialYear";
 
             var result = await Task.Run(() => _dbContext.AHPNote.FromSqlRaw(sql, parameters)
                 .AsEnumerable()
                 .Select(x => new AHPNoteViewModel
                 {
                     Id = x.Id,
+                    FinancialYear = x.FinancialYear,
                     Lit_SEE_Engagement_Target = x.Lit_SEE_Engagement_Target,
-                    Lit_SEE_Engagement_FY23_24_Q1 = x.Lit_SEE_Engagement_FY23_24_Q1,
-                    Lit_SEE_Engagement_FY23_24_Q2 = x.Lit_SEE_Engagement_FY23_24_Q2,
-                    Lit_SEE_Engagement_FY23_24_Q3 = x.Lit_SEE_Engagement_FY23_24_Q3,
-                    Lit_SEE_Engagement_FY23_24_Q4 = x.Lit_SEE_Engagement_FY23_24_Q4,
-                    Lit_SEE_Engagement_FY24_25_Q1 = x.Lit_SEE_Engagement_FY24_25_Q1,
-                    Lit_SEE_Engagement_FY24_25_Q2 = x.Lit_SEE_Engagement_FY24_25_Q2,
+                    Lit_SEE_Engagement_PreviousYear_Q1 = x.Lit_SEE_Engagement_PreviousYear_Q1,
+                    Lit_SEE_Engagement_PreviousYear_Q2 = x.Lit_SEE_Engagement_PreviousYear_Q2,
+                    Lit_SEE_Engagement_PreviousYear_Q3 = x.Lit_SEE_Engagement_PreviousYear_Q3,
+                    Lit_SEE_Engagement_PreviousYear_Q4 = x.Lit_SEE_Engagement_PreviousYear_Q4,
+                    Lit_SEE_Engagement_CurrentYear_Q1 = x.Lit_SEE_Engagement_CurrentYear_Q1,
+                    Lit_SEE_Engagement_CurrentYear_Q2 = x.Lit_SEE_Engagement_CurrentYear_Q2,
+                    Lit_SEE_Engagement_CurrentYear_Q3 = x.Lit_SEE_Engagement_CurrentYear_Q3,
+                    Lit_SEE_Engagement_CurrentYear_Q4 = x.Lit_SEE_Engagement_CurrentYear_Q4,
                     Lit_SEE_Effectiveness_Target = x.Lit_SEE_Effectiveness_Target,
-                    Lit_SEE_Effectiveness_FY23_24_Q1 = x.Lit_SEE_Effectiveness_FY23_24_Q1,
-                    Lit_SEE_Effectiveness_FY23_24_Q2 = x.Lit_SEE_Effectiveness_FY23_24_Q2,
-                    Lit_SEE_Effectiveness_FY23_24_Q3 = x.Lit_SEE_Effectiveness_FY23_24_Q3,
-                    Lit_SEE_Effectiveness_FY23_24_Q4 = x.Lit_SEE_Effectiveness_FY23_24_Q4,
-                    Lit_SEE_Effectiveness_FY24_25_Q1 = x.Lit_SEE_Effectiveness_FY24_25_Q1,
-                    Lit_SEE_Effectiveness_FY24_25_Q2 = x.Lit_SEE_Effectiveness_FY24_25_Q2,
+                    Lit_SEE_Effectiveness_PreviousYear_Q1 = x.Lit_SEE_Effectiveness_PreviousYear_Q1,
+                    Lit_SEE_Effectiveness_PreviousYear_Q2 = x.Lit_SEE_Effectiveness_PreviousYear_Q2,
+                    Lit_SEE_Effectiveness_PreviousYear_Q3 = x.Lit_SEE_Effectiveness_PreviousYear_Q3,
+                    Lit_SEE_Effectiveness_PreviousYear_Q4 = x.Lit_SEE_Effectiveness_PreviousYear_Q4,
+                    Lit_SEE_Effectiveness_CurrentYear_Q1 = x.Lit_SEE_Effectiveness_CurrentYear_Q1,
+                    Lit_SEE_Effectiveness_CurrentYear_Q2 = x.Lit_SEE_Effectiveness_CurrentYear_Q2,
+                    Lit_SEE_Effectiveness_CurrentYear_Q3 = x.Lit_SEE_Effectiveness_CurrentYear_Q3,
+                    Lit_SEE_Effectiveness_CurrentYear_Q4 = x.Lit_SEE_Effectiveness_CurrentYear_Q4,
                     Lit_SS_ServiceComplaints_Baseline = x.Lit_SS_ServiceComplaints_Baseline,
                     Lit_SS_ServiceComplaints_Target = x.Lit_SS_ServiceComplaints_Target,
-                    Lit_SS_ServiceComplaints_Q1 = x.Lit_SS_ServiceComplaints_Q1,
-                    Lit_SS_ServiceComplaints_Q2 = x.Lit_SS_ServiceComplaints_Q2,
+                    Lit_SS_ServiceComplaints_CurrentYear_Q1 = x.Lit_SS_ServiceComplaints_CurrentYear_Q1,
+                    Lit_SS_ServiceComplaints_CurrentYear_Q2 = x.Lit_SS_ServiceComplaints_CurrentYear_Q2,
+                    Lit_SS_ServiceComplaints_CurrentYear_Q3 = x.Lit_SS_ServiceComplaints_CurrentYear_Q3,
+                    Lit_SS_ServiceComplaints_CurrentYear_Q4 = x.Lit_SS_ServiceComplaints_CurrentYear_Q4,
                     Lit_SS_DesignLSG_Baseline = x.Lit_SS_DesignLSG_Baseline,
                     Lit_SS_DesignLSG_Target = x.Lit_SS_DesignLSG_Target,
-                    Lit_SS_DesignLSG_Q1 = x.Lit_SS_DesignLSG_Q1,
-                    Lit_SS_DesignLSG_Q2 = x.Lit_SS_DesignLSG_Q2,
+                    Lit_SS_DesignLSG_CurrentYear_Q1 = x.Lit_SS_DesignLSG_CurrentYear_Q1,
+                    Lit_SS_DesignLSG_CurrentYear_Q2 = x.Lit_SS_DesignLSG_CurrentYear_Q2,
+                    Lit_SS_DesignLSG_CurrentYear_Q3 = x.Lit_SS_DesignLSG_CurrentYear_Q3,
+                    Lit_SS_DesignLSG_CurrentYear_Q4 = x.Lit_SS_DesignLSG_CurrentYear_Q4,
                     Lit_SS_CostReduction_Baseline = x.Lit_SS_CostReduction_Baseline,
                     Lit_SS_CostReduction_Target = x.Lit_SS_CostReduction_Target,
-                    Lit_SS_CostReduction_Q1 = x.Lit_SS_CostReduction_Q1,
-                    Lit_SS_CostReduction_Q2 = x.Lit_SS_CostReduction_Q2,
+                    Lit_SS_CostReduction_CurrentYear_Q1 = x.Lit_SS_CostReduction_CurrentYear_Q1,
+                    Lit_SS_CostReduction_CurrentYear_Q2 = x.Lit_SS_CostReduction_CurrentYear_Q2,
+                    Lit_SS_CostReduction_CurrentYear_Q3 = x.Lit_SS_CostReduction_CurrentYear_Q3,
+                    Lit_SS_CostReduction_CurrentYear_Q4 = x.Lit_SS_CostReduction_CurrentYear_Q4,
                     Lit_SS_OTIF_Baseline = x.Lit_SS_OTIF_Baseline,
                     Lit_SS_OTIF_Target = x.Lit_SS_OTIF_Target,
-                    Lit_SS_OTIF_Q1 = x.Lit_SS_OTIF_Q1,
-                    Lit_SS_OTIF_Q2 = x.Lit_SS_OTIF_Q2,
+                    Lit_SS_OTIF_CurrentYear_Q1 = x.Lit_SS_OTIF_CurrentYear_Q1,
+                    Lit_SS_OTIF_CurrentYear_Q2 = x.Lit_SS_OTIF_CurrentYear_Q2,
+                    Lit_SS_OTIF_CurrentYear_Q3 = x.Lit_SS_OTIF_CurrentYear_Q3,
+                    Lit_SS_OTIF_CurrentYear_Q4 = x.Lit_SS_OTIF_CurrentYear_Q4,
                     Lit_SS_SPMScore_Baseline = x.Lit_SS_SPMScore_Baseline,
                     Lit_SS_SPMScore_Target = x.Lit_SS_SPMScore_Target,
-                    Lit_SS_SPMScore_Q1 = x.Lit_SS_SPMScore_Q1,
-                    Lit_SS_SPMScore_Q2 = x.Lit_SS_SPMScore_Q2,
-                    Lit_CSAT_ReqSent_YTD23_24 = x.Lit_CSAT_ReqSent_YTD23_24,
+                    Lit_SS_SPMScore_CurrentYear_Q1 = x.Lit_SS_SPMScore_CurrentYear_Q1,
+                    Lit_SS_SPMScore_CurrentYear_Q2 = x.Lit_SS_SPMScore_CurrentYear_Q2,
+                    Lit_SS_SPMScore_CurrentYear_Q3 = x.Lit_SS_SPMScore_CurrentYear_Q3,
+                    Lit_SS_SPMScore_CurrentYear_Q4 = x.Lit_SS_SPMScore_CurrentYear_Q4,
+                    Lit_CSAT_ReqSent_YTD_PreviousYear = x.Lit_CSAT_ReqSent_YTD_PreviousYear,
                     Lit_CSAT_ReqSent_Baseline = x.Lit_CSAT_ReqSent_Baseline,
                     Lit_CSAT_ReqSent_Target = x.Lit_CSAT_ReqSent_Target,
-                    Lit_CSAT_ReqSent_Q1 = x.Lit_CSAT_ReqSent_Q1,
-                    Lit_CSAT_ReqSent_Q2 = x.Lit_CSAT_ReqSent_Q2,
-                    Lit_CSAT_ReqSent_YTD = x.Lit_CSAT_ReqSent_YTD,
-                    Lit_CSAT_RespRecvd_YTD23_24 = x.Lit_CSAT_RespRecvd_YTD23_24,
+                    Lit_CSAT_ReqSent_CurrentYear_Q1 = x.Lit_CSAT_ReqSent_CurrentYear_Q1,
+                    Lit_CSAT_ReqSent_CurrentYear_Q2 = x.Lit_CSAT_ReqSent_CurrentYear_Q2,
+                    Lit_CSAT_ReqSent_CurrentYear_Q3 = x.Lit_CSAT_ReqSent_CurrentYear_Q3,
+                    Lit_CSAT_ReqSent_CurrentYear_Q4 = x.Lit_CSAT_ReqSent_CurrentYear_Q4,
+                    Lit_CSAT_ReqSent_YTD_CurrentYear = x.Lit_CSAT_ReqSent_YTD_CurrentYear,
+                    Lit_CSAT_RespRecvd_YTD_PreviousYear = x.Lit_CSAT_RespRecvd_YTD_PreviousYear,
                     Lit_CSAT_RespRecvd_Baseline = x.Lit_CSAT_RespRecvd_Baseline,
                     Lit_CSAT_RespRecvd_Target = x.Lit_CSAT_RespRecvd_Target,
-                    Lit_CSAT_RespRecvd_Q1 = x.Lit_CSAT_RespRecvd_Q1,
-                    Lit_CSAT_RespRecvd_Q2 = x.Lit_CSAT_RespRecvd_Q2,
-                    Lit_CSAT_RespRecvd_YTD = x.Lit_CSAT_RespRecvd_YTD,
-                    Lit_CSAT_Promoter_YTD23_24 = x.Lit_CSAT_Promoter_YTD23_24,
+                    Lit_CSAT_RespRecvd_CurrentYear_Q1 = x.Lit_CSAT_RespRecvd_CurrentYear_Q1,
+                    Lit_CSAT_RespRecvd_CurrentYear_Q2 = x.Lit_CSAT_RespRecvd_CurrentYear_Q2,
+                    Lit_CSAT_RespRecvd_CurrentYear_Q3 = x.Lit_CSAT_RespRecvd_CurrentYear_Q3,
+                    Lit_CSAT_RespRecvd_CurrentYear_Q4 = x.Lit_CSAT_RespRecvd_CurrentYear_Q4,
+                    Lit_CSAT_RespRecvd_YTD_CurrentYear = x.Lit_CSAT_RespRecvd_YTD_CurrentYear,
+                    Lit_CSAT_Promoter_YTD_PreviousYear = x.Lit_CSAT_Promoter_YTD_PreviousYear,
                     Lit_CSAT_Promoter_Baseline = x.Lit_CSAT_Promoter_Baseline,
                     Lit_CSAT_Promoter_Target = x.Lit_CSAT_Promoter_Target,
-                    Lit_CSAT_Promoter_Q1 = x.Lit_CSAT_Promoter_Q1,
-                    Lit_CSAT_Promoter_Q2 = x.Lit_CSAT_Promoter_Q2,
-                    Lit_CSAT_Promoter_YTD = x.Lit_CSAT_Promoter_YTD,
-                    Lit_CSAT_Detractor_YTD23_24 = x.Lit_CSAT_Detractor_YTD23_24,
+                    Lit_CSAT_Promoter_CurrentYear_Q1 = x.Lit_CSAT_Promoter_CurrentYear_Q1,
+                    Lit_CSAT_Promoter_CurrentYear_Q2 = x.Lit_CSAT_Promoter_CurrentYear_Q2,
+                    Lit_CSAT_Promoter_CurrentYear_Q3 = x.Lit_CSAT_Promoter_CurrentYear_Q3,
+                    Lit_CSAT_Promoter_CurrentYear_Q4 = x.Lit_CSAT_Promoter_CurrentYear_Q4,
+                    Lit_CSAT_Promoter_YTD_CurrentYear = x.Lit_CSAT_Promoter_YTD_CurrentYear,
+                    Lit_CSAT_Detractor_YTD_PreviousYear = x.Lit_CSAT_Detractor_YTD_PreviousYear,
                     Lit_CSAT_Detractor_Baseline = x.Lit_CSAT_Detractor_Baseline,
                     Lit_CSAT_Detractor_Target = x.Lit_CSAT_Detractor_Target,
-                    Lit_CSAT_Detractor_Q1 = x.Lit_CSAT_Detractor_Q1,
-                    Lit_CSAT_Detractor_Q2 = x.Lit_CSAT_Detractor_Q2,
-                    Lit_CSAT_Detractor_YTD = x.Lit_CSAT_Detractor_YTD,
-                    Lit_CSAT_NPS_YTD23_24 = x.Lit_CSAT_NPS_YTD23_24,
+                    Lit_CSAT_Detractor_CurrentYear_Q1 = x.Lit_CSAT_Detractor_CurrentYear_Q1,
+                    Lit_CSAT_Detractor_CurrentYear_Q2 = x.Lit_CSAT_Detractor_CurrentYear_Q2,
+                    Lit_CSAT_Detractor_CurrentYear_Q3 = x.Lit_CSAT_Detractor_CurrentYear_Q3,
+                    Lit_CSAT_Detractor_CurrentYear_Q4 = x.Lit_CSAT_Detractor_CurrentYear_Q4,
+                    Lit_CSAT_Detractor_YTD_CurrentYear = x.Lit_CSAT_Detractor_YTD_CurrentYear,
+                    Lit_CSAT_NPS_YTD_PreviousYear = x.Lit_CSAT_NPS_YTD_PreviousYear,
                     Lit_CSAT_NPS_Baseline = x.Lit_CSAT_NPS_Baseline,
                     Lit_CSAT_NPS_Target = x.Lit_CSAT_NPS_Target,
-                    Lit_CSAT_NPS_Q1 = x.Lit_CSAT_NPS_Q1,
-                    Lit_CSAT_NPS_Q2 = x.Lit_CSAT_NPS_Q2,
-                    Lit_CSAT_NPS_YTD = x.Lit_CSAT_NPS_YTD,
-                    Lit_SPM_Supp1_Q1 = x.Lit_SPM_Supp1_Q1,
-                    Lit_SPM_Supp1_Q2 = x.Lit_SPM_Supp1_Q2,
-                    Lit_SPM_Supp2_Q1 = x.Lit_SPM_Supp2_Q1,
-                    Lit_SPM_Supp2_Q2 = x.Lit_SPM_Supp2_Q2,
-                    Lit_SPM_Supp3_Q1 = x.Lit_SPM_Supp3_Q1,
-                    Lit_SPM_Supp3_Q2 = x.Lit_SPM_Supp3_Q2,
-                    Lit_SPM_Supp4_Q1 = x.Lit_SPM_Supp4_Q1,
-                    Lit_SPM_Supp4_Q2 = x.Lit_SPM_Supp4_Q2,
-                    Lit_SPM_Supp5_Q1 = x.Lit_SPM_Supp5_Q1,
-                    Lit_SPM_Supp5_Q2 = x.Lit_SPM_Supp5_Q2,
-                    Lit_SPM_Supp6_Q1 = x.Lit_SPM_Supp6_Q1,
-                    Lit_SPM_Supp6_Q2 = x.Lit_SPM_Supp6_Q2,
-                    Lit_SPM_Supp7_Q1 = x.Lit_SPM_Supp7_Q1,
-                    Lit_SPM_Supp7_Q2 = x.Lit_SPM_Supp7_Q2,
-                    Lit_SPM_Supp8_Q1 = x.Lit_SPM_Supp8_Q1,
-                    Lit_SPM_Supp8_Q2 = x.Lit_SPM_Supp8_Q2,
-                    Lit_SPM_Supp9_Q1 = x.Lit_SPM_Supp9_Q1,
-                    Lit_SPM_Supp9_Q2 = x.Lit_SPM_Supp9_Q2,
-                    Lit_SPM_Supp10_Q1 = x.Lit_SPM_Supp10_Q1,
-                    Lit_SPM_Supp10_Q2 = x.Lit_SPM_Supp10_Q2,
-                    Lit_OTIF_YTD23_24 = x.Lit_OTIF_YTD23_24,
+                    Lit_CSAT_NPS_CurrentYear_Q1 = x.Lit_CSAT_NPS_CurrentYear_Q1,
+                    Lit_CSAT_NPS_CurrentYear_Q2 = x.Lit_CSAT_NPS_CurrentYear_Q2,
+                    Lit_CSAT_NPS_CurrentYear_Q3 = x.Lit_CSAT_NPS_CurrentYear_Q3,
+                    Lit_CSAT_NPS_CurrentYear_Q4 = x.Lit_CSAT_NPS_CurrentYear_Q4,
+                    Lit_CSAT_NPS_YTD_CurrentYear = x.Lit_CSAT_NPS_YTD_CurrentYear,
+                    Lit_SPM_Supp1 = x.Lit_SPM_Supp1,
+                    Lit_SPM_Supp1_CurrentYear_Q1 = x.Lit_SPM_Supp1_CurrentYear_Q1,
+                    Lit_SPM_Supp1_CurrentYear_Q2 = x.Lit_SPM_Supp1_CurrentYear_Q2,
+                    Lit_SPM_Supp1_CurrentYear_Q3 = x.Lit_SPM_Supp1_CurrentYear_Q3,
+                    Lit_SPM_Supp1_CurrentYear_Q4 = x.Lit_SPM_Supp1_CurrentYear_Q4,
+                    Lit_SPM_Supp2 = x.Lit_SPM_Supp2,
+                    Lit_SPM_Supp2_CurrentYear_Q1 = x.Lit_SPM_Supp2_CurrentYear_Q1,
+                    Lit_SPM_Supp2_CurrentYear_Q2 = x.Lit_SPM_Supp2_CurrentYear_Q2,
+                    Lit_SPM_Supp2_CurrentYear_Q3 = x.Lit_SPM_Supp2_CurrentYear_Q3,
+                    Lit_SPM_Supp2_CurrentYear_Q4 = x.Lit_SPM_Supp2_CurrentYear_Q4,
+                    Lit_SPM_Supp3 = x.Lit_SPM_Supp3,
+                    Lit_SPM_Supp3_CurrentYear_Q1 = x.Lit_SPM_Supp3_CurrentYear_Q1,
+                    Lit_SPM_Supp3_CurrentYear_Q2 = x.Lit_SPM_Supp3_CurrentYear_Q2,
+                    Lit_SPM_Supp3_CurrentYear_Q3 = x.Lit_SPM_Supp3_CurrentYear_Q3,
+                    Lit_SPM_Supp3_CurrentYear_Q4 = x.Lit_SPM_Supp3_CurrentYear_Q4,
+                    Lit_SPM_Supp4 = x.Lit_SPM_Supp4,
+                    Lit_SPM_Supp4_CurrentYear_Q1 = x.Lit_SPM_Supp4_CurrentYear_Q1,
+                    Lit_SPM_Supp4_CurrentYear_Q2 = x.Lit_SPM_Supp4_CurrentYear_Q2,
+                    Lit_SPM_Supp4_CurrentYear_Q3 = x.Lit_SPM_Supp4_CurrentYear_Q3,
+                    Lit_SPM_Supp4_CurrentYear_Q4 = x.Lit_SPM_Supp4_CurrentYear_Q4,
+                    Lit_SPM_Supp5 = x.Lit_SPM_Supp5,
+                    Lit_SPM_Supp5_CurrentYear_Q1 = x.Lit_SPM_Supp5_CurrentYear_Q1,
+                    Lit_SPM_Supp5_CurrentYear_Q2 = x.Lit_SPM_Supp5_CurrentYear_Q2,
+                    Lit_SPM_Supp5_CurrentYear_Q3 = x.Lit_SPM_Supp5_CurrentYear_Q3,
+                    Lit_SPM_Supp5_CurrentYear_Q4 = x.Lit_SPM_Supp5_CurrentYear_Q4,
+                    Lit_SPM_Supp6 = x.Lit_SPM_Supp6,
+                    Lit_SPM_Supp6_CurrentYear_Q1 = x.Lit_SPM_Supp6_CurrentYear_Q1,
+                    Lit_SPM_Supp6_CurrentYear_Q2 = x.Lit_SPM_Supp6_CurrentYear_Q2,
+                    Lit_SPM_Supp6_CurrentYear_Q3 = x.Lit_SPM_Supp6_CurrentYear_Q3,
+                    Lit_SPM_Supp6_CurrentYear_Q4 = x.Lit_SPM_Supp6_CurrentYear_Q4,
+                    Lit_SPM_Supp7 = x.Lit_SPM_Supp7,
+                    Lit_SPM_Supp7_CurrentYear_Q1 = x.Lit_SPM_Supp7_CurrentYear_Q1,
+                    Lit_SPM_Supp7_CurrentYear_Q2 = x.Lit_SPM_Supp7_CurrentYear_Q2,
+                    Lit_SPM_Supp7_CurrentYear_Q3 = x.Lit_SPM_Supp7_CurrentYear_Q3,
+                    Lit_SPM_Supp7_CurrentYear_Q4 = x.Lit_SPM_Supp7_CurrentYear_Q4,
+                    Lit_SPM_Supp8 = x.Lit_SPM_Supp8,
+                    Lit_SPM_Supp8_CurrentYear_Q1 = x.Lit_SPM_Supp8_CurrentYear_Q1,
+                    Lit_SPM_Supp8_CurrentYear_Q2 = x.Lit_SPM_Supp8_CurrentYear_Q2,
+                    Lit_SPM_Supp8_CurrentYear_Q3 = x.Lit_SPM_Supp8_CurrentYear_Q3,
+                    Lit_SPM_Supp8_CurrentYear_Q4 = x.Lit_SPM_Supp8_CurrentYear_Q4,
+                    Lit_SPM_Supp9 = x.Lit_SPM_Supp9,
+                    Lit_SPM_Supp9_CurrentYear_Q1 = x.Lit_SPM_Supp9_CurrentYear_Q1,
+                    Lit_SPM_Supp9_CurrentYear_Q2 = x.Lit_SPM_Supp9_CurrentYear_Q2,
+                    Lit_SPM_Supp9_CurrentYear_Q3 = x.Lit_SPM_Supp9_CurrentYear_Q3,
+                    Lit_SPM_Supp9_CurrentYear_Q4 = x.Lit_SPM_Supp9_CurrentYear_Q4,
+                    Lit_SPM_Supp10 = x.Lit_SPM_Supp10,
+                    Lit_SPM_Supp10_CurrentYear_Q1 = x.Lit_SPM_Supp10_CurrentYear_Q1,
+                    Lit_SPM_Supp10_CurrentYear_Q2 = x.Lit_SPM_Supp10_CurrentYear_Q2,
+                    Lit_SPM_Supp10_CurrentYear_Q3 = x.Lit_SPM_Supp10_CurrentYear_Q3,
+                    Lit_SPM_Supp10_CurrentYear_Q4 = x.Lit_SPM_Supp10_CurrentYear_Q4,
+                    Lit_OTIF_YTD_PreviousYear = x.Lit_OTIF_YTD_PreviousYear,
                     Lit_OTIF_Target = x.Lit_OTIF_Target,
-                    Lit_OTIF_Q1 = x.Lit_OTIF_Q1,
-                    Lit_OTIF_Q2 = x.Lit_OTIF_Q2,
-                    Lit_OTIF_YTD = x.Lit_OTIF_YTD,
-                    Lit_SC_Closure_YTD23_24 = x.Lit_SC_Closure_YTD23_24,
+                    Lit_OTIF_CurrentYear_Q1 = x.Lit_OTIF_CurrentYear_Q1,
+                    Lit_OTIF_CurrentYear_Q2 = x.Lit_OTIF_CurrentYear_Q2,
+                    Lit_OTIF_CurrentYear_Q3 = x.Lit_OTIF_CurrentYear_Q3,
+                    Lit_OTIF_CurrentYear_Q4 = x.Lit_OTIF_CurrentYear_Q4,
+                    Lit_OTIF_YTD_CurrentYear = x.Lit_OTIF_YTD_CurrentYear,
+                    Lit_SC_Closure_YTD_PreviousYear = x.Lit_SC_Closure_YTD_PreviousYear,
                     Lit_SC_Closure_Baseline = x.Lit_SC_Closure_Baseline,
                     Lit_SC_Closure_Target = x.Lit_SC_Closure_Target,
-                    Lit_SC_Closure_Q1 = x.Lit_SC_Closure_Q1,
-                    Lit_SC_Closure_Q2 = x.Lit_SC_Closure_Q2,
-                    Lit_SC_Closure_YTD = x.Lit_SC_Closure_YTD,
-                    Lit_CSO_TotalLogged_YTD23_24 = x.Lit_CSO_TotalLogged_YTD23_24,
-                    Lit_CSO_TotalLogged_Q1 = x.Lit_CSO_TotalLogged_Q1,
-                    Lit_CSO_TotalLogged_Q2 = x.Lit_CSO_TotalLogged_Q2,
-                    Lit_CSO_TotalLogged_YTD = x.Lit_CSO_TotalLogged_YTD,
-                    Lit_CSO_TotalAClass_YTD23_24 = x.Lit_CSO_TotalAClass_YTD23_24,
-                    Lit_CSO_TotalAClass_Q1 = x.Lit_CSO_TotalAClass_Q1,
-                    Lit_CSO_TotalAClass_Q2 = x.Lit_CSO_TotalAClass_Q2,
-                    Lit_CSO_TotalAClass_YTD = x.Lit_CSO_TotalAClass_YTD,
-                    Lit_CSO_AClassClosed_YTD23_24 = x.Lit_CSO_AClassClosed_YTD23_24,
-                    Lit_CSO_AClassClosed_Q1 = x.Lit_CSO_AClassClosed_Q1,
-                    Lit_CSO_AClassClosed_Q2 = x.Lit_CSO_AClassClosed_Q2,
-                    Lit_CSO_AClassClosed_YTD = x.Lit_CSO_AClassClosed_YTD,
-                    Lit_CSO_AClassClosedLess45_YTD23_24 = x.Lit_CSO_AClassClosedLess45_YTD23_24,
-                    Lit_CSO_AClassClosedLess45_Q1 = x.Lit_CSO_AClassClosedLess45_Q1,
-                    Lit_CSO_AClassClosedLess45_Q2 = x.Lit_CSO_AClassClosedLess45_Q2,
-                    Lit_CSO_AClassClosedLess45_YTD = x.Lit_CSO_AClassClosedLess45_YTD,
-                    Lit_CSO_PercentageClosure_YTD23_24 = x.Lit_CSO_PercentageClosure_YTD23_24,
-                    Lit_CSO_PercentageClosure_Q1 = x.Lit_CSO_PercentageClosure_Q1,
-                    Lit_CSO_PercentageClosure_Q2 = x.Lit_CSO_PercentageClosure_Q2,
-                    Lit_CSO_PercentageClosure_YTD = x.Lit_CSO_PercentageClosure_YTD,
-                    Lit_CostSavings_YTD23_24 = x.Lit_CostSavings_YTD23_24,
+                    Lit_SC_Closure_CurrentYear_Q1 = x.Lit_SC_Closure_CurrentYear_Q1,
+                    Lit_SC_Closure_CurrentYear_Q2 = x.Lit_SC_Closure_CurrentYear_Q2,
+                    Lit_SC_Closure_CurrentYear_Q3 = x.Lit_SC_Closure_CurrentYear_Q3,
+                    Lit_SC_Closure_CurrentYear_Q4 = x.Lit_SC_Closure_CurrentYear_Q4,
+                    Lit_SC_Closure_YTD_CurrentYear = x.Lit_SC_Closure_YTD_CurrentYear,
+                    Lit_CSO_TotalLogged_YTD_PreviousYear = x.Lit_CSO_TotalLogged_YTD_PreviousYear,
+                    Lit_CSO_TotalLogged_CurrentYear_Q1 = x.Lit_CSO_TotalLogged_CurrentYear_Q1,
+                    Lit_CSO_TotalLogged_CurrentYear_Q2 = x.Lit_CSO_TotalLogged_CurrentYear_Q2,
+                    Lit_CSO_TotalLogged_CurrentYear_Q3 = x.Lit_CSO_TotalLogged_CurrentYear_Q3,
+                    Lit_CSO_TotalLogged_CurrentYear_Q4 = x.Lit_CSO_TotalLogged_CurrentYear_Q4,
+                    Lit_CSO_TotalLogged_YTD_CurrentYear = x.Lit_CSO_TotalLogged_YTD_CurrentYear,
+                    Lit_CSO_TotalAClass_YTD_PreviousYear = x.Lit_CSO_TotalAClass_YTD_PreviousYear,
+                    Lit_CSO_TotalAClass_CurrentYear_Q1 = x.Lit_CSO_TotalAClass_CurrentYear_Q1,
+                    Lit_CSO_TotalAClass_CurrentYear_Q2 = x.Lit_CSO_TotalAClass_CurrentYear_Q2,
+                    Lit_CSO_TotalAClass_CurrentYear_Q3 = x.Lit_CSO_TotalAClass_CurrentYear_Q3,
+                    Lit_CSO_TotalAClass_CurrentYear_Q4 = x.Lit_CSO_TotalAClass_CurrentYear_Q4,
+                    Lit_CSO_TotalAClass_YTD_CurrentYear = x.Lit_CSO_TotalAClass_YTD_CurrentYear,
+                    Lit_CSO_AClassClosed_YTD_PreviousYear = x.Lit_CSO_AClassClosed_YTD_PreviousYear,
+                    Lit_CSO_AClassClosed_CurrentYear_Q1 = x.Lit_CSO_AClassClosed_CurrentYear_Q1,
+                    Lit_CSO_AClassClosed_CurrentYear_Q2 = x.Lit_CSO_AClassClosed_CurrentYear_Q2,
+                    Lit_CSO_AClassClosed_CurrentYear_Q3 = x.Lit_CSO_AClassClosed_CurrentYear_Q3,
+                    Lit_CSO_AClassClosed_CurrentYear_Q4 = x.Lit_CSO_AClassClosed_CurrentYear_Q4,
+                    Lit_CSO_AClassClosed_YTD_CurrentYear = x.Lit_CSO_AClassClosed_YTD_CurrentYear,
+                    Lit_CSO_AClassClosedLess45_YTD_PreviousYear = x.Lit_CSO_AClassClosedLess45_YTD_PreviousYear,
+                    Lit_CSO_AClassClosedLess45_CurrentYear_Q1 = x.Lit_CSO_AClassClosedLess45_CurrentYear_Q1,
+                    Lit_CSO_AClassClosedLess45_CurrentYear_Q2 = x.Lit_CSO_AClassClosedLess45_CurrentYear_Q2,
+                    Lit_CSO_AClassClosedLess45_CurrentYear_Q3 = x.Lit_CSO_AClassClosedLess45_CurrentYear_Q3,
+                    Lit_CSO_AClassClosedLess45_CurrentYear_Q4 = x.Lit_CSO_AClassClosedLess45_CurrentYear_Q4,
+                    Lit_CSO_AClassClosedLess45_YTD_CurrentYear = x.Lit_CSO_AClassClosedLess45_YTD_CurrentYear,
+                    Lit_CSO_PercentageClosure_YTD_PreviousYear = x.Lit_CSO_PercentageClosure_YTD_PreviousYear,
+                    Lit_CSO_PercentageClosure_CurrentYear_Q1 = x.Lit_CSO_PercentageClosure_CurrentYear_Q1,
+                    Lit_CSO_PercentageClosure_CurrentYear_Q2 = x.Lit_CSO_PercentageClosure_CurrentYear_Q2,
+                    Lit_CSO_PercentageClosure_CurrentYear_Q3 = x.Lit_CSO_PercentageClosure_CurrentYear_Q3,
+                    Lit_CSO_PercentageClosure_CurrentYear_Q4 = x.Lit_CSO_PercentageClosure_CurrentYear_Q4,
+                    Lit_CSO_PercentageClosure_YTD_CurrentYear = x.Lit_CSO_PercentageClosure_YTD_CurrentYear,
+                    Lit_CostSavings_YTD_PreviousYear = x.Lit_CostSavings_YTD_PreviousYear,
                     Lit_CostSavings_Target = x.Lit_CostSavings_Target,
-                    Lit_CostSavings_Q1 = x.Lit_CostSavings_Q1,
-                    Lit_CostSavings_Q2 = x.Lit_CostSavings_Q2,
-                    Lit_CostSavings_YTD = x.Lit_CostSavings_YTD,
-                    Lit_OQL_ArtLuminaires_YTD23_24 = x.Lit_OQL_ArtLuminaires_YTD23_24,
-                    Lit_OQL_ArtLuminaires_Target = x.Lit_OQL_ArtLuminaires_Target,
-                    Lit_OQL_ArtLuminaires_PC01 = x.Lit_OQL_ArtLuminaires_PC01,
-                    Lit_OQL_ArtLuminaires_PC02 = x.Lit_OQL_ArtLuminaires_PC02,
-                    Lit_OQL_ArtLuminaires_PC03 = x.Lit_OQL_ArtLuminaires_PC03,
-                    Lit_OQL_ArtLuminaires_PC04 = x.Lit_OQL_ArtLuminaires_PC04,
-                    Lit_OQL_ArtLuminaires_PC05 = x.Lit_OQL_ArtLuminaires_PC05,
-                    Lit_OQL_ArtLuminaires_PC06 = x.Lit_OQL_ArtLuminaires_PC06,
-                    Lit_OQL_IdealLighting_YTD23_24 = x.Lit_OQL_IdealLighting_YTD23_24,
-                    Lit_OQL_IdealLighting_Target = x.Lit_OQL_IdealLighting_Target,
-                    Lit_OQL_IdealLighting_PC01 = x.Lit_OQL_IdealLighting_PC01,
-                    Lit_OQL_IdealLighting_PC02 = x.Lit_OQL_IdealLighting_PC02,
-                    Lit_OQL_IdealLighting_PC03 = x.Lit_OQL_IdealLighting_PC03,
-                    Lit_OQL_IdealLighting_PC04 = x.Lit_OQL_IdealLighting_PC04,
-                    Lit_OQL_IdealLighting_PC05 = x.Lit_OQL_IdealLighting_PC05,
-                    Lit_OQL_IdealLighting_PC06 = x.Lit_OQL_IdealLighting_PC06,
-                    Lit_OQL_Everlite_YTD23_24 = x.Lit_OQL_Everlite_YTD23_24,
-                    Lit_OQL_Everlite_Target = x.Lit_OQL_Everlite_Target,
-                    Lit_OQL_Everlite_PC01 = x.Lit_OQL_Everlite_PC01,
-                    Lit_OQL_Everlite_PC02 = x.Lit_OQL_Everlite_PC02,
-                    Lit_OQL_Everlite_PC03 = x.Lit_OQL_Everlite_PC03,
-                    Lit_OQL_Everlite_PC04 = x.Lit_OQL_Everlite_PC04,
-                    Lit_OQL_Everlite_PC05 = x.Lit_OQL_Everlite_PC05,
-                    Lit_OQL_Everlite_PC06 = x.Lit_OQL_Everlite_PC06,
-                    Lit_OQL_Rama_YTD23_24 = x.Lit_OQL_Rama_YTD23_24,
-                    Lit_OQL_Rama_Target = x.Lit_OQL_Rama_Target,
-                    Lit_OQL_Rama_PC01 = x.Lit_OQL_Rama_PC01,
-                    Lit_OQL_Rama_PC02 = x.Lit_OQL_Rama_PC02,
-                    Lit_OQL_Rama_PC03 = x.Lit_OQL_Rama_PC03,
-                    Lit_OQL_Rama_PC04 = x.Lit_OQL_Rama_PC04,
-                    Lit_OQL_Rama_PC05 = x.Lit_OQL_Rama_PC05,
-                    Lit_OQL_Rama_PC06 = x.Lit_OQL_Rama_PC06,
-                    Lit_OQL_Shantinath_YTD23_24 = x.Lit_OQL_Shantinath_YTD23_24,
-                    Lit_OQL_Shantinath_Target = x.Lit_OQL_Shantinath_Target,
-                    Lit_OQL_Shantinath_PC01 = x.Lit_OQL_Shantinath_PC01,
-                    Lit_OQL_Shantinath_PC02 = x.Lit_OQL_Shantinath_PC02,
-                    Lit_OQL_Shantinath_PC03 = x.Lit_OQL_Shantinath_PC03,
-                    Lit_OQL_Shantinath_PC04 = x.Lit_OQL_Shantinath_PC04,
-                    Lit_OQL_Shantinath_PC05 = x.Lit_OQL_Shantinath_PC05,
-                    Lit_OQL_Shantinath_PC06 = x.Lit_OQL_Shantinath_PC06,
-                    Lit_OQL_Varun_YTD23_24 = x.Lit_OQL_Varun_YTD23_24,
-                    Lit_OQL_Varun_Target = x.Lit_OQL_Varun_Target,
-                    Lit_OQL_Varun_PC01 = x.Lit_OQL_Varun_PC01,
-                    Lit_OQL_Varun_PC02 = x.Lit_OQL_Varun_PC02,
-                    Lit_OQL_Varun_PC03 = x.Lit_OQL_Varun_PC03,
-                    Lit_OQL_Varun_PC04 = x.Lit_OQL_Varun_PC04,
-                    Lit_OQL_Varun_PC05 = x.Lit_OQL_Varun_PC05,
-                    Lit_OQL_Varun_PC06 = x.Lit_OQL_Varun_PC06,
-                    Lit_OQL_Ujas_YTD23_24 = x.Lit_OQL_Ujas_YTD23_24,
-                    Lit_OQL_Ujas_Target = x.Lit_OQL_Ujas_Target,
-                    Lit_OQL_Ujas_PC01 = x.Lit_OQL_Ujas_PC01,
-                    Lit_OQL_Ujas_PC02 = x.Lit_OQL_Ujas_PC02,
-                    Lit_OQL_Ujas_PC03 = x.Lit_OQL_Ujas_PC03,
-                    Lit_OQL_Ujas_PC04 = x.Lit_OQL_Ujas_PC04,
-                    Lit_OQL_Ujas_PC05 = x.Lit_OQL_Ujas_PC05,
-                    Lit_OQL_Ujas_PC06 = x.Lit_OQL_Ujas_PC06,
-                    Lit_OQL_NAK_YTD23_24 = x.Lit_OQL_NAK_YTD23_24,
-                    Lit_OQL_NAK_Target = x.Lit_OQL_NAK_Target,
-                    Lit_OQL_NAK_PC01 = x.Lit_OQL_NAK_PC01,
-                    Lit_OQL_NAK_PC02 = x.Lit_OQL_NAK_PC02,
-                    Lit_OQL_NAK_PC03 = x.Lit_OQL_NAK_PC03,
-                    Lit_OQL_NAK_PC04 = x.Lit_OQL_NAK_PC04,
-                    Lit_OQL_NAK_PC05 = x.Lit_OQL_NAK_PC05,
-                    Lit_OQL_NAK_PC06 = x.Lit_OQL_NAK_PC06,
-                    Lit_OQL_CumulativeAvg1_YTD23_24 = x.Lit_OQL_CumulativeAvg1_YTD23_24,
+                    Lit_CostSavings_CurrentYear_Q1 = x.Lit_CostSavings_CurrentYear_Q1,
+                    Lit_CostSavings_CurrentYear_Q2 = x.Lit_CostSavings_CurrentYear_Q2,
+                    Lit_CostSavings_CurrentYear_Q3 = x.Lit_CostSavings_CurrentYear_Q3,
+                    Lit_CostSavings_CurrentYear_Q4 = x.Lit_CostSavings_CurrentYear_Q4,
+                    Lit_CostSavings_YTD_CurrentYear = x.Lit_CostSavings_YTD_CurrentYear,
+                    Lit_OQL_Vendor1 = x.Lit_OQL_Vendor1,
+                    Lit_OQL_Vendor1_YTD_PreviousYear = x.Lit_OQL_Vendor1_YTD_PreviousYear,
+                    Lit_OQL_Vendor1_Target = x.Lit_OQL_Vendor1_Target,
+                    Lit_OQL_Vendor1_PC01 = x.Lit_OQL_Vendor1_PC01,
+                    Lit_OQL_Vendor1_PC02 = x.Lit_OQL_Vendor1_PC02,
+                    Lit_OQL_Vendor1_PC03 = x.Lit_OQL_Vendor1_PC03,
+                    Lit_OQL_Vendor1_PC04 = x.Lit_OQL_Vendor1_PC04,
+                    Lit_OQL_Vendor1_PC05 = x.Lit_OQL_Vendor1_PC05,
+                    Lit_OQL_Vendor1_PC06 = x.Lit_OQL_Vendor1_PC06,
+                    Lit_OQL_Vendor2 = x.Lit_OQL_Vendor2,
+                    Lit_OQL_Vendor2_YTD_PreviousYear = x.Lit_OQL_Vendor2_YTD_PreviousYear,
+                    Lit_OQL_Vendor2_Target = x.Lit_OQL_Vendor2_Target,
+                    Lit_OQL_Vendor2_PC01 = x.Lit_OQL_Vendor2_PC01,
+                    Lit_OQL_Vendor2_PC02 = x.Lit_OQL_Vendor2_PC02,
+                    Lit_OQL_Vendor2_PC03 = x.Lit_OQL_Vendor2_PC03,
+                    Lit_OQL_Vendor2_PC04 = x.Lit_OQL_Vendor2_PC04,
+                    Lit_OQL_Vendor2_PC05 = x.Lit_OQL_Vendor2_PC05,
+                    Lit_OQL_Vendor2_PC06 = x.Lit_OQL_Vendor2_PC06,
+                    Lit_OQL_Vendor3 = x.Lit_OQL_Vendor3,
+                    Lit_OQL_Vendor3_YTD_PreviousYear = x.Lit_OQL_Vendor3_YTD_PreviousYear,
+                    Lit_OQL_Vendor3_Target = x.Lit_OQL_Vendor3_Target,
+                    Lit_OQL_Vendor3_PC01 = x.Lit_OQL_Vendor3_PC01,
+                    Lit_OQL_Vendor3_PC02 = x.Lit_OQL_Vendor3_PC02,
+                    Lit_OQL_Vendor3_PC03 = x.Lit_OQL_Vendor3_PC03,
+                    Lit_OQL_Vendor3_PC04 = x.Lit_OQL_Vendor3_PC04,
+                    Lit_OQL_Vendor3_PC05 = x.Lit_OQL_Vendor3_PC05,
+                    Lit_OQL_Vendor3_PC06 = x.Lit_OQL_Vendor3_PC06,
+                    Lit_OQL_Vendor4 = x.Lit_OQL_Vendor4,
+                    Lit_OQL_Vendor4_YTD_PreviousYear = x.Lit_OQL_Vendor4_YTD_PreviousYear,
+                    Lit_OQL_Vendor4_Target = x.Lit_OQL_Vendor4_Target,
+                    Lit_OQL_Vendor4_PC01 = x.Lit_OQL_Vendor4_PC01,
+                    Lit_OQL_Vendor4_PC02 = x.Lit_OQL_Vendor4_PC02,
+                    Lit_OQL_Vendor4_PC03 = x.Lit_OQL_Vendor4_PC03,
+                    Lit_OQL_Vendor4_PC04 = x.Lit_OQL_Vendor4_PC04,
+                    Lit_OQL_Vendor4_PC05 = x.Lit_OQL_Vendor4_PC05,
+                    Lit_OQL_Vendor4_PC06 = x.Lit_OQL_Vendor4_PC06,
+                    Lit_OQL_Vendor5 = x.Lit_OQL_Vendor5,
+                    Lit_OQL_Vendor5_YTD_PreviousYear = x.Lit_OQL_Vendor5_YTD_PreviousYear,
+                    Lit_OQL_Vendor5_Target = x.Lit_OQL_Vendor5_Target,
+                    Lit_OQL_Vendor5_PC01 = x.Lit_OQL_Vendor5_PC01,
+                    Lit_OQL_Vendor5_PC02 = x.Lit_OQL_Vendor5_PC02,
+                    Lit_OQL_Vendor5_PC03 = x.Lit_OQL_Vendor5_PC03,
+                    Lit_OQL_Vendor5_PC04 = x.Lit_OQL_Vendor5_PC04,
+                    Lit_OQL_Vendor5_PC05 = x.Lit_OQL_Vendor5_PC05,
+                    Lit_OQL_Vendor5_PC06 = x.Lit_OQL_Vendor5_PC06,
+                    Lit_OQL_Vendor6 = x.Lit_OQL_Vendor6,
+                    Lit_OQL_Vendor6_YTD_PreviousYear = x.Lit_OQL_Vendor6_YTD_PreviousYear,
+                    Lit_OQL_Vendor6_Target = x.Lit_OQL_Vendor6_Target,
+                    Lit_OQL_Vendor6_PC01 = x.Lit_OQL_Vendor6_PC01,
+                    Lit_OQL_Vendor6_PC02 = x.Lit_OQL_Vendor6_PC02,
+                    Lit_OQL_Vendor6_PC03 = x.Lit_OQL_Vendor6_PC03,
+                    Lit_OQL_Vendor6_PC04 = x.Lit_OQL_Vendor6_PC04,
+                    Lit_OQL_Vendor6_PC05 = x.Lit_OQL_Vendor6_PC05,
+                    Lit_OQL_Vendor6_PC06 = x.Lit_OQL_Vendor6_PC06,
+                    Lit_OQL_Vendor7 = x.Lit_OQL_Vendor7,
+                    Lit_OQL_Vendor7_YTD_PreviousYear = x.Lit_OQL_Vendor7_YTD_PreviousYear,
+                    Lit_OQL_Vendor7_Target = x.Lit_OQL_Vendor7_Target,
+                    Lit_OQL_Vendor7_PC01 = x.Lit_OQL_Vendor7_PC01,
+                    Lit_OQL_Vendor7_PC02 = x.Lit_OQL_Vendor7_PC02,
+                    Lit_OQL_Vendor7_PC03 = x.Lit_OQL_Vendor7_PC03,
+                    Lit_OQL_Vendor7_PC04 = x.Lit_OQL_Vendor7_PC04,
+                    Lit_OQL_Vendor7_PC05 = x.Lit_OQL_Vendor7_PC05,
+                    Lit_OQL_Vendor7_PC06 = x.Lit_OQL_Vendor7_PC06,
+                    Lit_OQL_Vendor8 = x.Lit_OQL_Vendor8,
+                    Lit_OQL_Vendor8_YTD_PreviousYear = x.Lit_OQL_Vendor8_YTD_PreviousYear,
+                    Lit_OQL_Vendor8_Target = x.Lit_OQL_Vendor8_Target,
+                    Lit_OQL_Vendor8_PC01 = x.Lit_OQL_Vendor8_PC01,
+                    Lit_OQL_Vendor8_PC02 = x.Lit_OQL_Vendor8_PC02,
+                    Lit_OQL_Vendor8_PC03 = x.Lit_OQL_Vendor8_PC03,
+                    Lit_OQL_Vendor8_PC04 = x.Lit_OQL_Vendor8_PC04,
+                    Lit_OQL_Vendor8_PC05 = x.Lit_OQL_Vendor8_PC05,
+                    Lit_OQL_Vendor8_PC06 = x.Lit_OQL_Vendor8_PC06,
+                    Lit_OQL_CumulativeAvg1_YTD_PreviousYear = x.Lit_OQL_CumulativeAvg1_YTD_PreviousYear,
                     Lit_OQL_CumulativeAvg1_Target = x.Lit_OQL_CumulativeAvg1_Target,
                     Lit_OQL_CumulativeAvg1_PC01 = x.Lit_OQL_CumulativeAvg1_PC01,
                     Lit_OQL_CumulativeAvg1_PC02 = x.Lit_OQL_CumulativeAvg1_PC02,
@@ -264,7 +348,7 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                     Lit_OQL_CumulativeAvg1_PC04 = x.Lit_OQL_CumulativeAvg1_PC04,
                     Lit_OQL_CumulativeAvg1_PC05 = x.Lit_OQL_CumulativeAvg1_PC05,
                     Lit_OQL_CumulativeAvg1_PC06 = x.Lit_OQL_CumulativeAvg1_PC06,
-                    Lit_OQL_CumulativeAvg2_YTD23_24 = x.Lit_OQL_CumulativeAvg2_YTD23_24,
+                    Lit_OQL_CumulativeAvg2_YTD_PreviousYear = x.Lit_OQL_CumulativeAvg2_YTD_PreviousYear,
                     Lit_OQL_CumulativeAvg2_Target = x.Lit_OQL_CumulativeAvg2_Target,
                     Lit_OQL_CumulativeAvg2_PC01 = x.Lit_OQL_CumulativeAvg2_PC01,
                     Lit_OQL_CumulativeAvg2_PC02 = x.Lit_OQL_CumulativeAvg2_PC02,
@@ -274,114 +358,167 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                     Lit_OQL_CumulativeAvg2_PC06 = x.Lit_OQL_CumulativeAvg2_PC06,
                     Seat_SS_CNClosure_Baseline = x.Seat_SS_CNClosure_Baseline,
                     Seat_SS_CNClosure_Target = x.Seat_SS_CNClosure_Target,
-                    Seat_SS_CNClosure_Q1 = x.Seat_SS_CNClosure_Q1,
-                    Seat_SS_CNClosure_Q2 = x.Seat_SS_CNClosure_Q2,
-                    Seat_SS_CNClosure_YTD = x.Seat_SS_CNClosure_YTD,
+                    Seat_SS_CNClosure_CurrentYear_Q1 = x.Seat_SS_CNClosure_CurrentYear_Q1,
+                    Seat_SS_CNClosure_CurrentYear_Q2 = x.Seat_SS_CNClosure_CurrentYear_Q2,
+                    Seat_SS_CNClosure_CurrentYear_Q3 = x.Seat_SS_CNClosure_CurrentYear_Q3,
+                    Seat_SS_CNClosure_CurrentYear_Q4 = x.Seat_SS_CNClosure_CurrentYear_Q4,
+                    Seat_SS_CNClosure_YTD_CurrentYear = x.Seat_SS_CNClosure_YTD_CurrentYear,
                     Seat_SS_OTIF_Baseline = x.Seat_SS_OTIF_Baseline,
                     Seat_SS_OTIF_Target = x.Seat_SS_OTIF_Target,
-                    Seat_SS_OTIF_Q1 = x.Seat_SS_OTIF_Q1,
-                    Seat_SS_OTIF_Q2 = x.Seat_SS_OTIF_Q2,
-                    Seat_SS_OTIF_YTD = x.Seat_SS_OTIF_YTD,
+                    Seat_SS_OTIF_CurrentYear_Q1 = x.Seat_SS_OTIF_CurrentYear_Q1,
+                    Seat_SS_OTIF_CurrentYear_Q2 = x.Seat_SS_OTIF_CurrentYear_Q2,
+                    Seat_SS_OTIF_CurrentYear_Q3 = x.Seat_SS_OTIF_CurrentYear_Q3,
+                    Seat_SS_OTIF_CurrentYear_Q4 = x.Seat_SS_OTIF_CurrentYear_Q4,
+                    Seat_SS_OTIF_YTD_CurrentYear = x.Seat_SS_OTIF_YTD_CurrentYear,
                     Seat_SS_SPMScore_Baseline = x.Seat_SS_SPMScore_Baseline,
                     Seat_SS_SPMScore_Target = x.Seat_SS_SPMScore_Target,
-                    Seat_SS_SPMScore_Q1 = x.Seat_SS_SPMScore_Q1,
-                    Seat_SS_SPMScore_Q2 = x.Seat_SS_SPMScore_Q2,
-                    Seat_SS_SPMScore_YTD = x.Seat_SS_SPMScore_YTD,
-                    Seat_OTIF_Performance_YTD23_24 = x.Seat_OTIF_Performance_YTD23_24,
+                    Seat_SS_SPMScore_CurrentYear_Q1 = x.Seat_SS_SPMScore_CurrentYear_Q1,
+                    Seat_SS_SPMScore_CurrentYear_Q2 = x.Seat_SS_SPMScore_CurrentYear_Q2,
+                    Seat_SS_SPMScore_CurrentYear_Q3 = x.Seat_SS_SPMScore_CurrentYear_Q3,
+                    Seat_SS_SPMScore_CurrentYear_Q4 = x.Seat_SS_SPMScore_CurrentYear_Q4,
+                    Seat_SS_SPMScore_YTD_CurrentYear = x.Seat_SS_SPMScore_YTD_CurrentYear,
+                    Seat_OTIF_Performance_YTD_PreviousYear = x.Seat_OTIF_Performance_YTD_PreviousYear,
                     Seat_OTIF_Performance_Target = x.Seat_OTIF_Performance_Target,
-                    Seat_OTIF_Performance_Q1 = x.Seat_OTIF_Performance_Q1,
-                    Seat_OTIF_Performance_Q2 = x.Seat_OTIF_Performance_Q2,
-                    Seat_OTIF_Performance_YTD = x.Seat_OTIF_Performance_YTD,
-                    Seat_CSAT_ReqSent_YTD23_24 = x.Seat_CSAT_ReqSent_YTD23_24,
+                    Seat_OTIF_Performance_CurrentYear_Q1 = x.Seat_OTIF_Performance_CurrentYear_Q1,
+                    Seat_OTIF_Performance_CurrentYear_Q2 = x.Seat_OTIF_Performance_CurrentYear_Q2,
+                    Seat_OTIF_Performance_CurrentYear_Q3 = x.Seat_OTIF_Performance_CurrentYear_Q3,
+                    Seat_OTIF_Performance_CurrentYear_Q4 = x.Seat_OTIF_Performance_CurrentYear_Q4,
+                    Seat_OTIF_Performance_YTD_CurrentYear = x.Seat_OTIF_Performance_YTD_CurrentYear,
+                    Seat_CSAT_ReqSent_YTD_PreviousYear = x.Seat_CSAT_ReqSent_YTD_PreviousYear,
                     Seat_CSAT_ReqSent_Baseline = x.Seat_CSAT_ReqSent_Baseline,
                     Seat_CSAT_ReqSent_Target = x.Seat_CSAT_ReqSent_Target,
-                    Seat_CSAT_ReqSent_Q1 = x.Seat_CSAT_ReqSent_Q1,
-                    Seat_CSAT_ReqSent_Q2 = x.Seat_CSAT_ReqSent_Q2,
-                    Seat_CSAT_ReqSent_YTD = x.Seat_CSAT_ReqSent_YTD,
-                    Seat_CSAT_RespRecvd_YTD23_24 = x.Seat_CSAT_RespRecvd_YTD23_24,
+                    Seat_CSAT_ReqSent_CurrentYear_Q1 = x.Seat_CSAT_ReqSent_CurrentYear_Q1,
+                    Seat_CSAT_ReqSent_CurrentYear_Q2 = x.Seat_CSAT_ReqSent_CurrentYear_Q2,
+                    Seat_CSAT_ReqSent_CurrentYear_Q3 = x.Seat_CSAT_ReqSent_CurrentYear_Q3,
+                    Seat_CSAT_ReqSent_CurrentYear_Q4 = x.Seat_CSAT_ReqSent_CurrentYear_Q4,
+                    Seat_CSAT_ReqSent_YTD_CurrentYear = x.Seat_CSAT_ReqSent_YTD_CurrentYear,
+                    Seat_CSAT_RespRecvd_YTD_PreviousYear = x.Seat_CSAT_RespRecvd_YTD_PreviousYear,
                     Seat_CSAT_RespRecvd_Baseline = x.Seat_CSAT_RespRecvd_Baseline,
                     Seat_CSAT_RespRecvd_Target = x.Seat_CSAT_RespRecvd_Target,
-                    Seat_CSAT_RespRecvd_Q1 = x.Seat_CSAT_RespRecvd_Q1,
-                    Seat_CSAT_RespRecvd_Q2 = x.Seat_CSAT_RespRecvd_Q2,
-                    Seat_CSAT_RespRecvd_YTD = x.Seat_CSAT_RespRecvd_YTD,
-                    Seat_CSAT_Promoter_YTD23_24 = x.Seat_CSAT_Promoter_YTD23_24,
+                    Seat_CSAT_RespRecvd_CurrentYear_Q1 = x.Seat_CSAT_RespRecvd_CurrentYear_Q1,
+                    Seat_CSAT_RespRecvd_CurrentYear_Q2 = x.Seat_CSAT_RespRecvd_CurrentYear_Q2,
+                    Seat_CSAT_RespRecvd_CurrentYear_Q3 = x.Seat_CSAT_RespRecvd_CurrentYear_Q3,
+                    Seat_CSAT_RespRecvd_CurrentYear_Q4 = x.Seat_CSAT_RespRecvd_CurrentYear_Q4,
+                    Seat_CSAT_RespRecvd_YTD_CurrentYear = x.Seat_CSAT_RespRecvd_YTD_CurrentYear,
+                    Seat_CSAT_Promoter_YTD_PreviousYear = x.Seat_CSAT_Promoter_YTD_PreviousYear,
                     Seat_CSAT_Promoter_Baseline = x.Seat_CSAT_Promoter_Baseline,
                     Seat_CSAT_Promoter_Target = x.Seat_CSAT_Promoter_Target,
-                    Seat_CSAT_Promoter_Q1 = x.Seat_CSAT_Promoter_Q1,
-                    Seat_CSAT_Promoter_Q2 = x.Seat_CSAT_Promoter_Q2,
-                    Seat_CSAT_Promoter_YTD = x.Seat_CSAT_Promoter_YTD,
-                    Seat_CSAT_Detractor_YTD23_24 = x.Seat_CSAT_Detractor_YTD23_24,
+                    Seat_CSAT_Promoter_CurrentYear_Q1 = x.Seat_CSAT_Promoter_CurrentYear_Q1,
+                    Seat_CSAT_Promoter_CurrentYear_Q2 = x.Seat_CSAT_Promoter_CurrentYear_Q2,
+                    Seat_CSAT_Promoter_CurrentYear_Q3 = x.Seat_CSAT_Promoter_CurrentYear_Q3,
+                    Seat_CSAT_Promoter_CurrentYear_Q4 = x.Seat_CSAT_Promoter_CurrentYear_Q4,
+                    Seat_CSAT_Promoter_YTD_CurrentYear = x.Seat_CSAT_Promoter_YTD_CurrentYear,
+                    Seat_CSAT_Detractor_YTD_PreviousYear = x.Seat_CSAT_Detractor_YTD_PreviousYear,
                     Seat_CSAT_Detractor_Baseline = x.Seat_CSAT_Detractor_Baseline,
                     Seat_CSAT_Detractor_Target = x.Seat_CSAT_Detractor_Target,
-                    Seat_CSAT_Detractor_Q1 = x.Seat_CSAT_Detractor_Q1,
-                    Seat_CSAT_Detractor_Q2 = x.Seat_CSAT_Detractor_Q2,
-                    Seat_CSAT_Detractor_YTD = x.Seat_CSAT_Detractor_YTD,
-                    Seat_CSAT_NPS_YTD23_24 = x.Seat_CSAT_NPS_YTD23_24,
+                    Seat_CSAT_Detractor_CurrentYear_Q1 = x.Seat_CSAT_Detractor_CurrentYear_Q1,
+                    Seat_CSAT_Detractor_CurrentYear_Q2 = x.Seat_CSAT_Detractor_CurrentYear_Q2,
+                    Seat_CSAT_Detractor_CurrentYear_Q3 = x.Seat_CSAT_Detractor_CurrentYear_Q3,
+                    Seat_CSAT_Detractor_CurrentYear_Q4 = x.Seat_CSAT_Detractor_CurrentYear_Q4,
+                    Seat_CSAT_Detractor_YTD_CurrentYear = x.Seat_CSAT_Detractor_YTD_CurrentYear,
+                    Seat_CSAT_NPS_YTD_PreviousYear = x.Seat_CSAT_NPS_YTD_PreviousYear,
                     Seat_CSAT_NPS_Baseline = x.Seat_CSAT_NPS_Baseline,
                     Seat_CSAT_NPS_Target = x.Seat_CSAT_NPS_Target,
-                    Seat_CSAT_NPS_Q1 = x.Seat_CSAT_NPS_Q1,
-                    Seat_CSAT_NPS_Q2 = x.Seat_CSAT_NPS_Q2,
-                    Seat_CSAT_NPS_YTD = x.Seat_CSAT_NPS_YTD,
-                    Seat_CSO_TotalLogged_YTD23_24 = x.Seat_CSO_TotalLogged_YTD23_24,
-                    Seat_CSO_TotalLogged_Q1 = x.Seat_CSO_TotalLogged_Q1,
-                    Seat_CSO_TotalLogged_Q2 = x.Seat_CSO_TotalLogged_Q2,
-                    Seat_CSO_TotalLogged_YTD = x.Seat_CSO_TotalLogged_YTD,
-                    Seat_CSO_TotalAClass_YTD23_24 = x.Seat_CSO_TotalAClass_YTD23_24,
-                    Seat_CSO_TotalAClass_Q1 = x.Seat_CSO_TotalAClass_Q1,
-                    Seat_CSO_TotalAClass_Q2 = x.Seat_CSO_TotalAClass_Q2,
-                    Seat_CSO_TotalAClass_YTD = x.Seat_CSO_TotalAClass_YTD,
-                    Seat_CSO_AClassClosed_YTD23_24 = x.Seat_CSO_AClassClosed_YTD23_24,
-                    Seat_CSO_AClassClosed_Q1 = x.Seat_CSO_AClassClosed_Q1,
-                    Seat_CSO_AClassClosed_Q2 = x.Seat_CSO_AClassClosed_Q2,
-                    Seat_CSO_AClassClosed_YTD = x.Seat_CSO_AClassClosed_YTD,
-                    Seat_CSO_AClassClosedLess48_YTD23_24 = x.Seat_CSO_AClassClosedLess48_YTD23_24,
-                    Seat_CSO_AClassClosedLess48_Q1 = x.Seat_CSO_AClassClosedLess48_Q1,
-                    Seat_CSO_AClassClosedLess48_Q2 = x.Seat_CSO_AClassClosedLess48_Q2,
-                    Seat_CSO_AClassClosedLess48_YTD = x.Seat_CSO_AClassClosedLess48_YTD,
-                    Seat_CSO_AClassClosedUnder48_YTD23_24 = x.Seat_CSO_AClassClosedUnder48_YTD23_24,
-                    Seat_CSO_AClassClosedUnder48_Q1 = x.Seat_CSO_AClassClosedUnder48_Q1,
-                    Seat_CSO_AClassClosedUnder48_Q2 = x.Seat_CSO_AClassClosedUnder48_Q2,
-                    Seat_CSO_AClassClosedUnder48_YTD = x.Seat_CSO_AClassClosedUnder48_YTD,
-                    Seat_SPM_MPPL_Q4_23_24 = x.Seat_SPM_MPPL_Q4_23_24,
-                    Seat_SPM_MPPL_Q1_24_25 = x.Seat_SPM_MPPL_Q1_24_25,
-                    Seat_SPM_MPPL_Q2_24_25 = x.Seat_SPM_MPPL_Q2_24_25,
-                    Seat_SPM_EXCLUSIFF_Q4_23_24 = x.Seat_SPM_EXCLUSIFF_Q4_23_24,
-                    Seat_SPM_EXCLUSIFF_Q1_24_25 = x.Seat_SPM_EXCLUSIFF_Q1_24_25,
-                    Seat_SPM_EXCLUSIFF_Q2_24_25 = x.Seat_SPM_EXCLUSIFF_Q2_24_25,
-                    Seat_SPM_CVG_Q4_23_24 = x.Seat_SPM_CVG_Q4_23_24,
-                    Seat_SPM_CVG_Q1_24_25 = x.Seat_SPM_CVG_Q1_24_25,
-                    Seat_SPM_CVG_Q2_24_25 = x.Seat_SPM_CVG_Q2_24_25,
-                    Seat_SPM_STARSHINE_Q4_23_24 = x.Seat_SPM_STARSHINE_Q4_23_24,
-                    Seat_SPM_STARSHINE_Q1_24_25 = x.Seat_SPM_STARSHINE_Q1_24_25,
-                    Seat_SPM_STARSHINE_Q2_24_25 = x.Seat_SPM_STARSHINE_Q2_24_25,
-                    Seat_SPM_SAVITON_Q4_23_24 = x.Seat_SPM_SAVITON_Q4_23_24,
-                    Seat_SPM_SAVITON_Q1_24_25 = x.Seat_SPM_SAVITON_Q1_24_25,
-                    Seat_SPM_SAVITON_Q2_24_25 = x.Seat_SPM_SAVITON_Q2_24_25,
-                    Seat_IQA_TotalSites_YTD23_24 = x.Seat_IQA_TotalSites_YTD23_24,
+                    Seat_CSAT_NPS_CurrentYear_Q1 = x.Seat_CSAT_NPS_CurrentYear_Q1,
+                    Seat_CSAT_NPS_CurrentYear_Q2 = x.Seat_CSAT_NPS_CurrentYear_Q2,
+                    Seat_CSAT_NPS_CurrentYear_Q3 = x.Seat_CSAT_NPS_CurrentYear_Q3,
+                    Seat_CSAT_NPS_CurrentYear_Q4 = x.Seat_CSAT_NPS_CurrentYear_Q4,
+                    Seat_CSAT_NPS_YTD_CurrentYear = x.Seat_CSAT_NPS_YTD_CurrentYear,
+                    Seat_CSO_TotalLogged_YTD_PreviousYear = x.Seat_CSO_TotalLogged_YTD_PreviousYear,
+                    Seat_CSO_TotalLogged_CurrentYear_Q1 = x.Seat_CSO_TotalLogged_CurrentYear_Q1,
+                    Seat_CSO_TotalLogged_CurrentYear_Q2 = x.Seat_CSO_TotalLogged_CurrentYear_Q2,
+                    Seat_CSO_TotalLogged_CurrentYear_Q3 = x.Seat_CSO_TotalLogged_CurrentYear_Q3,
+                    Seat_CSO_TotalLogged_CurrentYear_Q4 = x.Seat_CSO_TotalLogged_CurrentYear_Q4,
+                    Seat_CSO_TotalLogged_YTD_CurrentYear = x.Seat_CSO_TotalLogged_YTD_CurrentYear,
+                    Seat_CSO_TotalAClass_YTD_PreviousYear = x.Seat_CSO_TotalAClass_YTD_PreviousYear,
+                    Seat_CSO_TotalAClass_CurrentYear_Q1 = x.Seat_CSO_TotalAClass_CurrentYear_Q1,
+                    Seat_CSO_TotalAClass_CurrentYear_Q2 = x.Seat_CSO_TotalAClass_CurrentYear_Q2,
+                    Seat_CSO_TotalAClass_CurrentYear_Q3 = x.Seat_CSO_TotalAClass_CurrentYear_Q3,
+                    Seat_CSO_TotalAClass_CurrentYear_Q4 = x.Seat_CSO_TotalAClass_CurrentYear_Q4,
+                    Seat_CSO_TotalAClass_YTD_CurrentYear = x.Seat_CSO_TotalAClass_YTD_CurrentYear,
+                    Seat_CSO_AClassClosed_YTD_PreviousYear = x.Seat_CSO_AClassClosed_YTD_PreviousYear,
+                    Seat_CSO_AClassClosed_CurrentYear_Q1 = x.Seat_CSO_AClassClosed_CurrentYear_Q1,
+                    Seat_CSO_AClassClosed_CurrentYear_Q2 = x.Seat_CSO_AClassClosed_CurrentYear_Q2,
+                    Seat_CSO_AClassClosed_CurrentYear_Q3 = x.Seat_CSO_AClassClosed_CurrentYear_Q3,
+                    Seat_CSO_AClassClosed_CurrentYear_Q4 = x.Seat_CSO_AClassClosed_CurrentYear_Q4,
+                    Seat_CSO_AClassClosed_YTD_CurrentYear = x.Seat_CSO_AClassClosed_YTD_CurrentYear,
+                    Seat_CSO_AClassClosedLess45_YTD_PreviousYear = x.Seat_CSO_AClassClosedLess45_YTD_PreviousYear,
+                    Seat_CSO_AClassClosedLess45_CurrentYear_Q1 = x.Seat_CSO_AClassClosedLess45_CurrentYear_Q1,
+                    Seat_CSO_AClassClosedLess45_CurrentYear_Q2 = x.Seat_CSO_AClassClosedLess45_CurrentYear_Q2,
+                    Seat_CSO_AClassClosedLess45_CurrentYear_Q3 = x.Seat_CSO_AClassClosedLess45_CurrentYear_Q3,
+                    Seat_CSO_AClassClosedLess45_CurrentYear_Q4 = x.Seat_CSO_AClassClosedLess45_CurrentYear_Q4,
+                    Seat_CSO_AClassClosedLess45_YTD_CurrentYear = x.Seat_CSO_AClassClosedLess45_YTD_CurrentYear,
+                    Seat_CSO_AClassClosedUnder45_YTD_PreviousYear = x.Seat_CSO_AClassClosedUnder45_YTD_PreviousYear,
+                    Seat_CSO_AClassClosedUnder45_CurrentYear_Q1 = x.Seat_CSO_AClassClosedUnder45_CurrentYear_Q1,
+                    Seat_CSO_AClassClosedUnder45_CurrentYear_Q2 = x.Seat_CSO_AClassClosedUnder45_CurrentYear_Q2,
+                    Seat_CSO_AClassClosedUnder45_CurrentYear_Q3 = x.Seat_CSO_AClassClosedUnder45_CurrentYear_Q3,
+                    Seat_CSO_AClassClosedUnder45_CurrentYear_Q4 = x.Seat_CSO_AClassClosedUnder45_CurrentYear_Q4,
+                    Seat_CSO_AClassClosedUnder45_YTD_CurrentYear = x.Seat_CSO_AClassClosedUnder45_YTD_CurrentYear,
+                    Seat_SPM_Supp1 = x.Seat_SPM_Supp1,
+                    Seat_SPM_Supp1_PreviousYear_Q4 = x.Seat_SPM_Supp1_PreviousYear_Q4,
+                    Seat_SPM_Supp1_CurrentYear_Q1 = x.Seat_SPM_Supp1_CurrentYear_Q1,
+                    Seat_SPM_Supp1_CurrentYear_Q2 = x.Seat_SPM_Supp1_CurrentYear_Q2,
+                    Seat_SPM_Supp1_CurrentYear_Q3 = x.Seat_SPM_Supp1_CurrentYear_Q3,
+                    Seat_SPM_Supp1_CurrentYear_Q4 = x.Seat_SPM_Supp1_CurrentYear_Q4,
+                    Seat_SPM_Supp2 = x.Seat_SPM_Supp2,
+                    Seat_SPM_Supp2_PreviousYear_Q4 = x.Seat_SPM_Supp2_PreviousYear_Q4,
+                    Seat_SPM_Supp2_CurrentYear_Q1 = x.Seat_SPM_Supp2_CurrentYear_Q1,
+                    Seat_SPM_Supp2_CurrentYear_Q2 = x.Seat_SPM_Supp2_CurrentYear_Q2,
+                    Seat_SPM_Supp2_CurrentYear_Q3 = x.Seat_SPM_Supp2_CurrentYear_Q3,
+                    Seat_SPM_Supp2_CurrentYear_Q4 = x.Seat_SPM_Supp2_CurrentYear_Q4,
+                    Seat_SPM_Supp3 = x.Seat_SPM_Supp3,
+                    Seat_SPM_Supp3_PreviousYear_Q4 = x.Seat_SPM_Supp3_PreviousYear_Q4,
+                    Seat_SPM_Supp3_CurrentYear_Q1 = x.Seat_SPM_Supp3_CurrentYear_Q1,
+                    Seat_SPM_Supp3_CurrentYear_Q2 = x.Seat_SPM_Supp3_CurrentYear_Q2,
+                    Seat_SPM_Supp3_CurrentYear_Q3 = x.Seat_SPM_Supp3_CurrentYear_Q3,
+                    Seat_SPM_Supp3_CurrentYear_Q4 = x.Seat_SPM_Supp3_CurrentYear_Q4,
+                    Seat_SPM_Supp4 = x.Seat_SPM_Supp4,
+                    Seat_SPM_Supp4_PreviousYear_Q4 = x.Seat_SPM_Supp4_PreviousYear_Q4,
+                    Seat_SPM_Supp4_CurrentYear_Q1 = x.Seat_SPM_Supp4_CurrentYear_Q1,
+                    Seat_SPM_Supp4_CurrentYear_Q2 = x.Seat_SPM_Supp4_CurrentYear_Q2,
+                    Seat_SPM_Supp4_CurrentYear_Q3 = x.Seat_SPM_Supp4_CurrentYear_Q3,
+                    Seat_SPM_Supp4_CurrentYear_Q4 = x.Seat_SPM_Supp4_CurrentYear_Q4,
+                    Seat_SPM_Supp5 = x.Seat_SPM_Supp5,
+                    Seat_SPM_Supp5_PreviousYear_Q4 = x.Seat_SPM_Supp5_PreviousYear_Q4,
+                    Seat_SPM_Supp5_CurrentYear_Q1 = x.Seat_SPM_Supp5_CurrentYear_Q1,
+                    Seat_SPM_Supp5_CurrentYear_Q2 = x.Seat_SPM_Supp5_CurrentYear_Q2,
+                    Seat_SPM_Supp5_CurrentYear_Q3 = x.Seat_SPM_Supp5_CurrentYear_Q3,
+                    Seat_SPM_Supp5_CurrentYear_Q4 = x.Seat_SPM_Supp5_CurrentYear_Q4,
+                    Seat_IQA_TotalSites_YTD_PreviousYear = x.Seat_IQA_TotalSites_YTD_PreviousYear,
                     Seat_IQA_TotalSites_Target = x.Seat_IQA_TotalSites_Target,
-                    Seat_IQA_TotalSites_Q1 = x.Seat_IQA_TotalSites_Q1,
-                    Seat_IQA_TotalSites_Q2 = x.Seat_IQA_TotalSites_Q2,
-                    Seat_IQA_TotalSites_YTD = x.Seat_IQA_TotalSites_YTD,
-                    Seat_IQA_SitesCompleted_YTD23_24 = x.Seat_IQA_SitesCompleted_YTD23_24,
+                    Seat_IQA_TotalSites_CurrentYear_Q1 = x.Seat_IQA_TotalSites_CurrentYear_Q1,
+                    Seat_IQA_TotalSites_CurrentYear_Q2 = x.Seat_IQA_TotalSites_CurrentYear_Q2,
+                    Seat_IQA_TotalSites_CurrentYear_Q3 = x.Seat_IQA_TotalSites_CurrentYear_Q3,
+                    Seat_IQA_TotalSites_CurrentYear_Q4 = x.Seat_IQA_TotalSites_CurrentYear_Q4,
+                    Seat_IQA_TotalSites_YTD_CurrentYear = x.Seat_IQA_TotalSites_YTD_CurrentYear,
+                    Seat_IQA_SitesCompleted_YTD_PreviousYear = x.Seat_IQA_SitesCompleted_YTD_PreviousYear,
                     Seat_IQA_SitesCompleted_Target = x.Seat_IQA_SitesCompleted_Target,
-                    Seat_IQA_SitesCompleted_Q1 = x.Seat_IQA_SitesCompleted_Q1,
-                    Seat_IQA_SitesCompleted_Q2 = x.Seat_IQA_SitesCompleted_Q2,
-                    Seat_IQA_SitesCompleted_YTD = x.Seat_IQA_SitesCompleted_YTD,
-                    Seat_IQA_AuditsCompleted_YTD23_24 = x.Seat_IQA_AuditsCompleted_YTD23_24,
+                    Seat_IQA_SitesCompleted_CurrentYear_Q1 = x.Seat_IQA_SitesCompleted_CurrentYear_Q1,
+                    Seat_IQA_SitesCompleted_CurrentYear_Q2 = x.Seat_IQA_SitesCompleted_CurrentYear_Q2,
+                    Seat_IQA_SitesCompleted_CurrentYear_Q3 = x.Seat_IQA_SitesCompleted_CurrentYear_Q3,
+                    Seat_IQA_SitesCompleted_CurrentYear_Q4 = x.Seat_IQA_SitesCompleted_CurrentYear_Q4,
+                    Seat_IQA_SitesCompleted_YTD_CurrentYear = x.Seat_IQA_SitesCompleted_YTD_CurrentYear,
+                    Seat_IQA_AuditsCompleted_YTD_PreviousYear = x.Seat_IQA_AuditsCompleted_YTD_PreviousYear,
                     Seat_IQA_AuditsCompleted_Target = x.Seat_IQA_AuditsCompleted_Target,
-                    Seat_IQA_AuditsCompleted_Q1 = x.Seat_IQA_AuditsCompleted_Q1,
-                    Seat_IQA_AuditsCompleted_Q2 = x.Seat_IQA_AuditsCompleted_Q2,
-                    Seat_IQA_AuditsCompleted_YTD = x.Seat_IQA_AuditsCompleted_YTD,
-                    Seat_IQA_PercCompleted_YTD23_24 = x.Seat_IQA_PercCompleted_YTD23_24,
+                    Seat_IQA_AuditsCompleted_CurrentYear_Q1 = x.Seat_IQA_AuditsCompleted_CurrentYear_Q1,
+                    Seat_IQA_AuditsCompleted_CurrentYear_Q2 = x.Seat_IQA_AuditsCompleted_CurrentYear_Q2,
+                    Seat_IQA_AuditsCompleted_CurrentYear_Q3 = x.Seat_IQA_AuditsCompleted_CurrentYear_Q3,
+                    Seat_IQA_AuditsCompleted_CurrentYear_Q4 = x.Seat_IQA_AuditsCompleted_CurrentYear_Q4,
+                    Seat_IQA_AuditsCompleted_YTD_CurrentYear = x.Seat_IQA_AuditsCompleted_YTD_CurrentYear,
+                    Seat_IQA_PercCompleted_YTD_PreviousYear = x.Seat_IQA_PercCompleted_YTD_PreviousYear,
                     Seat_IQA_PercCompleted_Target = x.Seat_IQA_PercCompleted_Target,
-                    Seat_IQA_PercCompleted_Q1 = x.Seat_IQA_PercCompleted_Q1,
-                    Seat_IQA_PercCompleted_Q2 = x.Seat_IQA_PercCompleted_Q2,
-                    Seat_IQA_PercCompleted_YTD = x.Seat_IQA_PercCompleted_YTD,
-                    Seat_IQA_AvgSigma_YTD23_24 = x.Seat_IQA_AvgSigma_YTD23_24,
+                    Seat_IQA_PercCompleted_CurrentYear_Q1 = x.Seat_IQA_PercCompleted_CurrentYear_Q1,
+                    Seat_IQA_PercCompleted_CurrentYear_Q2 = x.Seat_IQA_PercCompleted_CurrentYear_Q2,
+                    Seat_IQA_PercCompleted_CurrentYear_Q3 = x.Seat_IQA_PercCompleted_CurrentYear_Q3,
+                    Seat_IQA_PercCompleted_CurrentYear_Q4 = x.Seat_IQA_PercCompleted_CurrentYear_Q4,
+                    Seat_IQA_PercCompleted_YTD_CurrentYear = x.Seat_IQA_PercCompleted_YTD_CurrentYear,
+                    Seat_IQA_AvgSigma_YTD_PreviousYear = x.Seat_IQA_AvgSigma_YTD_PreviousYear,
                     Seat_IQA_AvgSigma_Target = x.Seat_IQA_AvgSigma_Target,
-                    Seat_IQA_AvgSigma_Q1 = x.Seat_IQA_AvgSigma_Q1,
-                    Seat_IQA_AvgSigma_Q2 = x.Seat_IQA_AvgSigma_Q2,
-                    Seat_IQA_AvgSigma_YTD = x.Seat_IQA_AvgSigma_YTD
+                    Seat_IQA_AvgSigma_CurrentYear_Q1 = x.Seat_IQA_AvgSigma_CurrentYear_Q1,
+                    Seat_IQA_AvgSigma_CurrentYear_Q2 = x.Seat_IQA_AvgSigma_CurrentYear_Q2,
+                    Seat_IQA_AvgSigma_CurrentYear_Q3 = x.Seat_IQA_AvgSigma_CurrentYear_Q3,
+                    Seat_IQA_AvgSigma_CurrentYear_Q4 = x.Seat_IQA_AvgSigma_CurrentYear_Q4,
+                    Seat_IQA_AvgSigma_YTD_CurrentYear = x.Seat_IQA_AvgSigma_YTD_CurrentYear
                 })
                 .FirstOrDefault());
 
@@ -400,191 +537,270 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
         {
             var parameters = new[]
             {
+                new SqlParameter("@FinancialYear", model.FinancialYear),
                 new SqlParameter("@Lit_SEE_Engagement_Target", model.Lit_SEE_Engagement_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q1", model.Lit_SEE_Engagement_FY23_24_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q2", model.Lit_SEE_Engagement_FY23_24_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q3", model.Lit_SEE_Engagement_FY23_24_Q3 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q4", model.Lit_SEE_Engagement_FY23_24_Q4 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY24_25_Q1", model.Lit_SEE_Engagement_FY24_25_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY24_25_Q2", model.Lit_SEE_Engagement_FY24_25_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q1", model.Lit_SEE_Engagement_PreviousYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q2", model.Lit_SEE_Engagement_PreviousYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q3", model.Lit_SEE_Engagement_PreviousYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q4", model.Lit_SEE_Engagement_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q1", model.Lit_SEE_Engagement_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q2", model.Lit_SEE_Engagement_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q3", model.Lit_SEE_Engagement_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q4", model.Lit_SEE_Engagement_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SEE_Effectiveness_Target", model.Lit_SEE_Effectiveness_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q1", model.Lit_SEE_Effectiveness_FY23_24_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q2", model.Lit_SEE_Effectiveness_FY23_24_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q3", model.Lit_SEE_Effectiveness_FY23_24_Q3 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q4", model.Lit_SEE_Effectiveness_FY23_24_Q4 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY24_25_Q1", model.Lit_SEE_Effectiveness_FY24_25_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY24_25_Q2", model.Lit_SEE_Effectiveness_FY24_25_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q1", model.Lit_SEE_Effectiveness_PreviousYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q2", model.Lit_SEE_Effectiveness_PreviousYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q3", model.Lit_SEE_Effectiveness_PreviousYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q4", model.Lit_SEE_Effectiveness_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q1", model.Lit_SEE_Effectiveness_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q2", model.Lit_SEE_Effectiveness_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q3", model.Lit_SEE_Effectiveness_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q4", model.Lit_SEE_Effectiveness_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_ServiceComplaints_Baseline", model.Lit_SS_ServiceComplaints_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_ServiceComplaints_Target", model.Lit_SS_ServiceComplaints_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_ServiceComplaints_Q1", model.Lit_SS_ServiceComplaints_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_ServiceComplaints_Q2", model.Lit_SS_ServiceComplaints_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q1", model.Lit_SS_ServiceComplaints_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q2", model.Lit_SS_ServiceComplaints_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q3", model.Lit_SS_ServiceComplaints_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q4", model.Lit_SS_ServiceComplaints_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_DesignLSG_Baseline", model.Lit_SS_DesignLSG_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_DesignLSG_Target", model.Lit_SS_DesignLSG_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_DesignLSG_Q1", model.Lit_SS_DesignLSG_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_DesignLSG_Q2", model.Lit_SS_DesignLSG_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q1", model.Lit_SS_DesignLSG_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q2", model.Lit_SS_DesignLSG_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q3", model.Lit_SS_DesignLSG_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q4", model.Lit_SS_DesignLSG_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_CostReduction_Baseline", model.Lit_SS_CostReduction_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_CostReduction_Target", model.Lit_SS_CostReduction_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_CostReduction_Q1", model.Lit_SS_CostReduction_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_CostReduction_Q2", model.Lit_SS_CostReduction_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q1", model.Lit_SS_CostReduction_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q2", model.Lit_SS_CostReduction_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q3", model.Lit_SS_CostReduction_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q4", model.Lit_SS_CostReduction_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_OTIF_Baseline", model.Lit_SS_OTIF_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_OTIF_Target", model.Lit_SS_OTIF_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_OTIF_Q1", model.Lit_SS_OTIF_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_OTIF_Q2", model.Lit_SS_OTIF_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q1", model.Lit_SS_OTIF_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q2", model.Lit_SS_OTIF_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q3", model.Lit_SS_OTIF_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q4", model.Lit_SS_OTIF_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_SPMScore_Baseline", model.Lit_SS_SPMScore_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_SPMScore_Target", model.Lit_SS_SPMScore_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_SPMScore_Q1", model.Lit_SS_SPMScore_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_SPMScore_Q2", model.Lit_SS_SPMScore_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_YTD23_24", model.Lit_CSAT_ReqSent_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q1", model.Lit_SS_SPMScore_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q2", model.Lit_SS_SPMScore_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q3", model.Lit_SS_SPMScore_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q4", model.Lit_SS_SPMScore_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_YTD_PreviousYear", model.Lit_CSAT_ReqSent_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_ReqSent_Baseline", model.Lit_CSAT_ReqSent_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_ReqSent_Target", model.Lit_CSAT_ReqSent_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_Q1", model.Lit_CSAT_ReqSent_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_Q2", model.Lit_CSAT_ReqSent_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_YTD", model.Lit_CSAT_ReqSent_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_YTD23_24", model.Lit_CSAT_RespRecvd_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q1", model.Lit_CSAT_ReqSent_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q2", model.Lit_CSAT_ReqSent_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q3", model.Lit_CSAT_ReqSent_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q4", model.Lit_CSAT_ReqSent_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_YTD_CurrentYear", model.Lit_CSAT_ReqSent_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_YTD_PreviousYear", model.Lit_CSAT_RespRecvd_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_RespRecvd_Baseline", model.Lit_CSAT_RespRecvd_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_RespRecvd_Target", model.Lit_CSAT_RespRecvd_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_Q1", model.Lit_CSAT_RespRecvd_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_Q2", model.Lit_CSAT_RespRecvd_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_YTD", model.Lit_CSAT_RespRecvd_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_YTD23_24", model.Lit_CSAT_Promoter_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q1", model.Lit_CSAT_RespRecvd_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q2", model.Lit_CSAT_RespRecvd_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q3", model.Lit_CSAT_RespRecvd_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q4", model.Lit_CSAT_RespRecvd_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_YTD_CurrentYear", model.Lit_CSAT_RespRecvd_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_YTD_PreviousYear", model.Lit_CSAT_Promoter_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Promoter_Baseline", model.Lit_CSAT_Promoter_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Promoter_Target", model.Lit_CSAT_Promoter_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_Q1", model.Lit_CSAT_Promoter_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_Q2", model.Lit_CSAT_Promoter_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_YTD", model.Lit_CSAT_Promoter_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_YTD23_24", model.Lit_CSAT_Detractor_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q1", model.Lit_CSAT_Promoter_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q2", model.Lit_CSAT_Promoter_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q3", model.Lit_CSAT_Promoter_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q4", model.Lit_CSAT_Promoter_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_YTD_CurrentYear", model.Lit_CSAT_Promoter_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_YTD_PreviousYear", model.Lit_CSAT_Detractor_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Detractor_Baseline", model.Lit_CSAT_Detractor_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Detractor_Target", model.Lit_CSAT_Detractor_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_Q1", model.Lit_CSAT_Detractor_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_Q2", model.Lit_CSAT_Detractor_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_YTD", model.Lit_CSAT_Detractor_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_YTD23_24", model.Lit_CSAT_NPS_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q1", model.Lit_CSAT_Detractor_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q2", model.Lit_CSAT_Detractor_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q3", model.Lit_CSAT_Detractor_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q4", model.Lit_CSAT_Detractor_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_YTD_CurrentYear", model.Lit_CSAT_Detractor_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_YTD_PreviousYear", model.Lit_CSAT_NPS_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_NPS_Baseline", model.Lit_CSAT_NPS_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_NPS_Target", model.Lit_CSAT_NPS_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_Q1", model.Lit_CSAT_NPS_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_Q2", model.Lit_CSAT_NPS_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_YTD", model.Lit_CSAT_NPS_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp1_Q1", model.Lit_SPM_Supp1_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp1_Q2", model.Lit_SPM_Supp1_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp2_Q1", model.Lit_SPM_Supp2_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp2_Q2", model.Lit_SPM_Supp2_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp3_Q1", model.Lit_SPM_Supp3_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp3_Q2", model.Lit_SPM_Supp3_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp4_Q1", model.Lit_SPM_Supp4_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp4_Q2", model.Lit_SPM_Supp4_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp5_Q1", model.Lit_SPM_Supp5_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp5_Q2", model.Lit_SPM_Supp5_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp6_Q1", model.Lit_SPM_Supp6_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp6_Q2", model.Lit_SPM_Supp6_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp7_Q1", model.Lit_SPM_Supp7_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp7_Q2", model.Lit_SPM_Supp7_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp8_Q1", model.Lit_SPM_Supp8_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp8_Q2", model.Lit_SPM_Supp8_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp9_Q1", model.Lit_SPM_Supp9_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp9_Q2", model.Lit_SPM_Supp9_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp10_Q1", model.Lit_SPM_Supp10_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp10_Q2", model.Lit_SPM_Supp10_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_YTD23_24", model.Lit_OTIF_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q1", model.Lit_CSAT_NPS_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q2", model.Lit_CSAT_NPS_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q3", model.Lit_CSAT_NPS_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q4", model.Lit_CSAT_NPS_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_YTD_CurrentYear", model.Lit_CSAT_NPS_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1", model.Lit_SPM_Supp1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q1", model.Lit_SPM_Supp1_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q2", model.Lit_SPM_Supp1_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q3", model.Lit_SPM_Supp1_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q4", model.Lit_SPM_Supp1_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2", model.Lit_SPM_Supp2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q1", model.Lit_SPM_Supp2_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q2", model.Lit_SPM_Supp2_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q3", model.Lit_SPM_Supp2_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q4", model.Lit_SPM_Supp2_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3", model.Lit_SPM_Supp3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q1", model.Lit_SPM_Supp3_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q2", model.Lit_SPM_Supp3_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q3", model.Lit_SPM_Supp3_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q4", model.Lit_SPM_Supp3_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4", model.Lit_SPM_Supp4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q1", model.Lit_SPM_Supp4_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q2", model.Lit_SPM_Supp4_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q3", model.Lit_SPM_Supp4_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q4", model.Lit_SPM_Supp4_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5", model.Lit_SPM_Supp5 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q1", model.Lit_SPM_Supp5_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q2", model.Lit_SPM_Supp5_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q3", model.Lit_SPM_Supp5_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q4", model.Lit_SPM_Supp5_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6", model.Lit_SPM_Supp6 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q1", model.Lit_SPM_Supp6_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q2", model.Lit_SPM_Supp6_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q3", model.Lit_SPM_Supp6_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q4", model.Lit_SPM_Supp6_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7", model.Lit_SPM_Supp7 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q1", model.Lit_SPM_Supp7_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q2", model.Lit_SPM_Supp7_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q3", model.Lit_SPM_Supp7_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q4", model.Lit_SPM_Supp7_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8", model.Lit_SPM_Supp8 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q1", model.Lit_SPM_Supp8_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q2", model.Lit_SPM_Supp8_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q3", model.Lit_SPM_Supp8_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q4", model.Lit_SPM_Supp8_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9", model.Lit_SPM_Supp9 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q1", model.Lit_SPM_Supp9_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q2", model.Lit_SPM_Supp9_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q3", model.Lit_SPM_Supp9_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q4", model.Lit_SPM_Supp9_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10", model.Lit_SPM_Supp10 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q1", model.Lit_SPM_Supp10_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q2", model.Lit_SPM_Supp10_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q3", model.Lit_SPM_Supp10_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q4", model.Lit_SPM_Supp10_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_YTD_PreviousYear", model.Lit_OTIF_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OTIF_Target", model.Lit_OTIF_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_Q1", model.Lit_OTIF_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_Q2", model.Lit_OTIF_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_YTD", model.Lit_OTIF_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_YTD23_24", model.Lit_SC_Closure_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q1", model.Lit_OTIF_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q2", model.Lit_OTIF_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q3", model.Lit_OTIF_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q4", model.Lit_OTIF_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_YTD_CurrentYear", model.Lit_OTIF_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_YTD_PreviousYear", model.Lit_SC_Closure_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SC_Closure_Baseline", model.Lit_SC_Closure_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SC_Closure_Target", model.Lit_SC_Closure_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_Q1", model.Lit_SC_Closure_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_Q2", model.Lit_SC_Closure_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_YTD", model.Lit_SC_Closure_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_YTD23_24", model.Lit_CSO_TotalLogged_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_Q1", model.Lit_CSO_TotalLogged_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_Q2", model.Lit_CSO_TotalLogged_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_YTD", model.Lit_CSO_TotalLogged_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_YTD23_24", model.Lit_CSO_TotalAClass_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_Q1", model.Lit_CSO_TotalAClass_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_Q2", model.Lit_CSO_TotalAClass_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_YTD", model.Lit_CSO_TotalAClass_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_YTD23_24", model.Lit_CSO_AClassClosed_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_Q1", model.Lit_CSO_AClassClosed_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_Q2", model.Lit_CSO_AClassClosed_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_YTD", model.Lit_CSO_AClassClosed_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD23_24", model.Lit_CSO_AClassClosedLess45_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_Q1", model.Lit_CSO_AClassClosedLess45_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_Q2", model.Lit_CSO_AClassClosedLess45_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD", model.Lit_CSO_AClassClosedLess45_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_YTD23_24", model.Lit_CSO_PercentageClosure_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_Q1", model.Lit_CSO_PercentageClosure_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_Q2", model.Lit_CSO_PercentageClosure_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_YTD", model.Lit_CSO_PercentageClosure_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_YTD23_24", model.Lit_CostSavings_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q1", model.Lit_SC_Closure_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q2", model.Lit_SC_Closure_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q3", model.Lit_SC_Closure_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q4", model.Lit_SC_Closure_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_YTD_CurrentYear", model.Lit_SC_Closure_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_YTD_PreviousYear", model.Lit_CSO_TotalLogged_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q1", model.Lit_CSO_TotalLogged_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q2", model.Lit_CSO_TotalLogged_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q3", model.Lit_CSO_TotalLogged_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q4", model.Lit_CSO_TotalLogged_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_YTD_CurrentYear", model.Lit_CSO_TotalLogged_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_YTD_PreviousYear", model.Lit_CSO_TotalAClass_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q1", model.Lit_CSO_TotalAClass_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q2", model.Lit_CSO_TotalAClass_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q3", model.Lit_CSO_TotalAClass_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q4", model.Lit_CSO_TotalAClass_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_YTD_CurrentYear", model.Lit_CSO_TotalAClass_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_YTD_PreviousYear", model.Lit_CSO_AClassClosed_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q1", model.Lit_CSO_AClassClosed_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q2", model.Lit_CSO_AClassClosed_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q3", model.Lit_CSO_AClassClosed_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q4", model.Lit_CSO_AClassClosed_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_YTD_CurrentYear", model.Lit_CSO_AClassClosed_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD_PreviousYear", model.Lit_CSO_AClassClosedLess45_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q1", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q2", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q3", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q4", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD_CurrentYear", model.Lit_CSO_AClassClosedLess45_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_YTD_PreviousYear", model.Lit_CSO_PercentageClosure_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q1", model.Lit_CSO_PercentageClosure_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q2", model.Lit_CSO_PercentageClosure_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q3", model.Lit_CSO_PercentageClosure_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q4", model.Lit_CSO_PercentageClosure_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_YTD_CurrentYear", model.Lit_CSO_PercentageClosure_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_YTD_PreviousYear", model.Lit_CostSavings_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CostSavings_Target", model.Lit_CostSavings_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_Q1", model.Lit_CostSavings_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_Q2", model.Lit_CostSavings_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_YTD", model.Lit_CostSavings_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_YTD23_24", model.Lit_OQL_ArtLuminaires_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_Target", model.Lit_OQL_ArtLuminaires_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC01", model.Lit_OQL_ArtLuminaires_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC02", model.Lit_OQL_ArtLuminaires_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC03", model.Lit_OQL_ArtLuminaires_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC04", model.Lit_OQL_ArtLuminaires_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC05", model.Lit_OQL_ArtLuminaires_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC06", model.Lit_OQL_ArtLuminaires_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_YTD23_24", model.Lit_OQL_IdealLighting_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_Target", model.Lit_OQL_IdealLighting_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC01", model.Lit_OQL_IdealLighting_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC02", model.Lit_OQL_IdealLighting_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC03", model.Lit_OQL_IdealLighting_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC04", model.Lit_OQL_IdealLighting_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC05", model.Lit_OQL_IdealLighting_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC06", model.Lit_OQL_IdealLighting_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_YTD23_24", model.Lit_OQL_Everlite_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_Target", model.Lit_OQL_Everlite_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC01", model.Lit_OQL_Everlite_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC02", model.Lit_OQL_Everlite_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC03", model.Lit_OQL_Everlite_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC04", model.Lit_OQL_Everlite_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC05", model.Lit_OQL_Everlite_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC06", model.Lit_OQL_Everlite_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_YTD23_24", model.Lit_OQL_Rama_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_Target", model.Lit_OQL_Rama_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC01", model.Lit_OQL_Rama_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC02", model.Lit_OQL_Rama_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC03", model.Lit_OQL_Rama_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC04", model.Lit_OQL_Rama_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC05", model.Lit_OQL_Rama_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC06", model.Lit_OQL_Rama_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_YTD23_24", model.Lit_OQL_Shantinath_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_Target", model.Lit_OQL_Shantinath_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC01", model.Lit_OQL_Shantinath_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC02", model.Lit_OQL_Shantinath_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC03", model.Lit_OQL_Shantinath_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC04", model.Lit_OQL_Shantinath_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC05", model.Lit_OQL_Shantinath_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC06", model.Lit_OQL_Shantinath_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_YTD23_24", model.Lit_OQL_Varun_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_Target", model.Lit_OQL_Varun_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC01", model.Lit_OQL_Varun_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC02", model.Lit_OQL_Varun_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC03", model.Lit_OQL_Varun_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC04", model.Lit_OQL_Varun_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC05", model.Lit_OQL_Varun_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC06", model.Lit_OQL_Varun_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_YTD23_24", model.Lit_OQL_Ujas_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_Target", model.Lit_OQL_Ujas_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC01", model.Lit_OQL_Ujas_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC02", model.Lit_OQL_Ujas_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC03", model.Lit_OQL_Ujas_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC04", model.Lit_OQL_Ujas_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC05", model.Lit_OQL_Ujas_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC06", model.Lit_OQL_Ujas_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_YTD23_24", model.Lit_OQL_NAK_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_Target", model.Lit_OQL_NAK_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC01", model.Lit_OQL_NAK_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC02", model.Lit_OQL_NAK_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC03", model.Lit_OQL_NAK_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC04", model.Lit_OQL_NAK_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC05", model.Lit_OQL_NAK_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC06", model.Lit_OQL_NAK_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_CumulativeAvg1_YTD23_24", model.Lit_OQL_CumulativeAvg1_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q1", model.Lit_CostSavings_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q2", model.Lit_CostSavings_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q3", model.Lit_CostSavings_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q4", model.Lit_CostSavings_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_YTD_CurrentYear", model.Lit_CostSavings_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1", model.Lit_OQL_Vendor1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_YTD_PreviousYear", model.Lit_OQL_Vendor1_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_Target", model.Lit_OQL_Vendor1_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC01", model.Lit_OQL_Vendor1_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC02", model.Lit_OQL_Vendor1_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC03", model.Lit_OQL_Vendor1_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC04", model.Lit_OQL_Vendor1_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC05", model.Lit_OQL_Vendor1_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC06", model.Lit_OQL_Vendor1_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2", model.Lit_OQL_Vendor2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_YTD_PreviousYear", model.Lit_OQL_Vendor2_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_Target", model.Lit_OQL_Vendor2_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC01", model.Lit_OQL_Vendor2_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC02", model.Lit_OQL_Vendor2_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC03", model.Lit_OQL_Vendor2_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC04", model.Lit_OQL_Vendor2_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC05", model.Lit_OQL_Vendor2_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC06", model.Lit_OQL_Vendor2_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3", model.Lit_OQL_Vendor3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_YTD_PreviousYear", model.Lit_OQL_Vendor3_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_Target", model.Lit_OQL_Vendor3_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC01", model.Lit_OQL_Vendor3_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC02", model.Lit_OQL_Vendor3_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC03", model.Lit_OQL_Vendor3_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC04", model.Lit_OQL_Vendor3_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC05", model.Lit_OQL_Vendor3_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC06", model.Lit_OQL_Vendor3_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4", model.Lit_OQL_Vendor4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_YTD_PreviousYear", model.Lit_OQL_Vendor4_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_Target", model.Lit_OQL_Vendor4_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC01", model.Lit_OQL_Vendor4_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC02", model.Lit_OQL_Vendor4_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC03", model.Lit_OQL_Vendor4_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC04", model.Lit_OQL_Vendor4_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC05", model.Lit_OQL_Vendor4_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC06", model.Lit_OQL_Vendor4_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5", model.Lit_OQL_Vendor5 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_YTD_PreviousYear", model.Lit_OQL_Vendor5_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_Target", model.Lit_OQL_Vendor5_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC01", model.Lit_OQL_Vendor5_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC02", model.Lit_OQL_Vendor5_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC03", model.Lit_OQL_Vendor5_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC04", model.Lit_OQL_Vendor5_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC05", model.Lit_OQL_Vendor5_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC06", model.Lit_OQL_Vendor5_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6", model.Lit_OQL_Vendor6 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_YTD_PreviousYear", model.Lit_OQL_Vendor6_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_Target", model.Lit_OQL_Vendor6_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC01", model.Lit_OQL_Vendor6_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC02", model.Lit_OQL_Vendor6_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC03", model.Lit_OQL_Vendor6_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC04", model.Lit_OQL_Vendor6_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC05", model.Lit_OQL_Vendor6_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC06", model.Lit_OQL_Vendor6_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7", model.Lit_OQL_Vendor7 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_YTD_PreviousYear", model.Lit_OQL_Vendor7_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_Target", model.Lit_OQL_Vendor7_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC01", model.Lit_OQL_Vendor7_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC02", model.Lit_OQL_Vendor7_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC03", model.Lit_OQL_Vendor7_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC04", model.Lit_OQL_Vendor7_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC05", model.Lit_OQL_Vendor7_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC06", model.Lit_OQL_Vendor7_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8", model.Lit_OQL_Vendor8 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_YTD_PreviousYear", model.Lit_OQL_Vendor8_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_Target", model.Lit_OQL_Vendor8_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC01", model.Lit_OQL_Vendor8_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC02", model.Lit_OQL_Vendor8_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC03", model.Lit_OQL_Vendor8_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC04", model.Lit_OQL_Vendor8_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC05", model.Lit_OQL_Vendor8_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC06", model.Lit_OQL_Vendor8_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_CumulativeAvg1_YTD_PreviousYear", model.Lit_OQL_CumulativeAvg1_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_Target", model.Lit_OQL_CumulativeAvg1_Target ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC01", model.Lit_OQL_CumulativeAvg1_PC01 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC02", model.Lit_OQL_CumulativeAvg1_PC02 ?? (object)DBNull.Value),
@@ -592,7 +808,7 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC04", model.Lit_OQL_CumulativeAvg1_PC04 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC05", model.Lit_OQL_CumulativeAvg1_PC05 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC06", model.Lit_OQL_CumulativeAvg1_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_CumulativeAvg2_YTD23_24", model.Lit_OQL_CumulativeAvg2_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_CumulativeAvg2_YTD_PreviousYear", model.Lit_OQL_CumulativeAvg2_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_Target", model.Lit_OQL_CumulativeAvg2_Target ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_PC01", model.Lit_OQL_CumulativeAvg2_PC01 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_PC02", model.Lit_OQL_CumulativeAvg2_PC02 ?? (object)DBNull.Value),
@@ -602,305 +818,437 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_PC06", model.Lit_OQL_CumulativeAvg2_PC06 ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_CNClosure_Baseline", model.Seat_SS_CNClosure_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_CNClosure_Target", model.Seat_SS_CNClosure_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_CNClosure_Q1", model.Seat_SS_CNClosure_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_CNClosure_Q2", model.Seat_SS_CNClosure_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_CNClosure_YTD", model.Seat_SS_CNClosure_YTD ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q1", model.Seat_SS_CNClosure_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q2", model.Seat_SS_CNClosure_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q3", model.Seat_SS_CNClosure_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q4", model.Seat_SS_CNClosure_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_YTD_CurrentYear", model.Seat_SS_CNClosure_YTD_CurrentYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_OTIF_Baseline", model.Seat_SS_OTIF_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_OTIF_Target", model.Seat_SS_OTIF_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_OTIF_Q1", model.Seat_SS_OTIF_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_OTIF_Q2", model.Seat_SS_OTIF_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_OTIF_YTD", model.Seat_SS_OTIF_YTD ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q1", model.Seat_SS_OTIF_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q2", model.Seat_SS_OTIF_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q3", model.Seat_SS_OTIF_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q4", model.Seat_SS_OTIF_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_YTD_CurrentYear", model.Seat_SS_OTIF_YTD_CurrentYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_SPMScore_Baseline", model.Seat_SS_SPMScore_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_SPMScore_Target", model.Seat_SS_SPMScore_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_SPMScore_Q1", model.Seat_SS_SPMScore_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_SPMScore_Q2", model.Seat_SS_SPMScore_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_SPMScore_YTD", model.Seat_SS_SPMScore_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_YTD23_24", model.Seat_OTIF_Performance_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q1", model.Seat_SS_SPMScore_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q2", model.Seat_SS_SPMScore_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q3", model.Seat_SS_SPMScore_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q4", model.Seat_SS_SPMScore_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_YTD_CurrentYear", model.Seat_SS_SPMScore_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_YTD_PreviousYear", model.Seat_OTIF_Performance_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_OTIF_Performance_Target", model.Seat_OTIF_Performance_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_Q1", model.Seat_OTIF_Performance_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_Q2", model.Seat_OTIF_Performance_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_YTD", model.Seat_OTIF_Performance_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_YTD23_24", model.Seat_CSAT_ReqSent_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q1", model.Seat_OTIF_Performance_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q2", model.Seat_OTIF_Performance_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q3", model.Seat_OTIF_Performance_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q4", model.Seat_OTIF_Performance_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_YTD_CurrentYear", model.Seat_OTIF_Performance_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_YTD_PreviousYear", model.Seat_CSAT_ReqSent_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_ReqSent_Baseline", model.Seat_CSAT_ReqSent_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_ReqSent_Target", model.Seat_CSAT_ReqSent_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_Q1", model.Seat_CSAT_ReqSent_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_Q2", model.Seat_CSAT_ReqSent_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_YTD", model.Seat_CSAT_ReqSent_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_YTD23_24", model.Seat_CSAT_RespRecvd_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q1", model.Seat_CSAT_ReqSent_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q2", model.Seat_CSAT_ReqSent_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q3", model.Seat_CSAT_ReqSent_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q4", model.Seat_CSAT_ReqSent_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_YTD_CurrentYear", model.Seat_CSAT_ReqSent_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_YTD_PreviousYear", model.Seat_CSAT_RespRecvd_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_RespRecvd_Baseline", model.Seat_CSAT_RespRecvd_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_RespRecvd_Target", model.Seat_CSAT_RespRecvd_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_Q1", model.Seat_CSAT_RespRecvd_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_Q2", model.Seat_CSAT_RespRecvd_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_YTD", model.Seat_CSAT_RespRecvd_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_YTD23_24", model.Seat_CSAT_Promoter_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q1", model.Seat_CSAT_RespRecvd_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q2", model.Seat_CSAT_RespRecvd_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q3", model.Seat_CSAT_RespRecvd_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q4", model.Seat_CSAT_RespRecvd_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_YTD_CurrentYear", model.Seat_CSAT_RespRecvd_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_YTD_PreviousYear", model.Seat_CSAT_Promoter_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Promoter_Baseline", model.Seat_CSAT_Promoter_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Promoter_Target", model.Seat_CSAT_Promoter_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_Q1", model.Seat_CSAT_Promoter_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_Q2", model.Seat_CSAT_Promoter_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_YTD", model.Seat_CSAT_Promoter_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_YTD23_24", model.Seat_CSAT_Detractor_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q1", model.Seat_CSAT_Promoter_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q2", model.Seat_CSAT_Promoter_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q3", model.Seat_CSAT_Promoter_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q4", model.Seat_CSAT_Promoter_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_YTD_CurrentYear", model.Seat_CSAT_Promoter_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_YTD_PreviousYear", model.Seat_CSAT_Detractor_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Detractor_Baseline", model.Seat_CSAT_Detractor_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Detractor_Target", model.Seat_CSAT_Detractor_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_Q1", model.Seat_CSAT_Detractor_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_Q2", model.Seat_CSAT_Detractor_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_YTD", model.Seat_CSAT_Detractor_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_YTD23_24", model.Seat_CSAT_NPS_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q1", model.Seat_CSAT_Detractor_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q2", model.Seat_CSAT_Detractor_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q3", model.Seat_CSAT_Detractor_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q4", model.Seat_CSAT_Detractor_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_YTD_CurrentYear", model.Seat_CSAT_Detractor_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_YTD_PreviousYear", model.Seat_CSAT_NPS_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_NPS_Baseline", model.Seat_CSAT_NPS_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_NPS_Target", model.Seat_CSAT_NPS_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_Q1", model.Seat_CSAT_NPS_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_Q2", model.Seat_CSAT_NPS_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_YTD", model.Seat_CSAT_NPS_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_YTD23_24", model.Seat_CSO_TotalLogged_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_Q1", model.Seat_CSO_TotalLogged_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_Q2", model.Seat_CSO_TotalLogged_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_YTD", model.Seat_CSO_TotalLogged_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_YTD23_24", model.Seat_CSO_TotalAClass_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_Q1", model.Seat_CSO_TotalAClass_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_Q2", model.Seat_CSO_TotalAClass_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_YTD", model.Seat_CSO_TotalAClass_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_YTD23_24", model.Seat_CSO_AClassClosed_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_Q1", model.Seat_CSO_AClassClosed_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_Q2", model.Seat_CSO_AClassClosed_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_YTD", model.Seat_CSO_AClassClosed_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_YTD23_24", model.Seat_CSO_AClassClosedLess48_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_Q1", model.Seat_CSO_AClassClosedLess48_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_Q2", model.Seat_CSO_AClassClosedLess48_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_YTD", model.Seat_CSO_AClassClosedLess48_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_YTD23_24", model.Seat_CSO_AClassClosedUnder48_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_Q1", model.Seat_CSO_AClassClosedUnder48_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_Q2", model.Seat_CSO_AClassClosedUnder48_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_YTD", model.Seat_CSO_AClassClosedUnder48_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_MPPL_Q4_23_24", model.Seat_SPM_MPPL_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_MPPL_Q1_24_25", model.Seat_SPM_MPPL_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_MPPL_Q2_24_25", model.Seat_SPM_MPPL_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_EXCLUSIFF_Q4_23_24", model.Seat_SPM_EXCLUSIFF_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_EXCLUSIFF_Q1_24_25", model.Seat_SPM_EXCLUSIFF_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_EXCLUSIFF_Q2_24_25", model.Seat_SPM_EXCLUSIFF_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_CVG_Q4_23_24", model.Seat_SPM_CVG_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_CVG_Q1_24_25", model.Seat_SPM_CVG_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_CVG_Q2_24_25", model.Seat_SPM_CVG_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_STARSHINE_Q4_23_24", model.Seat_SPM_STARSHINE_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_STARSHINE_Q1_24_25", model.Seat_SPM_STARSHINE_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_STARSHINE_Q2_24_25", model.Seat_SPM_STARSHINE_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_SAVITON_Q4_23_24", model.Seat_SPM_SAVITON_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_SAVITON_Q1_24_25", model.Seat_SPM_SAVITON_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_SAVITON_Q2_24_25", model.Seat_SPM_SAVITON_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_YTD23_24", model.Seat_IQA_TotalSites_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q1", model.Seat_CSAT_NPS_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q2", model.Seat_CSAT_NPS_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q3", model.Seat_CSAT_NPS_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q4", model.Seat_CSAT_NPS_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_YTD_CurrentYear", model.Seat_CSAT_NPS_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_YTD_PreviousYear", model.Seat_CSO_TotalLogged_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q1", model.Seat_CSO_TotalLogged_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q2", model.Seat_CSO_TotalLogged_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q3", model.Seat_CSO_TotalLogged_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q4", model.Seat_CSO_TotalLogged_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_YTD_CurrentYear", model.Seat_CSO_TotalLogged_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_YTD_PreviousYear", model.Seat_CSO_TotalAClass_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q1", model.Seat_CSO_TotalAClass_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q2", model.Seat_CSO_TotalAClass_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q3", model.Seat_CSO_TotalAClass_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q4", model.Seat_CSO_TotalAClass_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_YTD_CurrentYear", model.Seat_CSO_TotalAClass_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_YTD_PreviousYear", model.Seat_CSO_AClassClosed_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q1", model.Seat_CSO_AClassClosed_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q2", model.Seat_CSO_AClassClosed_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q3", model.Seat_CSO_AClassClosed_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q4", model.Seat_CSO_AClassClosed_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_YTD_CurrentYear", model.Seat_CSO_AClassClosed_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_YTD_PreviousYear", model.Seat_CSO_AClassClosedLess45_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q1", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q2", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q3", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q4", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_YTD_CurrentYear", model.Seat_CSO_AClassClosedLess45_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_YTD_PreviousYear", model.Seat_CSO_AClassClosedUnder45_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q1", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q2", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q3", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q4", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_YTD_CurrentYear", model.Seat_CSO_AClassClosedUnder45_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1", model.Seat_SPM_Supp1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_PreviousYear_Q4", model.Seat_SPM_Supp1_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q1", model.Seat_SPM_Supp1_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q2", model.Seat_SPM_Supp1_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q3", model.Seat_SPM_Supp1_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q4", model.Seat_SPM_Supp1_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2", model.Seat_SPM_Supp2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_PreviousYear_Q4", model.Seat_SPM_Supp2_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q1", model.Seat_SPM_Supp2_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q2", model.Seat_SPM_Supp2_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q3", model.Seat_SPM_Supp2_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q4", model.Seat_SPM_Supp2_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3", model.Seat_SPM_Supp3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_PreviousYear_Q4", model.Seat_SPM_Supp3_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q1", model.Seat_SPM_Supp3_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q2", model.Seat_SPM_Supp3_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q3", model.Seat_SPM_Supp3_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q4", model.Seat_SPM_Supp3_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4", model.Seat_SPM_Supp4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_PreviousYear_Q4", model.Seat_SPM_Supp4_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q1", model.Seat_SPM_Supp4_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q2", model.Seat_SPM_Supp4_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q3", model.Seat_SPM_Supp4_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q4", model.Seat_SPM_Supp4_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5", model.Seat_SPM_Supp5 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_PreviousYear_Q4", model.Seat_SPM_Supp5_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q1", model.Seat_SPM_Supp5_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q2", model.Seat_SPM_Supp5_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q3", model.Seat_SPM_Supp5_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q4", model.Seat_SPM_Supp5_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_YTD_PreviousYear", model.Seat_IQA_TotalSites_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_TotalSites_Target", model.Seat_IQA_TotalSites_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_Q1", model.Seat_IQA_TotalSites_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_Q2", model.Seat_IQA_TotalSites_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_YTD", model.Seat_IQA_TotalSites_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_YTD23_24", model.Seat_IQA_SitesCompleted_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q1", model.Seat_IQA_TotalSites_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q2", model.Seat_IQA_TotalSites_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q3", model.Seat_IQA_TotalSites_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q4", model.Seat_IQA_TotalSites_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_YTD_CurrentYear", model.Seat_IQA_TotalSites_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_YTD_PreviousYear", model.Seat_IQA_SitesCompleted_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_SitesCompleted_Target", model.Seat_IQA_SitesCompleted_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_Q1", model.Seat_IQA_SitesCompleted_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_Q2", model.Seat_IQA_SitesCompleted_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_YTD", model.Seat_IQA_SitesCompleted_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD23_24", model.Seat_IQA_AuditsCompleted_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q1", model.Seat_IQA_SitesCompleted_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q2", model.Seat_IQA_SitesCompleted_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q3", model.Seat_IQA_SitesCompleted_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q4", model.Seat_IQA_SitesCompleted_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_YTD_CurrentYear", model.Seat_IQA_SitesCompleted_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD_PreviousYear", model.Seat_IQA_AuditsCompleted_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_AuditsCompleted_Target", model.Seat_IQA_AuditsCompleted_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_Q1", model.Seat_IQA_AuditsCompleted_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_Q2", model.Seat_IQA_AuditsCompleted_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD", model.Seat_IQA_AuditsCompleted_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_YTD23_24", model.Seat_IQA_PercCompleted_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q1", model.Seat_IQA_AuditsCompleted_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q2", model.Seat_IQA_AuditsCompleted_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q3", model.Seat_IQA_AuditsCompleted_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q4", model.Seat_IQA_AuditsCompleted_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD_CurrentYear", model.Seat_IQA_AuditsCompleted_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_YTD_PreviousYear", model.Seat_IQA_PercCompleted_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_PercCompleted_Target", model.Seat_IQA_PercCompleted_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_Q1", model.Seat_IQA_PercCompleted_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_Q2", model.Seat_IQA_PercCompleted_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_YTD", model.Seat_IQA_PercCompleted_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_YTD23_24", model.Seat_IQA_AvgSigma_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q1", model.Seat_IQA_PercCompleted_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q2", model.Seat_IQA_PercCompleted_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q3", model.Seat_IQA_PercCompleted_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q4", model.Seat_IQA_PercCompleted_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_YTD_CurrentYear", model.Seat_IQA_PercCompleted_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_YTD_PreviousYear", model.Seat_IQA_AvgSigma_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_AvgSigma_Target", model.Seat_IQA_AvgSigma_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_Q1", model.Seat_IQA_AvgSigma_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_Q2", model.Seat_IQA_AvgSigma_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_YTD", model.Seat_IQA_AvgSigma_YTD ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q1", model.Seat_IQA_AvgSigma_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q2", model.Seat_IQA_AvgSigma_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q3", model.Seat_IQA_AvgSigma_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q4", model.Seat_IQA_AvgSigma_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_YTD_CurrentYear", model.Seat_IQA_AvgSigma_YTD_CurrentYear ?? (object)DBNull.Value),
                 new SqlParameter("@AddedBy", model.AddedBy),
                 new SqlParameter("@AddedOn", model.AddedOn)
             };
 
             await _dbContext.Database.ExecuteSqlRawAsync(
                 "EXEC sp_Insert_AHPNote " +
+                    "@FinancialYear, " +
                     "@Lit_SEE_Engagement_Target, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q1, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q2, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q3, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q4, " +
-                    "@Lit_SEE_Engagement_FY24_25_Q1, " +
-                    "@Lit_SEE_Engagement_FY24_25_Q2, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q1, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q2, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q3, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q4, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q1, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q2, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q3, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q4, " +
                     "@Lit_SEE_Effectiveness_Target, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q1, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q2, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q3, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q4, " +
-                    "@Lit_SEE_Effectiveness_FY24_25_Q1, " +
-                    "@Lit_SEE_Effectiveness_FY24_25_Q2, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q1, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q2, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q3, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q4, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q1, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q2, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q3, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q4, " +
                     "@Lit_SS_ServiceComplaints_Baseline, " +
                     "@Lit_SS_ServiceComplaints_Target, " +
-                    "@Lit_SS_ServiceComplaints_Q1, " +
-                    "@Lit_SS_ServiceComplaints_Q2, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q1, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q2, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q3, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q4, " +
                     "@Lit_SS_DesignLSG_Baseline, " +
                     "@Lit_SS_DesignLSG_Target, " +
-                    "@Lit_SS_DesignLSG_Q1, " +
-                    "@Lit_SS_DesignLSG_Q2, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q1, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q2, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q3, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q4, " +
                     "@Lit_SS_CostReduction_Baseline, " +
                     "@Lit_SS_CostReduction_Target, " +
-                    "@Lit_SS_CostReduction_Q1, " +
-                    "@Lit_SS_CostReduction_Q2, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q1, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q2, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q3, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q4, " +
                     "@Lit_SS_OTIF_Baseline, " +
                     "@Lit_SS_OTIF_Target, " +
-                    "@Lit_SS_OTIF_Q1, " +
-                    "@Lit_SS_OTIF_Q2, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q1, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q2, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q3, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q4, " +
                     "@Lit_SS_SPMScore_Baseline, " +
                     "@Lit_SS_SPMScore_Target, " +
-                    "@Lit_SS_SPMScore_Q1, " +
-                    "@Lit_SS_SPMScore_Q2, " +
-                    "@Lit_CSAT_ReqSent_YTD23_24, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q1, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q2, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q3, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q4, " +
+                    "@Lit_CSAT_ReqSent_YTD_PreviousYear, " +
                     "@Lit_CSAT_ReqSent_Baseline, " +
                     "@Lit_CSAT_ReqSent_Target, " +
-                    "@Lit_CSAT_ReqSent_Q1, " +
-                    "@Lit_CSAT_ReqSent_Q2, " +
-                    "@Lit_CSAT_ReqSent_YTD, " +
-                    "@Lit_CSAT_RespRecvd_YTD23_24, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q1, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q2, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q3, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q4, " +
+                    "@Lit_CSAT_ReqSent_YTD_CurrentYear, " +
+                    "@Lit_CSAT_RespRecvd_YTD_PreviousYear, " +
                     "@Lit_CSAT_RespRecvd_Baseline, " +
                     "@Lit_CSAT_RespRecvd_Target, " +
-                    "@Lit_CSAT_RespRecvd_Q1, " +
-                    "@Lit_CSAT_RespRecvd_Q2, " +
-                    "@Lit_CSAT_RespRecvd_YTD, " +
-                    "@Lit_CSAT_Promoter_YTD23_24, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q1, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q2, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q3, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q4, " +
+                    "@Lit_CSAT_RespRecvd_YTD_CurrentYear, " +
+                    "@Lit_CSAT_Promoter_YTD_PreviousYear, " +
                     "@Lit_CSAT_Promoter_Baseline, " +
                     "@Lit_CSAT_Promoter_Target, " +
-                    "@Lit_CSAT_Promoter_Q1, " +
-                    "@Lit_CSAT_Promoter_Q2, " +
-                    "@Lit_CSAT_Promoter_YTD, " +
-                    "@Lit_CSAT_Detractor_YTD23_24, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q1, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q2, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q3, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q4, " +
+                    "@Lit_CSAT_Promoter_YTD_CurrentYear, " +
+                    "@Lit_CSAT_Detractor_YTD_PreviousYear, " +
                     "@Lit_CSAT_Detractor_Baseline, " +
                     "@Lit_CSAT_Detractor_Target, " +
-                    "@Lit_CSAT_Detractor_Q1, " +
-                    "@Lit_CSAT_Detractor_Q2, " +
-                    "@Lit_CSAT_Detractor_YTD, " +
-                    "@Lit_CSAT_NPS_YTD23_24, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q1, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q2, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q3, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q4, " +
+                    "@Lit_CSAT_Detractor_YTD_CurrentYear, " +
+                    "@Lit_CSAT_NPS_YTD_PreviousYear, " +
                     "@Lit_CSAT_NPS_Baseline, " +
                     "@Lit_CSAT_NPS_Target, " +
-                    "@Lit_CSAT_NPS_Q1, " +
-                    "@Lit_CSAT_NPS_Q2, " +
-                    "@Lit_CSAT_NPS_YTD, " +
-                    "@Lit_SPM_Supp1_Q1, " +
-                    "@Lit_SPM_Supp1_Q2, " +
-                    "@Lit_SPM_Supp2_Q1, " +
-                    "@Lit_SPM_Supp2_Q2, " +
-                    "@Lit_SPM_Supp3_Q1, " +
-                    "@Lit_SPM_Supp3_Q2, " +
-                    "@Lit_SPM_Supp4_Q1, " +
-                    "@Lit_SPM_Supp4_Q2, " +
-                    "@Lit_SPM_Supp5_Q1, " +
-                    "@Lit_SPM_Supp5_Q2, " +
-                    "@Lit_SPM_Supp6_Q1, " +
-                    "@Lit_SPM_Supp6_Q2, " +
-                    "@Lit_SPM_Supp7_Q1, " +
-                    "@Lit_SPM_Supp7_Q2, " +
-                    "@Lit_SPM_Supp8_Q1, " +
-                    "@Lit_SPM_Supp8_Q2, " +
-                    "@Lit_SPM_Supp9_Q1, " +
-                    "@Lit_SPM_Supp9_Q2, " +
-                    "@Lit_SPM_Supp10_Q1, " +
-                    "@Lit_SPM_Supp10_Q2, " +
-                    "@Lit_OTIF_YTD23_24, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q1, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q2, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q3, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q4, " +
+                    "@Lit_CSAT_NPS_YTD_CurrentYear, " +
+                    "@Lit_SPM_Supp1, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp2, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp3, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp4, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp5, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp6, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp7, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp8, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp9, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp10, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q4, " +
+                    "@Lit_OTIF_YTD_PreviousYear, " +
                     "@Lit_OTIF_Target, " +
-                    "@Lit_OTIF_Q1, " +
-                    "@Lit_OTIF_Q2, " +
-                    "@Lit_OTIF_YTD, " +
-                    "@Lit_SC_Closure_YTD23_24, " +
+                    "@Lit_OTIF_CurrentYear_Q1, " +
+                    "@Lit_OTIF_CurrentYear_Q2, " +
+                    "@Lit_OTIF_CurrentYear_Q3, " +
+                    "@Lit_OTIF_CurrentYear_Q4, " +
+                    "@Lit_OTIF_YTD_CurrentYear, " +
+                    "@Lit_SC_Closure_YTD_PreviousYear, " +
                     "@Lit_SC_Closure_Baseline, " +
                     "@Lit_SC_Closure_Target, " +
-                    "@Lit_SC_Closure_Q1, " +
-                    "@Lit_SC_Closure_Q2, " +
-                    "@Lit_SC_Closure_YTD, " +
-                    "@Lit_CSO_TotalLogged_YTD23_24, " +
-                    "@Lit_CSO_TotalLogged_Q1, " +
-                    "@Lit_CSO_TotalLogged_Q2, " +
-                    "@Lit_CSO_TotalLogged_YTD, " +
-                    "@Lit_CSO_TotalAClass_YTD23_24, " +
-                    "@Lit_CSO_TotalAClass_Q1, " +
-                    "@Lit_CSO_TotalAClass_Q2, " +
-                    "@Lit_CSO_TotalAClass_YTD, " +
-                    "@Lit_CSO_AClassClosed_YTD23_24, " +
-                    "@Lit_CSO_AClassClosed_Q1, " +
-                    "@Lit_CSO_AClassClosed_Q2, " +
-                    "@Lit_CSO_AClassClosed_YTD, " +
-                    "@Lit_CSO_AClassClosedLess45_YTD23_24, " +
-                    "@Lit_CSO_AClassClosedLess45_Q1, " +
-                    "@Lit_CSO_AClassClosedLess45_Q2, " +
-                    "@Lit_CSO_AClassClosedLess45_YTD, " +
-                    "@Lit_CSO_PercentageClosure_YTD23_24, " +
-                    "@Lit_CSO_PercentageClosure_Q1, " +
-                    "@Lit_CSO_PercentageClosure_Q2, " +
-                    "@Lit_CSO_PercentageClosure_YTD, " +
-                    "@Lit_CostSavings_YTD23_24, " +
+                    "@Lit_SC_Closure_CurrentYear_Q1, " +
+                    "@Lit_SC_Closure_CurrentYear_Q2, " +
+                    "@Lit_SC_Closure_CurrentYear_Q3, " +
+                    "@Lit_SC_Closure_CurrentYear_Q4, " +
+                    "@Lit_SC_Closure_YTD_CurrentYear, " +
+                    "@Lit_CSO_TotalLogged_YTD_PreviousYear, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q1, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q2, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q3, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q4, " +
+                    "@Lit_CSO_TotalLogged_YTD_CurrentYear, " +
+                    "@Lit_CSO_TotalAClass_YTD_PreviousYear, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q1, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q2, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q3, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q4, " +
+                    "@Lit_CSO_TotalAClass_YTD_CurrentYear, " +
+                    "@Lit_CSO_AClassClosed_YTD_PreviousYear, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q1, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q2, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q3, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q4, " +
+                    "@Lit_CSO_AClassClosed_YTD_CurrentYear, " +
+                    "@Lit_CSO_AClassClosedLess45_YTD_PreviousYear, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q1, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q2, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q3, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q4, " +
+                    "@Lit_CSO_AClassClosedLess45_YTD_CurrentYear, " +
+                    "@Lit_CSO_PercentageClosure_YTD_PreviousYear, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q1, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q2, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q3, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q4, " +
+                    "@Lit_CSO_PercentageClosure_YTD_CurrentYear, " +
+                    "@Lit_CostSavings_YTD_PreviousYear, " +
                     "@Lit_CostSavings_Target, " +
-                    "@Lit_CostSavings_Q1, " +
-                    "@Lit_CostSavings_Q2, " +
-                    "@Lit_CostSavings_YTD, " +
-                    "@Lit_OQL_ArtLuminaires_YTD23_24, " +
-                    "@Lit_OQL_ArtLuminaires_Target, " +
-                    "@Lit_OQL_ArtLuminaires_PC01, " +
-                    "@Lit_OQL_ArtLuminaires_PC02, " +
-                    "@Lit_OQL_ArtLuminaires_PC03, " +
-                    "@Lit_OQL_ArtLuminaires_PC04, " +
-                    "@Lit_OQL_ArtLuminaires_PC05, " +
-                    "@Lit_OQL_ArtLuminaires_PC06, " +
-                    "@Lit_OQL_IdealLighting_YTD23_24, " +
-                    "@Lit_OQL_IdealLighting_Target, " +
-                    "@Lit_OQL_IdealLighting_PC01, " +
-                    "@Lit_OQL_IdealLighting_PC02, " +
-                    "@Lit_OQL_IdealLighting_PC03, " +
-                    "@Lit_OQL_IdealLighting_PC04, " +
-                    "@Lit_OQL_IdealLighting_PC05, " +
-                    "@Lit_OQL_IdealLighting_PC06, " +
-                    "@Lit_OQL_Everlite_YTD23_24, " +
-                    "@Lit_OQL_Everlite_Target, " +
-                    "@Lit_OQL_Everlite_PC01, " +
-                    "@Lit_OQL_Everlite_PC02, " +
-                    "@Lit_OQL_Everlite_PC03, " +
-                    "@Lit_OQL_Everlite_PC04, " +
-                    "@Lit_OQL_Everlite_PC05, " +
-                    "@Lit_OQL_Everlite_PC06, " +
-                    "@Lit_OQL_Rama_YTD23_24, " +
-                    "@Lit_OQL_Rama_Target, " +
-                    "@Lit_OQL_Rama_PC01, " +
-                    "@Lit_OQL_Rama_PC02, " +
-                    "@Lit_OQL_Rama_PC03, " +
-                    "@Lit_OQL_Rama_PC04, " +
-                    "@Lit_OQL_Rama_PC05, " +
-                    "@Lit_OQL_Rama_PC06, " +
-                    "@Lit_OQL_Shantinath_YTD23_24, " +
-                    "@Lit_OQL_Shantinath_Target, " +
-                    "@Lit_OQL_Shantinath_PC01, " +
-                    "@Lit_OQL_Shantinath_PC02, " +
-                    "@Lit_OQL_Shantinath_PC03, " +
-                    "@Lit_OQL_Shantinath_PC04, " +
-                    "@Lit_OQL_Shantinath_PC05, " +
-                    "@Lit_OQL_Shantinath_PC06, " +
-                    "@Lit_OQL_Varun_YTD23_24, " +
-                    "@Lit_OQL_Varun_Target, " +
-                    "@Lit_OQL_Varun_PC01, " +
-                    "@Lit_OQL_Varun_PC02, " +
-                    "@Lit_OQL_Varun_PC03, " +
-                    "@Lit_OQL_Varun_PC04, " +
-                    "@Lit_OQL_Varun_PC05, " +
-                    "@Lit_OQL_Varun_PC06, " +
-                    "@Lit_OQL_Ujas_YTD23_24, " +
-                    "@Lit_OQL_Ujas_Target, " +
-                    "@Lit_OQL_Ujas_PC01, " +
-                    "@Lit_OQL_Ujas_PC02, " +
-                    "@Lit_OQL_Ujas_PC03, " +
-                    "@Lit_OQL_Ujas_PC04, " +
-                    "@Lit_OQL_Ujas_PC05, " +
-                    "@Lit_OQL_Ujas_PC06, " +
-                    "@Lit_OQL_NAK_YTD23_24, " +
-                    "@Lit_OQL_NAK_Target, " +
-                    "@Lit_OQL_NAK_PC01, " +
-                    "@Lit_OQL_NAK_PC02, " +
-                    "@Lit_OQL_NAK_PC03, " +
-                    "@Lit_OQL_NAK_PC04, " +
-                    "@Lit_OQL_NAK_PC05, " +
-                    "@Lit_OQL_NAK_PC06, " +
-                    "@Lit_OQL_CumulativeAvg1_YTD23_24, " +
+                    "@Lit_CostSavings_CurrentYear_Q1, " +
+                    "@Lit_CostSavings_CurrentYear_Q2, " +
+                    "@Lit_CostSavings_CurrentYear_Q3, " +
+                    "@Lit_CostSavings_CurrentYear_Q4, " +
+                    "@Lit_CostSavings_YTD_CurrentYear, " +
+                    "@Lit_OQL_Vendor1, " +
+                    "@Lit_OQL_Vendor1_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor1_Target, " +
+                    "@Lit_OQL_Vendor1_PC01, " +
+                    "@Lit_OQL_Vendor1_PC02, " +
+                    "@Lit_OQL_Vendor1_PC03, " +
+                    "@Lit_OQL_Vendor1_PC04, " +
+                    "@Lit_OQL_Vendor1_PC05, " +
+                    "@Lit_OQL_Vendor1_PC06, " +
+                    "@Lit_OQL_Vendor2, " +
+                    "@Lit_OQL_Vendor2_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor2_Target, " +
+                    "@Lit_OQL_Vendor2_PC01, " +
+                    "@Lit_OQL_Vendor2_PC02, " +
+                    "@Lit_OQL_Vendor2_PC03, " +
+                    "@Lit_OQL_Vendor2_PC04, " +
+                    "@Lit_OQL_Vendor2_PC05, " +
+                    "@Lit_OQL_Vendor2_PC06, " +
+                    "@Lit_OQL_Vendor3, " +
+                    "@Lit_OQL_Vendor3_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor3_Target, " +
+                    "@Lit_OQL_Vendor3_PC01, " +
+                    "@Lit_OQL_Vendor3_PC02, " +
+                    "@Lit_OQL_Vendor3_PC03, " +
+                    "@Lit_OQL_Vendor3_PC04, " +
+                    "@Lit_OQL_Vendor3_PC05, " +
+                    "@Lit_OQL_Vendor3_PC06, " +
+                    "@Lit_OQL_Vendor4, " +
+                    "@Lit_OQL_Vendor4_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor4_Target, " +
+                    "@Lit_OQL_Vendor4_PC01, " +
+                    "@Lit_OQL_Vendor4_PC02, " +
+                    "@Lit_OQL_Vendor4_PC03, " +
+                    "@Lit_OQL_Vendor4_PC04, " +
+                    "@Lit_OQL_Vendor4_PC05, " +
+                    "@Lit_OQL_Vendor4_PC06, " +
+                    "@Lit_OQL_Vendor5, " +
+                    "@Lit_OQL_Vendor5_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor5_Target, " +
+                    "@Lit_OQL_Vendor5_PC01, " +
+                    "@Lit_OQL_Vendor5_PC02, " +
+                    "@Lit_OQL_Vendor5_PC03, " +
+                    "@Lit_OQL_Vendor5_PC04, " +
+                    "@Lit_OQL_Vendor5_PC05, " +
+                    "@Lit_OQL_Vendor5_PC06, " +
+                    "@Lit_OQL_Vendor6, " +
+                    "@Lit_OQL_Vendor6_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor6_Target, " +
+                    "@Lit_OQL_Vendor6_PC01, " +
+                    "@Lit_OQL_Vendor6_PC02, " +
+                    "@Lit_OQL_Vendor6_PC03, " +
+                    "@Lit_OQL_Vendor6_PC04, " +
+                    "@Lit_OQL_Vendor6_PC05, " +
+                    "@Lit_OQL_Vendor6_PC06, " +
+                    "@Lit_OQL_Vendor7, " +
+                    "@Lit_OQL_Vendor7_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor7_Target, " +
+                    "@Lit_OQL_Vendor7_PC01, " +
+                    "@Lit_OQL_Vendor7_PC02, " +
+                    "@Lit_OQL_Vendor7_PC03, " +
+                    "@Lit_OQL_Vendor7_PC04, " +
+                    "@Lit_OQL_Vendor7_PC05, " +
+                    "@Lit_OQL_Vendor7_PC06, " +
+                    "@Lit_OQL_Vendor8, " +
+                    "@Lit_OQL_Vendor8_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor8_Target, " +
+                    "@Lit_OQL_Vendor8_PC01, " +
+                    "@Lit_OQL_Vendor8_PC02, " +
+                    "@Lit_OQL_Vendor8_PC03, " +
+                    "@Lit_OQL_Vendor8_PC04, " +
+                    "@Lit_OQL_Vendor8_PC05, " +
+                    "@Lit_OQL_Vendor8_PC06, " +
+                    "@Lit_OQL_CumulativeAvg1_YTD_PreviousYear, " +
                     "@Lit_OQL_CumulativeAvg1_Target, " +
                     "@Lit_OQL_CumulativeAvg1_PC01, " +
                     "@Lit_OQL_CumulativeAvg1_PC02, " +
@@ -908,7 +1256,7 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                     "@Lit_OQL_CumulativeAvg1_PC04, " +
                     "@Lit_OQL_CumulativeAvg1_PC05, " +
                     "@Lit_OQL_CumulativeAvg1_PC06, " +
-                    "@Lit_OQL_CumulativeAvg2_YTD23_24, " +
+                    "@Lit_OQL_CumulativeAvg2_YTD_PreviousYear, " +
                     "@Lit_OQL_CumulativeAvg2_Target, " +
                     "@Lit_OQL_CumulativeAvg2_PC01, " +
                     "@Lit_OQL_CumulativeAvg2_PC02, " +
@@ -918,114 +1266,167 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                     "@Lit_OQL_CumulativeAvg2_PC06, " +
                     "@Seat_SS_CNClosure_Baseline, " +
                     "@Seat_SS_CNClosure_Target, " +
-                    "@Seat_SS_CNClosure_Q1, " +
-                    "@Seat_SS_CNClosure_Q2, " +
-                    "@Seat_SS_CNClosure_YTD, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q1, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q2, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q3, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q4, " +
+                    "@Seat_SS_CNClosure_YTD_CurrentYear, " +
                     "@Seat_SS_OTIF_Baseline, " +
                     "@Seat_SS_OTIF_Target, " +
-                    "@Seat_SS_OTIF_Q1, " +
-                    "@Seat_SS_OTIF_Q2, " +
-                    "@Seat_SS_OTIF_YTD, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q1, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q2, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q3, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q4, " +
+                    "@Seat_SS_OTIF_YTD_CurrentYear, " +
                     "@Seat_SS_SPMScore_Baseline, " +
                     "@Seat_SS_SPMScore_Target, " +
-                    "@Seat_SS_SPMScore_Q1, " +
-                    "@Seat_SS_SPMScore_Q2, " +
-                    "@Seat_SS_SPMScore_YTD, " +
-                    "@Seat_OTIF_Performance_YTD23_24, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q1, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q2, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q3, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q4, " +
+                    "@Seat_SS_SPMScore_YTD_CurrentYear, " +
+                    "@Seat_OTIF_Performance_YTD_PreviousYear, " +
                     "@Seat_OTIF_Performance_Target, " +
-                    "@Seat_OTIF_Performance_Q1, " +
-                    "@Seat_OTIF_Performance_Q2, " +
-                    "@Seat_OTIF_Performance_YTD, " +
-                    "@Seat_CSAT_ReqSent_YTD23_24, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q1, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q2, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q3, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q4, " +
+                    "@Seat_OTIF_Performance_YTD_CurrentYear, " +
+                    "@Seat_CSAT_ReqSent_YTD_PreviousYear, " +
                     "@Seat_CSAT_ReqSent_Baseline, " +
                     "@Seat_CSAT_ReqSent_Target, " +
-                    "@Seat_CSAT_ReqSent_Q1, " +
-                    "@Seat_CSAT_ReqSent_Q2, " +
-                    "@Seat_CSAT_ReqSent_YTD, " +
-                    "@Seat_CSAT_RespRecvd_YTD23_24, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q1, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q2, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q3, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q4, " +
+                    "@Seat_CSAT_ReqSent_YTD_CurrentYear, " +
+                    "@Seat_CSAT_RespRecvd_YTD_PreviousYear, " +
                     "@Seat_CSAT_RespRecvd_Baseline, " +
                     "@Seat_CSAT_RespRecvd_Target, " +
-                    "@Seat_CSAT_RespRecvd_Q1, " +
-                    "@Seat_CSAT_RespRecvd_Q2, " +
-                    "@Seat_CSAT_RespRecvd_YTD, " +
-                    "@Seat_CSAT_Promoter_YTD23_24, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q1, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q2, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q3, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q4, " +
+                    "@Seat_CSAT_RespRecvd_YTD_CurrentYear, " +
+                    "@Seat_CSAT_Promoter_YTD_PreviousYear, " +
                     "@Seat_CSAT_Promoter_Baseline, " +
                     "@Seat_CSAT_Promoter_Target, " +
-                    "@Seat_CSAT_Promoter_Q1, " +
-                    "@Seat_CSAT_Promoter_Q2, " +
-                    "@Seat_CSAT_Promoter_YTD, " +
-                    "@Seat_CSAT_Detractor_YTD23_24, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q1, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q2, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q3, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q4, " +
+                    "@Seat_CSAT_Promoter_YTD_CurrentYear, " +
+                    "@Seat_CSAT_Detractor_YTD_PreviousYear, " +
                     "@Seat_CSAT_Detractor_Baseline, " +
                     "@Seat_CSAT_Detractor_Target, " +
-                    "@Seat_CSAT_Detractor_Q1, " +
-                    "@Seat_CSAT_Detractor_Q2, " +
-                    "@Seat_CSAT_Detractor_YTD, " +
-                    "@Seat_CSAT_NPS_YTD23_24, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q1, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q2, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q3, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q4, " +
+                    "@Seat_CSAT_Detractor_YTD_CurrentYear, " +
+                    "@Seat_CSAT_NPS_YTD_PreviousYear, " +
                     "@Seat_CSAT_NPS_Baseline, " +
                     "@Seat_CSAT_NPS_Target, " +
-                    "@Seat_CSAT_NPS_Q1, " +
-                    "@Seat_CSAT_NPS_Q2, " +
-                    "@Seat_CSAT_NPS_YTD, " +
-                    "@Seat_CSO_TotalLogged_YTD23_24, " +
-                    "@Seat_CSO_TotalLogged_Q1, " +
-                    "@Seat_CSO_TotalLogged_Q2, " +
-                    "@Seat_CSO_TotalLogged_YTD, " +
-                    "@Seat_CSO_TotalAClass_YTD23_24, " +
-                    "@Seat_CSO_TotalAClass_Q1, " +
-                    "@Seat_CSO_TotalAClass_Q2, " +
-                    "@Seat_CSO_TotalAClass_YTD, " +
-                    "@Seat_CSO_AClassClosed_YTD23_24, " +
-                    "@Seat_CSO_AClassClosed_Q1, " +
-                    "@Seat_CSO_AClassClosed_Q2, " +
-                    "@Seat_CSO_AClassClosed_YTD, " +
-                    "@Seat_CSO_AClassClosedLess48_YTD23_24, " +
-                    "@Seat_CSO_AClassClosedLess48_Q1, " +
-                    "@Seat_CSO_AClassClosedLess48_Q2, " +
-                    "@Seat_CSO_AClassClosedLess48_YTD, " +
-                    "@Seat_CSO_AClassClosedUnder48_YTD23_24, " +
-                    "@Seat_CSO_AClassClosedUnder48_Q1, " +
-                    "@Seat_CSO_AClassClosedUnder48_Q2, " +
-                    "@Seat_CSO_AClassClosedUnder48_YTD, " +
-                    "@Seat_SPM_MPPL_Q4_23_24, " +
-                    "@Seat_SPM_MPPL_Q1_24_25, " +
-                    "@Seat_SPM_MPPL_Q2_24_25, " +
-                    "@Seat_SPM_EXCLUSIFF_Q4_23_24, " +
-                    "@Seat_SPM_EXCLUSIFF_Q1_24_25, " +
-                    "@Seat_SPM_EXCLUSIFF_Q2_24_25, " +
-                    "@Seat_SPM_CVG_Q4_23_24, " +
-                    "@Seat_SPM_CVG_Q1_24_25, " +
-                    "@Seat_SPM_CVG_Q2_24_25, " +
-                    "@Seat_SPM_STARSHINE_Q4_23_24, " +
-                    "@Seat_SPM_STARSHINE_Q1_24_25, " +
-                    "@Seat_SPM_STARSHINE_Q2_24_25, " +
-                    "@Seat_SPM_SAVITON_Q4_23_24, " +
-                    "@Seat_SPM_SAVITON_Q1_24_25, " +
-                    "@Seat_SPM_SAVITON_Q2_24_25, " +
-                    "@Seat_IQA_TotalSites_YTD23_24, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q1, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q2, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q3, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q4, " +
+                    "@Seat_CSAT_NPS_YTD_CurrentYear, " +
+                    "@Seat_CSO_TotalLogged_YTD_PreviousYear, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q1, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q2, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q3, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q4, " +
+                    "@Seat_CSO_TotalLogged_YTD_CurrentYear, " +
+                    "@Seat_CSO_TotalAClass_YTD_PreviousYear, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q1, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q2, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q3, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q4, " +
+                    "@Seat_CSO_TotalAClass_YTD_CurrentYear, " +
+                    "@Seat_CSO_AClassClosed_YTD_PreviousYear, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q1, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q2, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q3, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q4, " +
+                    "@Seat_CSO_AClassClosed_YTD_CurrentYear, " +
+                    "@Seat_CSO_AClassClosedLess45_YTD_PreviousYear, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q1, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q2, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q3, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q4, " +
+                    "@Seat_CSO_AClassClosedLess45_YTD_CurrentYear, " +
+                    "@Seat_CSO_AClassClosedUnder45_YTD_PreviousYear, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q1, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q2, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q3, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q4, " +
+                    "@Seat_CSO_AClassClosedUnder45_YTD_CurrentYear, " +
+                    "@Seat_SPM_Supp1, " +
+                    "@Seat_SPM_Supp1_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp2, " +
+                    "@Seat_SPM_Supp2_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp3, " +
+                    "@Seat_SPM_Supp3_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp4, " +
+                    "@Seat_SPM_Supp4_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp5, " +
+                    "@Seat_SPM_Supp5_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q4, " +
+                    "@Seat_IQA_TotalSites_YTD_PreviousYear, " +
                     "@Seat_IQA_TotalSites_Target, " +
-                    "@Seat_IQA_TotalSites_Q1, " +
-                    "@Seat_IQA_TotalSites_Q2, " +
-                    "@Seat_IQA_TotalSites_YTD, " +
-                    "@Seat_IQA_SitesCompleted_YTD23_24, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q1, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q2, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q3, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q4, " +
+                    "@Seat_IQA_TotalSites_YTD_CurrentYear, " +
+                    "@Seat_IQA_SitesCompleted_YTD_PreviousYear, " +
                     "@Seat_IQA_SitesCompleted_Target, " +
-                    "@Seat_IQA_SitesCompleted_Q1, " +
-                    "@Seat_IQA_SitesCompleted_Q2, " +
-                    "@Seat_IQA_SitesCompleted_YTD, " +
-                    "@Seat_IQA_AuditsCompleted_YTD23_24, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q1, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q2, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q3, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q4, " +
+                    "@Seat_IQA_SitesCompleted_YTD_CurrentYear, " +
+                    "@Seat_IQA_AuditsCompleted_YTD_PreviousYear, " +
                     "@Seat_IQA_AuditsCompleted_Target, " +
-                    "@Seat_IQA_AuditsCompleted_Q1, " +
-                    "@Seat_IQA_AuditsCompleted_Q2, " +
-                    "@Seat_IQA_AuditsCompleted_YTD, " +
-                    "@Seat_IQA_PercCompleted_YTD23_24, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q1, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q2, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q3, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q4, " +
+                    "@Seat_IQA_AuditsCompleted_YTD_CurrentYear, " +
+                    "@Seat_IQA_PercCompleted_YTD_PreviousYear, " +
                     "@Seat_IQA_PercCompleted_Target, " +
-                    "@Seat_IQA_PercCompleted_Q1, " +
-                    "@Seat_IQA_PercCompleted_Q2, " +
-                    "@Seat_IQA_PercCompleted_YTD, " +
-                    "@Seat_IQA_AvgSigma_YTD23_24, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q1, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q2, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q3, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q4, " +
+                    "@Seat_IQA_PercCompleted_YTD_CurrentYear, " +
+                    "@Seat_IQA_AvgSigma_YTD_PreviousYear, " +
                     "@Seat_IQA_AvgSigma_Target, " +
-                    "@Seat_IQA_AvgSigma_Q1, " +
-                    "@Seat_IQA_AvgSigma_Q2, " +
-                    "@Seat_IQA_AvgSigma_YTD, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q1, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q2, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q3, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q4, " +
+                    "@Seat_IQA_AvgSigma_YTD_CurrentYear, " +
                     "@AddedBy, " +
                     "@AddedOn",
                 parameters
@@ -1048,190 +1449,268 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
             {
                 new SqlParameter("@Id", model.Id),
                 new SqlParameter("@Lit_SEE_Engagement_Target", model.Lit_SEE_Engagement_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q1", model.Lit_SEE_Engagement_FY23_24_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q2", model.Lit_SEE_Engagement_FY23_24_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q3", model.Lit_SEE_Engagement_FY23_24_Q3 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY23_24_Q4", model.Lit_SEE_Engagement_FY23_24_Q4 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY24_25_Q1", model.Lit_SEE_Engagement_FY24_25_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Engagement_FY24_25_Q2", model.Lit_SEE_Engagement_FY24_25_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q1", model.Lit_SEE_Engagement_PreviousYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q2", model.Lit_SEE_Engagement_PreviousYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q3", model.Lit_SEE_Engagement_PreviousYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_PreviousYear_Q4", model.Lit_SEE_Engagement_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q1", model.Lit_SEE_Engagement_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q2", model.Lit_SEE_Engagement_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q3", model.Lit_SEE_Engagement_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Engagement_CurrentYear_Q4", model.Lit_SEE_Engagement_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SEE_Effectiveness_Target", model.Lit_SEE_Effectiveness_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q1", model.Lit_SEE_Effectiveness_FY23_24_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q2", model.Lit_SEE_Effectiveness_FY23_24_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q3", model.Lit_SEE_Effectiveness_FY23_24_Q3 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY23_24_Q4", model.Lit_SEE_Effectiveness_FY23_24_Q4 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY24_25_Q1", model.Lit_SEE_Effectiveness_FY24_25_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SEE_Effectiveness_FY24_25_Q2", model.Lit_SEE_Effectiveness_FY24_25_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q1", model.Lit_SEE_Effectiveness_PreviousYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q2", model.Lit_SEE_Effectiveness_PreviousYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q3", model.Lit_SEE_Effectiveness_PreviousYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_PreviousYear_Q4", model.Lit_SEE_Effectiveness_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q1", model.Lit_SEE_Effectiveness_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q2", model.Lit_SEE_Effectiveness_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q3", model.Lit_SEE_Effectiveness_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SEE_Effectiveness_CurrentYear_Q4", model.Lit_SEE_Effectiveness_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_ServiceComplaints_Baseline", model.Lit_SS_ServiceComplaints_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_ServiceComplaints_Target", model.Lit_SS_ServiceComplaints_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_ServiceComplaints_Q1", model.Lit_SS_ServiceComplaints_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_ServiceComplaints_Q2", model.Lit_SS_ServiceComplaints_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q1", model.Lit_SS_ServiceComplaints_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q2", model.Lit_SS_ServiceComplaints_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q3", model.Lit_SS_ServiceComplaints_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_ServiceComplaints_CurrentYear_Q4", model.Lit_SS_ServiceComplaints_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_DesignLSG_Baseline", model.Lit_SS_DesignLSG_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_DesignLSG_Target", model.Lit_SS_DesignLSG_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_DesignLSG_Q1", model.Lit_SS_DesignLSG_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_DesignLSG_Q2", model.Lit_SS_DesignLSG_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q1", model.Lit_SS_DesignLSG_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q2", model.Lit_SS_DesignLSG_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q3", model.Lit_SS_DesignLSG_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_DesignLSG_CurrentYear_Q4", model.Lit_SS_DesignLSG_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_CostReduction_Baseline", model.Lit_SS_CostReduction_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_CostReduction_Target", model.Lit_SS_CostReduction_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_CostReduction_Q1", model.Lit_SS_CostReduction_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_CostReduction_Q2", model.Lit_SS_CostReduction_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q1", model.Lit_SS_CostReduction_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q2", model.Lit_SS_CostReduction_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q3", model.Lit_SS_CostReduction_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_CostReduction_CurrentYear_Q4", model.Lit_SS_CostReduction_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_OTIF_Baseline", model.Lit_SS_OTIF_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_OTIF_Target", model.Lit_SS_OTIF_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_OTIF_Q1", model.Lit_SS_OTIF_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_OTIF_Q2", model.Lit_SS_OTIF_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q1", model.Lit_SS_OTIF_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q2", model.Lit_SS_OTIF_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q3", model.Lit_SS_OTIF_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_OTIF_CurrentYear_Q4", model.Lit_SS_OTIF_CurrentYear_Q4 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_SPMScore_Baseline", model.Lit_SS_SPMScore_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SS_SPMScore_Target", model.Lit_SS_SPMScore_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_SPMScore_Q1", model.Lit_SS_SPMScore_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SS_SPMScore_Q2", model.Lit_SS_SPMScore_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_YTD23_24", model.Lit_CSAT_ReqSent_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q1", model.Lit_SS_SPMScore_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q2", model.Lit_SS_SPMScore_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q3", model.Lit_SS_SPMScore_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SS_SPMScore_CurrentYear_Q4", model.Lit_SS_SPMScore_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_YTD_PreviousYear", model.Lit_CSAT_ReqSent_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_ReqSent_Baseline", model.Lit_CSAT_ReqSent_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_ReqSent_Target", model.Lit_CSAT_ReqSent_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_Q1", model.Lit_CSAT_ReqSent_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_Q2", model.Lit_CSAT_ReqSent_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_ReqSent_YTD", model.Lit_CSAT_ReqSent_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_YTD23_24", model.Lit_CSAT_RespRecvd_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q1", model.Lit_CSAT_ReqSent_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q2", model.Lit_CSAT_ReqSent_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q3", model.Lit_CSAT_ReqSent_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_CurrentYear_Q4", model.Lit_CSAT_ReqSent_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_ReqSent_YTD_CurrentYear", model.Lit_CSAT_ReqSent_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_YTD_PreviousYear", model.Lit_CSAT_RespRecvd_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_RespRecvd_Baseline", model.Lit_CSAT_RespRecvd_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_RespRecvd_Target", model.Lit_CSAT_RespRecvd_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_Q1", model.Lit_CSAT_RespRecvd_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_Q2", model.Lit_CSAT_RespRecvd_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_RespRecvd_YTD", model.Lit_CSAT_RespRecvd_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_YTD23_24", model.Lit_CSAT_Promoter_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q1", model.Lit_CSAT_RespRecvd_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q2", model.Lit_CSAT_RespRecvd_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q3", model.Lit_CSAT_RespRecvd_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_CurrentYear_Q4", model.Lit_CSAT_RespRecvd_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_RespRecvd_YTD_CurrentYear", model.Lit_CSAT_RespRecvd_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_YTD_PreviousYear", model.Lit_CSAT_Promoter_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Promoter_Baseline", model.Lit_CSAT_Promoter_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Promoter_Target", model.Lit_CSAT_Promoter_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_Q1", model.Lit_CSAT_Promoter_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_Q2", model.Lit_CSAT_Promoter_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Promoter_YTD", model.Lit_CSAT_Promoter_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_YTD23_24", model.Lit_CSAT_Detractor_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q1", model.Lit_CSAT_Promoter_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q2", model.Lit_CSAT_Promoter_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q3", model.Lit_CSAT_Promoter_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_CurrentYear_Q4", model.Lit_CSAT_Promoter_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Promoter_YTD_CurrentYear", model.Lit_CSAT_Promoter_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_YTD_PreviousYear", model.Lit_CSAT_Detractor_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Detractor_Baseline", model.Lit_CSAT_Detractor_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_Detractor_Target", model.Lit_CSAT_Detractor_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_Q1", model.Lit_CSAT_Detractor_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_Q2", model.Lit_CSAT_Detractor_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_Detractor_YTD", model.Lit_CSAT_Detractor_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_YTD23_24", model.Lit_CSAT_NPS_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q1", model.Lit_CSAT_Detractor_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q2", model.Lit_CSAT_Detractor_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q3", model.Lit_CSAT_Detractor_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_CurrentYear_Q4", model.Lit_CSAT_Detractor_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_Detractor_YTD_CurrentYear", model.Lit_CSAT_Detractor_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_YTD_PreviousYear", model.Lit_CSAT_NPS_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_NPS_Baseline", model.Lit_CSAT_NPS_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CSAT_NPS_Target", model.Lit_CSAT_NPS_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_Q1", model.Lit_CSAT_NPS_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_Q2", model.Lit_CSAT_NPS_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSAT_NPS_YTD", model.Lit_CSAT_NPS_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp1_Q1", model.Lit_SPM_Supp1_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp1_Q2", model.Lit_SPM_Supp1_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp2_Q1", model.Lit_SPM_Supp2_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp2_Q2", model.Lit_SPM_Supp2_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp3_Q1", model.Lit_SPM_Supp3_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp3_Q2", model.Lit_SPM_Supp3_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp4_Q1", model.Lit_SPM_Supp4_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp4_Q2", model.Lit_SPM_Supp4_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp5_Q1", model.Lit_SPM_Supp5_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp5_Q2", model.Lit_SPM_Supp5_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp6_Q1", model.Lit_SPM_Supp6_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp6_Q2", model.Lit_SPM_Supp6_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp7_Q1", model.Lit_SPM_Supp7_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp7_Q2", model.Lit_SPM_Supp7_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp8_Q1", model.Lit_SPM_Supp8_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp8_Q2", model.Lit_SPM_Supp8_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp9_Q1", model.Lit_SPM_Supp9_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp9_Q2", model.Lit_SPM_Supp9_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp10_Q1", model.Lit_SPM_Supp10_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SPM_Supp10_Q2", model.Lit_SPM_Supp10_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_YTD23_24", model.Lit_OTIF_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q1", model.Lit_CSAT_NPS_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q2", model.Lit_CSAT_NPS_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q3", model.Lit_CSAT_NPS_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_CurrentYear_Q4", model.Lit_CSAT_NPS_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSAT_NPS_YTD_CurrentYear", model.Lit_CSAT_NPS_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1", model.Lit_SPM_Supp1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q1", model.Lit_SPM_Supp1_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q2", model.Lit_SPM_Supp1_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q3", model.Lit_SPM_Supp1_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp1_CurrentYear_Q4", model.Lit_SPM_Supp1_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2", model.Lit_SPM_Supp2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q1", model.Lit_SPM_Supp2_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q2", model.Lit_SPM_Supp2_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q3", model.Lit_SPM_Supp2_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp2_CurrentYear_Q4", model.Lit_SPM_Supp2_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3", model.Lit_SPM_Supp3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q1", model.Lit_SPM_Supp3_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q2", model.Lit_SPM_Supp3_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q3", model.Lit_SPM_Supp3_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp3_CurrentYear_Q4", model.Lit_SPM_Supp3_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4", model.Lit_SPM_Supp4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q1", model.Lit_SPM_Supp4_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q2", model.Lit_SPM_Supp4_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q3", model.Lit_SPM_Supp4_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp4_CurrentYear_Q4", model.Lit_SPM_Supp4_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5", model.Lit_SPM_Supp5 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q1", model.Lit_SPM_Supp5_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q2", model.Lit_SPM_Supp5_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q3", model.Lit_SPM_Supp5_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp5_CurrentYear_Q4", model.Lit_SPM_Supp5_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6", model.Lit_SPM_Supp6 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q1", model.Lit_SPM_Supp6_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q2", model.Lit_SPM_Supp6_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q3", model.Lit_SPM_Supp6_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp6_CurrentYear_Q4", model.Lit_SPM_Supp6_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7", model.Lit_SPM_Supp7 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q1", model.Lit_SPM_Supp7_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q2", model.Lit_SPM_Supp7_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q3", model.Lit_SPM_Supp7_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp7_CurrentYear_Q4", model.Lit_SPM_Supp7_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8", model.Lit_SPM_Supp8 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q1", model.Lit_SPM_Supp8_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q2", model.Lit_SPM_Supp8_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q3", model.Lit_SPM_Supp8_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp8_CurrentYear_Q4", model.Lit_SPM_Supp8_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9", model.Lit_SPM_Supp9 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q1", model.Lit_SPM_Supp9_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q2", model.Lit_SPM_Supp9_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q3", model.Lit_SPM_Supp9_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp9_CurrentYear_Q4", model.Lit_SPM_Supp9_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10", model.Lit_SPM_Supp10 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q1", model.Lit_SPM_Supp10_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q2", model.Lit_SPM_Supp10_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q3", model.Lit_SPM_Supp10_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SPM_Supp10_CurrentYear_Q4", model.Lit_SPM_Supp10_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_YTD_PreviousYear", model.Lit_OTIF_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OTIF_Target", model.Lit_OTIF_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_Q1", model.Lit_OTIF_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_Q2", model.Lit_OTIF_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OTIF_YTD", model.Lit_OTIF_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_YTD23_24", model.Lit_SC_Closure_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q1", model.Lit_OTIF_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q2", model.Lit_OTIF_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q3", model.Lit_OTIF_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_CurrentYear_Q4", model.Lit_OTIF_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OTIF_YTD_CurrentYear", model.Lit_OTIF_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_YTD_PreviousYear", model.Lit_SC_Closure_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SC_Closure_Baseline", model.Lit_SC_Closure_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_SC_Closure_Target", model.Lit_SC_Closure_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_Q1", model.Lit_SC_Closure_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_Q2", model.Lit_SC_Closure_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_SC_Closure_YTD", model.Lit_SC_Closure_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_YTD23_24", model.Lit_CSO_TotalLogged_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_Q1", model.Lit_CSO_TotalLogged_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_Q2", model.Lit_CSO_TotalLogged_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalLogged_YTD", model.Lit_CSO_TotalLogged_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_YTD23_24", model.Lit_CSO_TotalAClass_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_Q1", model.Lit_CSO_TotalAClass_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_Q2", model.Lit_CSO_TotalAClass_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_TotalAClass_YTD", model.Lit_CSO_TotalAClass_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_YTD23_24", model.Lit_CSO_AClassClosed_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_Q1", model.Lit_CSO_AClassClosed_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_Q2", model.Lit_CSO_AClassClosed_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosed_YTD", model.Lit_CSO_AClassClosed_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD23_24", model.Lit_CSO_AClassClosedLess45_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_Q1", model.Lit_CSO_AClassClosedLess45_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_Q2", model.Lit_CSO_AClassClosedLess45_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD", model.Lit_CSO_AClassClosedLess45_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_YTD23_24", model.Lit_CSO_PercentageClosure_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_Q1", model.Lit_CSO_PercentageClosure_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_Q2", model.Lit_CSO_PercentageClosure_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CSO_PercentageClosure_YTD", model.Lit_CSO_PercentageClosure_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_YTD23_24", model.Lit_CostSavings_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q1", model.Lit_SC_Closure_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q2", model.Lit_SC_Closure_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q3", model.Lit_SC_Closure_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_CurrentYear_Q4", model.Lit_SC_Closure_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_SC_Closure_YTD_CurrentYear", model.Lit_SC_Closure_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_YTD_PreviousYear", model.Lit_CSO_TotalLogged_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q1", model.Lit_CSO_TotalLogged_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q2", model.Lit_CSO_TotalLogged_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q3", model.Lit_CSO_TotalLogged_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_CurrentYear_Q4", model.Lit_CSO_TotalLogged_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalLogged_YTD_CurrentYear", model.Lit_CSO_TotalLogged_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_YTD_PreviousYear", model.Lit_CSO_TotalAClass_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q1", model.Lit_CSO_TotalAClass_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q2", model.Lit_CSO_TotalAClass_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q3", model.Lit_CSO_TotalAClass_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_CurrentYear_Q4", model.Lit_CSO_TotalAClass_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_TotalAClass_YTD_CurrentYear", model.Lit_CSO_TotalAClass_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_YTD_PreviousYear", model.Lit_CSO_AClassClosed_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q1", model.Lit_CSO_AClassClosed_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q2", model.Lit_CSO_AClassClosed_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q3", model.Lit_CSO_AClassClosed_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_CurrentYear_Q4", model.Lit_CSO_AClassClosed_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosed_YTD_CurrentYear", model.Lit_CSO_AClassClosed_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD_PreviousYear", model.Lit_CSO_AClassClosedLess45_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q1", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q2", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q3", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_CurrentYear_Q4", model.Lit_CSO_AClassClosedLess45_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_AClassClosedLess45_YTD_CurrentYear", model.Lit_CSO_AClassClosedLess45_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_YTD_PreviousYear", model.Lit_CSO_PercentageClosure_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q1", model.Lit_CSO_PercentageClosure_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q2", model.Lit_CSO_PercentageClosure_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q3", model.Lit_CSO_PercentageClosure_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_CurrentYear_Q4", model.Lit_CSO_PercentageClosure_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CSO_PercentageClosure_YTD_CurrentYear", model.Lit_CSO_PercentageClosure_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_YTD_PreviousYear", model.Lit_CostSavings_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_CostSavings_Target", model.Lit_CostSavings_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_Q1", model.Lit_CostSavings_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_Q2", model.Lit_CostSavings_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_CostSavings_YTD", model.Lit_CostSavings_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_YTD23_24", model.Lit_OQL_ArtLuminaires_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_Target", model.Lit_OQL_ArtLuminaires_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC01", model.Lit_OQL_ArtLuminaires_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC02", model.Lit_OQL_ArtLuminaires_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC03", model.Lit_OQL_ArtLuminaires_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC04", model.Lit_OQL_ArtLuminaires_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC05", model.Lit_OQL_ArtLuminaires_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_ArtLuminaires_PC06", model.Lit_OQL_ArtLuminaires_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_YTD23_24", model.Lit_OQL_IdealLighting_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_Target", model.Lit_OQL_IdealLighting_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC01", model.Lit_OQL_IdealLighting_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC02", model.Lit_OQL_IdealLighting_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC03", model.Lit_OQL_IdealLighting_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC04", model.Lit_OQL_IdealLighting_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC05", model.Lit_OQL_IdealLighting_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_IdealLighting_PC06", model.Lit_OQL_IdealLighting_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_YTD23_24", model.Lit_OQL_Everlite_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_Target", model.Lit_OQL_Everlite_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC01", model.Lit_OQL_Everlite_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC02", model.Lit_OQL_Everlite_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC03", model.Lit_OQL_Everlite_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC04", model.Lit_OQL_Everlite_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC05", model.Lit_OQL_Everlite_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Everlite_PC06", model.Lit_OQL_Everlite_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_YTD23_24", model.Lit_OQL_Rama_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_Target", model.Lit_OQL_Rama_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC01", model.Lit_OQL_Rama_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC02", model.Lit_OQL_Rama_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC03", model.Lit_OQL_Rama_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC04", model.Lit_OQL_Rama_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC05", model.Lit_OQL_Rama_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Rama_PC06", model.Lit_OQL_Rama_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_YTD23_24", model.Lit_OQL_Shantinath_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_Target", model.Lit_OQL_Shantinath_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC01", model.Lit_OQL_Shantinath_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC02", model.Lit_OQL_Shantinath_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC03", model.Lit_OQL_Shantinath_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC04", model.Lit_OQL_Shantinath_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC05", model.Lit_OQL_Shantinath_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Shantinath_PC06", model.Lit_OQL_Shantinath_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_YTD23_24", model.Lit_OQL_Varun_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_Target", model.Lit_OQL_Varun_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC01", model.Lit_OQL_Varun_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC02", model.Lit_OQL_Varun_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC03", model.Lit_OQL_Varun_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC04", model.Lit_OQL_Varun_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC05", model.Lit_OQL_Varun_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Varun_PC06", model.Lit_OQL_Varun_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_YTD23_24", model.Lit_OQL_Ujas_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_Target", model.Lit_OQL_Ujas_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC01", model.Lit_OQL_Ujas_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC02", model.Lit_OQL_Ujas_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC03", model.Lit_OQL_Ujas_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC04", model.Lit_OQL_Ujas_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC05", model.Lit_OQL_Ujas_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_Ujas_PC06", model.Lit_OQL_Ujas_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_YTD23_24", model.Lit_OQL_NAK_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_Target", model.Lit_OQL_NAK_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC01", model.Lit_OQL_NAK_PC01 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC02", model.Lit_OQL_NAK_PC02 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC03", model.Lit_OQL_NAK_PC03 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC04", model.Lit_OQL_NAK_PC04 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC05", model.Lit_OQL_NAK_PC05 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_NAK_PC06", model.Lit_OQL_NAK_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_CumulativeAvg1_YTD23_24", model.Lit_OQL_CumulativeAvg1_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q1", model.Lit_CostSavings_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q2", model.Lit_CostSavings_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q3", model.Lit_CostSavings_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_CurrentYear_Q4", model.Lit_CostSavings_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_CostSavings_YTD_CurrentYear", model.Lit_CostSavings_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1", model.Lit_OQL_Vendor1 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_YTD_PreviousYear", model.Lit_OQL_Vendor1_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_Target", model.Lit_OQL_Vendor1_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC01", model.Lit_OQL_Vendor1_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC02", model.Lit_OQL_Vendor1_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC03", model.Lit_OQL_Vendor1_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC04", model.Lit_OQL_Vendor1_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC05", model.Lit_OQL_Vendor1_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor1_PC06", model.Lit_OQL_Vendor1_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2", model.Lit_OQL_Vendor2 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_YTD_PreviousYear", model.Lit_OQL_Vendor2_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_Target", model.Lit_OQL_Vendor2_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC01", model.Lit_OQL_Vendor2_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC02", model.Lit_OQL_Vendor2_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC03", model.Lit_OQL_Vendor2_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC04", model.Lit_OQL_Vendor2_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC05", model.Lit_OQL_Vendor2_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor2_PC06", model.Lit_OQL_Vendor2_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3", model.Lit_OQL_Vendor3 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_YTD_PreviousYear", model.Lit_OQL_Vendor3_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_Target", model.Lit_OQL_Vendor3_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC01", model.Lit_OQL_Vendor3_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC02", model.Lit_OQL_Vendor3_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC03", model.Lit_OQL_Vendor3_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC04", model.Lit_OQL_Vendor3_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC05", model.Lit_OQL_Vendor3_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor3_PC06", model.Lit_OQL_Vendor3_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4", model.Lit_OQL_Vendor4 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_YTD_PreviousYear", model.Lit_OQL_Vendor4_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_Target", model.Lit_OQL_Vendor4_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC01", model.Lit_OQL_Vendor4_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC02", model.Lit_OQL_Vendor4_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC03", model.Lit_OQL_Vendor4_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC04", model.Lit_OQL_Vendor4_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC05", model.Lit_OQL_Vendor4_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor4_PC06", model.Lit_OQL_Vendor4_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5", model.Lit_OQL_Vendor5 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_YTD_PreviousYear", model.Lit_OQL_Vendor5_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_Target", model.Lit_OQL_Vendor5_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC01", model.Lit_OQL_Vendor5_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC02", model.Lit_OQL_Vendor5_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC03", model.Lit_OQL_Vendor5_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC04", model.Lit_OQL_Vendor5_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC05", model.Lit_OQL_Vendor5_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor5_PC06", model.Lit_OQL_Vendor5_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6", model.Lit_OQL_Vendor6 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_YTD_PreviousYear", model.Lit_OQL_Vendor6_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_Target", model.Lit_OQL_Vendor6_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC01", model.Lit_OQL_Vendor6_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC02", model.Lit_OQL_Vendor6_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC03", model.Lit_OQL_Vendor6_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC04", model.Lit_OQL_Vendor6_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC05", model.Lit_OQL_Vendor6_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor6_PC06", model.Lit_OQL_Vendor6_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7", model.Lit_OQL_Vendor7 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_YTD_PreviousYear", model.Lit_OQL_Vendor7_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_Target", model.Lit_OQL_Vendor7_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC01", model.Lit_OQL_Vendor7_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC02", model.Lit_OQL_Vendor7_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC03", model.Lit_OQL_Vendor7_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC04", model.Lit_OQL_Vendor7_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC05", model.Lit_OQL_Vendor7_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor7_PC06", model.Lit_OQL_Vendor7_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8", model.Lit_OQL_Vendor8 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_YTD_PreviousYear", model.Lit_OQL_Vendor8_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_Target", model.Lit_OQL_Vendor8_Target ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC01", model.Lit_OQL_Vendor8_PC01 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC02", model.Lit_OQL_Vendor8_PC02 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC03", model.Lit_OQL_Vendor8_PC03 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC04", model.Lit_OQL_Vendor8_PC04 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC05", model.Lit_OQL_Vendor8_PC05 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_Vendor8_PC06", model.Lit_OQL_Vendor8_PC06 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_CumulativeAvg1_YTD_PreviousYear", model.Lit_OQL_CumulativeAvg1_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_Target", model.Lit_OQL_CumulativeAvg1_Target ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC01", model.Lit_OQL_CumulativeAvg1_PC01 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC02", model.Lit_OQL_CumulativeAvg1_PC02 ?? (object)DBNull.Value),
@@ -1239,7 +1718,7 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC04", model.Lit_OQL_CumulativeAvg1_PC04 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC05", model.Lit_OQL_CumulativeAvg1_PC05 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg1_PC06", model.Lit_OQL_CumulativeAvg1_PC06 ?? (object)DBNull.Value),
-                new SqlParameter("@Lit_OQL_CumulativeAvg2_YTD23_24", model.Lit_OQL_CumulativeAvg2_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Lit_OQL_CumulativeAvg2_YTD_PreviousYear", model.Lit_OQL_CumulativeAvg2_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_Target", model.Lit_OQL_CumulativeAvg2_Target ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_PC01", model.Lit_OQL_CumulativeAvg2_PC01 ?? (object)DBNull.Value),
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_PC02", model.Lit_OQL_CumulativeAvg2_PC02 ?? (object)DBNull.Value),
@@ -1249,114 +1728,167 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                 new SqlParameter("@Lit_OQL_CumulativeAvg2_PC06", model.Lit_OQL_CumulativeAvg2_PC06 ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_CNClosure_Baseline", model.Seat_SS_CNClosure_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_CNClosure_Target", model.Seat_SS_CNClosure_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_CNClosure_Q1", model.Seat_SS_CNClosure_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_CNClosure_Q2", model.Seat_SS_CNClosure_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_CNClosure_YTD", model.Seat_SS_CNClosure_YTD ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q1", model.Seat_SS_CNClosure_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q2", model.Seat_SS_CNClosure_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q3", model.Seat_SS_CNClosure_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_CurrentYear_Q4", model.Seat_SS_CNClosure_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_CNClosure_YTD_CurrentYear", model.Seat_SS_CNClosure_YTD_CurrentYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_OTIF_Baseline", model.Seat_SS_OTIF_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_OTIF_Target", model.Seat_SS_OTIF_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_OTIF_Q1", model.Seat_SS_OTIF_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_OTIF_Q2", model.Seat_SS_OTIF_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_OTIF_YTD", model.Seat_SS_OTIF_YTD ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q1", model.Seat_SS_OTIF_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q2", model.Seat_SS_OTIF_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q3", model.Seat_SS_OTIF_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_CurrentYear_Q4", model.Seat_SS_OTIF_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_OTIF_YTD_CurrentYear", model.Seat_SS_OTIF_YTD_CurrentYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_SPMScore_Baseline", model.Seat_SS_SPMScore_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_SS_SPMScore_Target", model.Seat_SS_SPMScore_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_SPMScore_Q1", model.Seat_SS_SPMScore_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_SPMScore_Q2", model.Seat_SS_SPMScore_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SS_SPMScore_YTD", model.Seat_SS_SPMScore_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_YTD23_24", model.Seat_OTIF_Performance_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q1", model.Seat_SS_SPMScore_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q2", model.Seat_SS_SPMScore_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q3", model.Seat_SS_SPMScore_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_CurrentYear_Q4", model.Seat_SS_SPMScore_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SS_SPMScore_YTD_CurrentYear", model.Seat_SS_SPMScore_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_YTD_PreviousYear", model.Seat_OTIF_Performance_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_OTIF_Performance_Target", model.Seat_OTIF_Performance_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_Q1", model.Seat_OTIF_Performance_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_Q2", model.Seat_OTIF_Performance_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_OTIF_Performance_YTD", model.Seat_OTIF_Performance_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_YTD23_24", model.Seat_CSAT_ReqSent_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q1", model.Seat_OTIF_Performance_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q2", model.Seat_OTIF_Performance_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q3", model.Seat_OTIF_Performance_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_CurrentYear_Q4", model.Seat_OTIF_Performance_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_OTIF_Performance_YTD_CurrentYear", model.Seat_OTIF_Performance_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_YTD_PreviousYear", model.Seat_CSAT_ReqSent_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_ReqSent_Baseline", model.Seat_CSAT_ReqSent_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_ReqSent_Target", model.Seat_CSAT_ReqSent_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_Q1", model.Seat_CSAT_ReqSent_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_Q2", model.Seat_CSAT_ReqSent_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_ReqSent_YTD", model.Seat_CSAT_ReqSent_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_YTD23_24", model.Seat_CSAT_RespRecvd_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q1", model.Seat_CSAT_ReqSent_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q2", model.Seat_CSAT_ReqSent_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q3", model.Seat_CSAT_ReqSent_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_CurrentYear_Q4", model.Seat_CSAT_ReqSent_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_ReqSent_YTD_CurrentYear", model.Seat_CSAT_ReqSent_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_YTD_PreviousYear", model.Seat_CSAT_RespRecvd_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_RespRecvd_Baseline", model.Seat_CSAT_RespRecvd_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_RespRecvd_Target", model.Seat_CSAT_RespRecvd_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_Q1", model.Seat_CSAT_RespRecvd_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_Q2", model.Seat_CSAT_RespRecvd_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_RespRecvd_YTD", model.Seat_CSAT_RespRecvd_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_YTD23_24", model.Seat_CSAT_Promoter_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q1", model.Seat_CSAT_RespRecvd_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q2", model.Seat_CSAT_RespRecvd_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q3", model.Seat_CSAT_RespRecvd_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_CurrentYear_Q4", model.Seat_CSAT_RespRecvd_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_RespRecvd_YTD_CurrentYear", model.Seat_CSAT_RespRecvd_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_YTD_PreviousYear", model.Seat_CSAT_Promoter_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Promoter_Baseline", model.Seat_CSAT_Promoter_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Promoter_Target", model.Seat_CSAT_Promoter_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_Q1", model.Seat_CSAT_Promoter_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_Q2", model.Seat_CSAT_Promoter_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Promoter_YTD", model.Seat_CSAT_Promoter_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_YTD23_24", model.Seat_CSAT_Detractor_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q1", model.Seat_CSAT_Promoter_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q2", model.Seat_CSAT_Promoter_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q3", model.Seat_CSAT_Promoter_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_CurrentYear_Q4", model.Seat_CSAT_Promoter_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Promoter_YTD_CurrentYear", model.Seat_CSAT_Promoter_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_YTD_PreviousYear", model.Seat_CSAT_Detractor_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Detractor_Baseline", model.Seat_CSAT_Detractor_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_Detractor_Target", model.Seat_CSAT_Detractor_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_Q1", model.Seat_CSAT_Detractor_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_Q2", model.Seat_CSAT_Detractor_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_Detractor_YTD", model.Seat_CSAT_Detractor_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_YTD23_24", model.Seat_CSAT_NPS_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q1", model.Seat_CSAT_Detractor_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q2", model.Seat_CSAT_Detractor_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q3", model.Seat_CSAT_Detractor_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_CurrentYear_Q4", model.Seat_CSAT_Detractor_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_Detractor_YTD_CurrentYear", model.Seat_CSAT_Detractor_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_YTD_PreviousYear", model.Seat_CSAT_NPS_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_NPS_Baseline", model.Seat_CSAT_NPS_Baseline ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_CSAT_NPS_Target", model.Seat_CSAT_NPS_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_Q1", model.Seat_CSAT_NPS_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_Q2", model.Seat_CSAT_NPS_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSAT_NPS_YTD", model.Seat_CSAT_NPS_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_YTD23_24", model.Seat_CSO_TotalLogged_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_Q1", model.Seat_CSO_TotalLogged_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_Q2", model.Seat_CSO_TotalLogged_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalLogged_YTD", model.Seat_CSO_TotalLogged_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_YTD23_24", model.Seat_CSO_TotalAClass_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_Q1", model.Seat_CSO_TotalAClass_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_Q2", model.Seat_CSO_TotalAClass_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_TotalAClass_YTD", model.Seat_CSO_TotalAClass_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_YTD23_24", model.Seat_CSO_AClassClosed_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_Q1", model.Seat_CSO_AClassClosed_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_Q2", model.Seat_CSO_AClassClosed_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosed_YTD", model.Seat_CSO_AClassClosed_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_YTD23_24", model.Seat_CSO_AClassClosedLess48_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_Q1", model.Seat_CSO_AClassClosedLess48_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_Q2", model.Seat_CSO_AClassClosedLess48_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedLess48_YTD", model.Seat_CSO_AClassClosedLess48_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_YTD23_24", model.Seat_CSO_AClassClosedUnder48_YTD23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_Q1", model.Seat_CSO_AClassClosedUnder48_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_Q2", model.Seat_CSO_AClassClosedUnder48_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_CSO_AClassClosedUnder48_YTD", model.Seat_CSO_AClassClosedUnder48_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_MPPL_Q4_23_24", model.Seat_SPM_MPPL_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_MPPL_Q1_24_25", model.Seat_SPM_MPPL_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_MPPL_Q2_24_25", model.Seat_SPM_MPPL_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_EXCLUSIFF_Q4_23_24", model.Seat_SPM_EXCLUSIFF_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_EXCLUSIFF_Q1_24_25", model.Seat_SPM_EXCLUSIFF_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_EXCLUSIFF_Q2_24_25", model.Seat_SPM_EXCLUSIFF_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_CVG_Q4_23_24", model.Seat_SPM_CVG_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_CVG_Q1_24_25", model.Seat_SPM_CVG_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_CVG_Q2_24_25", model.Seat_SPM_CVG_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_STARSHINE_Q4_23_24", model.Seat_SPM_STARSHINE_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_STARSHINE_Q1_24_25", model.Seat_SPM_STARSHINE_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_STARSHINE_Q2_24_25", model.Seat_SPM_STARSHINE_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_SAVITON_Q4_23_24", model.Seat_SPM_SAVITON_Q4_23_24 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_SAVITON_Q1_24_25", model.Seat_SPM_SAVITON_Q1_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_SPM_SAVITON_Q2_24_25", model.Seat_SPM_SAVITON_Q2_24_25 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_YTD23_24", model.Seat_IQA_TotalSites_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q1", model.Seat_CSAT_NPS_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q2", model.Seat_CSAT_NPS_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q3", model.Seat_CSAT_NPS_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_CurrentYear_Q4", model.Seat_CSAT_NPS_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSAT_NPS_YTD_CurrentYear", model.Seat_CSAT_NPS_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_YTD_PreviousYear", model.Seat_CSO_TotalLogged_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q1", model.Seat_CSO_TotalLogged_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q2", model.Seat_CSO_TotalLogged_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q3", model.Seat_CSO_TotalLogged_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_CurrentYear_Q4", model.Seat_CSO_TotalLogged_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalLogged_YTD_CurrentYear", model.Seat_CSO_TotalLogged_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_YTD_PreviousYear", model.Seat_CSO_TotalAClass_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q1", model.Seat_CSO_TotalAClass_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q2", model.Seat_CSO_TotalAClass_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q3", model.Seat_CSO_TotalAClass_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_CurrentYear_Q4", model.Seat_CSO_TotalAClass_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_TotalAClass_YTD_CurrentYear", model.Seat_CSO_TotalAClass_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_YTD_PreviousYear", model.Seat_CSO_AClassClosed_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q1", model.Seat_CSO_AClassClosed_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q2", model.Seat_CSO_AClassClosed_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q3", model.Seat_CSO_AClassClosed_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_CurrentYear_Q4", model.Seat_CSO_AClassClosed_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosed_YTD_CurrentYear", model.Seat_CSO_AClassClosed_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_YTD_PreviousYear", model.Seat_CSO_AClassClosedLess45_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q1", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q2", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q3", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_CurrentYear_Q4", model.Seat_CSO_AClassClosedLess45_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedLess45_YTD_CurrentYear", model.Seat_CSO_AClassClosedLess45_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_YTD_PreviousYear", model.Seat_CSO_AClassClosedUnder45_YTD_PreviousYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q1", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q2", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q3", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_CurrentYear_Q4", model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_CSO_AClassClosedUnder45_YTD_CurrentYear", model.Seat_CSO_AClassClosedUnder45_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1", model.Seat_SPM_Supp1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_PreviousYear_Q4", model.Seat_SPM_Supp1_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q1", model.Seat_SPM_Supp1_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q2", model.Seat_SPM_Supp1_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q3", model.Seat_SPM_Supp1_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp1_CurrentYear_Q4", model.Seat_SPM_Supp1_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2", model.Seat_SPM_Supp2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_PreviousYear_Q4", model.Seat_SPM_Supp2_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q1", model.Seat_SPM_Supp2_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q2", model.Seat_SPM_Supp2_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q3", model.Seat_SPM_Supp2_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp2_CurrentYear_Q4", model.Seat_SPM_Supp2_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3", model.Seat_SPM_Supp3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_PreviousYear_Q4", model.Seat_SPM_Supp3_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q1", model.Seat_SPM_Supp3_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q2", model.Seat_SPM_Supp3_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q3", model.Seat_SPM_Supp3_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp3_CurrentYear_Q4", model.Seat_SPM_Supp3_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4", model.Seat_SPM_Supp4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_PreviousYear_Q4", model.Seat_SPM_Supp4_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q1", model.Seat_SPM_Supp4_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q2", model.Seat_SPM_Supp4_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q3", model.Seat_SPM_Supp4_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp4_CurrentYear_Q4", model.Seat_SPM_Supp4_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5", model.Seat_SPM_Supp5 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_PreviousYear_Q4", model.Seat_SPM_Supp5_PreviousYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q1", model.Seat_SPM_Supp5_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q2", model.Seat_SPM_Supp5_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q3", model.Seat_SPM_Supp5_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_SPM_Supp5_CurrentYear_Q4", model.Seat_SPM_Supp5_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_YTD_PreviousYear", model.Seat_IQA_TotalSites_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_TotalSites_Target", model.Seat_IQA_TotalSites_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_Q1", model.Seat_IQA_TotalSites_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_Q2", model.Seat_IQA_TotalSites_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_TotalSites_YTD", model.Seat_IQA_TotalSites_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_YTD23_24", model.Seat_IQA_SitesCompleted_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q1", model.Seat_IQA_TotalSites_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q2", model.Seat_IQA_TotalSites_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q3", model.Seat_IQA_TotalSites_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_CurrentYear_Q4", model.Seat_IQA_TotalSites_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_TotalSites_YTD_CurrentYear", model.Seat_IQA_TotalSites_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_YTD_PreviousYear", model.Seat_IQA_SitesCompleted_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_SitesCompleted_Target", model.Seat_IQA_SitesCompleted_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_Q1", model.Seat_IQA_SitesCompleted_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_Q2", model.Seat_IQA_SitesCompleted_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_SitesCompleted_YTD", model.Seat_IQA_SitesCompleted_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD23_24", model.Seat_IQA_AuditsCompleted_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q1", model.Seat_IQA_SitesCompleted_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q2", model.Seat_IQA_SitesCompleted_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q3", model.Seat_IQA_SitesCompleted_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_CurrentYear_Q4", model.Seat_IQA_SitesCompleted_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_SitesCompleted_YTD_CurrentYear", model.Seat_IQA_SitesCompleted_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD_PreviousYear", model.Seat_IQA_AuditsCompleted_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_AuditsCompleted_Target", model.Seat_IQA_AuditsCompleted_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_Q1", model.Seat_IQA_AuditsCompleted_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_Q2", model.Seat_IQA_AuditsCompleted_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD", model.Seat_IQA_AuditsCompleted_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_YTD23_24", model.Seat_IQA_PercCompleted_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q1", model.Seat_IQA_AuditsCompleted_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q2", model.Seat_IQA_AuditsCompleted_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q3", model.Seat_IQA_AuditsCompleted_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_CurrentYear_Q4", model.Seat_IQA_AuditsCompleted_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AuditsCompleted_YTD_CurrentYear", model.Seat_IQA_AuditsCompleted_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_YTD_PreviousYear", model.Seat_IQA_PercCompleted_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_PercCompleted_Target", model.Seat_IQA_PercCompleted_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_Q1", model.Seat_IQA_PercCompleted_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_Q2", model.Seat_IQA_PercCompleted_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_PercCompleted_YTD", model.Seat_IQA_PercCompleted_YTD ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_YTD23_24", model.Seat_IQA_AvgSigma_YTD23_24 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q1", model.Seat_IQA_PercCompleted_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q2", model.Seat_IQA_PercCompleted_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q3", model.Seat_IQA_PercCompleted_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_CurrentYear_Q4", model.Seat_IQA_PercCompleted_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_PercCompleted_YTD_CurrentYear", model.Seat_IQA_PercCompleted_YTD_CurrentYear ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_YTD_PreviousYear", model.Seat_IQA_AvgSigma_YTD_PreviousYear ?? (object)DBNull.Value),
                 new SqlParameter("@Seat_IQA_AvgSigma_Target", model.Seat_IQA_AvgSigma_Target ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_Q1", model.Seat_IQA_AvgSigma_Q1 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_Q2", model.Seat_IQA_AvgSigma_Q2 ?? (object)DBNull.Value),
-                new SqlParameter("@Seat_IQA_AvgSigma_YTD", model.Seat_IQA_AvgSigma_YTD ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q1", model.Seat_IQA_AvgSigma_CurrentYear_Q1 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q2", model.Seat_IQA_AvgSigma_CurrentYear_Q2 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q3", model.Seat_IQA_AvgSigma_CurrentYear_Q3 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_CurrentYear_Q4", model.Seat_IQA_AvgSigma_CurrentYear_Q4 ?? (object)DBNull.Value),
+                new SqlParameter("@Seat_IQA_AvgSigma_YTD_CurrentYear", model.Seat_IQA_AvgSigma_YTD_CurrentYear ?? (object)DBNull.Value),
                 new SqlParameter("@UpdatedBy", model.UpdatedBy ?? (object)DBNull.Value),
                 new SqlParameter("@UpdatedOn", model.UpdatedOn ?? (object)DBNull.Value)
             };
@@ -1365,190 +1897,268 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                 "EXEC sp_Update_AHPNote " +
                     "@Id, " +
                     "@Lit_SEE_Engagement_Target, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q1, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q2, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q3, " +
-                    "@Lit_SEE_Engagement_FY23_24_Q4, " +
-                    "@Lit_SEE_Engagement_FY24_25_Q1, " +
-                    "@Lit_SEE_Engagement_FY24_25_Q2, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q1, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q2, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q3, " +
+                    "@Lit_SEE_Engagement_PreviousYear_Q4, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q1, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q2, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q3, " +
+                    "@Lit_SEE_Engagement_CurrentYear_Q4, " +
                     "@Lit_SEE_Effectiveness_Target, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q1, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q2, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q3, " +
-                    "@Lit_SEE_Effectiveness_FY23_24_Q4, " +
-                    "@Lit_SEE_Effectiveness_FY24_25_Q1, " +
-                    "@Lit_SEE_Effectiveness_FY24_25_Q2, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q1, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q2, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q3, " +
+                    "@Lit_SEE_Effectiveness_PreviousYear_Q4, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q1, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q2, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q3, " +
+                    "@Lit_SEE_Effectiveness_CurrentYear_Q4, " +
                     "@Lit_SS_ServiceComplaints_Baseline, " +
                     "@Lit_SS_ServiceComplaints_Target, " +
-                    "@Lit_SS_ServiceComplaints_Q1, " +
-                    "@Lit_SS_ServiceComplaints_Q2, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q1, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q2, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q3, " +
+                    "@Lit_SS_ServiceComplaints_CurrentYear_Q4, " +
                     "@Lit_SS_DesignLSG_Baseline, " +
                     "@Lit_SS_DesignLSG_Target, " +
-                    "@Lit_SS_DesignLSG_Q1, " +
-                    "@Lit_SS_DesignLSG_Q2, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q1, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q2, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q3, " +
+                    "@Lit_SS_DesignLSG_CurrentYear_Q4, " +
                     "@Lit_SS_CostReduction_Baseline, " +
                     "@Lit_SS_CostReduction_Target, " +
-                    "@Lit_SS_CostReduction_Q1, " +
-                    "@Lit_SS_CostReduction_Q2, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q1, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q2, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q3, " +
+                    "@Lit_SS_CostReduction_CurrentYear_Q4, " +
                     "@Lit_SS_OTIF_Baseline, " +
                     "@Lit_SS_OTIF_Target, " +
-                    "@Lit_SS_OTIF_Q1, " +
-                    "@Lit_SS_OTIF_Q2, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q1, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q2, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q3, " +
+                    "@Lit_SS_OTIF_CurrentYear_Q4, " +
                     "@Lit_SS_SPMScore_Baseline, " +
                     "@Lit_SS_SPMScore_Target, " +
-                    "@Lit_SS_SPMScore_Q1, " +
-                    "@Lit_SS_SPMScore_Q2, " +
-                    "@Lit_CSAT_ReqSent_YTD23_24, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q1, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q2, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q3, " +
+                    "@Lit_SS_SPMScore_CurrentYear_Q4, " +
+                    "@Lit_CSAT_ReqSent_YTD_PreviousYear, " +
                     "@Lit_CSAT_ReqSent_Baseline, " +
                     "@Lit_CSAT_ReqSent_Target, " +
-                    "@Lit_CSAT_ReqSent_Q1, " +
-                    "@Lit_CSAT_ReqSent_Q2, " +
-                    "@Lit_CSAT_ReqSent_YTD, " +
-                    "@Lit_CSAT_RespRecvd_YTD23_24, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q1, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q2, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q3, " +
+                    "@Lit_CSAT_ReqSent_CurrentYear_Q4, " +
+                    "@Lit_CSAT_ReqSent_YTD_CurrentYear, " +
+                    "@Lit_CSAT_RespRecvd_YTD_PreviousYear, " +
                     "@Lit_CSAT_RespRecvd_Baseline, " +
                     "@Lit_CSAT_RespRecvd_Target, " +
-                    "@Lit_CSAT_RespRecvd_Q1, " +
-                    "@Lit_CSAT_RespRecvd_Q2, " +
-                    "@Lit_CSAT_RespRecvd_YTD, " +
-                    "@Lit_CSAT_Promoter_YTD23_24, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q1, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q2, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q3, " +
+                    "@Lit_CSAT_RespRecvd_CurrentYear_Q4, " +
+                    "@Lit_CSAT_RespRecvd_YTD_CurrentYear, " +
+                    "@Lit_CSAT_Promoter_YTD_PreviousYear, " +
                     "@Lit_CSAT_Promoter_Baseline, " +
                     "@Lit_CSAT_Promoter_Target, " +
-                    "@Lit_CSAT_Promoter_Q1, " +
-                    "@Lit_CSAT_Promoter_Q2, " +
-                    "@Lit_CSAT_Promoter_YTD, " +
-                    "@Lit_CSAT_Detractor_YTD23_24, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q1, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q2, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q3, " +
+                    "@Lit_CSAT_Promoter_CurrentYear_Q4, " +
+                    "@Lit_CSAT_Promoter_YTD_CurrentYear, " +
+                    "@Lit_CSAT_Detractor_YTD_PreviousYear, " +
                     "@Lit_CSAT_Detractor_Baseline, " +
                     "@Lit_CSAT_Detractor_Target, " +
-                    "@Lit_CSAT_Detractor_Q1, " +
-                    "@Lit_CSAT_Detractor_Q2, " +
-                    "@Lit_CSAT_Detractor_YTD, " +
-                    "@Lit_CSAT_NPS_YTD23_24, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q1, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q2, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q3, " +
+                    "@Lit_CSAT_Detractor_CurrentYear_Q4, " +
+                    "@Lit_CSAT_Detractor_YTD_CurrentYear, " +
+                    "@Lit_CSAT_NPS_YTD_PreviousYear, " +
                     "@Lit_CSAT_NPS_Baseline, " +
                     "@Lit_CSAT_NPS_Target, " +
-                    "@Lit_CSAT_NPS_Q1, " +
-                    "@Lit_CSAT_NPS_Q2, " +
-                    "@Lit_CSAT_NPS_YTD, " +
-                    "@Lit_SPM_Supp1_Q1, " +
-                    "@Lit_SPM_Supp1_Q2, " +
-                    "@Lit_SPM_Supp2_Q1, " +
-                    "@Lit_SPM_Supp2_Q2, " +
-                    "@Lit_SPM_Supp3_Q1, " +
-                    "@Lit_SPM_Supp3_Q2, " +
-                    "@Lit_SPM_Supp4_Q1, " +
-                    "@Lit_SPM_Supp4_Q2, " +
-                    "@Lit_SPM_Supp5_Q1, " +
-                    "@Lit_SPM_Supp5_Q2, " +
-                    "@Lit_SPM_Supp6_Q1, " +
-                    "@Lit_SPM_Supp6_Q2, " +
-                    "@Lit_SPM_Supp7_Q1, " +
-                    "@Lit_SPM_Supp7_Q2, " +
-                    "@Lit_SPM_Supp8_Q1, " +
-                    "@Lit_SPM_Supp8_Q2, " +
-                    "@Lit_SPM_Supp9_Q1, " +
-                    "@Lit_SPM_Supp9_Q2, " +
-                    "@Lit_SPM_Supp10_Q1, " +
-                    "@Lit_SPM_Supp10_Q2, " +
-                    "@Lit_OTIF_YTD23_24, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q1, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q2, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q3, " +
+                    "@Lit_CSAT_NPS_CurrentYear_Q4, " +
+                    "@Lit_CSAT_NPS_YTD_CurrentYear, " +
+                    "@Lit_SPM_Supp1, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp1_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp2, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp2_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp3, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp3_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp4, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp4_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp5, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp5_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp6, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp6_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp7, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp7_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp8, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp8_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp9, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp9_CurrentYear_Q4, " +
+                    "@Lit_SPM_Supp10, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q1, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q2, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q3, " +
+                    "@Lit_SPM_Supp10_CurrentYear_Q4, " +
+                    "@Lit_OTIF_YTD_PreviousYear, " +
                     "@Lit_OTIF_Target, " +
-                    "@Lit_OTIF_Q1, " +
-                    "@Lit_OTIF_Q2, " +
-                    "@Lit_OTIF_YTD, " +
-                    "@Lit_SC_Closure_YTD23_24, " +
+                    "@Lit_OTIF_CurrentYear_Q1, " +
+                    "@Lit_OTIF_CurrentYear_Q2, " +
+                    "@Lit_OTIF_CurrentYear_Q3, " +
+                    "@Lit_OTIF_CurrentYear_Q4, " +
+                    "@Lit_OTIF_YTD_CurrentYear, " +
+                    "@Lit_SC_Closure_YTD_PreviousYear, " +
                     "@Lit_SC_Closure_Baseline, " +
                     "@Lit_SC_Closure_Target, " +
-                    "@Lit_SC_Closure_Q1, " +
-                    "@Lit_SC_Closure_Q2, " +
-                    "@Lit_SC_Closure_YTD, " +
-                    "@Lit_CSO_TotalLogged_YTD23_24, " +
-                    "@Lit_CSO_TotalLogged_Q1, " +
-                    "@Lit_CSO_TotalLogged_Q2, " +
-                    "@Lit_CSO_TotalLogged_YTD, " +
-                    "@Lit_CSO_TotalAClass_YTD23_24, " +
-                    "@Lit_CSO_TotalAClass_Q1, " +
-                    "@Lit_CSO_TotalAClass_Q2, " +
-                    "@Lit_CSO_TotalAClass_YTD, " +
-                    "@Lit_CSO_AClassClosed_YTD23_24, " +
-                    "@Lit_CSO_AClassClosed_Q1, " +
-                    "@Lit_CSO_AClassClosed_Q2, " +
-                    "@Lit_CSO_AClassClosed_YTD, " +
-                    "@Lit_CSO_AClassClosedLess45_YTD23_24, " +
-                    "@Lit_CSO_AClassClosedLess45_Q1, " +
-                    "@Lit_CSO_AClassClosedLess45_Q2, " +
-                    "@Lit_CSO_AClassClosedLess45_YTD, " +
-                    "@Lit_CSO_PercentageClosure_YTD23_24, " +
-                    "@Lit_CSO_PercentageClosure_Q1, " +
-                    "@Lit_CSO_PercentageClosure_Q2, " +
-                    "@Lit_CSO_PercentageClosure_YTD, " +
-                    "@Lit_CostSavings_YTD23_24, " +
+                    "@Lit_SC_Closure_CurrentYear_Q1, " +
+                    "@Lit_SC_Closure_CurrentYear_Q2, " +
+                    "@Lit_SC_Closure_CurrentYear_Q3, " +
+                    "@Lit_SC_Closure_CurrentYear_Q4, " +
+                    "@Lit_SC_Closure_YTD_CurrentYear, " +
+                    "@Lit_CSO_TotalLogged_YTD_PreviousYear, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q1, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q2, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q3, " +
+                    "@Lit_CSO_TotalLogged_CurrentYear_Q4, " +
+                    "@Lit_CSO_TotalLogged_YTD_CurrentYear, " +
+                    "@Lit_CSO_TotalAClass_YTD_PreviousYear, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q1, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q2, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q3, " +
+                    "@Lit_CSO_TotalAClass_CurrentYear_Q4, " +
+                    "@Lit_CSO_TotalAClass_YTD_CurrentYear, " +
+                    "@Lit_CSO_AClassClosed_YTD_PreviousYear, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q1, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q2, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q3, " +
+                    "@Lit_CSO_AClassClosed_CurrentYear_Q4, " +
+                    "@Lit_CSO_AClassClosed_YTD_CurrentYear, " +
+                    "@Lit_CSO_AClassClosedLess45_YTD_PreviousYear, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q1, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q2, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q3, " +
+                    "@Lit_CSO_AClassClosedLess45_CurrentYear_Q4, " +
+                    "@Lit_CSO_AClassClosedLess45_YTD_CurrentYear, " +
+                    "@Lit_CSO_PercentageClosure_YTD_PreviousYear, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q1, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q2, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q3, " +
+                    "@Lit_CSO_PercentageClosure_CurrentYear_Q4, " +
+                    "@Lit_CSO_PercentageClosure_YTD_CurrentYear, " +
+                    "@Lit_CostSavings_YTD_PreviousYear, " +
                     "@Lit_CostSavings_Target, " +
-                    "@Lit_CostSavings_Q1, " +
-                    "@Lit_CostSavings_Q2, " +
-                    "@Lit_CostSavings_YTD, " +
-                    "@Lit_OQL_ArtLuminaires_YTD23_24, " +
-                    "@Lit_OQL_ArtLuminaires_Target, " +
-                    "@Lit_OQL_ArtLuminaires_PC01, " +
-                    "@Lit_OQL_ArtLuminaires_PC02, " +
-                    "@Lit_OQL_ArtLuminaires_PC03, " +
-                    "@Lit_OQL_ArtLuminaires_PC04, " +
-                    "@Lit_OQL_ArtLuminaires_PC05, " +
-                    "@Lit_OQL_ArtLuminaires_PC06, " +
-                    "@Lit_OQL_IdealLighting_YTD23_24, " +
-                    "@Lit_OQL_IdealLighting_Target, " +
-                    "@Lit_OQL_IdealLighting_PC01, " +
-                    "@Lit_OQL_IdealLighting_PC02, " +
-                    "@Lit_OQL_IdealLighting_PC03, " +
-                    "@Lit_OQL_IdealLighting_PC04, " +
-                    "@Lit_OQL_IdealLighting_PC05, " +
-                    "@Lit_OQL_IdealLighting_PC06, " +
-                    "@Lit_OQL_Everlite_YTD23_24, " +
-                    "@Lit_OQL_Everlite_Target, " +
-                    "@Lit_OQL_Everlite_PC01, " +
-                    "@Lit_OQL_Everlite_PC02, " +
-                    "@Lit_OQL_Everlite_PC03, " +
-                    "@Lit_OQL_Everlite_PC04, " +
-                    "@Lit_OQL_Everlite_PC05, " +
-                    "@Lit_OQL_Everlite_PC06, " +
-                    "@Lit_OQL_Rama_YTD23_24, " +
-                    "@Lit_OQL_Rama_Target, " +
-                    "@Lit_OQL_Rama_PC01, " +
-                    "@Lit_OQL_Rama_PC02, " +
-                    "@Lit_OQL_Rama_PC03, " +
-                    "@Lit_OQL_Rama_PC04, " +
-                    "@Lit_OQL_Rama_PC05, " +
-                    "@Lit_OQL_Rama_PC06, " +
-                    "@Lit_OQL_Shantinath_YTD23_24, " +
-                    "@Lit_OQL_Shantinath_Target, " +
-                    "@Lit_OQL_Shantinath_PC01, " +
-                    "@Lit_OQL_Shantinath_PC02, " +
-                    "@Lit_OQL_Shantinath_PC03, " +
-                    "@Lit_OQL_Shantinath_PC04, " +
-                    "@Lit_OQL_Shantinath_PC05, " +
-                    "@Lit_OQL_Shantinath_PC06, " +
-                    "@Lit_OQL_Varun_YTD23_24, " +
-                    "@Lit_OQL_Varun_Target, " +
-                    "@Lit_OQL_Varun_PC01, " +
-                    "@Lit_OQL_Varun_PC02, " +
-                    "@Lit_OQL_Varun_PC03, " +
-                    "@Lit_OQL_Varun_PC04, " +
-                    "@Lit_OQL_Varun_PC05, " +
-                    "@Lit_OQL_Varun_PC06, " +
-                    "@Lit_OQL_Ujas_YTD23_24, " +
-                    "@Lit_OQL_Ujas_Target, " +
-                    "@Lit_OQL_Ujas_PC01, " +
-                    "@Lit_OQL_Ujas_PC02, " +
-                    "@Lit_OQL_Ujas_PC03, " +
-                    "@Lit_OQL_Ujas_PC04, " +
-                    "@Lit_OQL_Ujas_PC05, " +
-                    "@Lit_OQL_Ujas_PC06, " +
-                    "@Lit_OQL_NAK_YTD23_24, " +
-                    "@Lit_OQL_NAK_Target, " +
-                    "@Lit_OQL_NAK_PC01, " +
-                    "@Lit_OQL_NAK_PC02, " +
-                    "@Lit_OQL_NAK_PC03, " +
-                    "@Lit_OQL_NAK_PC04, " +
-                    "@Lit_OQL_NAK_PC05, " +
-                    "@Lit_OQL_NAK_PC06, " +
-                    "@Lit_OQL_CumulativeAvg1_YTD23_24, " +
+                    "@Lit_CostSavings_CurrentYear_Q1, " +
+                    "@Lit_CostSavings_CurrentYear_Q2, " +
+                    "@Lit_CostSavings_CurrentYear_Q3, " +
+                    "@Lit_CostSavings_CurrentYear_Q4, " +
+                    "@Lit_CostSavings_YTD_CurrentYear, " +
+                    "@Lit_OQL_Vendor1, " +
+                    "@Lit_OQL_Vendor1_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor1_Target, " +
+                    "@Lit_OQL_Vendor1_PC01, " +
+                    "@Lit_OQL_Vendor1_PC02, " +
+                    "@Lit_OQL_Vendor1_PC03, " +
+                    "@Lit_OQL_Vendor1_PC04, " +
+                    "@Lit_OQL_Vendor1_PC05, " +
+                    "@Lit_OQL_Vendor1_PC06, " +
+                    "@Lit_OQL_Vendor2, " +
+                    "@Lit_OQL_Vendor2_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor2_Target, " +
+                    "@Lit_OQL_Vendor2_PC01, " +
+                    "@Lit_OQL_Vendor2_PC02, " +
+                    "@Lit_OQL_Vendor2_PC03, " +
+                    "@Lit_OQL_Vendor2_PC04, " +
+                    "@Lit_OQL_Vendor2_PC05, " +
+                    "@Lit_OQL_Vendor2_PC06, " +
+                    "@Lit_OQL_Vendor3, " +
+                    "@Lit_OQL_Vendor3_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor3_Target, " +
+                    "@Lit_OQL_Vendor3_PC01, " +
+                    "@Lit_OQL_Vendor3_PC02, " +
+                    "@Lit_OQL_Vendor3_PC03, " +
+                    "@Lit_OQL_Vendor3_PC04, " +
+                    "@Lit_OQL_Vendor3_PC05, " +
+                    "@Lit_OQL_Vendor3_PC06, " +
+                    "@Lit_OQL_Vendor4, " +
+                    "@Lit_OQL_Vendor4_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor4_Target, " +
+                    "@Lit_OQL_Vendor4_PC01, " +
+                    "@Lit_OQL_Vendor4_PC02, " +
+                    "@Lit_OQL_Vendor4_PC03, " +
+                    "@Lit_OQL_Vendor4_PC04, " +
+                    "@Lit_OQL_Vendor4_PC05, " +
+                    "@Lit_OQL_Vendor4_PC06, " +
+                    "@Lit_OQL_Vendor5, " +
+                    "@Lit_OQL_Vendor5_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor5_Target, " +
+                    "@Lit_OQL_Vendor5_PC01, " +
+                    "@Lit_OQL_Vendor5_PC02, " +
+                    "@Lit_OQL_Vendor5_PC03, " +
+                    "@Lit_OQL_Vendor5_PC04, " +
+                    "@Lit_OQL_Vendor5_PC05, " +
+                    "@Lit_OQL_Vendor5_PC06, " +
+                    "@Lit_OQL_Vendor6, " +
+                    "@Lit_OQL_Vendor6_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor6_Target, " +
+                    "@Lit_OQL_Vendor6_PC01, " +
+                    "@Lit_OQL_Vendor6_PC02, " +
+                    "@Lit_OQL_Vendor6_PC03, " +
+                    "@Lit_OQL_Vendor6_PC04, " +
+                    "@Lit_OQL_Vendor6_PC05, " +
+                    "@Lit_OQL_Vendor6_PC06, " +
+                    "@Lit_OQL_Vendor7, " +
+                    "@Lit_OQL_Vendor7_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor7_Target, " +
+                    "@Lit_OQL_Vendor7_PC01, " +
+                    "@Lit_OQL_Vendor7_PC02, " +
+                    "@Lit_OQL_Vendor7_PC03, " +
+                    "@Lit_OQL_Vendor7_PC04, " +
+                    "@Lit_OQL_Vendor7_PC05, " +
+                    "@Lit_OQL_Vendor7_PC06, " +
+                    "@Lit_OQL_Vendor8, " +
+                    "@Lit_OQL_Vendor8_YTD_PreviousYear, " +
+                    "@Lit_OQL_Vendor8_Target, " +
+                    "@Lit_OQL_Vendor8_PC01, " +
+                    "@Lit_OQL_Vendor8_PC02, " +
+                    "@Lit_OQL_Vendor8_PC03, " +
+                    "@Lit_OQL_Vendor8_PC04, " +
+                    "@Lit_OQL_Vendor8_PC05, " +
+                    "@Lit_OQL_Vendor8_PC06, " +
+                    "@Lit_OQL_CumulativeAvg1_YTD_PreviousYear, " +
                     "@Lit_OQL_CumulativeAvg1_Target, " +
                     "@Lit_OQL_CumulativeAvg1_PC01, " +
                     "@Lit_OQL_CumulativeAvg1_PC02, " +
@@ -1556,7 +2166,7 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                     "@Lit_OQL_CumulativeAvg1_PC04, " +
                     "@Lit_OQL_CumulativeAvg1_PC05, " +
                     "@Lit_OQL_CumulativeAvg1_PC06, " +
-                    "@Lit_OQL_CumulativeAvg2_YTD23_24, " +
+                    "@Lit_OQL_CumulativeAvg2_YTD_PreviousYear, " +
                     "@Lit_OQL_CumulativeAvg2_Target, " +
                     "@Lit_OQL_CumulativeAvg2_PC01, " +
                     "@Lit_OQL_CumulativeAvg2_PC02, " +
@@ -1566,114 +2176,167 @@ public class AHPNoteReposotory : SqlTableRepository, IAHPNoteReposotory
                     "@Lit_OQL_CumulativeAvg2_PC06, " +
                     "@Seat_SS_CNClosure_Baseline, " +
                     "@Seat_SS_CNClosure_Target, " +
-                    "@Seat_SS_CNClosure_Q1, " +
-                    "@Seat_SS_CNClosure_Q2, " +
-                    "@Seat_SS_CNClosure_YTD, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q1, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q2, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q3, " +
+                    "@Seat_SS_CNClosure_CurrentYear_Q4, " +
+                    "@Seat_SS_CNClosure_YTD_CurrentYear, " +
                     "@Seat_SS_OTIF_Baseline, " +
                     "@Seat_SS_OTIF_Target, " +
-                    "@Seat_SS_OTIF_Q1, " +
-                    "@Seat_SS_OTIF_Q2, " +
-                    "@Seat_SS_OTIF_YTD, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q1, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q2, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q3, " +
+                    "@Seat_SS_OTIF_CurrentYear_Q4, " +
+                    "@Seat_SS_OTIF_YTD_CurrentYear, " +
                     "@Seat_SS_SPMScore_Baseline, " +
                     "@Seat_SS_SPMScore_Target, " +
-                    "@Seat_SS_SPMScore_Q1, " +
-                    "@Seat_SS_SPMScore_Q2, " +
-                    "@Seat_SS_SPMScore_YTD, " +
-                    "@Seat_OTIF_Performance_YTD23_24, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q1, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q2, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q3, " +
+                    "@Seat_SS_SPMScore_CurrentYear_Q4, " +
+                    "@Seat_SS_SPMScore_YTD_CurrentYear, " +
+                    "@Seat_OTIF_Performance_YTD_PreviousYear, " +
                     "@Seat_OTIF_Performance_Target, " +
-                    "@Seat_OTIF_Performance_Q1, " +
-                    "@Seat_OTIF_Performance_Q2, " +
-                    "@Seat_OTIF_Performance_YTD, " +
-                    "@Seat_CSAT_ReqSent_YTD23_24, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q1, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q2, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q3, " +
+                    "@Seat_OTIF_Performance_CurrentYear_Q4, " +
+                    "@Seat_OTIF_Performance_YTD_CurrentYear, " +
+                    "@Seat_CSAT_ReqSent_YTD_PreviousYear, " +
                     "@Seat_CSAT_ReqSent_Baseline, " +
                     "@Seat_CSAT_ReqSent_Target, " +
-                    "@Seat_CSAT_ReqSent_Q1, " +
-                    "@Seat_CSAT_ReqSent_Q2, " +
-                    "@Seat_CSAT_ReqSent_YTD, " +
-                    "@Seat_CSAT_RespRecvd_YTD23_24, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q1, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q2, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q3, " +
+                    "@Seat_CSAT_ReqSent_CurrentYear_Q4, " +
+                    "@Seat_CSAT_ReqSent_YTD_CurrentYear, " +
+                    "@Seat_CSAT_RespRecvd_YTD_PreviousYear, " +
                     "@Seat_CSAT_RespRecvd_Baseline, " +
                     "@Seat_CSAT_RespRecvd_Target, " +
-                    "@Seat_CSAT_RespRecvd_Q1, " +
-                    "@Seat_CSAT_RespRecvd_Q2, " +
-                    "@Seat_CSAT_RespRecvd_YTD, " +
-                    "@Seat_CSAT_Promoter_YTD23_24, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q1, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q2, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q3, " +
+                    "@Seat_CSAT_RespRecvd_CurrentYear_Q4, " +
+                    "@Seat_CSAT_RespRecvd_YTD_CurrentYear, " +
+                    "@Seat_CSAT_Promoter_YTD_PreviousYear, " +
                     "@Seat_CSAT_Promoter_Baseline, " +
                     "@Seat_CSAT_Promoter_Target, " +
-                    "@Seat_CSAT_Promoter_Q1, " +
-                    "@Seat_CSAT_Promoter_Q2, " +
-                    "@Seat_CSAT_Promoter_YTD, " +
-                    "@Seat_CSAT_Detractor_YTD23_24, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q1, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q2, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q3, " +
+                    "@Seat_CSAT_Promoter_CurrentYear_Q4, " +
+                    "@Seat_CSAT_Promoter_YTD_CurrentYear, " +
+                    "@Seat_CSAT_Detractor_YTD_PreviousYear, " +
                     "@Seat_CSAT_Detractor_Baseline, " +
                     "@Seat_CSAT_Detractor_Target, " +
-                    "@Seat_CSAT_Detractor_Q1, " +
-                    "@Seat_CSAT_Detractor_Q2, " +
-                    "@Seat_CSAT_Detractor_YTD, " +
-                    "@Seat_CSAT_NPS_YTD23_24, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q1, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q2, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q3, " +
+                    "@Seat_CSAT_Detractor_CurrentYear_Q4, " +
+                    "@Seat_CSAT_Detractor_YTD_CurrentYear, " +
+                    "@Seat_CSAT_NPS_YTD_PreviousYear, " +
                     "@Seat_CSAT_NPS_Baseline, " +
                     "@Seat_CSAT_NPS_Target, " +
-                    "@Seat_CSAT_NPS_Q1, " +
-                    "@Seat_CSAT_NPS_Q2, " +
-                    "@Seat_CSAT_NPS_YTD, " +
-                    "@Seat_CSO_TotalLogged_YTD23_24, " +
-                    "@Seat_CSO_TotalLogged_Q1, " +
-                    "@Seat_CSO_TotalLogged_Q2, " +
-                    "@Seat_CSO_TotalLogged_YTD, " +
-                    "@Seat_CSO_TotalAClass_YTD23_24, " +
-                    "@Seat_CSO_TotalAClass_Q1, " +
-                    "@Seat_CSO_TotalAClass_Q2, " +
-                    "@Seat_CSO_TotalAClass_YTD, " +
-                    "@Seat_CSO_AClassClosed_YTD23_24, " +
-                    "@Seat_CSO_AClassClosed_Q1, " +
-                    "@Seat_CSO_AClassClosed_Q2, " +
-                    "@Seat_CSO_AClassClosed_YTD, " +
-                    "@Seat_CSO_AClassClosedLess48_YTD23_24, " +
-                    "@Seat_CSO_AClassClosedLess48_Q1, " +
-                    "@Seat_CSO_AClassClosedLess48_Q2, " +
-                    "@Seat_CSO_AClassClosedLess48_YTD, " +
-                    "@Seat_CSO_AClassClosedUnder48_YTD23_24, " +
-                    "@Seat_CSO_AClassClosedUnder48_Q1, " +
-                    "@Seat_CSO_AClassClosedUnder48_Q2, " +
-                    "@Seat_CSO_AClassClosedUnder48_YTD, " +
-                    "@Seat_SPM_MPPL_Q4_23_24, " +
-                    "@Seat_SPM_MPPL_Q1_24_25, " +
-                    "@Seat_SPM_MPPL_Q2_24_25, " +
-                    "@Seat_SPM_EXCLUSIFF_Q4_23_24, " +
-                    "@Seat_SPM_EXCLUSIFF_Q1_24_25, " +
-                    "@Seat_SPM_EXCLUSIFF_Q2_24_25, " +
-                    "@Seat_SPM_CVG_Q4_23_24, " +
-                    "@Seat_SPM_CVG_Q1_24_25, " +
-                    "@Seat_SPM_CVG_Q2_24_25, " +
-                    "@Seat_SPM_STARSHINE_Q4_23_24, " +
-                    "@Seat_SPM_STARSHINE_Q1_24_25, " +
-                    "@Seat_SPM_STARSHINE_Q2_24_25, " +
-                    "@Seat_SPM_SAVITON_Q4_23_24, " +
-                    "@Seat_SPM_SAVITON_Q1_24_25, " +
-                    "@Seat_SPM_SAVITON_Q2_24_25, " +
-                    "@Seat_IQA_TotalSites_YTD23_24, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q1, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q2, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q3, " +
+                    "@Seat_CSAT_NPS_CurrentYear_Q4, " +
+                    "@Seat_CSAT_NPS_YTD_CurrentYear, " +
+                    "@Seat_CSO_TotalLogged_YTD_PreviousYear, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q1, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q2, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q3, " +
+                    "@Seat_CSO_TotalLogged_CurrentYear_Q4, " +
+                    "@Seat_CSO_TotalLogged_YTD_CurrentYear, " +
+                    "@Seat_CSO_TotalAClass_YTD_PreviousYear, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q1, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q2, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q3, " +
+                    "@Seat_CSO_TotalAClass_CurrentYear_Q4, " +
+                    "@Seat_CSO_TotalAClass_YTD_CurrentYear, " +
+                    "@Seat_CSO_AClassClosed_YTD_PreviousYear, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q1, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q2, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q3, " +
+                    "@Seat_CSO_AClassClosed_CurrentYear_Q4, " +
+                    "@Seat_CSO_AClassClosed_YTD_CurrentYear, " +
+                    "@Seat_CSO_AClassClosedLess45_YTD_PreviousYear, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q1, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q2, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q3, " +
+                    "@Seat_CSO_AClassClosedLess45_CurrentYear_Q4, " +
+                    "@Seat_CSO_AClassClosedLess45_YTD_CurrentYear, " +
+                    "@Seat_CSO_AClassClosedUnder45_YTD_PreviousYear, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q1, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q2, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q3, " +
+                    "@Seat_CSO_AClassClosedUnder45_CurrentYear_Q4, " +
+                    "@Seat_CSO_AClassClosedUnder45_YTD_CurrentYear, " +
+                    "@Seat_SPM_Supp1, " +
+                    "@Seat_SPM_Supp1_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp1_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp2, " +
+                    "@Seat_SPM_Supp2_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp2_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp3, " +
+                    "@Seat_SPM_Supp3_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp3_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp4, " +
+                    "@Seat_SPM_Supp4_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp4_CurrentYear_Q4, " +
+                    "@Seat_SPM_Supp5, " +
+                    "@Seat_SPM_Supp5_PreviousYear_Q4, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q1, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q2, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q3, " +
+                    "@Seat_SPM_Supp5_CurrentYear_Q4, " +
+                    "@Seat_IQA_TotalSites_YTD_PreviousYear, " +
                     "@Seat_IQA_TotalSites_Target, " +
-                    "@Seat_IQA_TotalSites_Q1, " +
-                    "@Seat_IQA_TotalSites_Q2, " +
-                    "@Seat_IQA_TotalSites_YTD, " +
-                    "@Seat_IQA_SitesCompleted_YTD23_24, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q1, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q2, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q3, " +
+                    "@Seat_IQA_TotalSites_CurrentYear_Q4, " +
+                    "@Seat_IQA_TotalSites_YTD_CurrentYear, " +
+                    "@Seat_IQA_SitesCompleted_YTD_PreviousYear, " +
                     "@Seat_IQA_SitesCompleted_Target, " +
-                    "@Seat_IQA_SitesCompleted_Q1, " +
-                    "@Seat_IQA_SitesCompleted_Q2, " +
-                    "@Seat_IQA_SitesCompleted_YTD, " +
-                    "@Seat_IQA_AuditsCompleted_YTD23_24, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q1, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q2, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q3, " +
+                    "@Seat_IQA_SitesCompleted_CurrentYear_Q4, " +
+                    "@Seat_IQA_SitesCompleted_YTD_CurrentYear, " +
+                    "@Seat_IQA_AuditsCompleted_YTD_PreviousYear, " +
                     "@Seat_IQA_AuditsCompleted_Target, " +
-                    "@Seat_IQA_AuditsCompleted_Q1, " +
-                    "@Seat_IQA_AuditsCompleted_Q2, " +
-                    "@Seat_IQA_AuditsCompleted_YTD, " +
-                    "@Seat_IQA_PercCompleted_YTD23_24, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q1, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q2, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q3, " +
+                    "@Seat_IQA_AuditsCompleted_CurrentYear_Q4, " +
+                    "@Seat_IQA_AuditsCompleted_YTD_CurrentYear, " +
+                    "@Seat_IQA_PercCompleted_YTD_PreviousYear, " +
                     "@Seat_IQA_PercCompleted_Target, " +
-                    "@Seat_IQA_PercCompleted_Q1, " +
-                    "@Seat_IQA_PercCompleted_Q2, " +
-                    "@Seat_IQA_PercCompleted_YTD, " +
-                    "@Seat_IQA_AvgSigma_YTD23_24, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q1, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q2, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q3, " +
+                    "@Seat_IQA_PercCompleted_CurrentYear_Q4, " +
+                    "@Seat_IQA_PercCompleted_YTD_CurrentYear, " +
+                    "@Seat_IQA_AvgSigma_YTD_PreviousYear, " +
                     "@Seat_IQA_AvgSigma_Target, " +
-                    "@Seat_IQA_AvgSigma_Q1, " +
-                    "@Seat_IQA_AvgSigma_Q2, " +
-                    "@Seat_IQA_AvgSigma_YTD, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q1, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q2, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q3, " +
+                    "@Seat_IQA_AvgSigma_CurrentYear_Q4, " +
+                    "@Seat_IQA_AvgSigma_YTD_CurrentYear, " +
                     "@UpdatedBy, " +
                     "@UpdatedOn",
                 parameters

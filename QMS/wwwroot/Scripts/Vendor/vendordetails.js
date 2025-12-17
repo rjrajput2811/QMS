@@ -27,33 +27,33 @@ $(document).ready(function () {
         handleImportExcelFile(url, expectedColumns);
     });
 
-    $("#User_Name").on("blur", function () {
-        debugger
-        Blockloadershow();
-        const username = $(this).val().trim();
+    //$("#User_Name").on("blur", function () {
+    //    debugger
+    //    Blockloadershow();
+    //    const username = $(this).val().trim();
 
-        if (!username) {
-            Blockloaderhide();
-            return;
-        }
+    //    if (!username) {
+    //        Blockloaderhide();
+    //        return;
+    //    }
 
-        $.ajax({
-            url: '/Vendor/CheckDuplicateUserName',  // Replace with your server endpoint
-            type: 'GET',
-            data: { username: username },
-            success: function (response) {
-                Blockloaderhide();
-                if (response.success === true) {
-                    // $("#NewPart_No").val('');
-                    showDangerAlert(response.message);
-                }
-            },
-            error: function (xhr, ststus, errors) {
-                Blockloaderhide();
-                showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
-            }
-        });
-    });
+    //    $.ajax({
+    //        url: '/Vendor/CheckDuplicateUserName',  // Replace with your server endpoint
+    //        type: 'GET',
+    //        data: { username: username },
+    //        success: function (response) {
+    //            Blockloaderhide();
+    //            if (response.success === true) {
+    //                // $("#NewPart_No").val('');
+    //                showDangerAlert(response.message);
+    //            }
+    //        },
+    //        error: function (xhr, ststus, errors) {
+    //            Blockloaderhide();
+    //            showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
+    //        }
+    //    });
+    //});
 });
 
 let searchTimeout; // Timeout variable for debounce
@@ -663,122 +663,142 @@ function InsertUpdateVendorDetail() {
     Blockloadershow();
     var errorMsg = "";
     var fields = "";
+    var userName = $("#User_Name").val();
 
-    if ($("#Name").val() == '' || $("#Name").val() == null || $("#Name").val() == undefined) {
-        fields += " - Name" + "<br>";
-    }
-   
-    if (fields != "") {
-        errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
-    }
-    if (errorMsg != "") {
-        Blockloaderhide();
-        showDangerAlert(errorMsg);
-        return false;
-    }
-
-    var ajaxUrl = "";
-    if ($("#hdnId").val() != "0") {
-        ajaxUrl = '/Vendor/Update';
-    }
-    else {
-        ajaxUrl = '/Vendor/Create';
-    }
-
-    var Model = {
-        Id: $("#hdnId").val(),
-        Name: $("#Name").val(),
-        Vendor_Code: $("#Vendor_Code").val(),
-        Address: $("#Address").val(),
-        Contact_Persons: $("#Contact_Persons").val(),
-        Email: $("#Email").val(),
-        MobileNo: $("#MobileNo").val(),
-        GstNo: $("#GstNo").val(),
-        Owner: $("#Owner").val(),
-        Owner_Email: $("#Owner_Email").val(),
-        Owner_Mobile: $("#Owner_Mobile").val(),
-        Plant_Head: $("#Plant_Head").val(),
-        Plant_Email: $("#Plant_Email").val(),
-        Plant_Mobile: $("#Plant_Mobile").val(),
-        Quality_Manager: $("#Quality_Manger").val(),
-        Quality_Email: $("#Quality_Email").val(),
-        Quality_Mobile: $("#Quality_Mobile").val(),
-        PDG_Manager: $("#PDG_Manager").val(),
-        PDG_Email: $("#PDG_Email").val(),
-        PDG_Mobile: $("#PDG_Mobile").val(),
-        SCM_Manager: $("#SCM_Manager").val(),
-        SCM_Email: $("#SCM_Email").val(),
-        SCM_Mobile: $("#SCM_Mobile").val(),
-        PRD_Manager: $("#PRD_Manager").val(),
-        PRD_Email: $("#PRD_Email").val(),
-        PRD_Mobile: $("#PRD_Mobile").val(),
-        Service_Manager: $("#Service_Manager").val(),
-        Service_Email: $("#Service_Email").val(),
-        Service_Mobile: $("#Service_Mobile").val(),
-
-        Other_Cont_One: $("#Other_Cont_One").val(),
-        Other_Cont_OneEmail: $("#Other_Cont_OneEmail").val(),
-        Other_Cont_OneMobile: $("#Other_Cont_OneMobile").val(),
-        Other_Cont_Two: $("#Other_Cont_Two").val(),
-        Other_Cont_TwoEmail: $("#Other_Cont_TwoEmail").val(),
-        Other_Cont_TwoMobile: $("#Other_Cont_TwoMobile").val(),
-
-        User_Name: $("#User_Name").val(),
-        Password: $("#Password").val(),// Get all selected values from multi-select
-        CreatedBy: $("#hdnCreateBy").val(),
-        CreatedBy: $("#hdnDate").val()
-    };
-
-    $.ajax({
-        type: "POST",
-        url: ajaxUrl,
-        data: Model,
-        success: function (response) {
-            Blockloaderhide();
-            if (response.success) {
-                if ($("#hdnId").val() != "0") {
-                    showSuccessAlert("Vendor Detail is updated successfully!");
+    if (userName) {
+        $.ajax({
+            url: '/Vendor/CheckDuplicateUserName',  // Replace with your server endpoint
+            type: 'GET',
+            data: { username: userName, id: $("#hdnId").val() },
+            success: function (response) {
+                Blockloaderhide();
+                if (response.success === true) {
+                    showDangerAlert(response.message);
                 }
                 else {
-                    showSuccessAlert("Vendor Detail is Saved Successfully!");
+                    if ($("#Name").val() == '' || $("#Name").val() == null || $("#Name").val() == undefined) {
+                        fields += " - Name" + "<br>";
+                    }
 
+                    if (fields != "") {
+                        errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
+                    }
+                    if (errorMsg != "") {
+                        Blockloaderhide();
+                        showDangerAlert(errorMsg);
+                        return false;
+                    }
+
+                    var ajaxUrl = "";
+                    if ($("#hdnId").val() != "0") {
+                        ajaxUrl = '/Vendor/Update';
+                    }
+                    else {
+                        ajaxUrl = '/Vendor/Create';
+                    }
+
+                    var Model = {
+                        Id: $("#hdnId").val(),
+                        Name: $("#Name").val(),
+                        Vendor_Code: $("#Vendor_Code").val(),
+                        Address: $("#Address").val(),
+                        Contact_Persons: $("#Contact_Persons").val(),
+                        Email: $("#Email").val(),
+                        MobileNo: $("#MobileNo").val(),
+                        GstNo: $("#GstNo").val(),
+                        Owner: $("#Owner").val(),
+                        Owner_Email: $("#Owner_Email").val(),
+                        Owner_Mobile: $("#Owner_Mobile").val(),
+                        Plant_Head: $("#Plant_Head").val(),
+                        Plant_Email: $("#Plant_Email").val(),
+                        Plant_Mobile: $("#Plant_Mobile").val(),
+                        Quality_Manager: $("#Quality_Manger").val(),
+                        Quality_Email: $("#Quality_Email").val(),
+                        Quality_Mobile: $("#Quality_Mobile").val(),
+                        PDG_Manager: $("#PDG_Manager").val(),
+                        PDG_Email: $("#PDG_Email").val(),
+                        PDG_Mobile: $("#PDG_Mobile").val(),
+                        SCM_Manager: $("#SCM_Manager").val(),
+                        SCM_Email: $("#SCM_Email").val(),
+                        SCM_Mobile: $("#SCM_Mobile").val(),
+                        PRD_Manager: $("#PRD_Manager").val(),
+                        PRD_Email: $("#PRD_Email").val(),
+                        PRD_Mobile: $("#PRD_Mobile").val(),
+                        Service_Manager: $("#Service_Manager").val(),
+                        Service_Email: $("#Service_Email").val(),
+                        Service_Mobile: $("#Service_Mobile").val(),
+
+                        Other_Cont_One: $("#Other_Cont_One").val(),
+                        Other_Cont_OneEmail: $("#Other_Cont_OneEmail").val(),
+                        Other_Cont_OneMobile: $("#Other_Cont_OneMobile").val(),
+                        Other_Cont_Two: $("#Other_Cont_Two").val(),
+                        Other_Cont_TwoEmail: $("#Other_Cont_TwoEmail").val(),
+                        Other_Cont_TwoMobile: $("#Other_Cont_TwoMobile").val(),
+
+                        User_Name: $("#User_Name").val(),
+                        Password: $("#Password").val(),// Get all selected values from multi-select
+                        CreatedBy: $("#hdnCreateBy").val(),
+                        CreatedBy: $("#hdnDate").val()
+                    };
+
+                    $.ajax({
+                        type: "POST",
+                        url: ajaxUrl,
+                        data: Model,
+                        success: function (response) {
+                            Blockloaderhide();
+                            if (response.success) {
+                                if ($("#hdnId").val() != "0") {
+                                    showSuccessAlert("Vendor Detail is updated successfully!");
+                                }
+                                else {
+                                    showSuccessAlert("Vendor Detail is Saved Successfully!");
+
+                                }
+                                var userRole = $("#hdnUserRole").val();
+                                if (userRole == "4") {
+                                    setTimeout(function () {
+                                        window.location.href = '/Vendor/VendorDetail?id=' + Model.Id;
+                                    }, 2500);
+                                } else {
+                                    setTimeout(function () {
+                                        window.location.href = '/Vendor/Vendor';
+                                    }, 2500);
+                                }
+
+                            }
+                            else if (response.message == "Exist") {
+                                // let duplicateFields = Array.isArray(response.playload) ? response.playload.join(", ") : "Unknown fields";
+                                let duplicateFields = Array.isArray(response.payload) ? response.payload.join("") : "Unknown fields";
+                                errorMsg = "Vendor Detail already exist:" + "<br><br>" + duplicateFields;
+                                showDangerAlert(errorMsg);
+                            }
+                            else {
+                                var errorMessg = "";
+                                for (var error in response.errors) {
+                                    errorMessg += error + "\n";
+                                }
+                                if (errorMessg != "") {
+                                    showDangerAlert(errorMessg);
+                                }
+                                else {
+                                    showDangerAlert(response.Message);
+                                }
+                            }
+                        },
+                        error: function (xhr, ststus, errors) {
+                            Blockloaderhide();
+                            showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
+                        }
+                    });
                 }
-                var userRole = $("#hdnUserRole").val();
-                if (userRole == "4") {
-                    setTimeout(function () {
-                        window.location.href = '/Vendor/VendorDetail?id='+ Model.Id;
-                    }, 2500);
-                } else {
-                    setTimeout(function () {
-                        window.location.href = '/Vendor/Vendor';
-                    }, 2500);
-                }
-                
+            },
+            error: function (xhr, ststus, errors) {
+                Blockloaderhide();
+                showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
             }
-            else if (response.message == "Exist") {
-                // let duplicateFields = Array.isArray(response.playload) ? response.playload.join(", ") : "Unknown fields";
-                let duplicateFields = Array.isArray(response.payload) ? response.payload.join("") : "Unknown fields";
-                errorMsg = "Vendor Detail already exist:" + "<br><br>" + duplicateFields;
-                showDangerAlert(errorMsg);
-            }
-            else {
-                var errorMessg = "";
-                for (var error in response.errors) {
-                    errorMessg += error + "\n";
-                }
-                if (errorMessg != "") {
-                    showDangerAlert(errorMessg);
-                }
-                else {
-                    showDangerAlert(response.Message);
-                }
-            }
-        },
-        error: function (xhr, ststus, errors) {
-            Blockloaderhide();
-            showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
-        }
-    });
+        });
+    }
 }
 
 function openUpload() {

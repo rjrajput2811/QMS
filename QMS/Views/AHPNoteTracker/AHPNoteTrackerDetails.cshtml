@@ -4,6 +4,26 @@
 
 @{
     ViewData["Title"] = "AHP Note Tracker";
+    int currentMonth = DateTime.Now.Month;
+    int currentQ = 0;
+    if (currentMonth >= 4 && currentMonth <= 6) { currentQ = 1; }
+    else if (currentMonth >= 7 && currentMonth <= 9) { currentQ = 2; }
+    else if (currentMonth >= 10 && currentMonth <= 12) { currentQ = 3; }
+    else { currentQ = 4; }
+    bool showQ1 = currentQ >= 1;
+    bool showQ2 = currentQ >= 2;
+    bool showQ3 = currentQ >= 3;
+    bool showQ4 = currentQ == 4;
+    int startYY = Model.FinancialYear / 100; // 2425 / 100 = 24
+    int endYY = Model.FinancialYear % 100;   // 2425 % 100 = 25
+    string currFY = $"FY{startYY:D2}-{endYY:D2}";
+    string prevFY = $"FY{(startYY - 1):D2}-{(endYY - 1):D2}";
+    int countQ = 0;
+    if (showQ1) countQ++;
+    if (showQ2) countQ++;
+    if (showQ3) countQ++;
+    if (showQ4) countQ++;
+    int colspanWithYTD = countQ + 1;
 }
 
 <!-- ===== Header Card ===== -->
@@ -29,6 +49,7 @@
 <div class="card" id="CIBSection">
     <form id="ahpNote-form" asp-action="InsertUpdateAHPNote" asp-controller="AHPNoteTracker" method="post">
         @Html.HiddenFor(m => m.Id)
+        @Html.HiddenFor(m => m.FinancialYear)
         <div class="card-body">
 
         <!-- Top-level tabs -->
@@ -66,12 +87,14 @@
                                                     <th style="width:3%; text-align:center;">S.N.</th>
                                                     <th style="width:10%; text-align:left;">Projects</th>
                                                     <th class="c-target">Target</th>
-                                                    <th class="c-q">FY23-24<br>Q1</th>
-                                                    <th class="c-q">FY23-24<br>Q2</th>
-                                                    <th class="c-q">FY23-24<br>Q3</th>
-                                                    <th class="c-q">FY23-24<br>Q4</th>
-                                                    <th class="c-fy2">FY24-25<br>Q1</th>
-                                                    <th class="c-fy2">FY24-25<br>Q2</th>
+                                                    <th class="c-q">@prevFY<br>Q1</th>
+                                                    <th class="c-q">@prevFY<br>Q2</th>
+                                                    <th class="c-q">@prevFY<br>Q3</th>
+                                                    <th class="c-q">@prevFY<br>Q4</th>
+                                                    @if(showQ1) { <th class="c-fy2">@currFY<br>Q1</th> }
+                                                    @if(showQ2) { <th class="c-fy2">@currFY<br>Q2</th> }
+                                                    @if(showQ3) { <th class="c-fy2">@currFY<br>Q3</th> }
+                                                    @if(showQ4) { <th class="c-fy2">@currFY<br>Q4</th> }
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -79,24 +102,29 @@
                                                     <td>1</td>
                                                     <td class="project">SEE<br>Index –<br>Engagement</td>
                                                     <td contenteditable="true" data-name="Lit_SEE_Engagement_Target">@Model.Lit_SEE_Engagement_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_FY23_24_Q1">@Model.Lit_SEE_Engagement_FY23_24_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_FY23_24_Q2">@Model.Lit_SEE_Engagement_FY23_24_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_FY23_24_Q3">@Model.Lit_SEE_Engagement_FY23_24_Q3</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_FY23_24_Q4">@Model.Lit_SEE_Engagement_FY23_24_Q4</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_FY24_25_Q1">@Model.Lit_SEE_Engagement_FY24_25_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_FY24_25_Q2">@Model.Lit_SEE_Engagement_FY24_25_Q2</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_PreviousYear_Q1">@Model.Lit_SEE_Engagement_PreviousYear_Q1</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_PreviousYear_Q2">@Model.Lit_SEE_Engagement_PreviousYear_Q2</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_PreviousYear_Q3">@Model.Lit_SEE_Engagement_PreviousYear_Q3</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Engagement_PreviousYear_Q4">@Model.Lit_SEE_Engagement_PreviousYear_Q4</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SEE_Engagement_CurrentYear_Q1">@Model.Lit_SEE_Engagement_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SEE_Engagement_CurrentYear_Q2">@Model.Lit_SEE_Engagement_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SEE_Engagement_CurrentYear_Q3">@Model.Lit_SEE_Engagement_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SEE_Engagement_CurrentYear_Q4">@Model.Lit_SEE_Engagement_CurrentYear_Q4</td> }
                                                 </tr>
 
                                                 <tr>
                                                     <td>2</td>
                                                     <td class="project">SEE<br>Index –<br>Effectiveness</td>
                                                     <td contenteditable="true" data-name="Lit_SEE_Effectiveness_Target">@Model.Lit_SEE_Effectiveness_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_FY23_24_Q1">@Model.Lit_SEE_Effectiveness_FY23_24_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_FY23_24_Q2">@Model.Lit_SEE_Effectiveness_FY23_24_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_FY23_24_Q3">@Model.Lit_SEE_Effectiveness_FY23_24_Q3</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_FY23_24_Q4">@Model.Lit_SEE_Effectiveness_FY23_24_Q4</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_FY24_25_Q1">@Model.Lit_SEE_Effectiveness_FY24_25_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_FY24_25_Q2">@Model.Lit_SEE_Effectiveness_FY24_25_Q2</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_PreviousYear_Q1">@Model.Lit_SEE_Effectiveness_PreviousYear_Q1</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_PreviousYear_Q2">@Model.Lit_SEE_Effectiveness_PreviousYear_Q2</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_PreviousYear_Q3">@Model.Lit_SEE_Effectiveness_PreviousYear_Q3</td>
+                                                    <td contenteditable="true" data-name="Lit_SEE_Effectiveness_PreviousYear_Q4">@Model.Lit_SEE_Effectiveness_PreviousYear_Q4</td>
+
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SEE_Effectiveness_CurrentYear_Q1">@Model.Lit_SEE_Effectiveness_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SEE_Effectiveness_CurrentYear_Q2">@Model.Lit_SEE_Effectiveness_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SEE_Effectiveness_CurrentYear_Q3">@Model.Lit_SEE_Effectiveness_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SEE_Effectiveness_CurrentYear_Q4">@Model.Lit_SEE_Effectiveness_CurrentYear_Q4</td> }
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -117,8 +145,10 @@
                                                     <th style="width:7%; text-align:left;">Projects</th>
                                                     <th class="c-target">Baseline</th>
                                                     <th class="c-target">Target</th>
-                                                    <th class="c-fy2">FY24-25<br>Q1</th>
-                                                    <th class="c-fy2">FY24-25<br>Q2</th>
+                                                    @if(showQ1) { <th class="c-fy2">@currFY<br>Q1</th> }
+                                                    @if(showQ2) { <th class="c-fy2">@currFY<br>Q2</th> }
+                                                    @if(showQ3) { <th class="c-fy2">@currFY<br>Q3</th> }
+                                                    @if(showQ4) { <th class="c-fy2">@currFY<br>Q4</th> }
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -130,8 +160,10 @@
                                                     </td>
                                                     <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_Baseline">@Model.Lit_SS_ServiceComplaints_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_Target">@Model.Lit_SS_ServiceComplaints_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_Q1">@Model.Lit_SS_ServiceComplaints_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_Q2">@Model.Lit_SS_ServiceComplaints_Q2</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_CurrentYear_Q1">@Model.Lit_SS_ServiceComplaints_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_CurrentYear_Q2">@Model.Lit_SS_ServiceComplaints_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_CurrentYear_Q3">@Model.Lit_SS_ServiceComplaints_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SS_ServiceComplaints_CurrentYear_Q4">@Model.Lit_SS_ServiceComplaints_CurrentYear_Q4</td> }
                                                 </tr>
 
                                                 <tr>
@@ -145,8 +177,10 @@
                                                     </td>
                                                     <td contenteditable="true" data-name="Lit_SS_DesignLSG_Baseline">@Model.Lit_SS_DesignLSG_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_SS_DesignLSG_Target">@Model.Lit_SS_DesignLSG_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_DesignLSG_Q1">@Model.Lit_SS_DesignLSG_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_DesignLSG_Q2">@Model.Lit_SS_DesignLSG_Q2</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SS_DesignLSG_CurrentYear_Q1">@Model.Lit_SS_DesignLSG_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SS_DesignLSG_CurrentYear_Q2">@Model.Lit_SS_DesignLSG_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SS_DesignLSG_CurrentYear_Q3">@Model.Lit_SS_DesignLSG_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SS_DesignLSG_CurrentYear_Q4">@Model.Lit_SS_DesignLSG_CurrentYear_Q4</td> }
                                                 </tr>
 
                                                 <tr>
@@ -166,8 +200,10 @@
                                                     </td>
                                                     <td contenteditable="true" data-name="Lit_SS_CostReduction_Baseline">@Model.Lit_SS_CostReduction_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_SS_CostReduction_Target">@Model.Lit_SS_CostReduction_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_CostReduction_Q1">@Model.Lit_SS_CostReduction_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_CostReduction_Q2">@Model.Lit_SS_CostReduction_Q2</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SS_CostReduction_CurrentYear_Q1">@Model.Lit_SS_CostReduction_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SS_CostReduction_CurrentYear_Q2">@Model.Lit_SS_CostReduction_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SS_CostReduction_CurrentYear_Q3">@Model.Lit_SS_CostReduction_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SS_CostReduction_CurrentYear_Q4">@Model.Lit_SS_CostReduction_CurrentYear_Q4</td> }
                                                 </tr>
 
                                                 <tr>
@@ -175,8 +211,10 @@
                                                     <td class="project">OTIF &gt; 90%</td>
                                                     <td contenteditable="true" data-name="Lit_SS_OTIF_Baseline">@Model.Lit_SS_OTIF_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_SS_OTIF_Target">@Model.Lit_SS_OTIF_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_OTIF_Q1">@Model.Lit_SS_OTIF_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_OTIF_Q2">@Model.Lit_SS_OTIF_Q2</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SS_OTIF_CurrentYear_Q1">@Model.Lit_SS_OTIF_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SS_OTIF_CurrentYear_Q2">@Model.Lit_SS_OTIF_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SS_OTIF_CurrentYear_Q3">@Model.Lit_SS_OTIF_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SS_OTIF_CurrentYear_Q4">@Model.Lit_SS_OTIF_CurrentYear_Q4</td> }
                                                 </tr>
 
                                                 <tr>
@@ -187,8 +225,10 @@
                                                     </td>
                                                     <td contenteditable="true" data-name="Lit_SS_SPMScore_Baseline">@Model.Lit_SS_SPMScore_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_SS_SPMScore_Target">@Model.Lit_SS_SPMScore_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_SPMScore_Q1">@Model.Lit_SS_SPMScore_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SS_SPMScore_Q2">@Model.Lit_SS_SPMScore_Q2</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SS_SPMScore_CurrentYear_Q1">@Model.Lit_SS_SPMScore_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SS_SPMScore_CurrentYear_Q2">@Model.Lit_SS_SPMScore_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SS_SPMScore_CurrentYear_Q3">@Model.Lit_SS_SPMScore_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SS_SPMScore_CurrentYear_Q4">@Model.Lit_SS_SPMScore_CurrentYear_Q4</td> }
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -205,72 +245,77 @@
                                             <thead>
                                                 <tr>
                                                     <th colspan="2"></th>
-                                                    <th colspan="2">FY2023-24</th>
-                                                    <th colspan="3">FY2024-25</th>
+                                                    <th colspan="2">@prevFY</th>
+                                                    @{ int csatColSpan = 1; if(showQ1) csatColSpan++; if(showQ2) csatColSpan++; if(showQ3) csatColSpan++; if(showQ4) csatColSpan++; }
+                                                    <th colspan="@csatColSpan">@currFY</th>
                                                 </tr>
                                                 <tr>
                                                     <th style="width:28%">Metrics</th>
                                                     <th style="width:8%">YTD</th>
                                                     <th style="width:8%">Baseline</th>
                                                     <th style="width:8%">Target</th>
-                                                    <th style="width:8%">FY24-25 Q1</th>
-                                                    <th style="width:8%">FY24-25 Q2</th>
+                                                    @if(showQ1) { <th style="width:8%">Q1</th> }
+                                                    @if(showQ2) { <th style="width:8%">Q2</th> }
+                                                    @if(showQ3) { <th style="width:8%">Q3</th> }
+                                                    @if(showQ4) { <th style="width:8%">Q4</th> }
                                                     <th style="width:8%">YTD</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
                                                     <td class="project">Nos of Request Sent</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_ReqSent_YTD23_24">@Model.Lit_CSAT_ReqSent_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Lit_CSAT_ReqSent_YTD_PreviousYear">@Model.Lit_CSAT_ReqSent_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_ReqSent_Baseline">@Model.Lit_CSAT_ReqSent_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_ReqSent_Target">@Model.Lit_CSAT_ReqSent_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_ReqSent_Q1">@Model.Lit_CSAT_ReqSent_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_ReqSent_Q2">@Model.Lit_CSAT_ReqSent_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_ReqSent_YTD">@Model.Lit_CSAT_ReqSent_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSAT_ReqSent_CurrentYear_Q1">@Model.Lit_CSAT_ReqSent_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSAT_ReqSent_CurrentYear_Q2">@Model.Lit_CSAT_ReqSent_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSAT_ReqSent_CurrentYear_Q3">@Model.Lit_CSAT_ReqSent_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSAT_ReqSent_CurrentYear_Q4">@Model.Lit_CSAT_ReqSent_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSAT_ReqSent_YTD_CurrentYear">@Model.Lit_CSAT_ReqSent_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td class="project">Nos of Response Received</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_YTD23_24">@Model.Lit_CSAT_RespRecvd_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_YTD_PreviousYear">@Model.Lit_CSAT_RespRecvd_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_Baseline">@Model.Lit_CSAT_RespRecvd_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_Target">@Model.Lit_CSAT_RespRecvd_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_Q1">@Model.Lit_CSAT_RespRecvd_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_Q2">@Model.Lit_CSAT_RespRecvd_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_YTD">@Model.Lit_CSAT_RespRecvd_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_CurrentYear_Q1">@Model.Lit_CSAT_RespRecvd_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_CurrentYear_Q2">@Model.Lit_CSAT_RespRecvd_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_CurrentYear_Q3">@Model.Lit_CSAT_RespRecvd_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_CurrentYear_Q4">@Model.Lit_CSAT_RespRecvd_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSAT_RespRecvd_YTD_CurrentYear">@Model.Lit_CSAT_RespRecvd_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td class="project">Promoter</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Promoter_YTD23_24">@Model.Lit_CSAT_Promoter_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Lit_CSAT_Promoter_YTD_PreviousYear">@Model.Lit_CSAT_Promoter_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_Promoter_Baseline">@Model.Lit_CSAT_Promoter_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_Promoter_Target">@Model.Lit_CSAT_Promoter_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Promoter_Q1">@Model.Lit_CSAT_Promoter_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Promoter_Q2">@Model.Lit_CSAT_Promoter_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Promoter_YTD">@Model.Lit_CSAT_Promoter_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSAT_Promoter_CurrentYear_Q1">@Model.Lit_CSAT_Promoter_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSAT_Promoter_CurrentYear_Q2">@Model.Lit_CSAT_Promoter_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSAT_Promoter_CurrentYear_Q3">@Model.Lit_CSAT_Promoter_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSAT_Promoter_CurrentYear_Q4">@Model.Lit_CSAT_Promoter_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSAT_Promoter_YTD_CurrentYear">@Model.Lit_CSAT_Promoter_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td class="project">Detractor</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Detractor_YTD23_24">@Model.Lit_CSAT_Detractor_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Lit_CSAT_Detractor_YTD_PreviousYear">@Model.Lit_CSAT_Detractor_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_Detractor_Baseline">@Model.Lit_CSAT_Detractor_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_Detractor_Target">@Model.Lit_CSAT_Detractor_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Detractor_Q1">@Model.Lit_CSAT_Detractor_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Detractor_Q2">@Model.Lit_CSAT_Detractor_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_Detractor_YTD">@Model.Lit_CSAT_Detractor_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSAT_Detractor_CurrentYear_Q1">@Model.Lit_CSAT_Detractor_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSAT_Detractor_CurrentYear_Q2">@Model.Lit_CSAT_Detractor_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSAT_Detractor_CurrentYear_Q3">@Model.Lit_CSAT_Detractor_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSAT_Detractor_CurrentYear_Q4">@Model.Lit_CSAT_Detractor_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSAT_Detractor_YTD_CurrentYear">@Model.Lit_CSAT_Detractor_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
-                                                    <td class="project">
-                                                        <b>NPS% =</b><br>
-                                                        (Nos of Promoters – Nos of Detractors) /<br>
-                                                        (Nos of Response Received) × 100
-                                                    </td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_NPS_YTD23_24">@Model.Lit_CSAT_NPS_YTD23_24</td>
+                                                    <td class="project"><b>NPS% =</b><br>(Nos of Promoters – Nos of Detractors) /<br>(Nos of Response Received) × 100</td>
+                                                    <td contenteditable="true" data-name="Lit_CSAT_NPS_YTD_PreviousYear">@Model.Lit_CSAT_NPS_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_NPS_Baseline">@Model.Lit_CSAT_NPS_Baseline</td>
                                                     <td contenteditable="true" data-name="Lit_CSAT_NPS_Target">@Model.Lit_CSAT_NPS_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_NPS_Q1">@Model.Lit_CSAT_NPS_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_NPS_Q2">@Model.Lit_CSAT_NPS_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSAT_NPS_YTD">@Model.Lit_CSAT_NPS_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSAT_NPS_CurrentYear_Q1">@Model.Lit_CSAT_NPS_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSAT_NPS_CurrentYear_Q2">@Model.Lit_CSAT_NPS_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSAT_NPS_CurrentYear_Q3">@Model.Lit_CSAT_NPS_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSAT_NPS_CurrentYear_Q4">@Model.Lit_CSAT_NPS_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSAT_NPS_YTD_CurrentYear">@Model.Lit_CSAT_NPS_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -289,70 +334,78 @@
                                                 <tr>
                                                     <th style="width:4%;">S.N.</th>
                                                     <th style="width:30%;">Supplier Name</th>
-                                                    <th style="width:27%;">Q1 Performance<br>FY2024-25</th>
-                                                    <th style="width:27%;">Q2 Performance<br>FY2024-25</th>
+                                                    @if(showQ1) { <th style="width:27%;">Q1 Performance<br>@currFY</th> }
+                                                    @if(showQ2) { <th style="width:27%;">Q2 Performance<br>@currFY</th> }
+                                                    @if(showQ3) { <th style="width:27%;">Q3 Performance<br>@currFY</th> }
+                                                    @if(showQ4) { <th style="width:27%;">Q4 Performance<br>@currFY</th> }
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
                                                     <td>1</td>
-                                                    <td class="project">Art Luminaires</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp1_Q1">@Model.Lit_SPM_Supp1_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp1_Q2">@Model.Lit_SPM_Supp1_Q2</td>
+                                                    <td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp1, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp1_CurrentYear_Q1">@Model.Lit_SPM_Supp1_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp1_CurrentYear_Q2">@Model.Lit_SPM_Supp1_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp1_CurrentYear_Q3">@Model.Lit_SPM_Supp1_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp1_CurrentYear_Q4">@Model.Lit_SPM_Supp1_CurrentYear_Q4</td> }
                                                 </tr>
                                                 <tr>
                                                     <td>2</td>
-                                                    <td class="project">Ideal Lighting Solutions</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp2_Q1">@Model.Lit_SPM_Supp2_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp2_Q2">@Model.Lit_SPM_Supp2_Q2</td>
+                                                    <td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp2, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp2_CurrentYear_Q1">@Model.Lit_SPM_Supp2_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp2_CurrentYear_Q2">@Model.Lit_SPM_Supp2_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp2_CurrentYear_Q3">@Model.Lit_SPM_Supp2_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp2_CurrentYear_Q4">@Model.Lit_SPM_Supp2_CurrentYear_Q4</td> }
                                                 </tr>
                                                 <tr>
                                                     <td>3</td>
-                                                    <td class="project">Everlite Cooperation</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp3_Q1">@Model.Lit_SPM_Supp3_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp3_Q2">@Model.Lit_SPM_Supp3_Q2</td>
+                                                    <td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp3, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp3_CurrentYear_Q1">@Model.Lit_SPM_Supp3_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp3_CurrentYear_Q2">@Model.Lit_SPM_Supp3_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp3_CurrentYear_Q3">@Model.Lit_SPM_Supp3_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp3_CurrentYear_Q4">@Model.Lit_SPM_Supp3_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>4</td>
-                                                    <td class="project">Rama Industries</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp4_Q1">@Model.Lit_SPM_Supp4_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp4_Q2">@Model.Lit_SPM_Supp4_Q2</td>
+                                                <tr><td>4</td><td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp4, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp4_CurrentYear_Q1">@Model.Lit_SPM_Supp4_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp4_CurrentYear_Q2">@Model.Lit_SPM_Supp4_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp4_CurrentYear_Q3">@Model.Lit_SPM_Supp4_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp4_CurrentYear_Q4">@Model.Lit_SPM_Supp4_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>5</td>
-                                                    <td class="project">Shantinath Industries</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp5_Q1">@Model.Lit_SPM_Supp5_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp5_Q2">@Model.Lit_SPM_Supp5_Q2</td>
+                                                <tr><td>5</td><td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp5, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp5_CurrentYear_Q1">@Model.Lit_SPM_Supp5_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp5_CurrentYear_Q2">@Model.Lit_SPM_Supp5_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp5_CurrentYear_Q3">@Model.Lit_SPM_Supp5_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp5_CurrentYear_Q4">@Model.Lit_SPM_Supp5_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>6</td>
-                                                    <td class="project">Sankalp / Ujas Electricals</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp6_Q1">@Model.Lit_SPM_Supp6_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp6_Q2">@Model.Lit_SPM_Supp6_Q2</td>
+                                                <tr><td>6</td><td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp6, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp6_CurrentYear_Q1">@Model.Lit_SPM_Supp6_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp6_CurrentYear_Q2">@Model.Lit_SPM_Supp6_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp6_CurrentYear_Q3">@Model.Lit_SPM_Supp6_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp6_CurrentYear_Q4">@Model.Lit_SPM_Supp6_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>7</td>
-                                                    <td class="project">Varun Pressings</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp7_Q1">@Model.Lit_SPM_Supp7_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp7_Q2">@Model.Lit_SPM_Supp7_Q2</td>
+                                                <tr><td>7</td><td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp7, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp7_CurrentYear_Q1">@Model.Lit_SPM_Supp7_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp7_CurrentYear_Q2">@Model.Lit_SPM_Supp7_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp7_CurrentYear_Q3">@Model.Lit_SPM_Supp7_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp7_CurrentYear_Q4">@Model.Lit_SPM_Supp7_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>8</td>
-                                                    <td class="project">NAK Engineers</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp8_Q1">@Model.Lit_SPM_Supp8_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp8_Q2">@Model.Lit_SPM_Supp8_Q2</td>
+                                                <tr><td>8</td><td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp8, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp8_CurrentYear_Q1">@Model.Lit_SPM_Supp8_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp8_CurrentYear_Q2">@Model.Lit_SPM_Supp8_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp8_CurrentYear_Q3">@Model.Lit_SPM_Supp8_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp8_CurrentYear_Q4">@Model.Lit_SPM_Supp8_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>9</td>
-                                                    <td class="project">KCF</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp9_Q1">@Model.Lit_SPM_Supp9_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp9_Q2">@Model.Lit_SPM_Supp9_Q2</td>
+                                                <tr><td>9</td><td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp9, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp9_CurrentYear_Q1">@Model.Lit_SPM_Supp9_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp9_CurrentYear_Q2">@Model.Lit_SPM_Supp9_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp9_CurrentYear_Q3">@Model.Lit_SPM_Supp9_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp9_CurrentYear_Q4">@Model.Lit_SPM_Supp9_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>10</td>
-                                                    <td class="project">Super Nova</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp10_Q1">@Model.Lit_SPM_Supp10_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_SPM_Supp10_Q2">@Model.Lit_SPM_Supp10_Q2</td>
+                                                <tr><td>10</td><td class="project">@Html.DropDownListFor(m => m.Lit_SPM_Supp10, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SPM_Supp10_CurrentYear_Q1">@Model.Lit_SPM_Supp10_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SPM_Supp10_CurrentYear_Q2">@Model.Lit_SPM_Supp10_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SPM_Supp10_CurrentYear_Q3">@Model.Lit_SPM_Supp10_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SPM_Supp10_CurrentYear_Q4">@Model.Lit_SPM_Supp10_CurrentYear_Q4</td> }
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -365,33 +418,34 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="table-responsive">
-                                        <table class="see-matrix" style="width:100%; border-collapse:collapse;">
-                                            <thead>
-                                                <tr>
-                                                    <!-- blank header cell so the body-left cell doesn't merge into header -->
-                                                    <th style="width:15%; text-align:left;">DATA</th>
-                                                    <th style="width:15%;">FY 2023-24<br>(YTD)</th>
-                                                    <th style="width:12%;">Target</th>
-                                                    <th style="width:12%;">FY 2024-25 Q1</th>
-                                                    <th style="width:12%;">FY 2024-25 Q2</th>
-                                                    <th style="width:12%;">FY 2024-25 (YTD)</th>
-                                                </tr>
-                                            </thead>
-
-                                            <tbody>
-                                                <tr>
-                                                    <td rowspan="2" style="vertical-align:top; width:35%; height:50%; text-align:left;">
-                                                        <strong>On Time In Full Delivery</strong><br>
-                                                        Performance at 90% for all C&amp;I Products
-                                                    </td>
-                                                    <td contenteditable="true" data-name="Lit_OTIF_YTD23_24">@Model.Lit_OTIF_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OTIF_Target">@Model.Lit_OTIF_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OTIF_Q1">@Model.Lit_OTIF_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_OTIF_Q2">@Model.Lit_OTIF_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_OTIF_YTD">@Model.Lit_OTIF_YTD</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
+                                       <table class="see-matrix" style="width:100%; border-collapse:collapse;">
+                                           <thead>
+                                               <tr>
+                                                   <th style="width:15%; text-align:left;">DATA</th>
+                                                   <th style="width:15%;">@prevFY<br>(YTD)</th>
+                                                   <th style="width:12%;">Target</th>
+                                                   @if(showQ1) { <th style="width:12%;">@currFY Q1</th> }
+                                                   @if(showQ2) { <th style="width:12%;">@currFY Q2</th> }
+                                                   @if(showQ3) { <th style="width:12%;">@currFY Q3</th> }
+                                                   @if(showQ4) { <th style="width:12%;">@currFY Q4</th> }
+                                                   <th style="width:12%;">@currFY (YTD)</th>
+                                               </tr>
+                                           </thead>
+                                           <tbody>
+                                               <tr>
+                                                   <td rowspan="2" style="vertical-align:top; width:35%; height:50%; text-align:left;">
+                                                       <strong>On Time In Full Delivery</strong><br>Performance at 90% for all C&amp;I Products
+                                                   </td>
+                                                   <td contenteditable="true" data-name="Lit_OTIF_YTD_PreviousYear">@Model.Lit_OTIF_YTD_PreviousYear</td>
+                                                   <td contenteditable="true" data-name="Lit_OTIF_Target">@Model.Lit_OTIF_Target</td>
+                                                   @if(showQ1) { <td contenteditable="true" data-name="Lit_OTIF_CurrentYear_Q1">@Model.Lit_OTIF_CurrentYear_Q1</td> }
+                                                   @if(showQ2) { <td contenteditable="true" data-name="Lit_OTIF_CurrentYear_Q2">@Model.Lit_OTIF_CurrentYear_Q2</td> }
+                                                   @if(showQ3) { <td contenteditable="true" data-name="Lit_OTIF_CurrentYear_Q3">@Model.Lit_OTIF_CurrentYear_Q3</td> }
+                                                   @if(showQ4) { <td contenteditable="true" data-name="Lit_OTIF_CurrentYear_Q4">@Model.Lit_OTIF_CurrentYear_Q4</td> }
+                                                   <td contenteditable="true" data-name="Lit_OTIF_YTD_CurrentYear">@Model.Lit_OTIF_YTD_CurrentYear</td>
+                                               </tr>
+                                           </tbody>
+                                       </table>
                                     </div>
                                 </div>
                             </div>
@@ -407,28 +461,31 @@
                                             <thead>
                                                 <tr>
                                                     <th style="width:15%; text-align:left;">DATA</th>
-                                                    <th style="width:13%;">FY 2023-24</th>
+                                                    <th style="width:13%;">@prevFY</th>
                                                     <th style="width:13%;">Baseline</th>
                                                     <th style="width:13%;">Target</th>
-                                                    <th style="width:13%;">FY 2024-25 Q1</th>
-                                                    <th style="width:13%;">FY 2024-25 Q2</th>
-                                                    <th style="width:13%;">FY 2024-25 (YTD)</th>
+                                                    @if(showQ1) { <th style="width:13%;">@currFY Q1</th> }
+                                                    @if(showQ2) { <th style="width:13%;">@currFY Q2</th> }
+                                                    @if(showQ3) { <th style="width:13%;">@currFY Q3</th> }
+                                                    @if(showQ4) { <th style="width:13%;">@currFY Q4</th> }
+                                                    <th style="width:13%;">@currFY (YTD)</th>
                                                 </tr>
-                                             </thead>
-                                             <tbody>
-                                                 <tr>
-                                                     <td rowspan="2" style="vertical-align:middle; width:25%; text-align:left;">
-                                                         <strong>Service Complaints<br>Closure</strong><br>
-                                                         90% Closure in 15 days
-                                                     </td>
-                                                     <td contenteditable="true" data-name="Lit_SC_Closure_YTD23_24">@Model.Lit_SC_Closure_YTD23_24</td>
-                                                     <td contenteditable="true" data-name="Lit_SC_Closure_Baseline">@Model.Lit_SC_Closure_Baseline</td>
-                                                     <td contenteditable="true" data-name="Lit_SC_Closure_Target">@Model.Lit_SC_Closure_Target</td>
-                                                     <td contenteditable="true" data-name="Lit_SC_Closure_Q1">@Model.Lit_SC_Closure_Q1</td>
-                                                     <td contenteditable="true" data-name="Lit_SC_Closure_Q2">@Model.Lit_SC_Closure_Q2</td>
-                                                     <td contenteditable="true" data-name="Lit_SC_Closure_YTD">@Model.Lit_SC_Closure_YTD</td>
-                                                 </tr>
-                                             </tbody>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td rowspan="2" style="vertical-align:middle; width:25%; text-align:left;">
+                                                        <strong>Service Complaints<br>Closure</strong><br>90% Closure in 15 days
+                                                    </td>
+                                                    <td contenteditable="true" data-name="Lit_SC_Closure_YTD_PreviousYear">@Model.Lit_SC_Closure_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_SC_Closure_Baseline">@Model.Lit_SC_Closure_Baseline</td>
+                                                    <td contenteditable="true" data-name="Lit_SC_Closure_Target">@Model.Lit_SC_Closure_Target</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_SC_Closure_CurrentYear_Q1">@Model.Lit_SC_Closure_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_SC_Closure_CurrentYear_Q2">@Model.Lit_SC_Closure_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_SC_Closure_CurrentYear_Q3">@Model.Lit_SC_Closure_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_SC_Closure_CurrentYear_Q4">@Model.Lit_SC_Closure_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_SC_Closure_YTD_CurrentYear">@Model.Lit_SC_Closure_YTD_CurrentYear</td>
+                                                </tr>
+                                            </tbody>
                                         </table>
                                     </div>
                                 </div>
@@ -444,57 +501,65 @@
                                             <thead>
                                                 <tr>
                                                     <th style="width:30%; text-align:left;"></th>
-                                                    <th style="width:14%;">FY 2023-24<br>(YTD)</th>
-                                                    <th colspan="3">FY 2024-25</th>
+                                                    <th style="width:14%;">@prevFY<br>(YTD)</th>
+                                                    <th colspan="@countQ">@currFY</th>
+                                                    <th style="width:14%;">YTD</th>
                                                 </tr>
                                                 <tr>
                                                     <th style="text-align:left;">&nbsp;</th>
                                                     <th></th>
-                                                    <th style="width:14%;">Q1</th>
-                                                    <th style="width:14%;">Q2</th>
-                                                    <th style="width:14%;">YTD</th>
+                                                    @if(showQ1) { <th style="width:14%;">Q1</th> }
+                                                    @if(showQ2) { <th style="width:14%;">Q2</th> }
+                                                    @if(showQ3) { <th style="width:14%;">Q3</th> }
+                                                    @if(showQ4) { <th style="width:14%;">Q4</th> }
+                                                    <th></th>
                                                 </tr>
                                             </thead>
-
                                             <tbody>
                                                 <tr>
                                                     <td style="text-align:left;">Total CSO<br>logged</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalLogged_YTD23_24">@Model.Lit_CSO_TotalLogged_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalLogged_Q1">@Model.Lit_CSO_TotalLogged_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalLogged_Q2">@Model.Lit_CSO_TotalLogged_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalLogged_YTD">@Model.Lit_CSO_TotalLogged_YTD</td>
+                                                    <td contenteditable="true" data-name="Lit_CSO_TotalLogged_YTD_PreviousYear">@Model.Lit_CSO_TotalLogged_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSO_TotalLogged_CurrentYear_Q1">@Model.Lit_CSO_TotalLogged_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSO_TotalLogged_CurrentYear_Q2">@Model.Lit_CSO_TotalLogged_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSO_TotalLogged_CurrentYear_Q3">@Model.Lit_CSO_TotalLogged_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSO_TotalLogged_CurrentYear_Q4">@Model.Lit_CSO_TotalLogged_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSO_TotalLogged_YTD_CurrentYear">@Model.Lit_CSO_TotalLogged_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td style="text-align:left;">Total A Class<br>CSO's Logged</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalAClass_YTD23_24">@Model.Lit_CSO_TotalAClass_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalAClass_Q1">@Model.Lit_CSO_TotalAClass_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalAClass_Q2">@Model.Lit_CSO_TotalAClass_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_TotalAClass_YTD">@Model.Lit_CSO_TotalAClass_YTD</td>
+                                                    <td contenteditable="true" data-name="Lit_CSO_TotalAClass_YTD_PreviousYear">@Model.Lit_CSO_TotalAClass_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSO_TotalAClass_CurrentYear_Q1">@Model.Lit_CSO_TotalAClass_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSO_TotalAClass_CurrentYear_Q2">@Model.Lit_CSO_TotalAClass_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSO_TotalAClass_CurrentYear_Q3">@Model.Lit_CSO_TotalAClass_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSO_TotalAClass_CurrentYear_Q4">@Model.Lit_CSO_TotalAClass_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSO_TotalAClass_YTD_CurrentYear">@Model.Lit_CSO_TotalAClass_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td style="text-align:left;">A Class Closed<br>CSO's as on date</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosed_YTD23_24">@Model.Lit_CSO_AClassClosed_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosed_Q1">@Model.Lit_CSO_AClassClosed_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosed_Q2">@Model.Lit_CSO_AClassClosed_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosed_YTD">@Model.Lit_CSO_AClassClosed_YTD</td>
+                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosed_YTD_PreviousYear">@Model.Lit_CSO_AClassClosed_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSO_AClassClosed_CurrentYear_Q1">@Model.Lit_CSO_AClassClosed_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSO_AClassClosed_CurrentYear_Q2">@Model.Lit_CSO_AClassClosed_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSO_AClassClosed_CurrentYear_Q3">@Model.Lit_CSO_AClassClosed_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSO_AClassClosed_CurrentYear_Q4">@Model.Lit_CSO_AClassClosed_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosed_YTD_CurrentYear">@Model.Lit_CSO_AClassClosed_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td style="text-align:left;">A Class Closed<br>CSO's &lt;45 Days</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_YTD23_24">@Model.Lit_CSO_AClassClosedLess45_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_Q1">@Model.Lit_CSO_AClassClosedLess45_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_Q2">@Model.Lit_CSO_AClassClosedLess45_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_YTD">@Model.Lit_CSO_AClassClosedLess45_YTD</td>
+                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_YTD_PreviousYear">@Model.Lit_CSO_AClassClosedLess45_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_CurrentYear_Q1">@Model.Lit_CSO_AClassClosedLess45_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_CurrentYear_Q2">@Model.Lit_CSO_AClassClosedLess45_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_CurrentYear_Q3">@Model.Lit_CSO_AClassClosedLess45_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_CurrentYear_Q4">@Model.Lit_CSO_AClassClosedLess45_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSO_AClassClosedLess45_YTD_CurrentYear">@Model.Lit_CSO_AClassClosedLess45_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td style="text-align:left;">Percentage Closure of “A” Class CSO under 45 days</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_YTD23_24">@Model.Lit_CSO_PercentageClosure_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_Q1">@Model.Lit_CSO_PercentageClosure_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_Q2">@Model.Lit_CSO_PercentageClosure_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_YTD">@Model.Lit_CSO_PercentageClosure_YTD</td>
+                                                    <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_YTD_PreviousYear">@Model.Lit_CSO_PercentageClosure_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_CurrentYear_Q1">@Model.Lit_CSO_PercentageClosure_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_CurrentYear_Q2">@Model.Lit_CSO_PercentageClosure_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_CurrentYear_Q3">@Model.Lit_CSO_PercentageClosure_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_CurrentYear_Q4">@Model.Lit_CSO_PercentageClosure_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CSO_PercentageClosure_YTD_CurrentYear">@Model.Lit_CSO_PercentageClosure_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -511,20 +576,24 @@
                                         <table class="see-matrix">
                                             <thead>
                                                 <tr>
-                                                    <th style="width:15%; text-align:center;">Cost Savings<br>FY2023-24</th>
-                                                    <th style="width:15%;">Target<br>FY2024-25</th>
-                                                    <th style="width:15%;">FY2024-25<br>Q1</th>
-                                                    <th style="width:15%;">FY2024-25<br>Q2</th>
-                                                    <th style="width:15%;">FY2024-25<br>(YTD)</th>
+                                                    <th style="width:15%; text-align:center;">Cost Savings<br>@prevFY</th>
+                                                    <th style="width:15%;">Target<br>@currFY</th>
+                                                    @if(showQ1) { <th style="width:15%;">@currFY<br>Q1</th> }
+                                                    @if(showQ2) { <th style="width:15%;">@currFY<br>Q2</th> }
+                                                    @if(showQ3) { <th style="width:15%;">@currFY<br>Q3</th> }
+                                                    @if(showQ4) { <th style="width:15%;">@currFY<br>Q4</th> }
+                                                    <th style="width:15%;">@currFY<br>(YTD)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
-                                                    <td contenteditable="true" data-name="Lit_CostSavings_YTD23_24">@Model.Lit_CostSavings_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Lit_CostSavings_YTD_PreviousYear">@Model.Lit_CostSavings_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_CostSavings_Target">@Model.Lit_CostSavings_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_CostSavings_Q1">@Model.Lit_CostSavings_Q1</td>
-                                                    <td contenteditable="true" data-name="Lit_CostSavings_Q2">@Model.Lit_CostSavings_Q2</td>
-                                                    <td contenteditable="true" data-name="Lit_CostSavings_YTD">@Model.Lit_CostSavings_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Lit_CostSavings_CurrentYear_Q1">@Model.Lit_CostSavings_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Lit_CostSavings_CurrentYear_Q2">@Model.Lit_CostSavings_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Lit_CostSavings_CurrentYear_Q3">@Model.Lit_CostSavings_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Lit_CostSavings_CurrentYear_Q4">@Model.Lit_CostSavings_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Lit_CostSavings_YTD_CurrentYear">@Model.Lit_CostSavings_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -541,8 +610,8 @@
                                             <thead>
                                                 <tr>
                                                     <th style="width:25%; text-align:center;">Vendor</th>
-                                                    <th style="width:10%;">FY 2023-24</th>
-                                                    <th style="width:10%;">Target<br>FY 2024-25</th>
+                                                    <th style="width:10%;">@prevFY</th>
+                                                    <th style="width:10%;">Target<br>@currFY</th>
                                                     <th style="width:9%;">PC01</th>
                                                     <th style="width:9%;">PC02</th>
                                                     <th style="width:9%;">PC03</th>
@@ -552,97 +621,89 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>Art Luminaries</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_YTD23_24">@Model.Lit_OQL_ArtLuminaires_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_Target">@Model.Lit_OQL_ArtLuminaires_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_PC01">@Model.Lit_OQL_ArtLuminaires_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_PC02">@Model.Lit_OQL_ArtLuminaires_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_PC03">@Model.Lit_OQL_ArtLuminaires_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_PC04">@Model.Lit_OQL_ArtLuminaires_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_PC05">@Model.Lit_OQL_ArtLuminaires_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_ArtLuminaires_PC06">@Model.Lit_OQL_ArtLuminaires_PC06</td>
+                                                    <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor1, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_YTD_PreviousYear">@Model.Lit_OQL_Vendor1_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_Target">@Model.Lit_OQL_Vendor1_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_PC01">@Model.Lit_OQL_Vendor1_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_PC02">@Model.Lit_OQL_Vendor1_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_PC03">@Model.Lit_OQL_Vendor1_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_PC04">@Model.Lit_OQL_Vendor1_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_PC05">@Model.Lit_OQL_Vendor1_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor1_PC06">@Model.Lit_OQL_Vendor1_PC06</td>
                                                 </tr>
-                                                <tr>
-                                                    <td>Ideal Lighting Systems</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_YTD23_24">@Model.Lit_OQL_IdealLighting_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_Target">@Model.Lit_OQL_IdealLighting_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_PC01">@Model.Lit_OQL_IdealLighting_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_PC02">@Model.Lit_OQL_IdealLighting_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_PC03">@Model.Lit_OQL_IdealLighting_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_PC04">@Model.Lit_OQL_IdealLighting_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_PC05">@Model.Lit_OQL_IdealLighting_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_IdealLighting_PC06">@Model.Lit_OQL_IdealLighting_PC06</td>
+                                                <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor2, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_YTD_PreviousYear">@Model.Lit_OQL_Vendor2_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_Target">@Model.Lit_OQL_Vendor2_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_PC01">@Model.Lit_OQL_Vendor2_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_PC02">@Model.Lit_OQL_Vendor2_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_PC03">@Model.Lit_OQL_Vendor2_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_PC04">@Model.Lit_OQL_Vendor2_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_PC05">@Model.Lit_OQL_Vendor2_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor2_PC06">@Model.Lit_OQL_Vendor2_PC06</td>
                                                 </tr>
-                                                <tr>
-                                                    <td>Everlite Corporation</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_YTD23_24">@Model.Lit_OQL_Everlite_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_Target">@Model.Lit_OQL_Everlite_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_PC01">@Model.Lit_OQL_Everlite_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_PC02">@Model.Lit_OQL_Everlite_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_PC03">@Model.Lit_OQL_Everlite_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_PC04">@Model.Lit_OQL_Everlite_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_PC05">@Model.Lit_OQL_Everlite_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Everlite_PC06">@Model.Lit_OQL_Everlite_PC06</td>
+                                                <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor3, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_YTD_PreviousYear">@Model.Lit_OQL_Vendor3_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_Target">@Model.Lit_OQL_Vendor3_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_PC01">@Model.Lit_OQL_Vendor3_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_PC02">@Model.Lit_OQL_Vendor3_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_PC03">@Model.Lit_OQL_Vendor3_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_PC04">@Model.Lit_OQL_Vendor3_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_PC05">@Model.Lit_OQL_Vendor3_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor3_PC06">@Model.Lit_OQL_Vendor3_PC06</td>
                                                 </tr>
-                                                <tr>
-                                                    <td>Rama Industries</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_YTD23_24">@Model.Lit_OQL_Rama_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_Target">@Model.Lit_OQL_Rama_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_PC01">@Model.Lit_OQL_Rama_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_PC02">@Model.Lit_OQL_Rama_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_PC03">@Model.Lit_OQL_Rama_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_PC04">@Model.Lit_OQL_Rama_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_PC05">@Model.Lit_OQL_Rama_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Rama_PC06">@Model.Lit_OQL_Rama_PC06</td>
+                                                <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor4, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_YTD_PreviousYear">@Model.Lit_OQL_Vendor4_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_Target">@Model.Lit_OQL_Vendor4_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_PC01">@Model.Lit_OQL_Vendor4_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_PC02">@Model.Lit_OQL_Vendor4_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_PC03">@Model.Lit_OQL_Vendor4_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_PC04">@Model.Lit_OQL_Vendor4_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_PC05">@Model.Lit_OQL_Vendor4_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor4_PC06">@Model.Lit_OQL_Vendor4_PC06</td>
                                                 </tr>
-                                                <tr>
-                                                    <td>Shantinath Industries</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_YTD23_24">@Model.Lit_OQL_Shantinath_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_Target">@Model.Lit_OQL_Shantinath_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_PC01">@Model.Lit_OQL_Shantinath_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_PC02">@Model.Lit_OQL_Shantinath_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_PC03">@Model.Lit_OQL_Shantinath_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_PC04">@Model.Lit_OQL_Shantinath_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_PC05">@Model.Lit_OQL_Shantinath_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Shantinath_PC06">@Model.Lit_OQL_Shantinath_PC06</td>
+                                                <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor5, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_YTD_PreviousYear">@Model.Lit_OQL_Vendor5_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_Target">@Model.Lit_OQL_Vendor5_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_PC01">@Model.Lit_OQL_Vendor5_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_PC02">@Model.Lit_OQL_Vendor5_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_PC03">@Model.Lit_OQL_Vendor5_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_PC04">@Model.Lit_OQL_Vendor5_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_PC05">@Model.Lit_OQL_Vendor5_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor5_PC06">@Model.Lit_OQL_Vendor5_PC06</td>
                                                 </tr>
-                                                <tr>
-                                                    <td>Varun Pressings</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_YTD23_24">@Model.Lit_OQL_Varun_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_Target">@Model.Lit_OQL_Varun_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_PC01">@Model.Lit_OQL_Varun_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_PC02">@Model.Lit_OQL_Varun_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_PC03">@Model.Lit_OQL_Varun_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_PC04">@Model.Lit_OQL_Varun_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_PC05">@Model.Lit_OQL_Varun_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Varun_PC06">@Model.Lit_OQL_Varun_PC06</td>
+                                                <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor6, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_YTD_PreviousYear">@Model.Lit_OQL_Vendor6_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_Target">@Model.Lit_OQL_Vendor6_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_PC01">@Model.Lit_OQL_Vendor6_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_PC02">@Model.Lit_OQL_Vendor6_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_PC03">@Model.Lit_OQL_Vendor6_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_PC04">@Model.Lit_OQL_Vendor6_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_PC05">@Model.Lit_OQL_Vendor6_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor6_PC06">@Model.Lit_OQL_Vendor6_PC06</td>
                                                 </tr>
-                                                <tr>
-                                                    <td>Ujas Electricals</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_YTD23_24">@Model.Lit_OQL_Ujas_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_Target">@Model.Lit_OQL_Ujas_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_PC01">@Model.Lit_OQL_Ujas_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_PC02">@Model.Lit_OQL_Ujas_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_PC03">@Model.Lit_OQL_Ujas_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_PC04">@Model.Lit_OQL_Ujas_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_PC05">@Model.Lit_OQL_Ujas_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_Ujas_PC06">@Model.Lit_OQL_Ujas_PC06</td>
+                                                    <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor7, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_YTD_PreviousYear">@Model.Lit_OQL_Vendor7_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_Target">@Model.Lit_OQL_Vendor7_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_PC01">@Model.Lit_OQL_Vendor7_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_PC02">@Model.Lit_OQL_Vendor7_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_PC03">@Model.Lit_OQL_Vendor7_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_PC04">@Model.Lit_OQL_Vendor7_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_PC05">@Model.Lit_OQL_Vendor7_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor7_PC06">@Model.Lit_OQL_Vendor7_PC06</td>
                                                 </tr>
-                                                <tr>
-                                                    <td>NAK Engineers</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_YTD23_24">@Model.Lit_OQL_NAK_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_Target">@Model.Lit_OQL_NAK_Target</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_PC01">@Model.Lit_OQL_NAK_PC01</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_PC02">@Model.Lit_OQL_NAK_PC02</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_PC03">@Model.Lit_OQL_NAK_PC03</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_PC04">@Model.Lit_OQL_NAK_PC04</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_PC05">@Model.Lit_OQL_NAK_PC05</td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_NAK_PC06">@Model.Lit_OQL_NAK_PC06</td>
+                                                <tr><td>@Html.DropDownListFor(m => m.Lit_OQL_Vendor8, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Vendor", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_YTD_PreviousYear">@Model.Lit_OQL_Vendor8_YTD_PreviousYear</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_Target">@Model.Lit_OQL_Vendor8_Target</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_PC01">@Model.Lit_OQL_Vendor8_PC01</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_PC02">@Model.Lit_OQL_Vendor8_PC02</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_PC03">@Model.Lit_OQL_Vendor8_PC03</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_PC04">@Model.Lit_OQL_Vendor8_PC04</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_PC05">@Model.Lit_OQL_Vendor8_PC05</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_Vendor8_PC06">@Model.Lit_OQL_Vendor8_PC06</td>
                                                 </tr>
                                                 <tr>
                                                     <td rowspan="2"><b>Cumulative Average</b></td>
-                                                    <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg1_YTD23_24">@Model.Lit_OQL_CumulativeAvg1_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg1_YTD_PreviousYear">@Model.Lit_OQL_CumulativeAvg1_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg1_Target">@Model.Lit_OQL_CumulativeAvg1_Target</td>
                                                     <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg1_PC01">@Model.Lit_OQL_CumulativeAvg1_PC01</td>
                                                     <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg1_PC02">@Model.Lit_OQL_CumulativeAvg1_PC02</td>
@@ -652,7 +713,7 @@
                                                     <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg1_PC06">@Model.Lit_OQL_CumulativeAvg1_PC06</td>
                                                 </tr>
                                                 <tr>
-                                                    <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg2_YTD23_24">@Model.Lit_OQL_CumulativeAvg2_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg2_YTD_PreviousYear">@Model.Lit_OQL_CumulativeAvg2_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg2_Target">@Model.Lit_OQL_CumulativeAvg2_Target</td>
                                                     <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg2_PC01">@Model.Lit_OQL_CumulativeAvg2_PC01</td>
                                                     <td contenteditable="true" data-name="Lit_OQL_CumulativeAvg2_PC02">@Model.Lit_OQL_CumulativeAvg2_PC02</td>
@@ -697,9 +758,11 @@
                                                     <th style="width:10%; text-align:left;">Projects</th>
                                                     <th style="width:12%;">Baseline</th>
                                                     <th style="width:12%;">Target</th>
-                                                    <th style="width:12%;">FY24-25<br>Q1</th>
-                                                    <th style="width:12%;">FY24-25<br>Q2</th>
-                                                    <th style="width:12%;">FY24-25<br>(YTD)</th>
+                                                    @if(showQ1) { <th style="width:12%;">@currFY<br>Q1</th> }
+                                                    @if(showQ2) { <th style="width:12%;">@currFY<br>Q2</th> }
+                                                    @if(showQ3) { <th style="width:12%;">@currFY<br>Q3</th> }
+                                                    @if(showQ4) { <th style="width:12%;">@currFY<br>Q4</th> }
+                                                    <th style="width:12%;">@currFY<br>(YTD)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -708,27 +771,33 @@
                                                     <td style="text-align:left;">CN Closure<br>90% in 20 days</td>
                                                     <td contenteditable="true" data-name="Seat_SS_CNClosure_Baseline">@Model.Seat_SS_CNClosure_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_SS_CNClosure_Target">@Model.Seat_SS_CNClosure_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_CNClosure_Q1">@Model.Seat_SS_CNClosure_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_CNClosure_Q2">@Model.Seat_SS_CNClosure_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_CNClosure_YTD">@Model.Seat_SS_CNClosure_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SS_CNClosure_CurrentYear_Q1">@Model.Seat_SS_CNClosure_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SS_CNClosure_CurrentYear_Q2">@Model.Seat_SS_CNClosure_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SS_CNClosure_CurrentYear_Q3">@Model.Seat_SS_CNClosure_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SS_CNClosure_CurrentYear_Q4">@Model.Seat_SS_CNClosure_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_SS_CNClosure_YTD_CurrentYear">@Model.Seat_SS_CNClosure_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td>2</td>
                                                     <td style="text-align:left;">OTIF &gt; 90%</td>
                                                     <td contenteditable="true" data-name="Seat_SS_OTIF_Baseline">@Model.Seat_SS_OTIF_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_SS_OTIF_Target">@Model.Seat_SS_OTIF_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_OTIF_Q1">@Model.Seat_SS_OTIF_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_OTIF_Q2">@Model.Seat_SS_OTIF_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_OTIF_YTD">@Model.Seat_SS_OTIF_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SS_OTIF_CurrentYear_Q1">@Model.Seat_SS_OTIF_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SS_OTIF_CurrentYear_Q2">@Model.Seat_SS_OTIF_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SS_OTIF_CurrentYear_Q3">@Model.Seat_SS_OTIF_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SS_OTIF_CurrentYear_Q4">@Model.Seat_SS_OTIF_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_SS_OTIF_YTD_CurrentYear">@Model.Seat_SS_OTIF_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td>3</td>
                                                     <td style="text-align:left;">SPM Score for Critical 3 vendors &gt; 3 Stars</td>
                                                     <td contenteditable="true" data-name="Seat_SS_SPMScore_Baseline">@Model.Seat_SS_SPMScore_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_SS_SPMScore_Target">@Model.Seat_SS_SPMScore_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_SPMScore_Q1">@Model.Seat_SS_SPMScore_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_SPMScore_Q2">@Model.Seat_SS_SPMScore_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_SS_SPMScore_YTD">@Model.Seat_SS_SPMScore_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SS_SPMScore_CurrentYear_Q1">@Model.Seat_SS_SPMScore_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SS_SPMScore_CurrentYear_Q2">@Model.Seat_SS_SPMScore_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SS_SPMScore_CurrentYear_Q3">@Model.Seat_SS_SPMScore_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SS_SPMScore_CurrentYear_Q4">@Model.Seat_SS_SPMScore_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_SS_SPMScore_YTD_CurrentYear">@Model.Seat_SS_SPMScore_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -745,25 +814,27 @@
                                             <thead>
                                                 <tr>
                                                     <th style="width:15%; text-align:left;">DATA</th>
-                                                    <th style="width:14%;">FY 2023-24<br>(YTD)</th>
+                                                    <th style="width:14%;">@prevFY<br>(YTD)</th>
                                                     <th style="width:14%;">Target</th>
-                                                    <th style="width:14%;">FY 2024-25<br>Q1</th>
-                                                    <th style="width:14%;">FY 2024-25<br>Q2</th>
-                                                    <th style="width:14%;">FY 2024-25<br>YTD</th>
+                                                    @if(showQ1) { <th style="width:14%;">@currFY<br>Q1</th> }
+                                                    @if(showQ2) { <th style="width:14%;">@currFY<br>Q2</th> }
+                                                    @if(showQ3) { <th style="width:14%;">@currFY<br>Q3</th> }
+                                                    @if(showQ4) { <th style="width:14%;">@currFY<br>Q4</th> }
+                                                    <th style="width:14%;">@currFY<br>YTD</th>
                                                 </tr>
                                             </thead>
-
                                             <tbody>
                                                 <tr>
                                                     <td rowspan="2" style="text-align:left; vertical-align:middle;">
-                                                        <strong>On Time In Full Delivery</strong><br>
-                                                        Performance at 90% for all Seating Products
+                                                        <strong>On Time In Full Delivery</strong><br>Performance at 90% for all Seating Products
                                                     </td>
-                                                    <td contenteditable="true" data-name="Seat_OTIF_Performance_YTD23_24">@Model.Seat_OTIF_Performance_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_OTIF_Performance_YTD_PreviousYear">@Model.Seat_OTIF_Performance_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_OTIF_Performance_Target">@Model.Seat_OTIF_Performance_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_OTIF_Performance_Q1">@Model.Seat_OTIF_Performance_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_OTIF_Performance_Q2">@Model.Seat_OTIF_Performance_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_OTIF_Performance_YTD">@Model.Seat_OTIF_Performance_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_OTIF_Performance_CurrentYear_Q1">@Model.Seat_OTIF_Performance_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_OTIF_Performance_CurrentYear_Q2">@Model.Seat_OTIF_Performance_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_OTIF_Performance_CurrentYear_Q3">@Model.Seat_OTIF_Performance_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_OTIF_Performance_CurrentYear_Q4">@Model.Seat_OTIF_Performance_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_OTIF_Performance_YTD_CurrentYear">@Model.Seat_OTIF_Performance_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -782,71 +853,76 @@
                                             <thead>
                                                 <tr>
                                                     <th colspan="2"></th>
-                                                    <th colspan="2" style="text-align:center;">FY2023-24</th>
-                                                    <th colspan="3" style="text-align:center;">FY2024-25</th>
+                                                    <th colspan="2" style="text-align:center;">@prevFY</th>
+                                                    <th colspan="@colspanWithYTD" style="text-align:center;">@currFY</th>
                                                 </tr>
                                                 <tr>
                                                     <th style="width:30%; text-align:left;">&nbsp;</th>
                                                     <th style="width:10%; text-align:center;">YTD</th>
                                                     <th style="width:10%; text-align:center;">Baseline</th>
                                                     <th style="width:10%; text-align:center;">Target</th>
-                                                    <th style="width:10%; text-align:center;">Q1</th>
-                                                    <th style="width:10%; text-align:center;">Q2</th>
+                                                    @if(showQ1) { <th style="width:10%; text-align:center;">Q1</th> }
+                                                    @if(showQ2) { <th style="width:10%; text-align:center;">Q2</th> }
+                                                    @if(showQ3) { <th style="width:10%; text-align:center;">Q3</th> }
+                                                    @if(showQ4) { <th style="width:10%; text-align:center;">Q4</th> }
                                                     <th style="width:10%; text-align:center;">YTD</th>
                                                 </tr>
                                             </thead>
-
                                             <tbody>
                                                 <tr>
                                                     <td style="text-align:left;">Nos of Request sent</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_ReqSent_YTD23_24">@Model.Seat_CSAT_ReqSent_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_CSAT_ReqSent_YTD_PreviousYear">@Model.Seat_CSAT_ReqSent_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_ReqSent_Baseline">@Model.Seat_CSAT_ReqSent_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_ReqSent_Target">@Model.Seat_CSAT_ReqSent_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_ReqSent_Q1">@Model.Seat_CSAT_ReqSent_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_ReqSent_Q2">@Model.Seat_CSAT_ReqSent_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_ReqSent_YTD">@Model.Seat_CSAT_ReqSent_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSAT_ReqSent_CurrentYear_Q1">@Model.Seat_CSAT_ReqSent_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSAT_ReqSent_CurrentYear_Q2">@Model.Seat_CSAT_ReqSent_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSAT_ReqSent_CurrentYear_Q3">@Model.Seat_CSAT_ReqSent_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSAT_ReqSent_CurrentYear_Q4">@Model.Seat_CSAT_ReqSent_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSAT_ReqSent_YTD_CurrentYear">@Model.Seat_CSAT_ReqSent_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td style="text-align:left;">Nos of Response received</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_YTD23_24">@Model.Seat_CSAT_RespRecvd_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_YTD_PreviousYear">@Model.Seat_CSAT_RespRecvd_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_Baseline">@Model.Seat_CSAT_RespRecvd_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_Target">@Model.Seat_CSAT_RespRecvd_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_Q1">@Model.Seat_CSAT_RespRecvd_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_Q2">@Model.Seat_CSAT_RespRecvd_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_YTD">@Model.Seat_CSAT_RespRecvd_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_CurrentYear_Q1">@Model.Seat_CSAT_RespRecvd_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_CurrentYear_Q2">@Model.Seat_CSAT_RespRecvd_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_CurrentYear_Q3">@Model.Seat_CSAT_RespRecvd_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_CurrentYear_Q4">@Model.Seat_CSAT_RespRecvd_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSAT_RespRecvd_YTD_CurrentYear">@Model.Seat_CSAT_RespRecvd_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td style="text-align:left;">Promoter</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Promoter_YTD23_24">@Model.Seat_CSAT_Promoter_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_CSAT_Promoter_YTD_PreviousYear">@Model.Seat_CSAT_Promoter_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_Promoter_Baseline">@Model.Seat_CSAT_Promoter_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_Promoter_Target">@Model.Seat_CSAT_Promoter_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Promoter_Q1">@Model.Seat_CSAT_Promoter_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Promoter_Q2">@Model.Seat_CSAT_Promoter_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Promoter_YTD">@Model.Seat_CSAT_Promoter_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSAT_Promoter_CurrentYear_Q1">@Model.Seat_CSAT_Promoter_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSAT_Promoter_CurrentYear_Q2">@Model.Seat_CSAT_Promoter_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSAT_Promoter_CurrentYear_Q3">@Model.Seat_CSAT_Promoter_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSAT_Promoter_CurrentYear_Q4">@Model.Seat_CSAT_Promoter_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSAT_Promoter_YTD_CurrentYear">@Model.Seat_CSAT_Promoter_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
                                                     <td style="text-align:left;">Detractor</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Detractor_YTD23_24">@Model.Seat_CSAT_Detractor_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_CSAT_Detractor_YTD_PreviousYear">@Model.Seat_CSAT_Detractor_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_Detractor_Baseline">@Model.Seat_CSAT_Detractor_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_Detractor_Target">@Model.Seat_CSAT_Detractor_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Detractor_Q1">@Model.Seat_CSAT_Detractor_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Detractor_Q2">@Model.Seat_CSAT_Detractor_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_Detractor_YTD">@Model.Seat_CSAT_Detractor_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSAT_Detractor_CurrentYear_Q1">@Model.Seat_CSAT_Detractor_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSAT_Detractor_CurrentYear_Q2">@Model.Seat_CSAT_Detractor_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSAT_Detractor_CurrentYear_Q3">@Model.Seat_CSAT_Detractor_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSAT_Detractor_CurrentYear_Q4">@Model.Seat_CSAT_Detractor_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSAT_Detractor_YTD_CurrentYear">@Model.Seat_CSAT_Detractor_YTD_CurrentYear</td>
                                                 </tr>
-
                                                 <tr>
-                                                    <td style="text-align:left;">
-                                                        NPS% = (Nos of Promoters – Nos of Detractors) / (Nos of Responses Received) × 100
-                                                    </td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_NPS_YTD23_24">@Model.Seat_CSAT_NPS_YTD23_24</td>
+                                                    <td style="text-align:left;">NPS% = (Nos of Promoters – Nos of Detractors) / (Nos of Responses Received) × 100</td>
+                                                    <td contenteditable="true" data-name="Seat_CSAT_NPS_YTD_PreviousYear">@Model.Seat_CSAT_NPS_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_NPS_Baseline">@Model.Seat_CSAT_NPS_Baseline</td>
                                                     <td contenteditable="true" data-name="Seat_CSAT_NPS_Target">@Model.Seat_CSAT_NPS_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_NPS_Q1">@Model.Seat_CSAT_NPS_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_NPS_Q2">@Model.Seat_CSAT_NPS_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSAT_NPS_YTD">@Model.Seat_CSAT_NPS_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSAT_NPS_CurrentYear_Q1">@Model.Seat_CSAT_NPS_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSAT_NPS_CurrentYear_Q2">@Model.Seat_CSAT_NPS_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSAT_NPS_CurrentYear_Q3">@Model.Seat_CSAT_NPS_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSAT_NPS_CurrentYear_Q4">@Model.Seat_CSAT_NPS_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSAT_NPS_YTD_CurrentYear">@Model.Seat_CSAT_NPS_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -863,52 +939,64 @@
                                         <table class="see-matrix">
                                             <thead>
                                                 <tr>
-                                                    <th colspan="2" style="text-align:center;">FY2023-24</th>
-                                                    <th colspan="3" style="text-align:center;">FY2024-25</th>
+                                                    <th colspan="2" style="text-align:center;">@prevFY</th>
+                                                    <th colspan="@colspanWithYTD" style="text-align:center;">@currFY</th>
                                                 </tr>
                                                 <tr>
                                                     <th style="width:30%; text-align:left;">&nbsp;</th>
                                                     <th style="width:10%; text-align:center;">YTD</th>
-                                                    <th style="width:10%; text-align:center;">Q1</th>
-                                                    <th style="width:10%; text-align:center;">Q2</th>
+                                                    @if(showQ1) { <th style="width:10%; text-align:center;">Q1</th> }
+                                                    @if(showQ2) { <th style="width:10%; text-align:center;">Q2</th> }
+                                                    @if(showQ3) { <th style="width:10%; text-align:center;">Q3</th> }
+                                                    @if(showQ4) { <th style="width:10%; text-align:center;">Q4</th> }
                                                     <th style="width:10%; text-align:center;">YTD</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
                                                     <td style="text-align:left;">Total CSO Logged</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalLogged_YTD23_24">@Model.Seat_CSO_TotalLogged_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalLogged_Q1">@Model.Seat_CSO_TotalLogged_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalLogged_Q2">@Model.Seat_CSO_TotalLogged_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalLogged_YTD">@Model.Seat_CSO_TotalLogged_YTD</td>
+                                                    <td contenteditable="true" data-name="Seat_CSO_TotalLogged_YTD_PreviousYear">@Model.Seat_CSO_TotalLogged_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSO_TotalLogged_CurrentYear_Q1">@Model.Seat_CSO_TotalLogged_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSO_TotalLogged_CurrentYear_Q2">@Model.Seat_CSO_TotalLogged_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSO_TotalLogged_CurrentYear_Q3">@Model.Seat_CSO_TotalLogged_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSO_TotalLogged_CurrentYear_Q4">@Model.Seat_CSO_TotalLogged_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSO_TotalLogged_YTD_CurrentYear">@Model.Seat_CSO_TotalLogged_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">Total A Class CSO’s Logged</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalAClass_YTD23_24">@Model.Seat_CSO_TotalAClass_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalAClass_Q1">@Model.Seat_CSO_TotalAClass_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalAClass_Q2">@Model.Seat_CSO_TotalAClass_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_TotalAClass_YTD">@Model.Seat_CSO_TotalAClass_YTD</td>
+                                                    <td contenteditable="true" data-name="Seat_CSO_TotalAClass_YTD_PreviousYear">@Model.Seat_CSO_TotalAClass_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSO_TotalAClass_CurrentYear_Q1">@Model.Seat_CSO_TotalAClass_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSO_TotalAClass_CurrentYear_Q2">@Model.Seat_CSO_TotalAClass_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSO_TotalAClass_CurrentYear_Q3">@Model.Seat_CSO_TotalAClass_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSO_TotalAClass_CurrentYear_Q4">@Model.Seat_CSO_TotalAClass_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSO_TotalAClass_YTD_CurrentYear">@Model.Seat_CSO_TotalAClass_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">A Class Closed CSO’s as on date</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosed_YTD23_24">@Model.Seat_CSO_AClassClosed_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosed_Q1">@Model.Seat_CSO_AClassClosed_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosed_Q2">@Model.Seat_CSO_AClassClosed_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosed_YTD">@Model.Seat_CSO_AClassClosed_YTD</td>
+                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosed_YTD_PreviousYear">@Model.Seat_CSO_AClassClosed_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSO_AClassClosed_CurrentYear_Q1">@Model.Seat_CSO_AClassClosed_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSO_AClassClosed_CurrentYear_Q2">@Model.Seat_CSO_AClassClosed_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSO_AClassClosed_CurrentYear_Q3">@Model.Seat_CSO_AClassClosed_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSO_AClassClosed_CurrentYear_Q4">@Model.Seat_CSO_AClassClosed_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosed_YTD_CurrentYear">@Model.Seat_CSO_AClassClosed_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">A Class Closed CSO’s &lt; 45 Days</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_YTD23_24">@Model.Seat_CSO_AClassClosedLess48_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_Q1">@Model.Seat_CSO_AClassClosedLess48_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_Q2">@Model.Seat_CSO_AClassClosedLess48_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_YTD">@Model.Seat_CSO_AClassClosedLess48_YTD</td>
+                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess45_YTD_PreviousYear">@Model.Seat_CSO_AClassClosedLess45_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess45_CurrentYear_Q1">@Model.Seat_CSO_AClassClosedLess45_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess45_CurrentYear_Q2">@Model.Seat_CSO_AClassClosedLess45_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess45_CurrentYear_Q3">@Model.Seat_CSO_AClassClosedLess45_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess45_CurrentYear_Q4">@Model.Seat_CSO_AClassClosedLess45_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess45_YTD_CurrentYear">@Model.Seat_CSO_AClassClosedLess45_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">Percentage Closure of “A” Class CSO under 45 days</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_YTD23_24">@Model.Seat_CSO_AClassClosedUnder48_YTD23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_Q1">@Model.Seat_CSO_AClassClosedUnder48_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_Q2">@Model.Seat_CSO_AClassClosedUnder48_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedLess48_YTD">@Model.Seat_CSO_AClassClosedUnder48_YTD</td>
+                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedUnder45_YTD_PreviousYear">@Model.Seat_CSO_AClassClosedUnder45_YTD_PreviousYear</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedUnder45_CurrentYear_Q1">@Model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedUnder45_CurrentYear_Q2">@Model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedUnder45_CurrentYear_Q3">@Model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_CSO_AClassClosedUnder45_CurrentYear_Q4">@Model.Seat_CSO_AClassClosedUnder45_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_CSO_AClassClosedUnder45_YTD_CurrentYear">@Model.Seat_CSO_AClassClosedUnder45_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -926,46 +1014,48 @@
                                                 <tr>
                                                     <th style="width:4%; text-align:center;">S.N.</th>
                                                     <th style="width:20%; text-align:center;">Supplier Name</th>
-                                                    <th style="width:21%; text-align:center;">Q4<br>Performance<br>FY2023-24</th>
-                                                    <th style="width:22%; text-align:center;">Q1<br>Performance<br>FY2024-25</th>
-                                                    <th style="width:22%; text-align:center;">Q2<br>Performance<br>FY2024-25</th>
+                                                    <th style="width:21%; text-align:center;">Q4<br>Performance<br>@prevFY</th>
+                                                    @if(showQ1) { <th style="width:22%; text-align:center;">Q1<br>Performance<br>@currFY</th> }
+                                                    @if(showQ2) { <th style="width:22%; text-align:center;">Q2<br>Performance<br>@currFY</th> }
+                                                    @if(showQ3) { <th style="width:22%; text-align:center;">Q3<br>Performance<br>@currFY</th> }
+                                                    @if(showQ4) { <th style="width:22%; text-align:center;">Q4<br>Performance<br>@currFY</th> }
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>1</td>
-                                                    <td>MPPL</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_MPPL_Q4_23_24">@Model.Seat_SPM_MPPL_Q4_23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_MPPL_Q1_24_25">@Model.Seat_SPM_MPPL_Q1_24_25</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_MPPL_Q2_24_25">@Model.Seat_SPM_MPPL_Q2_24_25</td>
+                                                <tr><td>1</td><td>@Html.DropDownListFor(m => m.Seat_SPM_Supp1, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Seat_SPM_Supp1_PreviousYear_Q4">@Model.Seat_SPM_Supp1_PreviousYear_Q4</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SPM_Supp1_CurrentYear_Q1">@Model.Seat_SPM_Supp1_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SPM_Supp1_CurrentYear_Q2">@Model.Seat_SPM_Supp1_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SPM_Supp1_CurrentYear_Q3">@Model.Seat_SPM_Supp1_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SPM_Supp1_CurrentYear_Q4">@Model.Seat_SPM_Supp1_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>2</td>
-                                                    <td>EXCLUSIFF</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_EXCLUSIFF_Q4_23_24">@Model.Seat_SPM_EXCLUSIFF_Q4_23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_EXCLUSIFF_Q1_24_25">@Model.Seat_SPM_EXCLUSIFF_Q1_24_25</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_EXCLUSIFF_Q2_24_25">@Model.Seat_SPM_EXCLUSIFF_Q2_24_25</td>
+                                                <tr><td>2</td><td>@Html.DropDownListFor(m => m.Seat_SPM_Supp2, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Seat_SPM_Supp2_PreviousYear_Q4">@Model.Seat_SPM_Supp2_PreviousYear_Q4</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SPM_Supp2_CurrentYear_Q1">@Model.Seat_SPM_Supp2_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SPM_Supp2_CurrentYear_Q2">@Model.Seat_SPM_Supp2_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SPM_Supp2_CurrentYear_Q3">@Model.Seat_SPM_Supp2_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SPM_Supp2_CurrentYear_Q4">@Model.Seat_SPM_Supp2_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>3</td>
-                                                    <td>CVG</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_CVG_Q4_23_24">@Model.Seat_SPM_CVG_Q4_23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_CVG_Q1_24_25">@Model.Seat_SPM_CVG_Q1_24_25</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_CVG_Q2_24_25">@Model.Seat_SPM_CVG_Q2_24_25</td>
+                                                <tr><td>3</td><td>@Html.DropDownListFor(m => m.Seat_SPM_Supp3, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Seat_SPM_Supp3_PreviousYear_Q4">@Model.Seat_SPM_Supp3_PreviousYear_Q4</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SPM_Supp3_CurrentYear_Q1">@Model.Seat_SPM_Supp3_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SPM_Supp3_CurrentYear_Q2">@Model.Seat_SPM_Supp3_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SPM_Supp3_CurrentYear_Q3">@Model.Seat_SPM_Supp3_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SPM_Supp3_CurrentYear_Q4">@Model.Seat_SPM_Supp3_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>4</td>
-                                                    <td>STARSHINE</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_STARSHINE_Q4_23_24">@Model.Seat_SPM_STARSHINE_Q4_23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_STARSHINE_Q1_24_25">@Model.Seat_SPM_STARSHINE_Q1_24_25</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_STARSHINE_Q2_24_25">@Model.Seat_SPM_STARSHINE_Q2_24_25</td>
+                                                <tr><td>4</td><td>@Html.DropDownListFor(m => m.Seat_SPM_Supp4, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Seat_SPM_Supp4_PreviousYear_Q4">@Model.Seat_SPM_Supp4_PreviousYear_Q4</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SPM_Supp4_CurrentYear_Q1">@Model.Seat_SPM_Supp4_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SPM_Supp4_CurrentYear_Q2">@Model.Seat_SPM_Supp4_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SPM_Supp4_CurrentYear_Q3">@Model.Seat_SPM_Supp4_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SPM_Supp4_CurrentYear_Q4">@Model.Seat_SPM_Supp4_CurrentYear_Q4</td> }
                                                 </tr>
-                                                <tr>
-                                                    <td>5</td>
-                                                    <td>SAVITON</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_SAVITON_Q4_23_24">@Model.Seat_SPM_SAVITON_Q4_23_24</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_SAVITON_Q1_24_25">@Model.Seat_SPM_SAVITON_Q1_24_25</td>
-                                                    <td contenteditable="true" data-name="Seat_SPM_SAVITON_Q2_24_25">@Model.Seat_SPM_SAVITON_Q2_24_25</td>
+                                                <tr><td>5</td><td>@Html.DropDownListFor(m => m.Seat_SPM_Supp5, (IEnumerable<SelectListItem>)ViewBag.SupplierList, "Select Supplier", new { @class="form-control form-control-border" })</td>
+                                                    <td contenteditable="true" data-name="Seat_SPM_Supp5_PreviousYear_Q4">@Model.Seat_SPM_Supp5_PreviousYear_Q4</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_SPM_Supp5_CurrentYear_Q1">@Model.Seat_SPM_Supp5_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_SPM_Supp5_CurrentYear_Q2">@Model.Seat_SPM_Supp5_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_SPM_Supp5_CurrentYear_Q3">@Model.Seat_SPM_Supp5_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_SPM_Supp5_CurrentYear_Q4">@Model.Seat_SPM_Supp5_CurrentYear_Q4</td> }
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -982,53 +1072,65 @@
                                             <thead>
                                                 <tr>
                                                     <th style="width:10%; text-align:left;">&nbsp;</th>
-                                                    <th style="width:12%; text-align:center;">YTD<br>(FY2023-24)</th>
+                                                    <th style="width:12%; text-align:center;">YTD<br>(@prevFY)</th>
                                                     <th style="width:10%; text-align:center;">Target<br>Sigma</th>
-                                                    <th style="width:12%; text-align:center;">Q1<br>(FY2024-25)</th>
-                                                    <th style="width:12%; text-align:center;">Q2<br>(FY2024-25)</th>
-                                                    <th style="width:12%; text-align:center;">YTD<br>(FY2024-25)</th>
+                                                    @if(showQ1) { <th style="width:12%; text-align:center;">Q1<br>(@currFY)</th> }
+                                                    @if(showQ2) { <th style="width:12%; text-align:center;">Q2<br>(@currFY)</th> }
+                                                    @if(showQ3) { <th style="width:12%; text-align:center;">Q3<br>(@currFY)</th> }
+                                                    @if(showQ4) { <th style="width:12%; text-align:center;">Q4<br>(@currFY)</th> }
+                                                    <th style="width:12%; text-align:center;">YTD<br>(@currFY)</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
                                                 <tr>
                                                     <td style="text-align:left;">Total No. of Sites</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_TotalSites_YTD23_24">@Model.Seat_IQA_TotalSites_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_IQA_TotalSites_YTD_PreviousYear">@Model.Seat_IQA_TotalSites_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_IQA_TotalSites_Target">@Model.Seat_IQA_TotalSites_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_TotalSites_Q1">@Model.Seat_IQA_TotalSites_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_TotalSites_Q2">@Model.Seat_IQA_TotalSites_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_TotalSites_YTD">@Model.Seat_IQA_TotalSites_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_IQA_TotalSites_CurrentYear_Q1">@Model.Seat_IQA_TotalSites_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_IQA_TotalSites_CurrentYear_Q2">@Model.Seat_IQA_TotalSites_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_IQA_TotalSites_CurrentYear_Q3">@Model.Seat_IQA_TotalSites_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_IQA_TotalSites_CurrentYear_Q4">@Model.Seat_IQA_TotalSites_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_IQA_TotalSites_YTD_CurrentYear">@Model.Seat_IQA_TotalSites_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">No. of Sites Completed</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_YTD23_24">@Model.Seat_IQA_SitesCompleted_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_YTD_PreviousYear">@Model.Seat_IQA_SitesCompleted_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_Target">@Model.Seat_IQA_SitesCompleted_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_Q1">@Model.Seat_IQA_SitesCompleted_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_Q2">@Model.Seat_IQA_SitesCompleted_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_YTD">@Model.Seat_IQA_SitesCompleted_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_CurrentYear_Q1">@Model.Seat_IQA_SitesCompleted_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_CurrentYear_Q2">@Model.Seat_IQA_SitesCompleted_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_CurrentYear_Q3">@Model.Seat_IQA_SitesCompleted_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_CurrentYear_Q4">@Model.Seat_IQA_SitesCompleted_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_IQA_SitesCompleted_YTD_CurrentYear">@Model.Seat_IQA_SitesCompleted_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">No. of IQA Audit Completed</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_YTD23_24">@Model.Seat_IQA_AuditsCompleted_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_YTD_PreviousYear">@Model.Seat_IQA_AuditsCompleted_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_Target">@Model.Seat_IQA_AuditsCompleted_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_Q1">@Model.Seat_IQA_AuditsCompleted_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_Q2">@Model.Seat_IQA_AuditsCompleted_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_YTD">@Model.Seat_IQA_AuditsCompleted_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_CurrentYear_Q1">@Model.Seat_IQA_AuditsCompleted_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_CurrentYear_Q2">@Model.Seat_IQA_AuditsCompleted_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_CurrentYear_Q3">@Model.Seat_IQA_AuditsCompleted_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_CurrentYear_Q4">@Model.Seat_IQA_AuditsCompleted_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_IQA_AuditsCompleted_YTD_CurrentYear">@Model.Seat_IQA_AuditsCompleted_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">% of IQA Completed</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_PercCompleted_YTD23_24">@Model.Seat_IQA_PercCompleted_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_IQA_PercCompleted_YTD_PreviousYear">@Model.Seat_IQA_PercCompleted_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_IQA_PercCompleted_Target">@Model.Seat_IQA_PercCompleted_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_PercCompleted_Q1">@Model.Seat_IQA_PercCompleted_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_PercCompleted_Q2">@Model.Seat_IQA_PercCompleted_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_PercCompleted_YTD">@Model.Seat_IQA_PercCompleted_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_IQA_PercCompleted_CurrentYear_Q1">@Model.Seat_IQA_PercCompleted_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_IQA_PercCompleted_CurrentYear_Q2">@Model.Seat_IQA_PercCompleted_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_IQA_PercCompleted_CurrentYear_Q3">@Model.Seat_IQA_PercCompleted_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_IQA_PercCompleted_CurrentYear_Q4">@Model.Seat_IQA_PercCompleted_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_IQA_PercCompleted_YTD_CurrentYear">@Model.Seat_IQA_PercCompleted_YTD_CurrentYear</td>
                                                 </tr>
                                                 <tr>
                                                     <td style="text-align:left;">IQA Average Sigma</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AvgSigma_YTD23_24">@Model.Seat_IQA_AvgSigma_YTD23_24</td>
+                                                    <td contenteditable="true" data-name="Seat_IQA_AvgSigma_YTD_PreviousYear">@Model.Seat_IQA_AvgSigma_YTD_PreviousYear</td>
                                                     <td contenteditable="true" data-name="Seat_IQA_AvgSigma_Target">@Model.Seat_IQA_AvgSigma_Target</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AvgSigma_Q1">@Model.Seat_IQA_AvgSigma_Q1</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AvgSigma_Q2">@Model.Seat_IQA_AvgSigma_Q2</td>
-                                                    <td contenteditable="true" data-name="Seat_IQA_AvgSigma_YTD">@Model.Seat_IQA_AvgSigma_YTD</td>
+                                                    @if(showQ1) { <td contenteditable="true" data-name="Seat_IQA_AvgSigma_CurrentYear_Q1">@Model.Seat_IQA_AvgSigma_CurrentYear_Q1</td> }
+                                                    @if(showQ2) { <td contenteditable="true" data-name="Seat_IQA_AvgSigma_CurrentYear_Q2">@Model.Seat_IQA_AvgSigma_CurrentYear_Q2</td> }
+                                                    @if(showQ3) { <td contenteditable="true" data-name="Seat_IQA_AvgSigma_CurrentYear_Q3">@Model.Seat_IQA_AvgSigma_CurrentYear_Q3</td> }
+                                                    @if(showQ4) { <td contenteditable="true" data-name="Seat_IQA_AvgSigma_CurrentYear_Q4">@Model.Seat_IQA_AvgSigma_CurrentYear_Q4</td> }
+                                                    <td contenteditable="true" data-name="Seat_IQA_AvgSigma_YTD_CurrentYear">@Model.Seat_IQA_AvgSigma_YTD_CurrentYear</td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -1150,6 +1252,7 @@
         function insertUpdateAHPNote() {
             Blockloadershow();
             $("#Id").val(@Model.Id);
+            $("#FinancialYear").val(@Model.FinancialYear);
             const form = $('#ahpNote-form')[0];
             const formData = new FormData(form);
             $('.see-matrix [contenteditable="true"]').each(function() {

@@ -85,7 +85,7 @@ namespace QMS.Core.Repositories.CAReportRepository
                     new SqlParameter("@Failure_Qty", SqlDbType.Int) {
                         Value = (object?)model.Failure_Qty ?? DBNull.Value
                     },
-                    new SqlParameter("@Failure", SqlDbType.Int) {
+                    new SqlParameter("@Failure", SqlDbType.Float) {
                         Value = (object?)model.Failure ?? DBNull.Value
                     },
                     new SqlParameter("@Age_Install", SqlDbType.NVarChar, -1) {
@@ -263,7 +263,7 @@ namespace QMS.Core.Repositories.CAReportRepository
                     new SqlParameter("@Failure_Qty", SqlDbType.Int) {
                         Value = (object?)model.Failure_Qty ?? DBNull.Value
                     },
-                    new SqlParameter("@Failure", SqlDbType.Int) {
+                    new SqlParameter("@Failure", SqlDbType.Float) {
                         Value = (object?)model.Failure ?? DBNull.Value
                     },
                     new SqlParameter("@Age_Install", SqlDbType.NVarChar, -1) {

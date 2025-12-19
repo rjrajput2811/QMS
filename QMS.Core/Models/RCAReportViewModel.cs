@@ -82,6 +82,11 @@ namespace QMS.Core.Models
         public IFormFile? Images_Failed_Samples2File { get; set; }
         public IFormFile? Images_Failed_Samples3File { get; set; }
         public IFormFile? Images_Failed_Samples4File { get; set; }
+
+        public DateTime? Root_Cause_Date { get; set; }
+        public DateTime? Corrective_Action_Date { get; set; }
+        public int? Root_Cause_Day { get; set; }
+        public int? Corrective_Action_Day { get; set; }
     }
 
     public class RCAReportDetailViewModel

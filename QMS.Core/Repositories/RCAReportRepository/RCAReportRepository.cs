@@ -383,6 +383,12 @@ namespace QMS.Core.Repositories.RCAReportRepository
             {
                 Value = (object?)model.Date ?? DBNull.Value
             },
+            new SqlParameter("@Root_Cause_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Root_Cause_Date ?? DBNull.Value
+                    },
+                    new SqlParameter("@Corrective_Action_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Corrective_Action_Date ?? DBNull.Value
+                    },
             new SqlParameter("@CreatedBy", SqlDbType.NVarChar, 500)
             {
                 Value = (object?)model.CreatedBy ?? DBNull.Value
@@ -406,7 +412,7 @@ namespace QMS.Core.Repositories.RCAReportRepository
                     "@Wrong_App_Prob, @Complaint_History, @Current_Process, @Root_Cause_Anal, @Corrective_Action, " +
                     "@Analysis_of_Defective100, @Images_Failed_Samples1, @Images_Failed_Samples2, " +
                     "@Images_Failed_Samples3, @Images_Failed_Samples4, @Images_Corrections, @Conclusion, " +
-                    "@Rca_Prepared_By, @Name_Designation, @Date, @CreatedBy, @DetailList";
+                    "@Rca_Prepared_By, @Name_Designation, @Date, @Root_Cause_Date, @Corrective_Action_Date, @CreatedBy, @DetailList";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
@@ -621,6 +627,12 @@ namespace QMS.Core.Repositories.RCAReportRepository
             {
                 Value = (object?)model.Date ?? DBNull.Value
             },
+             new SqlParameter("@Root_Cause_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Root_Cause_Date ?? DBNull.Value
+                    },
+                    new SqlParameter("@Corrective_Action_Date", SqlDbType.DateTime) {
+                        Value = (object?)model.Corrective_Action_Date ?? DBNull.Value
+                    },
             new SqlParameter("@UpdatedBy", SqlDbType.NVarChar, 500)
             {
                 Value = (object?)model.UpdatedBy ?? DBNull.Value
@@ -644,7 +656,7 @@ namespace QMS.Core.Repositories.RCAReportRepository
                     "@Wrong_App_Prob, @Complaint_History, @Current_Process, @Root_Cause_Anal, @Corrective_Action, " +
                     "@Analysis_of_Defective100, @Images_Failed_Samples1, @Images_Failed_Samples2, " +
                     "@Images_Failed_Samples3, @Images_Failed_Samples4, @Images_Corrections, @Conclusion, " +
-                    "@Rca_Prepared_By, @Name_Designation, @Date, @UpdatedBy, @DetailList";
+                    "@Rca_Prepared_By, @Name_Designation, @Date,@Root_Cause_Date, @Corrective_Action_Date, @UpdatedBy, @DetailList";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 

@@ -78,6 +78,8 @@ namespace QMS.Core.DatabaseContext
         public string? Name_Designation { get; set; }
 
         public DateTime? Date { get; set; }
+        public DateTime? Root_Cause_Date { get; set; }
+        public DateTime? Corrective_Action_Date { get; set; }
 
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }

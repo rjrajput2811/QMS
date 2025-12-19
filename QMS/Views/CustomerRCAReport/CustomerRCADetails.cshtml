@@ -226,17 +226,18 @@
                                         <th colspan="2"
                                             style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
                                             Report Date:-
-                                            @if (Model?.Id > 0)
+                                            @if (Model?.Id == 0)
                                             {
                                                 <input type="date" name="Report_Date"
-                                                       id="complaintDate"
-                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@Model?.Report_Date">
+                                                       id="complaint_Date"
+                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@DateTime.Now.ToString("yyyy-MM-dd")">
                                             }
                                             else
                                             {
                                                 <input type="date" name="Report_Date"
-                                                       id="complaintDate"
-                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                                       id="complaint_Date"
+                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@Model?.Report_Date?.ToString("yyyy-MM-dd")">
+
                                             }
                                         </th>
                                     </tr>
@@ -394,6 +395,7 @@
                                 <tbody>
                                     <tr>
                                         <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;">
+                                            @Html.HiddenFor(m => m.Problem_Visual_ImgA)
                                             <input type="file"
                                                    accept="image/*"
                                                    id="imgA"
@@ -408,6 +410,7 @@
                                             </div>
                                         </td>
                                         <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;" value="@Model?.Problem_Visual_ImgB" name="Problem_Visual_ImgB">
+                                            @Html.HiddenFor(m => m.Problem_Visual_ImgB)
                                             <input type="file"
                                                    accept="image/*"
                                                    id="imgB"
@@ -422,6 +425,7 @@
                                             </div>
                                         </td>
                                         <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;" value="@Model?.Problem_Visual_ImgC" name="Problem_Visual_ImgC">
+                                            @Html.HiddenFor(m => m.Problem_Visual_ImgC)
                                             <input type="file"
                                                    accept="image/*"
                                                    id="imgC"
@@ -622,7 +626,7 @@
 
                                     <!-- Root Cause Analysis -->
                                     <tr>
-                                        <th colspan="4" 
+                                        <th colspan="4"
                                             style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
                                             Root Cause Analysis:
                                         </th>
@@ -634,6 +638,7 @@
                                             @Model?.Root_Cause_Anal
                                         </td>
                                     </tr>
+                                    <input type="hidden" name="Root_Cause_Date" id="Root_Cause_Date" value="@Model?.Root_Cause_Date" />
                                 </tbody>
                             </table>
                         </div>
@@ -656,40 +661,44 @@
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 1</p>
-                                                <input type="file" accept="image/*" id="photo1" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples1)
+                                                <input type="file" accept="image/*" id="photo1" name="Images_Failed_Samples1File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview1" alt="Photo 1" src="@Model?.Images_Failed_Samples1"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples1) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px;border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
 
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 2</p>
-                                                <input type="file" accept="image/*" id="photo2" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples2)
+                                                <input type="file" accept="image/*" id="photo2" name="Images_Failed_Samples2File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview2" alt="Photo 2" src="@Model?.Images_Failed_Samples2"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples2) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px; border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
 
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 3</p>
-                                                <input type="file" accept="image/*" id="photo3" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples3)
+                                                <input type="file" accept="image/*" id="photo3" name="Images_Failed_Samples3File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview3" alt="Photo 3" src="@Model?.Images_Failed_Samples3"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples3) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px;border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
 
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 4</p>
-                                                <input type="file" accept="image/*" id="photo4" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples4)
+                                                <input type="file" accept="image/*" id="photo4" name="Images_Failed_Samples4File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview4" alt="Photo 4" src="@Model?.Images_Failed_Samples4"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples4) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px;border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
                                     </tr>
@@ -710,55 +719,65 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkManufacturing" style="margin-right:6px;" @(Model?.Man_Issue_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkManufacturing" style="margin-right:6px;" @(Model?.Man_Issue_Prob == true ? "checked" : "") name="Man_Issue_Prob">
                                                 Manufacturing Issue
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;" @(Model?.Design_Prob == true ? "checked" : "")>
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkDesign" style="margin-right:6px;">
+                                                <input type="checkbox" id="chkDesign" style="margin-right:6px;" @(Model?.Design_Prob == true ? "checked" : "") name="Design_Prob">
                                                 Design
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkSiteIssue" style="margin-right:6px;" @(Model?.Site_Issue_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkSiteIssue" style="margin-right:6px;" @(Model?.Site_Issue_Prob == true ? "checked" : "") name="Site_Issue_Prob">
                                                 Site Issue
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkCommunication" style="margin-right:6px;" @(Model?.Com_Gap_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkCommunication" style="margin-right:6px;" @(Model?.Com_Gap_Prob == true ? "checked" : "") name="Com_Gap_Prob">
                                                 Communication Gap
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkInstallation" style="margin-right:6px;" @(Model?.Install_Issues_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkInstallation" style="margin-right:6px;" @(Model?.Install_Issues_Prob == true ? "checked" : "") name="Install_Issues_Prob">
                                                 Installation Issues
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkWrongApplication" style="margin-right:6px;" @(Model?.Wrong_App_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkWrongApplication" style="margin-right:6px;" @(Model?.Wrong_App_Prob == true ? "checked" : "") name="Wrong_App_Prob">
                                                 Wrong Application
                                             </label>
                                         </td>
                                     </tr>
-                                    <tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px; margin-bottom:0;">
+                                <thead style="border-collapse:collapse;">
+                                    <tr style="border:1.5px solid #000;">
                                         <th colspan="6"
                                             style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
                                             9. Corrective Action:
                                         </th>
                                     </tr>
+                                </thead>
+                                <tbody>
                                     <tr>
                                         <td colspan="6" data-name="Corrective_Action"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
                                             @Model?.Corrective_Action
                                         </td>
+                                        <input type="hidden" name="Corrective_Action_Date" id="Corrective_Action_Date" value="@Model?.Corrective_Action_Date" />
                                     </tr>
                                     <tr>
                                         <th colspan="6"
@@ -788,40 +807,41 @@
                                     </tr>
                                 </tbody>
                             </table>
-
-                            <div class="table-responsive" style="margin-top:0px;">
-                                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
-                                    <tbody>
-                                        <tr style="background-color:#c7d7ee;">
-                                            <!-- Left column -->
-                                            <td style="width:70%; border:1.5px solid #000; padding:8px; text-align:left;">
-                                                <strong>RCA Prepared By:-</strong>
-                                                <input type="text" name="Rca_Prepared_By"
-                                                       placeholder="Enter RCA Prepared By"
-                                                       style="width:60%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Rca_Prepared_By">
-
-                                                <br><br>
-
-                                                <strong>Name and Designation :</strong>
-                                                <input type="text" name="Name_Designation"
-                                                       placeholder="Enter Name and Designation"
-                                                       style="width:70%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Name_Designation">
-                                            </td>
-
-                                            <!-- Right column -->
-                                            <td style="width:30%; border:1.5px solid #000; padding:8px; text-align:left;">
-                                                <strong>Date:-</strong>
-                                                <input type="date" name="Date"
-                                                       style="width:80%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Date?.ToString("yyyy-MM-dd")">
-                                            </td>
-
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-                            </div>
-
                         </div>
+
+
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
+                                <tbody>
+                                    <tr style="background-color:#c7d7ee;">
+                                        <!-- Left column -->
+                                        <td style="width:70%; border:1.5px solid #000; padding:8px; text-align:left;">
+                                            <strong>RCA Prepared By:-</strong>
+                                            <input type="text" name="Rca_Prepared_By"
+                                                   placeholder="Enter RCA Prepared By"
+                                                   style="width:60%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Rca_Prepared_By">
+
+                                            <br><br>
+
+                                            <strong>Name and Designation :</strong>
+                                            <input type="text" name="Name_Designation"
+                                                   placeholder="Enter Name and Designation"
+                                                   style="width:70%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Name_Designation">
+                                        </td>
+
+                                        <!-- Right column -->
+                                        <td style="width:30%; border:1.5px solid #000; padding:8px; text-align:left;">
+                                            <strong>Date:-</strong>
+                                            <input type="date" name="Date"
+                                                   style="width:80%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Date?.ToString("yyyy-MM-dd")">
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
             </form>
@@ -839,6 +859,34 @@
             initMonitoringTable();
             initPhotoPreviews();
             initAutoDate();
+
+            // Map data-name => hidden input id
+            const dateMapping = {
+                "Root_Cause_Anal": "Root_Cause_Date",
+                "Corrective_Action": "Corrective_Action_Date"
+            };
+
+            $("[contenteditable='true']").on("input", function () {
+                const field = $(this).data("name");
+                const hiddenId = dateMapping[field];
+
+                if (!hiddenId) return; // safety
+
+                const hiddenInput = $("#" + hiddenId);
+
+                // Set date only once
+                if (!hiddenInput.val()) {
+
+                    const now = new Date();
+                    const day = String(now.getDate()).padStart(2, "0");
+                    const month = String(now.getMonth() + 1).padStart(2, "0");
+                    const year = now.getFullYear();
+
+                    const formatted = `${day}-${month}-${year}`;
+
+                    hiddenInput.val(formatted);
+                }
+            });
         });
 
 
@@ -955,6 +1003,7 @@
 
 
         async function saveRCAReport() {
+            debugger;
             const saveBtn = document.getElementById('saveBtn');
             if (!saveBtn) return;
 

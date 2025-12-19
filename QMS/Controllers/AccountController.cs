@@ -30,6 +30,14 @@ namespace QMS.Controllers
                     HttpContext.Session.SetInt32("UserRole", (int)loginUser.RoleId);
                     HttpContext.Session.SetInt32("Vendor_Id", (int)loginUser.Vendor_Id);
                     HttpContext.Session.SetString("User_Type", loginUser.User_Type);
+                    if (DateTime.Now.Month > 3)
+                    {
+                        HttpContext.Session.SetString("FYear", (DateTime.Now.Year.ToString().Substring(2) + (DateTime.Now.Year + 1).ToString().Substring(2)));
+                    }
+                    else
+                    {
+                        HttpContext.Session.SetString("FYear", ((DateTime.Now.Year - 1).ToString().Substring(2) + (DateTime.Now.Year).ToString().Substring(2)));
+                    }
                     if (loginUser.RoleId == (int)UserRoles.Admin || loginUser.RoleId == (int)UserRoles.Manager || loginUser.RoleId == (int)UserRoles.Staff)
                     {
                         return RedirectToAction("OptionSelection", "Home");

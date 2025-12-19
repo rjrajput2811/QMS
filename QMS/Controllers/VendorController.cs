@@ -125,13 +125,13 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> CheckDuplicateUserName(string username)
+        public async Task<JsonResult> CheckDuplicateUserName(string username, int id)
         {
             try
             {
                 string user_name = username?.Trim() ?? string.Empty;
 
-                var existingResult = await _vendorRepository.CheckDuplicateUserName(user_name, 0);
+                var existingResult = await _vendorRepository.CheckDuplicateUserName(user_name, id);
 
                 if (existingResult.Any())
                 {

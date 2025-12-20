@@ -9,7 +9,33 @@
         padding-left: 12px;
     }
 
-  
+
+    /* parent row → remove bottom border for merged columns */
+    .tabulator-row.merge-parent
+    .tabulator-cell.tabulator-field-target,
+    .tabulator-row.merge-parent
+    .tabulator-cell.tabulator-field-weightage,
+    .tabulator-row.merge-parent
+    .tabulator-cell.tabulator-field-formula,
+    .tabulator-row.merge-parent
+    .tabulator-cell.tabulator-field-score {
+        border-bottom-color: transparent !important;
+    }
+
+    /* child row → remove top border (and hide any text) for merged columns */
+    .tabulator-row.merge-child
+    .tabulator-cell.tabulator-field-target,
+    .tabulator-row.merge-child
+    .tabulator-cell.tabulator-field-weightage,
+    .tabulator-row.merge-child
+    .tabulator-cell.tabulator-field-formula,
+    .tabulator-row.merge-child
+    .tabulator-cell.tabulator-field-score {
+        border-top-color: transparent !important;
+        color: transparent;
+    }
+
+
        
         .nav-tabs .nav-link {
             border: none;
@@ -164,7 +190,7 @@
 
 
 @Html.HiddenFor(m => m.Id)
-<div class="row mt-3">
+<div class="row">
     <div class="col-12">
         <div class="card shadow-sm">
             <div class="card-body">
@@ -250,7 +276,6 @@
 </div>
 <script src="~/js/tabulator.min.js"></script>
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
-
 <script>
     let effectivenessTable;
     let engagementTable;
@@ -262,16 +287,67 @@
             throw new Error("Tabulator not loaded");
         }
 
-        // Editable only when row id is odd
         function editableWhenOddId(cell) {
             const rowData = cell.getRow().getData();
             const id = Number(rowData.id);
 
-            if (isNaN(id)) return false;  // safety: non-numeric id => freeze
-            return id % 2 !== 0;          
+            if (isNaN(id)) return false;
+            return id % 2 !== 0;   // odd ids editable
+        }
+        function mergeRowFormatter(row) {
+            const data = row.getData();
+
+            // ====== Merge normal double-line rows ======
+            if (data.mergeWithPrev) {
+                const prevRow = row.getPrevRow();
+                if (!prevRow) return;
+
+                const mergeFields = ["SrNo", "target", "weightage", "formula", "score"];
+                mergeFields.forEach(field => {
+                    const childCell = row.getCell(field);
+                    if (childCell) {
+                        const el = childCell.getElement();
+                        el.style.borderTop = "none";
+                        el.innerHTML = "";
+                    }
+
+                    const parentCell = prevRow.getCell(field);
+                    if (parentCell) {
+                        const elp = parentCell.getElement();
+                        elp.style.borderBottom = "none";
+                    }
+                });
+            }
+
+            // ====== Special CASE for "Total Weighted Score" ======
+            if (data.formula === "Total Weighted Score") {
+
+                // Only affect target & weightage (NOT score)
+                ["target", "weightage"].forEach(field => {
+                    const cell = row.getCell(field);
+                    if (cell) {
+                        const el = cell.getElement();
+                        el.innerHTML = "";              // no text
+                        el.style.borderLeft = "none";   // remove vertical lines
+                        el.style.borderRight = "none";  // keep top/bottom lines only
+                    }
+                });
+
+                // Style the Formula cell (but DO NOT touch its right border now)
+                const formulaCell = row.getCell("formula");
+                if (formulaCell) {
+                    const el = formulaCell.getElement();
+                    el.style.textAlign = "center";
+                    el.style.fontWeight = "bold";
+                    // el.style.borderRight = "none";   // <-- removed so SCORE column stays intact
+                }
+            }
         }
 
-   
+
+
+        // =================== DATA ===================
+
         var effectivenessTemplate = [
 
             // SR 1
@@ -405,17 +481,15 @@
             // SR 9 — SUMMARY
             {
                 id: 19, SrNo: 9, group: "Weighted Score Summary",
-                attribute: "Weighted Score Target : 100",
+                attribute: "Weighted Score Target",
                 data: "@(Model?.Eff_Total_Sum)", target: "", weightage: "",
                 formula: "Total Weighted Score", score: "@(Model?.Eff_Total_Weighted_Score)",
-                mergeWithPrev: true
+                mergeWithPrev: false
             }
         ];
 
-        /* ---------------- ENGAGEMENT TEMPLATE WITH PAIRS ---------------- */
         var engagementTemplate = [
 
-            // Sr No 1 — Lean
             {
                 id: 1, SrNo: 1, group: "Lean Engagement",
                 attribute: "No Of People engaged in Turbo and Ideas generation",
@@ -431,7 +505,6 @@
                 formula: "", score: "", mergeWithPrev: true
             },
 
-            // Sr No 2 — Six Sigma Tools & Projects
             {
                 id: 3, SrNo: 2, group: "Six Sigma Engagement -(Tools & Projects)",
                 attribute: "Project Engagement",
@@ -447,7 +520,6 @@
                 score: "", mergeWithPrev: true
             },
 
-            // Sr No 3 — SPM Review
             {
                 id: 5, SrNo: 3, group: "SPM Review Plan vs. actual",
                 attribute: "No of Vendors audited actually",
@@ -529,25 +601,34 @@
             // Sr No 8 — Summary
             {
                 id: 15, SrNo: 8, group: "Weighted Score Summary",
-                attribute: "Weighted Score Target : 100",
+                attribute: "Weighted Score Target",
                 data: "@(Model?.Eng_Total_Sum)", target: "", weightage: "",
                 formula: "Total Weighted Score", score: "@(Model?.Eng_Total_Weighted_Score)",
-                mergeWithPrev: true
+                mergeWithPrev: false
             }
         ];
-        function mergedCellFormatter(cell) {
-            const data = cell.getRow().getData();
-            const el = cell.getElement();
 
-            if (data.mergeWithPrev) {
-                // visually merge with previous row
-                el.style.borderTop = "none";
-                return "";      // no text in the second row
-            }
+        // =================== COLUMNS ===================
 
-            return cell.getValue(); // normal for the first row of the pair
+        function numericOnlyEditor(cell, onRendered, success, cancel) {
+            var input = document.createElement("input");
+            input.type = "text";                 // no arrows
+            input.value = cell.getValue() ?? "";
+
+            // block alphabets in real time
+            input.addEventListener("input", function () {
+                this.value = this.value.replace(/[^0-9.]/g, "");  // allow digits + dot
+            });
+
+            input.addEventListener("blur", () => success(input.value));
+
+            input.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") success(input.value);
+                if (e.key === "Escape") cancel();
+            });
+
+            return input;
         }
-
 
         let effectivenessColumns = [
             {
@@ -575,51 +656,62 @@
                 widthGrow: 2,
                 formatter: "textarea"
             },
-       
+
             {
                 title: "Data for PC",
                 field: "data",
                 hozAlign: "center",
-                editor: "input",          
-                validator: ["numeric"]     
+                editor: numericOnlyEditor,
+                validator: ["numeric"]
             },
             {
                 title: "Target",
                 field: "target",
                 hozAlign: "center",
-                editor: "input",         
-                editable: editableWhenOddId,
-                validator: ["numeric"],
-                formatter: mergedCellFormatter
+                editor: numericOnlyEditor,
+                editable: function (cell) {
+                    const rowData = cell.getRow().getData();
+                    if (rowData.formula === "Total Weighted Score") return false;
+                    return editableWhenOddId(cell);
+                },
 
+                validator: ["numeric"]
             },
             {
                 title: "Weightage",
                 field: "weightage",
                 hozAlign: "center",
-                editor: "input",
-                editable: editableWhenOddId,
+                editor: numericOnlyEditor,
+                editable: function (cell) {
+                    const rowData = cell.getRow().getData();
+                    if (rowData.formula === "Total Weighted Score") return false;
+                    return editableWhenOddId(cell);
+                },
+
                 validator: ["numeric"]
             },
             {
                 title: "Formula",
                 field: "formula",
                 hozAlign: "center",
-                editor: "input",
-                editable: editableWhenOddId,
-                validator: ["numeric"]
+                editor: numericOnlyEditor,
+                editable: function (cell) {
+                    const value = cell.getValue();
+                    // 🔒 Lock only the cell with label "Total Weighted Score"
+                    if (value === "Total Weighted Score") return false;
+                    return editableWhenOddId(cell);
+                }
             },
+
             {
                 title: "Weighted Score",
                 field: "score",
                 hozAlign: "center",
-                editor: "input",
+                editor: numericOnlyEditor,
                 editable: editableWhenOddId,
                 validator: ["numeric"]
             }
         ];
-
-
 
         let engagementColumns = [
             {
@@ -647,50 +739,64 @@
                 widthGrow: 2,
                 formatter: "textarea"
             },
-      
+
             {
                 title: "Data for PC",
                 field: "data",
                 hozAlign: "center",
-                editor: "input",
+                editor: numericOnlyEditor,
                 validator: ["numeric"]
             },
             {
                 title: "Target",
                 field: "target",
                 hozAlign: "center",
-                editor: "input",
-                editable: editableWhenOddId,
+                editor: numericOnlyEditor,
+                editable: function (cell) {
+                    const rowData = cell.getRow().getData();
+                    if (rowData.formula === "Total Weighted Score") return false;
+                    return editableWhenOddId(cell);
+                },
+
                 validator: ["numeric"]
             },
             {
                 title: "Weightage",
                 field: "weightage",
                 hozAlign: "center",
-                editor: "input",
-                editable: editableWhenOddId,
+                editor: numericOnlyEditor,
+                editable: function (cell) {
+                    const rowData = cell.getRow().getData();
+                    if (rowData.formula === "Total Weighted Score") return false;
+                    return editableWhenOddId(cell);
+                },
+
                 validator: ["numeric"]
             },
             {
                 title: "Formula",
                 field: "formula",
                 hozAlign: "center",
-                editor: "input",         
-                editable: editableWhenOddId,
-                validator: ["numeric"]
+                editor: numericOnlyEditor,
+                editable: function (cell) {
+                    const value = cell.getValue();
+                    // 🔒 Lock only the cell with label "Total Weighted Score"
+                    if (value === "Total Weighted Score") return false;
+                    return editableWhenOddId(cell);
+                }
             },
             {
                 title: "Weighted Score",
                 field: "score",
                 hozAlign: "center",
-                editor: "input",
+                editor: numericOnlyEditor,
                 editable: editableWhenOddId,
                 validator: ["numeric"]
             }
         ];
 
+        // =================== TABLES ===================
 
- 
         effectivenessTable = new Tabulator("#sixSigmaTableEffectiveness", {
             data: effectivenessTemplate,
             layout: "fitColumns",
@@ -703,6 +809,7 @@
             headerSort: false,
             height: "auto",
             columns: effectivenessColumns,
+            rowFormatter: mergeRowFormatter,
             cellEdited: function (cell) {
                 const field = cell.getField();
                 if (!["target", "weightage", "formula", "score"].includes(field)) return;
@@ -721,7 +828,6 @@
             }
         });
 
-        /* ---------------- ENGAGEMENT TABLE ---------------- */
         engagementTable = new Tabulator("#sixSigmaTableEngagement", {
             data: engagementTemplate,
             layout: "fitColumns",
@@ -734,6 +840,7 @@
             headerSort: false,
             height: "auto",
             columns: engagementColumns,
+            rowFormatter: mergeRowFormatter,
             cellEdited: function (cell) {
                 const field = cell.getField();
                 if (!["target", "weightage", "formula", "score"].includes(field)) return;
@@ -753,15 +860,12 @@
         });
     }
 
-   
     function getRowById(rows, id) {
         return rows.find(r => r.id === id) || {};
     }
 
-
     function saveSixSigma() {
 
-      
         const requiredHeaderFields = [
             { id: "Fy", name: "FY" },
             { id: "Pc", name: "PC" },
@@ -780,10 +884,10 @@
         if (missingHeaderFields.length > 0) {
             const listHTML = missingHeaderFields.map(f => `<li>${f}</li>`).join("");
             showDangerAlert(`
-            <p>Please fill out the following required field(s):</p>
-            <ul>${listHTML}</ul>
-        `);
-            return false;    // ⛔ stop further processing (do NOT call Blockloadershow yet)
+                    <p>Please fill out the following required field(s):</p>
+                    <ul>${listHTML}</ul>
+                `);
+            return false;
         }
 
         if (typeof Blockloadershow === "function") {
@@ -945,7 +1049,7 @@
         model.Fy = $("#Fy").val();
         model.Pc = $("#Pc").val();
         model.Location = $("#Location").val();
-        // ---- Anti-forgery token ----
+
         const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
         const formData = new FormData();
 
@@ -959,7 +1063,6 @@
             formData.append("__RequestVerificationToken", tokenInput.value);
         }
 
-        // If you have an Id field in the view model bound to a hidden input:
         const idInput = document.querySelector("#Id");
         if (idInput) {
             formData.append("Id", idInput.value);
@@ -994,14 +1097,12 @@
 
                     return false;
                 } else {
-                    // same pattern your company uses
                     if ($("#Id").val() > 0) {
                         showSuccessAlert("Updated Successfully.");
                     } else {
                         showSuccessAlert("Saved Successfully.");
                     }
 
-                    // redirect similar to your other screen (adjust target as needed)
                     setTimeout(function () {
                         window.open('@Url.Action("SEEIndices", "SEEIndices")', '_self');
                     }, 2500);
@@ -1016,7 +1117,6 @@
         });
     }
 
-
     $(document).ready(function () {
         loadSixSigmaGrid();
 
@@ -1025,5 +1125,8 @@
         });
     });
 </script>
+
+
+
 
 @section HideSidebar { }

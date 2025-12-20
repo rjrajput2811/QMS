@@ -399,7 +399,7 @@
                             let actionButtons = "";
 
                             actionButtons += `<i data-toggle="modal" onclick="delAHPNoteConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
-                            actionButtons += `<i onclick="exportToExcel(${rowData.Id})" class="fas fa-file-excel fa-1x" title="Export to Excel" style="color:green;cursor:pointer;margin-left: 5px;"></i>`;
+                            actionButtons += `<i onclick="exportToPDF(${rowData.Id})" class="fas fa-file-pdf fa-1x" title="Export to PDF" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
 
                             return actionButtons;
                         }
@@ -542,8 +542,32 @@
             });
         }
 
-        function exportToExcel(recid) {
-            
+        function exportToPDF(recid) {
+            Blockloadershow();
+            var url = '@Url.Action("ExportToPDF", "AHPNoteTracker")' + "?id=" + recid;
+
+            fetch(url, {
+                method: 'GET',
+                data: { id: recid }
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Create a new object URL for the PDF blob
+                var url = window.URL.createObjectURL(blob);
+
+                // Create a link element to download the PDF
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'AHP_Note_' + recid + '.pdf';
+                document.body.appendChild(a);  // Append link to body
+                a.click();  // Trigger click event to download
+                a.remove();  // Remove the link after download
+                Blockloaderhide();
+            })
+            .catch(error => {
+                Blockloaderhide();
+                showDangerAlert('Error exporting PDF: ' + error);
+            });
         }
 
         function addAHPNote() {

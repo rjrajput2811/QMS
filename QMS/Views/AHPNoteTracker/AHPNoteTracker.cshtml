@@ -290,6 +290,12 @@
         window.APP_BASE = '@Url.Content("~")';
         window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
 
+        $(document).ready(function() {
+            $("#ddlFinancialYear").on('change', function() {
+                loadAHPNoteGridData();
+            });
+        });
+
         var tabledata = [];
         var table = '';
         const searchTerms = {};
@@ -366,19 +372,17 @@
 
         function OnAHPNoteGridLoad(response) {
             Blockloadershow();
+
+            if (Tabulator.findTable("#ahpNote_table").length > 0) {
+                Tabulator.findTable("#ahpNote_table")[0].destroy();
+            }
+
             tabledata = [];
             let columns = [];
 
             // Map the response to the table format
             if (response.length > 0) {
                 $.each(response, function (index, item) {
-
-                    let reportDate = "";
-                    if (item.addedOn) {
-                        const dateObj = new Date(item.report_Date);
-                        reportDate = dateObj.toLocaleDateString("en-GB");
-                    }
-
                     tabledata.push({
                         Sr_No: index + 1,
                         Id: item.id,

@@ -297,7 +297,29 @@
                                     <tr>
                                         <td colspan="4" style="padding:8px; border:1.5px solid #000;">
                                             <label style="font-weight:600;">Product Code and Description:</label>
-                                            <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter product code and description" value="@Model?.Prod_Code_Desc" name="Prod_Code_Desc" />
+                                            <div class="row">
+                                                <div class="col-md-2">
+                                                    <input type="text"
+                                                           name="BISsear_Code"
+                                                           id="BISsear_Code"
+                                                           class="underline-input w-100"
+                                                           placeholder="Search Code"
+                                                           aria-label="Search Code"
+                                                           oninput="handleBisSearch(this)"
+                                                           style="text-transform: uppercase;" />
+                                                </div>
+
+                                                <div class="col-md-9">
+                                                    <input type="text"
+                                                           id="BISproductCodeInput"
+                                                           name="Prod_Code_Desc"
+                                                           class="underline-input w-100"
+                                                           placeholder="Enter product code and description"
+                                                           aria-label="Product Code and Description"
+                                                           autocomplete="off"
+                                                           value="@Model?.Prod_Code_Desc" />
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
 
@@ -854,6 +876,7 @@
 
         let monitoringBody;
         let monitoringAddBtn;
+        let searchTimeout;
 
         $(document).ready(function () {
             initMonitoringTable();
@@ -887,7 +910,136 @@
                     hiddenInput.val(formatted);
                 }
             });
+
+            const inputElement = $("#BISsear_Code");
+            if (inputElement.length) {
+                // Attach the keydown event handler
+                inputElement.on('keydown', function (event) {
+                    handleBisSearch(event);
+                });
+            }
         });
+
+            function handleBisSearch(event) {
+                debugger
+                if (event.key !== 'Enter') return;
+
+                clearTimeout(searchTimeout);
+                let processedQuery = '';
+                let searchQuery = event.target.value.trim(); // Get value from input field
+                processedQuery = searchQuery.substring(0, 4);
+
+                let searchTerms = processedQuery;
+
+                // Debounce to reduce the frequency of API calls
+                searchTimeout = setTimeout(() => {
+                    pagedData = {}; // Clear cached data
+                    // Load data with the processed query
+                    fetchBisRelatedData(searchTerms, event.target);
+                }, 300); // Delay of 300ms
+            }
+
+            function fetchBisRelatedData(productCatNo, inputField) {
+                debugger
+                $.ajax({
+                    url: '/Vendor/GetCodeSearch', // API endpoint
+                    type: 'GET', // HTTP method
+                    data: { search: productCatNo }, // Query parameters
+                    dataType: 'json', // Expected response data type
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            displayBisSuggestions(data, inputField);
+                        } else {
+                            showDangerAlert('No data found for the entered Product Cat No.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching data:', error);
+                    }
+                });
+            }
+
+
+            // Function to display suggestions in a dropdown
+                function displayBisSuggestions(data, inputField) {
+            // Remove any existing dropdown (if any)
+            removeExistingDropdown(inputField);
+
+            // Ensure parent can anchor absolute dropdown
+            const parent = inputField.parentElement;
+            if (getComputedStyle(parent).position === "static") {
+                parent.style.position = "relative";
+            }
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'suggestion-dropdown';
+            dropdown.style.position = 'absolute';
+            dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+            dropdown.style.left = inputField.offsetLeft + 'px';
+            dropdown.style.backgroundColor = 'white';
+            dropdown.style.border = '1px solid #ccc';
+            dropdown.style.zIndex = 1000;
+            dropdown.style.overflowY = 'auto';
+            dropdown.style.maxHeight = '300px';
+            dropdown.style.width = inputField.offsetWidth + 'px';
+            dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+            data.forEach(item => {
+                const code = (item.oldPart_No || "").toString().trim();
+                // change these keys as per your API response:
+                const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                const option = document.createElement('div');
+                option.className = 'suggestion-item';
+                option.textContent = desc ? `${code} | ${desc}` : code;
+                option.style.padding = '8px';
+                option.style.cursor = 'pointer';
+
+                option.addEventListener('mouseover', () => {
+                    option.style.backgroundColor = '#4682B4';
+                    option.style.color = '#fff';
+                });
+                option.addEventListener('mouseout', () => {
+                    option.style.backgroundColor = '';
+                    option.style.color = '';
+                });
+
+                option.addEventListener('click', () => {
+                    const productInput = document.getElementById('BISproductCodeInput');
+                    if (productInput) {
+                        productInput.value = desc ? `${code} | ${desc}` : code;
+                    }
+
+                    // optional: also set search box to just code
+                    const searchBox = document.getElementById('BISsear_Code');
+                    if (searchBox) {
+                        searchBox.value = code;
+                    }
+
+                    dropdown.remove();
+                });
+
+                dropdown.appendChild(option);
+            });
+
+            parent.appendChild(dropdown);
+        }
+
+
+            // Function to remove any existing dropdowns
+            function removeExistingDropdown(inputField) {
+                const existingDropdown = document.querySelector('.suggestion-dropdown');
+                if (existingDropdown) {
+                    existingDropdown.remove();
+                }
+            }
+
+            // Remove dropdown on outside click
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#BISsear_Code')) {
+                    removeExistingDropdown();
+                }
+            });
 
 
         function createMonitoringDeleteButton() {

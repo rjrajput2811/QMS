@@ -27,7 +27,7 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/popper.js/dist/umd/popper.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-    
+
     <style>
         .header-back-btn {
             font-weight: 600;
@@ -60,8 +60,8 @@
             height: 100%;
             overflow: hidden; /* no scrollbars, no scrolling */
         }
-       
-        
+
+
         .tracker-palette {
             background: #fff;
             border-radius: 16px;
@@ -70,293 +70,293 @@
             border: 1px solid #e5e7eb;
         }
 
-        .tracker-palette .palette-header {
-            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-            color: #fff;
-            padding: 10px 20px;
-        }
+            .tracker-palette .palette-header {
+                background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+                color: #fff;
+                padding: 10px 20px;
+            }
 
-        .tracker-palette .palette-header h5 {
-            margin: 0 0 4px 0;
-            font-weight: 700;
-            font-size: 18px;
-        }
+                .tracker-palette .palette-header h5 {
+                    margin: 0 0 4px 0;
+                    font-weight: 700;
+                    font-size: 18px;
+                }
 
-        .tracker-palette .palette-header small {
-            opacity: 0.85;
-            font-size: 13px;
-        }
+                .tracker-palette .palette-header small {
+                    opacity: 0.85;
+                    font-size: 13px;
+                }
 
-        .tracker-palette .palette-search {
-            padding: 10px 16px;
-            border-bottom: 1px solid #e5e7eb;
-        }
+            .tracker-palette .palette-search {
+                padding: 10px 16px;
+                border-bottom: 1px solid #e5e7eb;
+            }
 
-        .tracker-palette .search-wrapper {
-            display: flex;
-            align-items: center;
-            background: #f3f4f6;
-            border-radius: 10px;
-            padding: 8px 14px;
-            border: 2px solid transparent;
-            transition: all 0.2s;
-        }
+            .tracker-palette .search-wrapper {
+                display: flex;
+                align-items: center;
+                background: #f3f4f6;
+                border-radius: 10px;
+                padding: 8px 14px;
+                border: 2px solid transparent;
+                transition: all 0.2s;
+            }
 
-        .tracker-palette .search-wrapper:focus-within {
-            background: #fff;
-            border-color: #0ea5e9;
-            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
-        }
+                .tracker-palette .search-wrapper:focus-within {
+                    background: #fff;
+                    border-color: #0ea5e9;
+                    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.15);
+                }
 
-        .tracker-palette .search-wrapper input {
-            border: none;
-            background: transparent;
-            outline: none;
-            flex: 1;
-            font-size: 14px;
-            margin-left: 8px;
-        }
+                .tracker-palette .search-wrapper input {
+                    border: none;
+                    background: transparent;
+                    outline: none;
+                    flex: 1;
+                    font-size: 14px;
+                    margin-left: 8px;
+                }
 
-        .tracker-palette .search-wrapper .search-icon {
-            color: #9ca3af;
-        }
+                .tracker-palette .search-wrapper .search-icon {
+                    color: #9ca3af;
+                }
 
-        .tracker-palette .search-wrapper .clear-btn {
-            background: none;
-            border: none;
-            color: #9ca3af;
-            cursor: pointer;
-            padding: 0;
-            display: none;
-        }
+                .tracker-palette .search-wrapper .clear-btn {
+                    background: none;
+                    border: none;
+                    color: #9ca3af;
+                    cursor: pointer;
+                    padding: 0;
+                    display: none;
+                }
 
-        .tracker-palette .search-wrapper .clear-btn.show {
-            display: block;
-        }
+                    .tracker-palette .search-wrapper .clear-btn.show {
+                        display: block;
+                    }
 
-        .tracker-palette .palette-content {
-            max-height: 450px;
-            overflow-y: auto;
-        }
+            .tracker-palette .palette-content {
+                max-height: 450px;
+                overflow-y: auto;
+            }
 
-        .tracker-palette .section-label {
-            font-size: 11px;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 10px 16px 6px;
-            font-weight: 600;
-        }
+            .tracker-palette .section-label {
+                font-size: 11px;
+                color: #9ca3af;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                padding: 10px 16px 6px;
+                font-weight: 600;
+            }
 
-        .tracker-palette .group-list {
-            padding: 0 8px 8px;
-        }
+            .tracker-palette .group-list {
+                padding: 0 8px 8px;
+            }
 
-        .tracker-palette .group-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 14px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 2px;
-        }
+            .tracker-palette .group-item {
+                display: flex;
+                align-items: center;
+                padding: 12px 14px;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-bottom: 2px;
+            }
 
-        .tracker-palette .group-item:hover {
-            background: #e0f2fe;
-        }
+                .tracker-palette .group-item:hover {
+                    background: #e0f2fe;
+                }
 
-        .tracker-palette .group-item .group-icon {
-            font-size: 22px;
-            margin-right: 12px;
-            width: 32px;
-            text-align: center;
-        }
+                .tracker-palette .group-item .group-icon {
+                    font-size: 22px;
+                    margin-right: 12px;
+                    width: 32px;
+                    text-align: center;
+                }
 
-        .tracker-palette .group-item .group-info {
-            flex: 1;
-        }
+                .tracker-palette .group-item .group-info {
+                    flex: 1;
+                }
 
-        .tracker-palette .group-item .group-name {
-            font-weight: 600;
-            color: #1f2937;
-            font-size: 14px;
-            margin-bottom: 2px;
-        }
+                .tracker-palette .group-item .group-name {
+                    font-weight: 600;
+                    color: #1f2937;
+                    font-size: 14px;
+                    margin-bottom: 2px;
+                }
 
-        .tracker-palette .group-item .group-count {
-            font-size: 12px;
-            color: #9ca3af;
-        }
+                .tracker-palette .group-item .group-count {
+                    font-size: 12px;
+                    color: #9ca3af;
+                }
 
-        .tracker-palette .group-item .arrow-icon {
-            color: #d1d5db;
-        }
+                .tracker-palette .group-item .arrow-icon {
+                    color: #d1d5db;
+                }
 
-        .tracker-palette .highlight {
-            background: #fef08a;
-            padding: 0 3px;
-            border-radius: 3px;
-        }
+            .tracker-palette .highlight {
+                background: #fef08a;
+                padding: 0 3px;
+                border-radius: 3px;
+            }
 
-        /* Items View */
-        .tracker-palette .items-view {
-            padding: 16px;
-            display: none;
-        }
+            /* Items View */
+            .tracker-palette .items-view {
+                padding: 16px;
+                display: none;
+            }
 
-        .tracker-palette .items-view.active {
-            display: block;
-        }
+                .tracker-palette .items-view.active {
+                    display: block;
+                }
 
-        .tracker-palette .back-header {
-            display: flex;
-            align-items: center;
-            padding-bottom: 14px;
-            margin-bottom: 14px;
-            border-bottom: 1px solid #e5e7eb;
-        }
+            .tracker-palette .back-header {
+                display: flex;
+                align-items: center;
+                padding-bottom: 14px;
+                margin-bottom: 14px;
+                border-bottom: 1px solid #e5e7eb;
+            }
 
-        .tracker-palette .back-btn {
-            background: none;
-            border: none;
-            padding: 6px;
-            border-radius: 8px;
-            color: #6b7280;
-            cursor: pointer;
-            margin-right: 10px;
-            transition: all 0.2s;
-        }
+            .tracker-palette .back-btn {
+                background: none;
+                border: none;
+                padding: 6px;
+                border-radius: 8px;
+                color: #6b7280;
+                cursor: pointer;
+                margin-right: 10px;
+                transition: all 0.2s;
+            }
 
-        .tracker-palette .back-btn:hover {
-            background: #f3f4f6;
-            color: #374151;
-        }
+                .tracker-palette .back-btn:hover {
+                    background: #f3f4f6;
+                    color: #374151;
+                }
 
-        .tracker-palette .selected-group-icon {
-            font-size: 28px;
-            margin-right: 12px;
-        }
+            .tracker-palette .selected-group-icon {
+                font-size: 28px;
+                margin-right: 12px;
+            }
 
-        .tracker-palette .selected-group-name {
-            font-weight: 700;
-            color: #1f2937;
-            font-size: 16px;
-            margin-bottom: 2px;
-        }
+            .tracker-palette .selected-group-name {
+                font-weight: 700;
+                color: #1f2937;
+                font-size: 16px;
+                margin-bottom: 2px;
+            }
 
-        .tracker-palette .selected-group-count {
-            font-size: 12px;
-            color: #9ca3af;
-        }
+            .tracker-palette .selected-group-count {
+                font-size: 12px;
+                color: #9ca3af;
+            }
 
-        .tracker-palette .tracker-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 14px;
-            background: #f9fafb;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
-            margin-bottom: 8px;
-            transition: all 0.2s;
-        }
+            .tracker-palette .tracker-item {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 12px 14px;
+                background: #f9fafb;
+                border-radius: 10px;
+                border: 1px solid #e5e7eb;
+                margin-bottom: 8px;
+                transition: all 0.2s;
+            }
 
-        .tracker-palette .tracker-item:hover {
-            background: #e0f2fe;
-            border-color: #7dd3fc;
-        }
+                .tracker-palette .tracker-item:hover {
+                    background: #e0f2fe;
+                    border-color: #7dd3fc;
+                }
 
-        .tracker-palette .tracker-item .tracker-name {
-            font-weight: 500;
-            color: #374151;
-            font-size: 14px;
-        }
+                .tracker-palette .tracker-item .tracker-name {
+                    font-weight: 500;
+                    color: #374151;
+                    font-size: 14px;
+                }
 
-        .tracker-palette .tracker-item .btn-group-tracker {
-            display: flex;
-            gap: 6px;
-        }
+                .tracker-palette .tracker-item .btn-group-tracker {
+                    display: flex;
+                    gap: 6px;
+                }
 
-        .tracker-palette .btn-input {
-            background: #22c55e;
-            border: none;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+            .tracker-palette .btn-input {
+                background: #22c55e;
+                border: none;
+                color: #fff;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 6px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
 
-        .tracker-palette .btn-input:hover {
-            background: #16a34a;
-        }
+                .tracker-palette .btn-input:hover {
+                    background: #16a34a;
+                }
 
-        .tracker-palette .btn-output {
-            background: #f97316;
-            border: none;
-            color: #fff;
-            font-size: 12px;
-            font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+            .tracker-palette .btn-output {
+                background: #f97316;
+                border: none;
+                color: #fff;
+                font-size: 12px;
+                font-weight: 600;
+                padding: 6px 12px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
 
-        .tracker-palette .btn-output:hover {
-            background: #ea580c;
-        }
+                .tracker-palette .btn-output:hover {
+                    background: #ea580c;
+                }
 
-        .tracker-palette .palette-footer {
-            background: #f9fafb;
-            padding: 10px 16px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #6b7280;
-        }
+            .tracker-palette .palette-footer {
+                background: #f9fafb;
+                padding: 10px 16px;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                color: #6b7280;
+            }
 
-        .tracker-palette .legend-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 4px;
-        }
+            .tracker-palette .legend-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                display: inline-block;
+                margin-right: 4px;
+            }
 
-        .tracker-palette .legend-dot.input {
-            background: #22c55e;
-        }
+                .tracker-palette .legend-dot.input {
+                    background: #22c55e;
+                }
 
-        .tracker-palette .legend-dot.output {
-            background: #f97316;
-        }
+                .tracker-palette .legend-dot.output {
+                    background: #f97316;
+                }
 
-        .tracker-palette .no-results {
-            text-align: center;
-            padding: 40px 20px;
-            color: #9ca3af;
-        }
+            .tracker-palette .no-results {
+                text-align: center;
+                padding: 40px 20px;
+                color: #9ca3af;
+            }
 
-        .tracker-palette .no-results i {
-            font-size: 48px;
-            margin-bottom: 12px;
-            opacity: 0.5;
-        }
+                .tracker-palette .no-results i {
+                    font-size: 48px;
+                    margin-bottom: 12px;
+                    opacity: 0.5;
+                }
 
-        /* Groups View */
-        .tracker-palette .groups-view {
-            display: block;
-        }
+            /* Groups View */
+            .tracker-palette .groups-view {
+                display: block;
+            }
 
-        .tracker-palette .groups-view.hidden {
-            display: none;
-        }
+                .tracker-palette .groups-view.hidden {
+                    display: none;
+                }
 
         /* OFF (unchecked) state → GREEN */
         /* OFF (unchecked) → WHITE background */
@@ -380,6 +380,31 @@
         .custom-control-input:checked ~ .custom-control-label::after {
             background-color: #888888 !important; /* grey */
         }
+
+        .all-group-block {
+            margin-bottom: 18px;
+        }
+
+        .all-group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            color: #111827;
+            padding: 8px 10px;
+            border-radius: 10px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            margin-bottom: 10px;
+        }
+
+            .all-group-header .group-count {
+                font-weight: 600;
+                color: #6b7280;
+                font-size: 12px;
+                margin-left: auto;
+            }
+
     </style>
 </head>
 <body>
@@ -444,107 +469,107 @@
         </div>
     </div>
 
-  
-        <div class="row p-3">
-            <div class="col-12 d-flex justify-content-end">
-                <button type="button"
-                        class="btn btn-outline-primary"
-                        style="width:120px; font-size:15px"
-                        onclick="window.location.href='@Url.Action("WiproMenu","Home")'">
-                    <i class="fas fa-arrow-left"></i> BACK
-                </button>
-            </div>
+
+    <div class="row p-3">
+        <div class="col-12 d-flex justify-content-end">
+            <button type="button"
+                    class="btn btn-outline-primary"
+                    style="width:120px; font-size:15px"
+                    onclick="window.location.href='@Url.Action("WiproMenu","Home")'">
+                <i class="fas fa-arrow-left"></i> BACK
+            </button>
         </div>
-        <div class="row p-3 d-flex justify-content-center" style="margin-top:-85px;">
-            
-            <!-- ============================================
-                 TRACKER-1: Command Palette Style
-                 ============================================ -->
-            <div class="col-md-4">
-                <div class="tracker-palette" id="tracker1Palette">
+    </div>
+    <div class="row p-3 d-flex justify-content-center" style="margin-top:-85px;">
 
-                    <!-- Header -->
-                    <div class="palette-header d-flex justify-content-between align-items-center">
+        <!-- ============================================
+             TRACKER-1: Command Palette Style
+             ============================================ -->
+        <div class="col-md-4">
+            <div class="tracker-palette" id="tracker1Palette">
 
-                        <div>
-                            <h5 class="m-0">
-                                <i class="fas fa-tasks mr-2"></i>Tracker
-                            </h5>
-                     
-                        </div>
+                <!-- Header -->
+                <div class="palette-header d-flex justify-content-between align-items-center">
 
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="expandAllSwitch" onchange="toggleExpandAll()" />
-                            <label class="custom-control-label" for="expandAllSwitch" title="Expand all groups"></label>
-                        </div>
-
-
+                    <div>
+                        <h5 class="m-0">
+                            <i class="fas fa-tasks mr-2"></i>Tracker
+                        </h5>
 
                     </div>
 
-                    <!-- Search -->
-                    <div class="palette-search">
-                        <div class="search-wrapper">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="palette-search-input" placeholder="Search Tracker..." data-target="tracker1">
-                            <button type="button" class="clear-btn" data-target="tracker1">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" id="expandAllSwitch" onchange="toggleExpandAll()" />
+                        <label class="custom-control-label" for="expandAllSwitch" title="Expand all groups"></label>
                     </div>
 
-                    <!-- Content -->
-                    <div class="palette-content">
 
-                        <!-- Groups View -->
-                        <div class="groups-view" id="tracker1GroupsView">
-                            <div class="section-label" id="tracker1Label">ALL TRACKER</div>
-                            <div class="group-list" id="tracker1GroupList">
-                                <!-- Groups rendered by JS -->
-                            </div>
-                            <div class="no-results" id="tracker1NoResults" style="display:none;">
-                                <i class="far fa-frown"></i>
-                                <p>No Tracker found</p>
-                            </div>
-                        </div>
-
-                        <!-- Items View -->
-                        <div class="items-view" id="tracker1ItemsView">
-                            <div class="back-header">
-                                <button type="button" class="back-btn" onclick="showGroups('tracker1')">
-                                    <i class="fas fa-arrow-left"></i>
-                                </button>
-                                <span class="selected-group-icon" id="tracker1SelectedIcon"></span>
-                                <div>
-                                    <div class="selected-group-name" id="tracker1SelectedName"></div>
-                                    <div class="selected-group-count" id="tracker1SelectedCount"></div>
-                                </div>
-                            </div>
-                            <div id="tracker1ItemsList">
-                                <!-- Items rendered by JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Footer -->
-                    <div class="palette-footer">
-                        <div>
-                            <span class="mr-3"><span class="legend-dot input"></span> Input</span>
-                            <span><span class="legend-dot output"></span> Output</span>
-                        </div>
-                        <span id="tracker1GroupCount"></span>
-                    </div>
 
                 </div>
+
+                <!-- Search -->
+                <div class="palette-search">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="palette-search-input" placeholder="Search Tracker..." data-target="tracker1">
+                        <button type="button" class="clear-btn" data-target="tracker1">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="palette-content">
+
+                    <!-- Groups View -->
+                    <div class="groups-view" id="tracker1GroupsView">
+                        <div class="section-label" id="tracker1Label">ALL TRACKER</div>
+                        <div class="group-list" id="tracker1GroupList">
+                            <!-- Groups rendered by JS -->
+                        </div>
+                        <div class="no-results" id="tracker1NoResults" style="display:none;">
+                            <i class="far fa-frown"></i>
+                            <p>No Tracker found</p>
+                        </div>
+                    </div>
+
+                    <!-- Items View -->
+                    <div class="items-view" id="tracker1ItemsView">
+                        <div class="back-header">
+                            <button type="button" class="back-btn" onclick="showGroups('tracker1')">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <span class="selected-group-icon" id="tracker1SelectedIcon"></span>
+                            <div>
+                                <div class="selected-group-name" id="tracker1SelectedName"></div>
+                                <div class="selected-group-count" id="tracker1SelectedCount"></div>
+                            </div>
+                        </div>
+                        <div id="tracker1ItemsList">
+                            <!-- Items rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="palette-footer">
+                    <div>
+                        <span class="mr-3"><span class="legend-dot input"></span> Input</span>
+                        <span><span class="legend-dot output"></span> Output</span>
+                    </div>
+                    <span id="tracker1GroupCount"></span>
+                </div>
+
             </div>
-            
+        </div>
 
 
 
-            <!-- ============================================
-                 TRACKER-2: Command Palette Style
-                 ============================================ -->
-    @*         <div class="col-md-4">
+
+        <!-- ============================================
+             TRACKER-2: Command Palette Style
+             ============================================ -->
+        @*         <div class="col-md-4">
                 <div class="tracker-palette" id="tracker2Palette">
                     <!-- Header -->
                     <div class="palette-header">
@@ -606,10 +631,10 @@
                 </div>
             </div> *@
 
-            <!-- ============================================
-                 TRACKER-3 (Product Validation): Command Palette Style
-                 ============================================ -->
-       @*      <div class="col-md-4">
+        <!-- ============================================
+             TRACKER-3 (Product Validation): Command Palette Style
+             ============================================ -->
+        @*      <div class="col-md-4">
                 <div class="tracker-palette" id="tracker3Palette">
                     <!-- Header -->
                     <div class="palette-header">
@@ -671,8 +696,8 @@
                 </div>
             </div> *@
 
-        </div>
     </div>
+
 
     <div class="content-wrapper">
         @RenderBody()
@@ -703,19 +728,41 @@
     <script src="~/js/components_collapsible.js" asp-append-version="true"></script>
 
     <script>
-        // ============================================
-        // TRACKER DATA - Update URLs as needed
-        // ============================================
-        
-        // Tracker-1 Groups
+                // ============================================
+                // TRACKER DATA - Update URLs as needed
+                // ============================================
+
+                // Tracker-1 Groups
         const tracker1Groups = [
             {
                 id: 'corrective-action',
                 name: 'Corrective Action',
                 icon: '🔧',
                 items: [
-                    { name: 'CA Report', inputUrl: '@Url.Action("CAFormatee", "CAReport")', outputUrl: '@Url.Action("CAFormatee", "CAReport")' },
-                    { name: 'Customer RCA Report', inputUrl: '@Url.Action("CustomerRCA", "CustomerRCAReport")', outputUrl: '@Url.Action("CustomerRCA", "CustomerRCAReport")' }
+                    {
+                        name: 'CA Report',
+                        inputUrl: '@Url.Action("CAFormatee", "CAReport")',
+                        inputLabel: 'Input',
+                        outputs: [
+                            // Example 1: Normal Output (same as input)
+                            // { label: 'Output', url: '@Url.Action("CAFormatee", "CAReport")', css: 'btn-output' },
+
+                            // Example 2: Another output named CSO
+                            // Change controller/action as per your CSO page
+                            { label: 'CSO Tracking', url: '@Url.Action("CSOTracking", "TrackerOutput")', css: 'btn-output' },
+
+                            // Example 3: Excel export (if you have)
+                            // { label: 'Excel', url: '@Url.Action("ExportCAReportToExcel", "CAReport")', css: 'btn-output-excel' },
+                        ]
+                    },
+                    {
+                        name: 'Customer RCA Report',
+                        inputUrl: '@Url.Action("CustomerRCA", "CustomerRCAReport")',
+                        inputLabel: 'Input',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("CustomerRCA", "CustomerRCAReport")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -723,7 +770,13 @@
                 name: 'Deviation',
                 icon: '⚠️',
                 items: [
-                    { name: 'Deviation Note', inputUrl: '@Url.Action("DNTracker", "DNTracker")', outputUrl: '@Url.Action("DNTracker", "DNTracker")' }
+                    {
+                        name: 'Deviation Note',
+                        inputUrl: '@Url.Action("DNTracker", "DNTracker")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("DNTracker", "DNTracker")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -731,7 +784,13 @@
                 name: 'BIS',
                 icon: '📜',
                 items: [
-                    { name: 'BIS Working Template', inputUrl: '@Url.Action("BisProjectTracker", "BisProjectTrac")', outputUrl: '@Url.Action("BisProjectTracker", "BisProjectTrac")' }
+                    {
+                        name: 'BIS Working Template',
+                        inputUrl: '@Url.Action("BisProjectTracker", "BisProjectTrac")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("BisProjectTracker", "BisProjectTrac")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -739,7 +798,13 @@
                 name: 'Continual Improvement',
                 icon: '📈',
                 items: [
-                    { name: 'Continual Improvement', inputUrl: '@Url.Action("ContinualImprovementTrac", "ContiImprove")', outputUrl: '@Url.Action("ContinualImprovementTrac", "ContiImprove")' }
+                    {
+                        name: 'Continual Improvement',
+                        inputUrl: '@Url.Action("ContinualImprovementTrac", "ContiImprove")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("ContinualImprovementTrac", "ContiImprove")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -747,7 +812,13 @@
                 name: 'Waluj',
                 icon: '🏭',
                 items: [
-                    { name: 'FIFO format of Waluj Testing', inputUrl: '@Url.Action("FIFOTracker", "FIFOTrac")', outputUrl: '@Url.Action("FIFOTracker", "FIFOTrac")' }
+                    {
+                        name: 'FIFO format of Waluj Testing',
+                        inputUrl: '@Url.Action("FIFOTracker", "FIFOTrac")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("FIFOTracker", "FIFOTrac")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -755,8 +826,20 @@
                 name: 'Third Party Testing',
                 icon: '🧪',
                 items: [
-                    { name: 'Payment Tracker', inputUrl: '@Url.Action("PaymentTracker", "PaymentTracker")', outputUrl: '@Url.Action("PaymentTracker", "PaymentTracker")' },
-                    { name: 'Third Party Testing Template', inputUrl: '@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")', outputUrl: '@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")' }
+                    {
+                        name: 'Payment Tracker',
+                        inputUrl: '@Url.Action("PaymentTracker", "PaymentTracker")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("PaymentTracker", "PaymentTracker")', css: 'btn-output' }
+                        ]
+                    },
+                    {
+                        name: 'Third Party Testing Template',
+                        inputUrl: '@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("ThirdPartyTestTrac", "ThirdPartyTest")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -764,7 +847,13 @@
                 name: 'Kaizen Activity',
                 icon: '💡',
                 items: [
-                    { name: 'Kaizen Summary', inputUrl: '@Url.Action("KaizenTracker", "KaizenTracker")', outputUrl: '@Url.Action("KaizenTracker", "KaizenTracker")' }
+                    {
+                        name: 'Kaizen Summary',
+                        inputUrl: '@Url.Action("KaizenTracker", "KaizenTracker")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("KaizenTracker", "KaizenTracker")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -772,8 +861,13 @@
                 name: 'Third Party Inspection (TPI)',
                 icon: '🔍',
                 items: [
-                    { name: 'Third Party Inspection Tracker', inputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")', outputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")' },
-                   
+                    {
+                        name: 'Third Party Inspection Tracker',
+                        inputUrl: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("ThirdPartyInspection", "ThirdPartyInspection")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -781,8 +875,20 @@
                 name: 'CSAT',
                 icon: '⭐',
                 items: [
-                    { name: 'CSAT Summary', inputUrl: '@Url.Action("CSATSUMMARY", "CSATSummary")', outputUrl: '@Url.Action("CSATSUMMARY", "CSATSummary")' },
-                    { name: 'CSAT Comment Analysis', inputUrl: '@Url.Action("CSATComment", "CSATComment")', outputUrl: '@Url.Action("CSATComment", "CSATComment")' }
+                    {
+                        name: 'CSAT Summary',
+                        inputUrl: '@Url.Action("CSATSUMMARY", "CSATSummary")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("CSATSUMMARY", "CSATSummary")', css: 'btn-output' }
+                        ]
+                    },
+                    {
+                        name: 'CSAT Comment Analysis',
+                        inputUrl: '@Url.Action("CSATComment", "CSATComment")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("CSATComment", "CSATComment")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -790,84 +896,62 @@
                 name: 'PDI',
                 icon: '🛡️',
                 items: [
-                    { name: 'PDI Tracker', inputUrl: '@Url.Action("PDITracker", "PDITracker")', outputUrl: '@Url.Action("PDITracker", "PDITracker")' },
-                    { name: 'PDI Authorised Signatory', inputUrl: '@Url.Action("PDIAuthSignatory", "PDIAuthSign")', outputUrl: '@Url.Action("PDIAuthSignatory", "PDIAuthSign")' }
-                ]
-            },
-            {
-                id: 'ahp-note',
-                name: 'AHP Note',
-                icon: '📝',
-                items: [
-                    { name: 'AHP Note Format', inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")', outputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")' }
-                                   
-                ]
-            },
-
-                              {
-                                id: 'SEE-Indices',
-                                name: 'SEE Indices',
-                        icon: '📝',
-                        items: [
-                   
-                                            { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndices", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
+                    {
+                        name: 'PDI Tracker',
+                        inputUrl: '@Url.Action("PDITracker", "PDITracker")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("PDITracker", "PDITracker")', css: 'btn-output' }
                         ]
                     },
-
-
                     {
-                        id: 'Change-note',
-                        name: 'Change Note',
-                        icon: '📝',
-                        items: [
-                                      { name: 'Change Note Format', inputUrl: '@Url.Action("ChangeNotee", "ChangeNote")', outputUrl: '@Url.Action("ChangeNotee", "ChangeNote")' }
-                      
-                        ]                  
-                    },
-            {
-                id: 'rmtc',
-                name: 'Raw Material Test Certificate',
-                icon: '📋',
-                items: [
-                    { name: 'RM TC Report', inputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")', outputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")' }
+                        name: 'PDI Authorised Signatory',
+                        inputUrl: '@Url.Action("PDIAuthSignatory", "PDIAuthSign")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("PDIAuthSignatory", "PDIAuthSign")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
-            {
-                id: 'internal-type-test',
-                name: 'Internal Type Test',
-                icon: '🧪',
-                items: [
-                    { name: 'Internal Type Test Report', inputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")', outputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")' }
-                ]
-            },
-            {
-                id: 'spm',
-                name: 'SPM Calculation',
-                icon: '⚙️',
-                items: [
-                    { name: 'SPM Calculation Sheet: Make', inputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")', outputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")' },
-                    { name: 'SPM Calculation Sheet: Buy', inputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")', outputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")' }
-                ]
-            },
-            {
-                id: 'test-certificate',
-                name: 'Test Certificate',
-                icon: '📜',
-                items: [
-                    { name: 'Test Certificate for Sales Submission', inputUrl: '@Url.Action("TestCertificate", "TestCertificate")', outputUrl: '@Url.Action("TestCertificate", "TestCertificate")' }
-                ]
-            }
-        ];
-
-        // Tracker-2 Groups
-        const tracker2Groups = [
             {
                 id: 'ahp-note',
                 name: 'AHP Note',
                 icon: '📝',
                 items: [
-                    { name: 'AHP Note Format', inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")', outputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")' },
-                    { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndicees", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
+                    {
+                        name: 'AHP Note Format',
+                        inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("AHPNotetracker", "AHPNotetracker")', css: 'btn-output' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'see-indices',
+                name: 'SEE Indices',
+                icon: '📝',
+                items: [
+                    {
+                        name: 'SEE Indices',
+                        inputUrl: '@Url.Action("SEEIndices", "SEEIndices")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("SEEIndices", "SEEIndices")', css: 'btn-output' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'change-note',
+                name: 'Change Note',
+                icon: '📝',
+                items: [
+                    {
+                        name: 'Change Note Format',
+                        inputUrl: '@Url.Action("ChangeNotee", "ChangeNote")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("ChangeNotee", "ChangeNote")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -875,7 +959,13 @@
                 name: 'Raw Material Test Certificate',
                 icon: '📋',
                 items: [
-                    { name: 'RM TC Report', inputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")', outputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")' }
+                    {
+                        name: 'RM TC Report',
+                        inputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("RMTCTracker", "RMTCTracker")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -883,7 +973,13 @@
                 name: 'Internal Type Test',
                 icon: '🧪',
                 items: [
-                    { name: 'Internal Type Test Report', inputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")', outputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")' }
+                    {
+                        name: 'Internal Type Test Report',
+                        inputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -891,8 +987,20 @@
                 name: 'SPM Calculation',
                 icon: '⚙️',
                 items: [
-                    { name: 'SPM Calculation Sheet: Make', inputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")', outputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")' },
-                    { name: 'SPM Calculation Sheet: Buy', inputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")', outputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")' }
+                    {
+                        name: 'SPM Calculation Sheet: Make',
+                        inputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")', css: 'btn-output' }
+                        ]
+                    },
+                    {
+                        name: 'SPM Calculation Sheet: Buy',
+                        inputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             },
             {
@@ -900,333 +1008,401 @@
                 name: 'Test Certificate',
                 icon: '📜',
                 items: [
-                    { name: 'Test Certificate for Sales Submission', inputUrl: '@Url.Action("TestCertificate", "TestCertificate")', outputUrl: '@Url.Action("TestCertificate", "TestCertificate")' }
+                    {
+                        name: 'Test Certificate for Sales Submission',
+                        inputUrl: '@Url.Action("TestCertificate", "TestCertificate")',
+                        outputs: [
+                            { label: 'Output', url: '@Url.Action("TestCertificate", "TestCertificate")', css: 'btn-output' }
+                        ]
+                    }
                 ]
             }
         ];
 
-        // Tracker-3 (Product Validation) Groups
-        const tracker3Groups = [
-            {
-                id: 'physical-check',
-                name: 'Physical Check',
-                icon: '👁️',
-                items: [
-                    { name: 'Physical Check & Visual Inspection', inputUrl: '@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")', outputUrl: '@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'electrical-performance',
-                name: 'Electrical Performance',
-                icon: '⚡',
-                items: [
-                    { name: 'Electrical Performance', inputUrl: '@Url.Action("ElectricalPerformance", "ProductValidation")', outputUrl: '@Url.Action("ElectricalPerformance", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'electrical-protection',
-                name: 'Electrical Protection',
-                icon: '🔌',
-                items: [
-                    { name: 'Electrical Protection, Safety & Reliability Test', inputUrl: '@Url.Action("ElectricalProtection", "ProductValidation")', outputUrl: '@Url.Action("ElectricalProtection", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'ripple-test',
-                name: 'Ripple Test Reports',
-                icon: '📊',
-                items: [
-                    { name: 'Ripple Test Reports', inputUrl: '@Url.Action("RippleTestReport", "ProductValidation")', outputUrl: '@Url.Action("RippleTestReport", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'surge-test',
-                name: 'Surge Test Report',
-                icon: '⚡',
-                items: [
-                    { name: 'Surge Test Reports', inputUrl: '@Url.Action("SURGETestReport", "ProductValidation")', outputUrl: '@Url.Action("SURGETestReport", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'trt',
-                name: 'Temperature Rise Test',
-                icon: '🌡️',
-                items: [
-                    { name: 'Temperature Rise Test (TRT)', inputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")', outputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'photometry',
-                name: 'Photometry',
-                icon: '💡',
-                items: [
-                    { name: 'Photometry', inputUrl: '@Url.Action("Photometry", "ProductValidation")', outputUrl: '@Url.Action("Photometry", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'installation-trial',
-                name: 'Installation Trial',
-                icon: '🔧',
-                items: [
-                    { name: 'Installation Trial', inputUrl: '@Url.Action("InstallationTrial", "ProductValidation")', outputUrl: '@Url.Action("InstallationTrial", "ProductValidation")' }
-                ]
-            },
-            {
-                id: 'drop-test',
-                name: 'Drop Test Report',
-                icon: '📦',
-                items: [
-                    { name: 'Drop Test Report', inputUrl: '@Url.Action("DropTestReport", "ProductValidation")', outputUrl: '@Url.Action("DropTestReport", "ProductValidation")' }
-                ]
+
+                // Tracker-2 Groups
+                const tracker2Groups = [
+                    {
+                        id: 'ahp-note',
+                        name: 'AHP Note',
+                        icon: '📝',
+                        items: [
+                            { name: 'AHP Note Format', inputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")', outputUrl: '@Url.Action("AHPNotetracker", "AHPNotetracker")' },
+                            { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndicees", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
+                        ]
+                    },
+                    {
+                        id: 'rmtc',
+                        name: 'Raw Material Test Certificate',
+                        icon: '📋',
+                        items: [
+                            { name: 'RM TC Report', inputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")', outputUrl: '@Url.Action("RMTCTracker", "RMTCTracker")' }
+                        ]
+                    },
+                    {
+                        id: 'internal-type-test',
+                        name: 'Internal Type Test',
+                        icon: '🧪',
+                        items: [
+                            { name: 'Internal Type Test Report', inputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")', outputUrl: '@Url.Action("LuminaireTypeTest", "LuminaireTypeTestReport")' }
+                        ]
+                    },
+                    {
+                        id: 'spm',
+                        name: 'SPM Calculation',
+                        icon: '⚙️',
+                        items: [
+                            { name: 'SPM Calculation Sheet: Make', inputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")', outputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")' },
+                            { name: 'SPM Calculation Sheet: Buy', inputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")', outputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")' }
+                        ]
+                    },
+                    {
+                        id: 'test-certificate',
+                        name: 'Test Certificate',
+                        icon: '📜',
+                        items: [
+                            { name: 'Test Certificate for Sales Submission', inputUrl: '@Url.Action("TestCertificate", "TestCertificate")', outputUrl: '@Url.Action("TestCertificate", "TestCertificate")' }
+                        ]
+                    }
+                ];
+
+                // Tracker-3 (Product Validation) Groups
+                const tracker3Groups = [
+                    {
+                        id: 'physical-check',
+                        name: 'Physical Check',
+                        icon: '👁️',
+                        items: [
+                            { name: 'Physical Check & Visual Inspection', inputUrl: '@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")', outputUrl: '@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'electrical-performance',
+                        name: 'Electrical Performance',
+                        icon: '⚡',
+                        items: [
+                            { name: 'Electrical Performance', inputUrl: '@Url.Action("ElectricalPerformance", "ProductValidation")', outputUrl: '@Url.Action("ElectricalPerformance", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'electrical-protection',
+                        name: 'Electrical Protection',
+                        icon: '🔌',
+                        items: [
+                            { name: 'Electrical Protection, Safety & Reliability Test', inputUrl: '@Url.Action("ElectricalProtection", "ProductValidation")', outputUrl: '@Url.Action("ElectricalProtection", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'ripple-test',
+                        name: 'Ripple Test Reports',
+                        icon: '📊',
+                        items: [
+                            { name: 'Ripple Test Reports', inputUrl: '@Url.Action("RippleTestReport", "ProductValidation")', outputUrl: '@Url.Action("RippleTestReport", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'surge-test',
+                        name: 'Surge Test Report',
+                        icon: '⚡',
+                        items: [
+                            { name: 'Surge Test Reports', inputUrl: '@Url.Action("SURGETestReport", "ProductValidation")', outputUrl: '@Url.Action("SURGETestReport", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'trt',
+                        name: 'Temperature Rise Test',
+                        icon: '🌡️',
+                        items: [
+                            { name: 'Temperature Rise Test (TRT)', inputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")', outputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'photometry',
+                        name: 'Photometry',
+                        icon: '💡',
+                        items: [
+                            { name: 'Photometry', inputUrl: '@Url.Action("Photometry", "ProductValidation")', outputUrl: '@Url.Action("Photometry", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'installation-trial',
+                        name: 'Installation Trial',
+                        icon: '🔧',
+                        items: [
+                            { name: 'Installation Trial', inputUrl: '@Url.Action("InstallationTrial", "ProductValidation")', outputUrl: '@Url.Action("InstallationTrial", "ProductValidation")' }
+                        ]
+                    },
+                    {
+                        id: 'drop-test',
+                        name: 'Drop Test Report',
+                        icon: '📦',
+                        items: [
+                            { name: 'Drop Test Report', inputUrl: '@Url.Action("DropTestReport", "ProductValidation")', outputUrl: '@Url.Action("DropTestReport", "ProductValidation")' }
+                        ]
+                    }
+                ];
+
+                // Store all tracker data
+                const trackerData = {
+                    tracker1: tracker1Groups,
+                    tracker2: tracker2Groups,
+                    tracker3: tracker3Groups
+                };
+
+                // ============================================
+                // INITIALIZATION
+                // ============================================
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Initialize ONLY tracker1 (because 2 and 3 are commented out in HTML)
+                    renderGroups('tracker1', tracker1Groups);
+
+                    // Setup search inputs
+                    document.querySelectorAll('.palette-search-input').forEach(function (input) {
+                        input.addEventListener('input', function () {
+                            const target = this.getAttribute('data-target');
+                            filterGroups(target);
+                        });
+                    });
+
+                    // Setup clear buttons
+                    document.querySelectorAll('.clear-btn').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            const target = this.getAttribute('data-target');
+                            clearSearch(target);
+                        });
+                    });
+                });
+
+                // EXPAND ALL GROUPS (show all rows/items)
+                // ============================================
+                function expandAllGroups(trackerId) {
+                    const groups = trackerData[trackerId] || [];
+                    const itemsList = document.getElementById(trackerId + 'ItemsList');
+                    if (!itemsList) return;
+
+                    // Total items count
+                    let totalItems = 0;
+                    groups.forEach(g => totalItems += g.items.length);
+
+                    // Update header info
+                    const iconEl = document.getElementById(trackerId + 'SelectedIcon');
+                    const nameEl = document.getElementById(trackerId + 'SelectedName');
+                    const countEl = document.getElementById(trackerId + 'SelectedCount');
+
+                    if (iconEl) iconEl.textContent = '📂';
+                    if (nameEl) nameEl.textContent = 'All Tracker';
+                    if (countEl) countEl.textContent = totalItems + ' tracker(s)';
+
+                    // Build HTML for all groups + their items
+                    let html = '';
+                    groups.forEach(function (group) {
+                        html += `
+                            <div class="all-group-block">
+                                <div class="all-group-header">
+                                    <span class="group-icon">${group.icon}</span>
+                                    <span class="group-name">${group.name}</span>
+                                    <span class="group-count">${group.items.length} tracker(s)</span>
+                                </div>
+                        `;
+
+                    group.items.forEach(function (item) {
+                        const inText = item.inputLabel || 'Input';
+                        const outputs = Array.isArray(item.outputs) ? item.outputs : [];
+                        const outputsHtml = outputs.map(o => `
+                            <button type="button" class="${o.css || 'btn-output'}"
+                                    onclick="window.location.href='${o.url}'">
+                                📤 ${o.label}
+                            </button>
+                        `).join('');
+
+                        html += `
+                            <div class="tracker-item">
+                                <span class="tracker-name">${item.name}</span>
+                                <div class="btn-group-tracker">
+                                    <button type="button" class="btn-input"
+                                            onclick="window.location.href='${item.inputUrl}'">
+                                        📥 ${inText}
+                                    </button>
+                                    ${outputsHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                        html += `</div>`;
+                    });
+
+                    itemsList.innerHTML = html;
+
+                    // Switch view: hide groups, show items panel
+                    document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
+                    document.getElementById(trackerId + 'ItemsView').classList.add('active');
+                }
+
+                // ============================================
+                // RENDER GROUPS
+                // ============================================
+              function renderGroups(trackerId, groups) {
+            const container = document.getElementById(trackerId + 'GroupList');
+            const noResults = document.getElementById(trackerId + 'NoResults');
+            const label = document.getElementById(trackerId + 'Label');
+            const countEl = document.getElementById(trackerId + 'GroupCount');
+            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+
+            // 🔹 calculate total trackers
+            let totalTrackers = 0;
+            groups.forEach(g => totalTrackers += g.items.length);
+
+            // 🔹 show trackers instead of groups
+            countEl.textContent = totalTrackers + ' tracker';
+
+            if (groups.length === 0) {
+                container.innerHTML = '';
+                noResults.style.display = 'block';
+                label.style.display = 'none';
+                return;
             }
-        ];
 
-        // Store all tracker data
-        const trackerData = {
-            tracker1: tracker1Groups,
-            tracker2: tracker2Groups,
-            tracker3: tracker3Groups
-        };
+            noResults.style.display = 'none';
+            label.style.display = 'block';
+            label.textContent = searchTerm ? 'Found ' + groups.length + ' group(s)' : 'ALL TRACKER';
 
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        document.addEventListener('DOMContentLoaded', function () {
-            // Initialize ONLY tracker1 (because 2 and 3 are commented out in HTML)
-            renderGroups('tracker1', tracker1Groups);
-
-            // Setup search inputs
-            document.querySelectorAll('.palette-search-input').forEach(function (input) {
-                input.addEventListener('input', function () {
-                    const target = this.getAttribute('data-target');
-                    filterGroups(target);
-                });
-            });
-
-            // Setup clear buttons
-            document.querySelectorAll('.clear-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    const target = this.getAttribute('data-target');
-                    clearSearch(target);
-                });
-            });
-        });
-
-        // EXPAND ALL GROUPS (show all rows/items)
-        // ============================================
-        function expandAllGroups(trackerId) {
-            const groups = trackerData[trackerId] || [];
-            const itemsList = document.getElementById(trackerId + 'ItemsList');
-            if (!itemsList) return;
-
-            // Total items count
-            let totalItems = 0;
-            groups.forEach(g => totalItems += g.items.length);
-
-            // Update header info
-            const iconEl = document.getElementById(trackerId + 'SelectedIcon');
-            const nameEl = document.getElementById(trackerId + 'SelectedName');
-            const countEl = document.getElementById(trackerId + 'SelectedCount');
-
-            if (iconEl) iconEl.textContent = '📂';
-            if (nameEl) nameEl.textContent = 'All Tracker';
-            if (countEl) countEl.textContent = totalItems + ' tracker(s)';
-
-            // Build HTML for all groups + their items
             let html = '';
             groups.forEach(function (group) {
+                const highlightedName = searchTerm
+                    ? group.name.replace(new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi'), '<span class="highlight">$1</span>')
+                    : group.name;
+
                 html += `
-                    <div class="all-group-block">
-                        <div class="all-group-header">
-                            <span class="group-icon">${group.icon}</span>
-                            <span class="group-name">${group.name}</span>
-                            <span class="group-count">${group.items.length} tracker(s)</span>
+                    <div class="group-item" onclick="showItems('${trackerId}', '${group.id}')">
+                        <span class="group-icon">${group.icon}</span>
+                        <div class="group-info">
+                            <div class="group-name">${highlightedName}</div>
+                            <div class="group-count">${group.items.length} tracker(s)</div>
                         </div>
-                `;
-
-                group.items.forEach(function (item) {
-                    html += `
-                        <div class="tracker-item">
-                            <span class="tracker-name">${item.name}</span>
-                            <div class="btn-group-tracker">
-                                <button type="button" class="btn-input"
-                                        onclick="window.location.href='${item.inputUrl}'">
-                                    📥 Input
-                                </button>
-                                <button type="button" class="btn-output"
-                                        onclick="window.location.href='${item.outputUrl}'">
-                                    📤 Output
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                html += `</div>`; // close all-group-block
-            });
-
-            itemsList.innerHTML = html;
-
-            // Switch view: hide groups, show items panel
-            document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
-            document.getElementById(trackerId + 'ItemsView').classList.add('active');
-        }
-
-        // ============================================
-        // RENDER GROUPS
-        // ============================================
-      function renderGroups(trackerId, groups) {
-    const container = document.getElementById(trackerId + 'GroupList');
-    const noResults = document.getElementById(trackerId + 'NoResults');
-    const label = document.getElementById(trackerId + 'Label');
-    const countEl = document.getElementById(trackerId + 'GroupCount');
-    const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
-    const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-
-    // 🔹 calculate total trackers
-    let totalTrackers = 0;
-    groups.forEach(g => totalTrackers += g.items.length);
-
-    // 🔹 show trackers instead of groups
-    countEl.textContent = totalTrackers + ' tracker';
-
-    if (groups.length === 0) {
-        container.innerHTML = '';
-        noResults.style.display = 'block';
-        label.style.display = 'none';
-        return;
-    }
-
-    noResults.style.display = 'none';
-    label.style.display = 'block';
-    label.textContent = searchTerm ? 'Found ' + groups.length + ' group(s)' : 'ALL TRACKER';
-
-    let html = '';
-    groups.forEach(function (group) {
-        const highlightedName = searchTerm
-            ? group.name.replace(new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi'), '<span class="highlight">$1</span>')
-            : group.name;
-
-        html += `
-            <div class="group-item" onclick="showItems('${trackerId}', '${group.id}')">
-                <span class="group-icon">${group.icon}</span>
-                <div class="group-info">
-                    <div class="group-name">${highlightedName}</div>
-                    <div class="group-count">${group.items.length} tracker(s)</div>
-                </div>
-                <i class="fas fa-chevron-right arrow-icon"></i>
-            </div>
-        `;
-    });
-    container.innerHTML = html;
-}
-
-
-        // ============================================
-        // FILTER GROUPS
-        // ============================================
-        function filterGroups(trackerId) {
-            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
-            const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
-            const searchTerm = searchInput.value.toLowerCase();
-
-            // Show/hide clear button
-            if (searchTerm) {
-                clearBtn.classList.add('show');
-            } else {
-                clearBtn.classList.remove('show');
-            }
-
-            // Filter groups
-            const allGroups = trackerData[trackerId];
-            const filtered = allGroups.filter(function(group) {
-                return group.name.toLowerCase().includes(searchTerm);
-            });
-
-            renderGroups(trackerId, filtered);
-
-            // Ensure groups view is visible
-            document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
-            document.getElementById(trackerId + 'ItemsView').classList.remove('active');
-        }
-
-        // ============================================
-        // CLEAR SEARCH
-        // ============================================
-        function clearSearch(trackerId) {
-            const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
-            const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
-            
-            searchInput.value = '';
-            clearBtn.classList.remove('show');
-            renderGroups(trackerId, trackerData[trackerId]);
-        }
-        function toggleExpandAll() {
-            const isChecked = document.getElementById("expandAllSwitch").checked;
-
-            if (isChecked) {
-                // Expand ALL
-                expandAllGroups("tracker1");
-            } else {
-                // Restore normal groups list
-                showGroups("tracker1");
-                renderGroups("tracker1", trackerData["tracker1"]);
-            }
-        }
-
-
-
-        // ============================================
-        // SHOW ITEMS
-        // ============================================
-        function showItems(trackerId, groupId) {
-            const allGroups = trackerData[trackerId];
-            const group = allGroups.find(function(g) { return g.id === groupId; });
-            if (!group) return;
-
-            // Update header
-            document.getElementById(trackerId + 'SelectedIcon').textContent = group.icon;
-            document.getElementById(trackerId + 'SelectedName').textContent = group.name;
-            document.getElementById(trackerId + 'SelectedCount').textContent = group.items.length + ' tracker(s)';
-
-            // Render items
-            let html = '';
-            group.items.forEach(function(item) {
-                html += `
-                    <div class="tracker-item">
-                        <span class="tracker-name">${item.name}</span>
-                        <div class="btn-group-tracker">
-                            <button type="button" class="btn-input" onclick="window.location.href='${item.inputUrl}'">
-                                📥 Input
-                            </button>
-                            <button type="button" class="btn-output" onclick="window.location.href='${item.outputUrl}'">
-                                📤 Output
-                            </button>
-                        </div>
+                        <i class="fas fa-chevron-right arrow-icon"></i>
                     </div>
                 `;
             });
-            document.getElementById(trackerId + 'ItemsList').innerHTML = html;
-
-            // Toggle views
-            document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
-            document.getElementById(trackerId + 'ItemsView').classList.add('active');
+            container.innerHTML = html;
         }
 
-        // ============================================
-        // SHOW GROUPS (Back)
-        // ============================================
-        function showGroups(trackerId) {
-            document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
-            document.getElementById(trackerId + 'ItemsView').classList.remove('active');
-        }
 
-        // ============================================
-        // HELPER: Escape Regex
-        // ============================================
-        function escapeRegex(string) {
-            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        }
+                // ============================================
+                // FILTER GROUPS
+                // ============================================
+                function filterGroups(trackerId) {
+                    const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+                    const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+                    const searchTerm = searchInput.value.toLowerCase();
+
+                    // Show/hide clear button
+                    if (searchTerm) {
+                        clearBtn.classList.add('show');
+                    } else {
+                        clearBtn.classList.remove('show');
+                    }
+
+                    // Filter groups
+                    const allGroups = trackerData[trackerId];
+                    const filtered = allGroups.filter(function(group) {
+                        return group.name.toLowerCase().includes(searchTerm);
+                    });
+
+                    renderGroups(trackerId, filtered);
+
+                    // Ensure groups view is visible
+                    document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+                    document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+                }
+
+                // ============================================
+                // CLEAR SEARCH
+                // ============================================
+                function clearSearch(trackerId) {
+                    const searchInput = document.querySelector('.palette-search-input[data-target="' + trackerId + '"]');
+                    const clearBtn = document.querySelector('.clear-btn[data-target="' + trackerId + '"]');
+
+                    searchInput.value = '';
+                    clearBtn.classList.remove('show');
+                    renderGroups(trackerId, trackerData[trackerId]);
+                }
+                function toggleExpandAll() {
+                    const isChecked = document.getElementById("expandAllSwitch").checked;
+
+                    if (isChecked) {
+                        // Expand ALL
+                        expandAllGroups("tracker1");
+                    } else {
+                        // Restore normal groups list
+                        showGroups("tracker1");
+                        renderGroups("tracker1", trackerData["tracker1"]);
+                    }
+                }
+
+
+
+                // ============================================
+                // SHOW ITEMS
+                // ============================================
+                function showItems(trackerId, groupId) {
+                    const allGroups = trackerData[trackerId];
+                    const group = allGroups.find(function(g) { return g.id === groupId; });
+                    if (!group) return;
+
+                    // Update header
+                    document.getElementById(trackerId + 'SelectedIcon').textContent = group.icon;
+                    document.getElementById(trackerId + 'SelectedName').textContent = group.name;
+                    document.getElementById(trackerId + 'SelectedCount').textContent = group.items.length + ' tracker(s)';
+
+                    // Render items
+                    let html = '';
+                    group.items.forEach(function (item) {
+                        const inText = item.inputLabel || 'Input';
+                        const outputs = Array.isArray(item.outputs) ? item.outputs : [];
+
+                        const outputsHtml = outputs.map(o => `
+                            <button type="button" class="${o.css || 'btn-output'}"
+                                    onclick="window.location.href='${o.url}'">
+                                📤 ${o.label}
+                            </button>
+                        `).join('');
+
+                        html += `
+                            <div class="tracker-item">
+                                <span class="tracker-name">${item.name}</span>
+                                <div class="btn-group-tracker">
+                                    <button type="button" class="btn-input"
+                                            onclick="window.location.href='${item.inputUrl}'">
+                                        📥 ${inText}
+                                    </button>
+                                    ${outputsHtml}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    document.getElementById(trackerId + 'ItemsList').innerHTML = html;
+
+                    // Toggle views
+                    document.getElementById(trackerId + 'GroupsView').classList.add('hidden');
+                    document.getElementById(trackerId + 'ItemsView').classList.add('active');
+                }
+
+                // ============================================
+                // SHOW GROUPS (Back)
+                // ============================================
+                function showGroups(trackerId) {
+                    document.getElementById(trackerId + 'GroupsView').classList.remove('hidden');
+                    document.getElementById(trackerId + 'ItemsView').classList.remove('active');
+                }
+
+                // ============================================
+                // HELPER: Escape Regex
+                // ============================================
+                function escapeRegex(string) {
+                    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                }
     </script>
 
 </body>

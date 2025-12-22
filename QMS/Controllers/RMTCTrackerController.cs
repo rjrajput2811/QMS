@@ -101,42 +101,94 @@ namespace QMS.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadRMTCAttachment(IFormFile file, int id)
+        public async Task<IActionResult> UploadRMTCAttachment(IFormFile file, int id, string field)
         {
+            if (id <= 0)
+                return Json(new UploadAttachmentResponse { success = false, message = "Invalid Id." });
+
+            if (string.IsNullOrWhiteSpace(field))
+                return Json(new UploadAttachmentResponse { success = false, message = "Field is required." });
+
+            if (file == null || file.Length == 0)
+                return Json(new UploadAttachmentResponse { success = false, message = "No file received." });
+
+            // validate allowed MIME types
+            var allowedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "application/pdf",
+                "image/jpeg",
+                "image/png",
+                "image/gif",
+                "image/bmp",
+                "image/webp"
+            };
+
+            if (!allowedTypes.Contains(file.ContentType))
+                return Json(new UploadAttachmentResponse { success = false, message = "Only PDF and image files are allowed." });
+
+            // create folder: wwwroot/RMTCTrac_Attach/{id}
+            var folder = Path.Combine(Directory.GetCurrentDirectory(), "RMTCTrac_Attach", id.ToString());
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            // sanitize filename
+            var ext = Path.GetExtension(file.FileName);
+            var safeExt = string.IsNullOrWhiteSpace(ext) ? "" : ext.ToLowerInvariant();
+
+            // limit extensions (optional but recommended)
+            var allowedExt = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+
+            if (!allowedExt.Contains(safeExt))
+                return Json(new UploadAttachmentResponse { success = false, message = "Invalid file extension." });
+
+            // generate unique file name
+            var uniqueName = $"{field}_{DateTime.Now:yyyyMMddHHmmssfff}{safeExt}";
+            var fullPath = Path.Combine(folder, uniqueName);
+
             try
             {
-                if (file == null || file.Length == 0)
-                    return Json(new { success = false, message = "No file selected." });
-
-                var allowedExtensions = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-                if (!allowedExtensions.Contains(extension))
-                    return Json(new { success = false, message = "Only PDF and image files are allowed." });
-
-                var uploadsPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "RMTCTrac_Attach", id.ToString());
-                if (!Directory.Exists(uploadsPath))
-                    Directory.CreateDirectory(uploadsPath);
-
-                var timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-                var nameWithoutExt = Path.GetFileNameWithoutExtension(file.FileName);
-                var newFileName = $"{nameWithoutExt}_{timestamp}{extension}";
-                var filePath = Path.Combine(uploadsPath, newFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                // save file
+                using (var fs = new FileStream(fullPath, FileMode.Create))
                 {
-                    await file.CopyToAsync(stream);
+                    await file.CopyToAsync(fs);
                 }
 
-                // Optional: update DB with the new file name
-                await _rmtcRepository.UpdateAttachmentAsync(id, newFileName);
+                // updatedBy from logged in user (adapt to your auth)
+                var updatedBy = User?.Identity?.Name ?? "System";
 
-                return Json(new { success = true, id = id, fileName = newFileName });
+                // update DB column field
+                var ok = await _rmtcRepository.UpdateAttachmentFieldAsync(id, field, uniqueName, updatedBy);
+                if (!ok)
+                {
+                    // rollback file save if DB update failed
+                    if (System.IO.File.Exists(fullPath))
+                        System.IO.File.Delete(fullPath);
+
+                    return Json(new UploadAttachmentResponse
+                    {
+                        success = false,
+                        message = "DB update failed (invalid field or record not found)."
+                    });
+                }
+
+                return Json(new UploadAttachmentResponse
+                {
+                    success = true,
+                    message = "Uploaded",
+                    id = id,
+                    fileName = uniqueName,
+                    field = field
+                });
             }
             catch (Exception ex)
             {
-                _systemLogService.WriteLog(ex.Message);
-                throw;
+                // optionally log ex
+                return Json(new UploadAttachmentResponse
+                {
+                    success = false,
+                    message = "Upload failed due to server error."
+                });
             }
         }
 

@@ -60,8 +60,15 @@ namespace QMS.Core.DatabaseContext
         public List<(MTAMasterViewModel Record, string Reason)> FailedRecords { get; set; } = new();
     }
 
+    public class BulkOpenPoDeliveryResult
+    {
+        public OperationResult Result { get; set; } = new();
+        public List<(OpenPoDeliveryExcelRow Record, string Reason)> FailedRecords { get; set; } = new();
+    }
+
     public sealed class FailedRowDto
     {
+        public int? ExcelRowNo { get; set; }
         public string PO_No { get; set; }
         public string Key { get; set; }
         public string Reason { get; set; }

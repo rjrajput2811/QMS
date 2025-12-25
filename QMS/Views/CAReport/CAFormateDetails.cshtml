@@ -901,30 +901,37 @@
             const inputElement = $("#BISsear_Code");
             if (inputElement.length) {
                 // Attach the keydown event handler
-                inputElement.on('keydown', function (event) {
+                    inputElement.on('input', function (event) {
                     handleBisSearch(event);
                 });
             }
         });
 
-        function handleBisSearch(event) {
-            debugger
-            if (event.key !== 'Enter') return;
+           function handleBisSearch(event) {
 
+        const input = event.target;
+        if (!input) return;
+
+        let searchQuery = input.value.trim();
+
+        // 🔴 Clear suggestions if less than 4 chars
+        if (searchQuery.length < 4) {
             clearTimeout(searchTimeout);
-            let processedQuery = '';
-            let searchQuery = event.target.value.trim(); // Get value from input field
-            processedQuery = searchQuery.substring(0, 4);
-
-            let searchTerms = processedQuery;
-
-            // Debounce to reduce the frequency of API calls
-            searchTimeout = setTimeout(() => {
-                pagedData = {}; // Clear cached data
-                // Load data with the processed query
-                fetchBisRelatedData(searchTerms, event.target);
-            }, 300); // Delay of 300ms
+            // optional: hide suggestion dropdown here
+            // hideBisSuggestions();
+            return;
         }
+
+        // ✅ Take first 4 characters only
+        const searchTerms = searchQuery.substring(0, 4);
+
+        // 🟡 Debounce API call
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            pagedData = {}; // Clear cached data
+            fetchBisRelatedData(searchTerms, input);
+        }, 300);
+    }
 
         function fetchBisRelatedData(productCatNo, inputField) {
             debugger
@@ -1186,6 +1193,31 @@
             refreshMonitoringSerials();
         }
 
+                function isoToDdMmYyyy(iso) {
+            if (!iso) return "";
+            const m = String(iso).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!m) return iso;
+            return `${m[3]}-${m[2]}-${m[1]}`;
+        }
+
+        // dd-MM-yyyy (from UI text) -> yyyy-MM-dd (for server)
+        function ddMmYyyyToIso(value) {
+            const v = (value || "").trim();
+            if (!v) return "";
+            const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+            if (!m) return v; // already iso or other format
+            return `${m[3]}-${m[2]}-${m[1]}`;
+        }
+
+        // Normalize anything into yyyy-MM-dd if possible
+        function normalizeToIsoDate(value) {
+            const v = (value || "").trim();
+            if (!v) return "";
+            if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;           // iso already
+            if (/^\d{2}-\d{2}-\d{4}$/.test(v)) return ddMmYyyyToIso(v); // dd-MM-yyyy
+            return v; // fallback (server may reject)
+        }
+
         async function saveCAReport() {
             const saveBtn = document.getElementById('saveBtn');
             if (!saveBtn) return;
@@ -1273,24 +1305,42 @@
                     const statusValue = statusSelect ? statusSelect.value : '';
 
                     // Prefer the date input value; fallback to cell text
-                    const dateInput = cells[2].querySelector('input.target-date-input');
-                    let targetDateRaw = '';
+                    const dateInput = cells[2].querySelector("input.target-date-input");
+                    let targetDateIso = "";
+
                     if (dateInput && dateInput.value) {
-                        // convert yyyy-MM-dd -> dd-MM-yyyy
-                        targetDateRaw = convertYyyyMmDdToDdMmYyyy(dateInput.value);
+                        // <input type="date"> gives yyyy-MM-dd ✅
+                        targetDateIso = normalizeToIsoDate(dateInput.value);
                     } else {
-                        targetDateRaw = (cells[2].innerText || '').trim();
+                        // fallback: maybe UI text contains dd-MM-yyyy -> convert to iso
+                        targetDateIso = normalizeToIsoDate((cells[2].innerText || "").trim());
                     }
 
                     details.push({
                         SeqNo: idx + 1,
                         Action_Plan: (cells[1].innerText || '').trim(),
-                        Target_Date: targetDateRaw,
+                        Target_Date: targetDateIso,
                         Resp: (cells[3].innerHTML || '').trim(), // keep formatting
                         Status: statusValue,
                         Deleted: false
                     });
                 });
+
+                 const invalidDates = details
+                .filter(d => d.Target_Date && !/^\d{4}-\d{2}-\d{2}$/.test(d.Target_Date))
+                .map(d => `Row ${d.SeqNo}: "${d.Target_Date}"`);
+
+                if (invalidDates.length > 0) {
+                    showDangerAlert(
+                        `<p>Invalid Target Date format. Please use a valid date:</p><ul>${
+                            invalidDates.map(x => `<li>${x}</li>`).join("")
+                        }</ul>`
+                    );
+                    Blockloaderhide();
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHTML;
+                    return;
+                }
 
                 // Append Details to form data for model binding
                 details.forEach((d, i) => {

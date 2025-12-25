@@ -55,6 +55,127 @@ namespace QMS.Controllers
             return Json(openPoDeatilsList);
         }
 
+
+        [HttpPost]
+        public async Task<IActionResult> UploadOpenPoDeliveryExcel(IFormFile file, int recordCount)
+        {
+            var rowsToAdd = new List<OpenPoDeliveryExcelRow>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName") ?? "System";
+
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.RowsUsed().Count();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var key = worksheet.Cell(row, 1).GetString().Trim();
+                    if (string.IsNullOrWhiteSpace(key))
+                        continue;
+
+
+                    var model = new OpenPoDeliveryExcelRow
+                    {
+                        ExcelRowNo = row,
+                        Key = key,
+                        Vendor = worksheet.Cell(row, 5).GetString().Trim(),
+                        PO_No = worksheet.Cell(row, 6).GetString().Trim(),
+                        PO_Date = GetExcelDate(worksheet.Cell(row, 7)),
+                        PO_Qty = worksheet.Cell(row, 8).GetValue<int?>(),
+                        BalanceQty = worksheet.Cell(row, 9).GetValue<int?>(),
+                        Delivery_Date = GetExcelDate(worksheet.Cell(row, 11)),
+                        Date_PC_Week = worksheet.Cell(row, 12).GetString().Trim(),
+                        Qty = worksheet.Cell(row, 13).GetValue<int?>(),
+                        Remark = worksheet.Cell(row, 14).GetString().Trim()
+                    };
+
+                    rowsToAdd.Add(model);
+                }
+
+                var importResult = await _openPoReposiotry.BulkCreateDeliveryScheduleAsync_Dapper(rowsToAdd, uploadedBy);
+
+                // If failed -> return failed excel (same style)
+                if (importResult.FailedRecords.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "ExcelRowNo";
+                    failSheet.Cell(1, 2).Value = "Key";
+                    failSheet.Cell(1, 3).Value = "PO_No";
+                    failSheet.Cell(1, 4).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var fail in importResult.FailedRecords)
+                    {
+                        failSheet.Cell(i, 1).Value = fail.Record.ExcelRowNo;
+                        failSheet.Cell(i, 2).Value = fail.Record.Key;
+                        failSheet.Cell(i, 3).Value = fail.Record.PO_No;
+                        failSheet.Cell(i, 4).Value = fail.Reason;
+                        i++;
+                    }
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"FailedOpenPoDelivery__{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
+                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", failedFileName);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {recordCount}, Saved: {rowsToAdd.Count}"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
+            }
+        }
+
+        private static DateTime? GetExcelDate(IXLCell cell)
+        {
+            if (cell == null || cell.IsEmpty())
+                return null;
+
+            // If the cell is a real DateTime cell
+            if (cell.DataType == XLDataType.DateTime)
+                return cell.GetDateTime();
+
+            // Excel often stores date as number (OADate)
+            if (cell.DataType == XLDataType.Number)
+            {
+                var d = cell.GetDouble();
+                // Basic sanity check (Excel dates commonly > 1 and < 60000)
+                if (d > 1 && d < 60000)
+                    return DateTime.FromOADate(d);
+            }
+
+            // Text date
+            var s = cell.GetString()?.Trim();
+            if (!string.IsNullOrEmpty(s) && DateTime.TryParse(s, out var parsed))
+                return parsed;
+
+            // Sometimes formatted string works better
+            var fs = cell.GetFormattedString()?.Trim();
+            if (!string.IsNullOrEmpty(fs) && DateTime.TryParse(fs, out parsed))
+                return parsed;
+
+            return null;
+        }
+
         [HttpPost]
         public async Task<IActionResult> UploadOpenPoDataExcel(IFormFile file, string fileName, string uploadDate, int recordCount)
         {

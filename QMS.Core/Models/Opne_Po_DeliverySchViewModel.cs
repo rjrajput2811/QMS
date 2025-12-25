@@ -36,4 +36,22 @@ namespace QMS.Core.Models
         public string? Delivery_Remark { get; set; }
         public string? Date_PC_Week { get; set; }
     }
+
+    public class OpenPoDeliveryExcelRow
+    {
+        public int ExcelRowNo { get; set; }
+        public string Key { get; set; } = "";
+        public string? Vendor { get; set; }
+        public string? PO_No { get; set; }
+        public DateTime? PO_Date { get; set; }
+
+        public int? PO_Qty { get; set; }
+        public int? BalanceQty { get; set; }
+
+        public DateTime? Delivery_Date { get; set; }
+        public string? Date_PC_Week { get; set; }
+        public int? Qty { get; set; }
+        public string? Remark { get; set; }
+    }
+
 }

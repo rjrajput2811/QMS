@@ -16,6 +16,7 @@
 <script src="~/js/pnotify.confirm.js"></script>
 <script src="~/js/tabulator.js"></script>
 <script src="~/js/xlsx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <link href="~/lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
 
@@ -195,19 +196,26 @@
                     <i class="fas fa-regular fa-file-excel mr-2"></i>Download Blank Exl
                 </button> *@
                 <div class="ml-auto">
-                  @*   @if (userType != "Vendor")
+                    @if (userType == "Vendor")
                     {
                         <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
                             <i class="fas fa-upload mr-2"></i>Upload Xl
                         </button>
-                    } *@
+                    }
                     <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
                         <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
                     </button>&nbsp;
-
-                    <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("SCMMenu","Home")'" style="font-size:14px">
-                        <i class="fas fa-arrow-left"></i> Back
-                    </button>
+                    @if (userType != "Vendor")
+                    {
+                        <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("SCMMenu","Home")'" style="font-size:14px">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    }
+                    else{
+                        <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("VendorOptionSelection","Home")'" style="font-size:14px">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </button>
+                    }
                 </div>
 
             </div>
@@ -353,19 +361,20 @@
          $(document).ready(function () {
              $('#upload-button').on('click', async function () {
                     var expectedColumns = [
-                        'Key', 'PR Type', 'PR Description', 'Requisioner', 'Tracking No', 'PR No',
-                        'Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'Balance Qty', 'Destination', 'Delivery Date',
-                        'Balance Value', 'Material', 'Hold Date', 'Cleared Date'
+                        'Key','PR No','Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'BalanceQty', 'Destination', 'Delivery Date',
+                        'Date PC Week', 'Qty', 'Remark'
                     ];
 
-                    var url = '@Url.Action("UploadOpenPoDataExcel", "OpenPo")';
+                    var url = '@Url.Action("UploadOpenPoDeliveryExcel", "OpenPo")';
                     handleImportExcelFile(url, expectedColumns);
              });
 
 
              if(userType == "Vendor")
              {
-                 loadVendorData()
+                  loadPCCalendar().always(function () {
+                    loadVendorData();
+                  });
              }
              else
              {
@@ -393,15 +402,6 @@
             document.querySelectorAll('.text-danger').forEach(function (error) {
                 error.textContent = '';
             });
-        }
-
-        function openUpload() {
-
-            clearForm();
-            if (!$('#uploadModal').length) {
-                $('body').append(partialView);
-            }
-            $('#uploadModal').modal('show');
         }
 
         function parseAnyDate(input) {
@@ -856,26 +856,26 @@
                         title: "SNo", field: "Sr_No", sorter: "number", width: 65, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
                     });
 
+                    columns.push({ title: "Key", field: "Key", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                     if (userType != "Vendor") {
-                        columns.push({ title: "Key", field: "Key", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "Key1", field: "Key1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "PR Type", field: "PR_Type"/* , width: 160 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "PR Description", field: "PR_Desc"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                         columns.push({ title: "Requisitioner", field: "Requisitioner"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "Tracking No", field: "Tracking_No"/* , width: 90 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
-                        columns.push({ title: "PR No", field: "PR_No"/* , width: 130 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
-                        columns.push({ title: "Batch No", field: "Batch_No"/* , width: 100 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
-                        columns.push({ title: "Reference No", field: "Reference_No"/* , width: 280 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "left", headerHozAlign: "left" });
-                        columns.push({ title: "Vendor", field: "Vendor"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                     }
+                    columns.push({ title: "PR No", field: "PR_No"/* , width: 130 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "Batch No", field: "Batch_No"/* , width: 100 */, sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "Reference No", field: "Reference_No"/* , width: 280 */, headerMenu: headerMenu, headerFilter: "input",headerFilterFunc: "input", hozAlign: "left", headerHozAlign: "left" });
+                    columns.push({ title: "Vendor", field: "Vendor"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
 
                     columns.push({ title: "PO No", field: "PO_No"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "PO Date", field: "PO_Date"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "PO Qty", field: "PO_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
 
+                    columns.push({ title: "BalanceQty", field: "Balance_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     if (userType != "Vendor")
                     {
-                        columns.push({ title: "BalanceQty", field: "Balance_Qty"/* , width: 150 */, headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "Balance Value", field: "Balance_Value", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     }
 
@@ -1153,10 +1153,181 @@
                       applyDeliveryFilter(deliveryToggle.checked === true);
                     }
 
+                    if (userType != "Vendor")
+                    {
+                        document.getElementById("exportExcel").addEventListener("click", function () {
+                            table.download("xlsx", "Open Po List.xlsx", { sheetName: "Open Po List" });
+                        });
+                    }
+                    else
+                    {
 
-                document.getElementById("exportExcel").addEventListener("click", function () {
-                    table.download("xlsx", "Open Po List.xlsx", { sheetName: "Open Po List" });
-                });
+                        document.getElementById("exportExcel").addEventListener("click", function () {
+                            if (!window.table) { alert("Tabulator table not found."); return; }
+                            if (!window.XLSX) { alert("XLSX not found. Use xlsx-js-style for styling."); return; }
+
+                            // ✅ Your child field is _children (DataTree)
+                            const CHILD_FIELD = "_children";
+
+                            const columns = [
+                                { key: "Key", label: "Key" },
+                                { key: "PRNo", label: "PR No" },
+                                { key: "BatchNo", label: "Batch No" },
+                                { key: "ReferenceNo", label: "Reference No" },
+                                { key: "Vendor", label: "Vendor" },
+                                { key: "PONo", label: "PO No" },
+                                { key: "PODate", label: "PO Date" },
+                                { key: "POQty", label: "PO Qty" },
+                                { key: "BalanceQty", label: "BalanceQty" },
+                                { key: "Destination", label: "Destination" },
+
+                                // child values
+                                { key: "DeliveryDate", label: "Delivery Date" },
+                                { key: "DatePCWeek", label: "Date PC Week" },
+                                { key: "Qty", label: "Qty" },
+                                { key: "Remark", label: "Remark" }
+                            ];
+
+                            const COLORS = {
+                                HEADER_BG: "1F4E79",
+                                HEADER_FG: "FFFFFF",
+                                PARENT_BG: "D9E1F2",
+                                CHILD_BG:  "FFFFFF",
+                                CHILD_HEADER_BG: "F1F5F9" // optional for your child header row
+                            };
+
+                            const thinBorder = {
+                                top:    { style: "thin", color: { rgb: "BFBFBF" } },
+                                bottom: { style: "thin", color: { rgb: "BFBFBF" } },
+                                left:   { style: "thin", color: { rgb: "BFBFBF" } },
+                                right:  { style: "thin", color: { rgb: "BFBFBF" } }
+                            };
+
+                            function formatDate(val) {
+                                if (!val) return "";
+                                const d = new Date(val);
+                                if (isNaN(d.getTime())) return String(val); // already dd/MM/yyyy
+                                const dd = String(d.getDate()).padStart(2, "0");
+                                const mm = String(d.getMonth() + 1).padStart(2, "0");
+                                const yy = d.getFullYear();
+                                return `${dd}/${mm}/${yy}`;
+                            }
+
+                            function styleRow(ws, rowIndex, colCount, bgRgb, options) {
+                                for (let c = 0; c < colCount; c++) {
+                                    const addr = XLSX.utils.encode_cell({ r: rowIndex, c });
+                                    if (!ws[addr]) continue;
+
+                                    ws[addr].s = ws[addr].s || {};
+                                    ws[addr].s.fill = { patternType: "solid", fgColor: { rgb: bgRgb } };
+
+                                    if (options?.font) ws[addr].s.font = options.font;
+                                    if (options?.alignment) ws[addr].s.alignment = options.alignment;
+                                    if (options?.border) ws[addr].s.border = options.border;
+                                }
+                            }
+
+                            // ✅ Important: dataTree children are inside parent._children
+                            const data = table.getData(true);
+
+                            const out = [];
+
+                            data.forEach(parent => {
+                                const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
+
+                                // Remove the fake "header" child row from export
+                                const realChildren = children.filter(ch => !ch?._isChildHeader);
+
+                                // If no children, export only parent row (optional)
+                                if (realChildren.length === 0) {
+                                    out.push({
+                                        __rowType: "parent",
+                                        Key: parent.Key || "",
+                                        PRNo: parent.PR_No || "",
+                                        BatchNo: parent.Batch_No || "",
+                                        ReferenceNo: parent.Reference_No || "",
+                                        Vendor: parent.Vendor || "",
+                                        PONo: parent.PO_No || "",
+                                        PODate: parent.PO_Date || "",
+                                        POQty: parent.PO_Qty ?? "",
+                                        BalanceQty: parent.Balance_Qty ?? "",
+                                        Destination: parent.Destination || "",
+
+                                        DeliveryDate: "",
+                                        DatePCWeek: "",
+                                        Qty: "",
+                                        Remark: ""
+                                    });
+                                    return;
+                                }
+
+                                // Export each child as its own row with parent repeated
+                                realChildren.forEach((ch, idx) => {
+                                    out.push({
+                                        __rowType: idx === 0 ? "parent" : "child", // first child row gets parent BG
+                                        Key: parent.Key || "",
+                                        PRNo: parent.PR_No || "",
+                                        BatchNo: parent.Batch_No || "",
+                                        ReferenceNo: parent.Reference_No || "",
+                                        Vendor: parent.Vendor || "",
+                                        PONo: parent.PO_No || "",
+                                        PODate: parent.PO_Date || "",
+                                        POQty: parent.PO_Qty ?? "",
+                                        BalanceQty: parent.Balance_Qty ?? "",
+                                        Destination: parent.Destination || "",
+
+                                        // child mapping (your child fields are stored in these columns)
+                                        DeliveryDate: ch.Delivery_Date || "",
+                                        DatePCWeek: ch.Material || "",
+                                        Qty: ch.Hold_Date ?? "",
+                                        Remark: ch.Cleared_Date || ""
+                                    });
+                                });
+                            });
+
+                            // Build AOA
+                            const header = columns.map(c => c.label);
+                            const rows = out.map(r => columns.map(c => r[c.key] ?? ""));
+
+                            const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+
+                            ws["!freeze"] = { xSplit: 0, ySplit: 1 };
+                            ws["!autofilter"] = {
+                                ref: XLSX.utils.encode_range({
+                                    s: { r: 0, c: 0 },
+                                    e: { r: rows.length, c: header.length - 1 }
+                                })
+                            };
+
+                            ws["!cols"] = header.map(h => ({ wch: Math.max(12, h.length + 2) }));
+
+                            const totalCols = header.length;
+
+                            // Header style
+                            styleRow(ws, 0, totalCols, COLORS.HEADER_BG, {
+                                font: { bold: true, color: { rgb: COLORS.HEADER_FG } },
+                                alignment: { horizontal: "center", vertical: "center" },
+                                border: thinBorder
+                            });
+
+                            // Row style: parent/child coloring
+                            for (let i = 0; i < out.length; i++) {
+                                const excelRow = i + 1;
+                                const bg = (out[i].__rowType === "parent") ? COLORS.PARENT_BG : COLORS.CHILD_BG;
+
+                                styleRow(ws, excelRow, totalCols, bg, {
+                                    alignment: { vertical: "center" },
+                                    border: thinBorder
+                                });
+                            }
+
+                            const wb = XLSX.utils.book_new();
+                            XLSX.utils.book_append_sheet(wb, ws, "Open Po List");
+                            XLSX.writeFile(wb, "Open Po List.xlsx");
+                        });
+
+
+                    }
             // }
             // else {
             //     showDangerAlert('No data available.');
@@ -1449,7 +1620,7 @@
                 const row = data[i];
 
                 // Remarks mandatory if Delivery_Date is blank
-                if (!row.Delivery_Date && (!row.Delivery_Remarks || String(row.Delivery_Remarks).trim() === "")) {
+                if (!row.Delivery_Date && (!row.Delivery_Remark || String(row.Delivery_Remark).trim() === "")) {
                     Blockloaderhide();
                     showDangerAlert(`Row ${i + 1}: Remarks are mandatory if Delivery Date is blank.`);
                     return;
@@ -1520,7 +1691,7 @@
                 Delivery_Qty: (row.Delivery_Qty !== undefined && row.Delivery_Qty !== null && String(row.Delivery_Qty).trim() !== "")
                     ? parseFloat(row.Delivery_Qty)
                     : null,
-                Delivery_Remarks: row.Delivery_Remarks ? String(row.Delivery_Remarks).trim() : null,
+                Delivery_Remark: row.Delivery_Remark ? String(row.Delivery_Remark).trim() : null,
                 Date_PC_Week: row.Date_PC_Week ? String(row.Date_PC_Week).trim() : null
             }));
 
@@ -1547,11 +1718,11 @@
                     $(".alert-success").remove();
                     showSuccessAlert("Schedule saved successfully!");
                     $("#deliveryScheduleModal").modal('hide');
-                    // if (userType == "Vendor") {
-                    //     loadVendorData();
-                    // } else {
+                     if (userType == "Vendor") {
+                         loadVendorData();
+                     } else {
                         loadData();
-                    // }
+                     }
                 },
                 error: function () {
                     Blockloaderhide();
@@ -1774,6 +1945,15 @@
                     showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
                 }
             });
+        }
+
+        function openUpload() {
+
+            clearForm();
+            if (!$('#uploadModal').length) {
+                $('body').append(partialView);
+            }
+            $('#uploadModal').modal('show');
         }
        
     </script>

@@ -43,5 +43,6 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
         Task<List<MTAMasterViewModel>> GetMTAListAsync();
         Task<BulkMTACreateResult> BulkMTACreateAsync(List<MTAMasterViewModel> listOfData, string fileName, string uploadedBy);
+        Task<BulkOpenPoDeliveryResult> BulkCreateDeliveryScheduleAsync_Dapper(List<OpenPoDeliveryExcelRow> listOfData, string uploadedBy);
     }
 }

@@ -25,6 +25,7 @@ namespace QMS.Core.Models
         //public string? Delivery_Remark { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
+        public bool Status { get; set; }
         public List<DeliveryScheduleItem> DeliveryScheduleList { get; set; } = new();
     }
 

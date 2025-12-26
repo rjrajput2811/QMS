@@ -1222,6 +1222,32 @@ namespace QMS.Core.Repositories.OpenPoRepository
             }
         }
 
+        public async Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleVendorAsync(string vendor)
+        {
+            try
+            {
+                using (var connection = _dbContext.Database.GetDbConnection())
+                {
+                    if (connection.State != ConnectionState.Open)
+                        await connection.OpenAsync();
+
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule_ByVendor]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
+
+                    {
+                        var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
+                        var deliverySchedules = (await multi.ReadAsync<Opne_Po_DeliverySchedule>()).ToList();
+
+                        return (poHeaders, deliverySchedules);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
         public async Task<OperationResult> SaveBuffScheduleAsync(int id, int buff, string updatedBy, bool returnUpdatedRecord = false)
         {
             try
@@ -2553,6 +2579,22 @@ namespace QMS.Core.Repositories.OpenPoRepository
             return result;
         }
 
+        public async Task<OperationResult> IsSubmittedAsync(IEnumerable<int> ids, bool returnCreatedRecord = false)
+        {
+            if (ids == null || !ids.Any())
+                return new OperationResult { Success = false, Message = "No data was selected!." };
+
+            var idList = ids.Distinct().ToList();
+
+            var updated = await _dbContext.Opne_Po_Deliveries
+                .Where(x => !x.Deleted && idList.Contains(x.Ven_PoId))
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, true));
+
+            if (updated == 0)
+                return new OperationResult { Success = false, Message = "No matching records found." };
+
+            return new OperationResult { Success = true, Message = $"Updated successfully! Rows updated: {updated}." };
+        }
 
 
     }

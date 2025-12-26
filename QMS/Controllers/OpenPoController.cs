@@ -314,6 +314,26 @@ namespace QMS.Controllers
             return Json(response);
         }
 
+        [HttpGet]
+        public async Task<JsonResult> GetOpenPOWithDeliveryVendor(string vendor)
+        {
+            // If you still want to read vendor from session:
+            if (string.IsNullOrEmpty(vendor))
+            {
+                vendor = HttpContext.Session.GetString("VendorName") ?? "";
+            }
+
+            var result = await _openPoReposiotry.GetOpenPOWithDeliveryScheduleVendorAsync(vendor);
+
+            var response = new
+            {
+                POHeaders = result.poHeaders,
+                DeliverySchedules = result.deliverySchedules
+            };
+
+            return Json(response);
+        }
+
         [HttpPost]
         public async Task<JsonResult> UpdateBuffScheduleAsync(int id,int buff)
         {
@@ -330,7 +350,22 @@ namespace QMS.Controllers
             return Json(new { Success = false, Errors = errors });
         }
 
+        [HttpPost]
+        public async Task<JsonResult> SetIsSubmitted([FromBody] List<int> selectedIds)
+        {
+            if (selectedIds == null || !selectedIds.Any())
+            {
+                return new JsonResult(new OperationResult
+                {
+                    Success = false,
+                    Message = "No data was selected."
+                });
+            }
 
+            var result = await _openPoReposiotry.IsSubmittedAsync(selectedIds);
+
+            return new JsonResult(result);
+        }
 
         public IActionResult SalesOrder()
         {

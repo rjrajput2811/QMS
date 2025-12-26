@@ -438,7 +438,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Description">
-                                            @Model?.Description
+                                            @Html.Raw(Model?.Description)
                                         </td>
                                     </tr>
                                     <tr>
@@ -451,7 +451,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Problem_State">
-                                            @Model?.Problem_State
+                                            @Html.Raw(Model?.Problem_State)
                                         </td>
                                     </tr>
                                 </thead>
@@ -532,7 +532,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Initial_Observ">
-                                            @Model?.Initial_Observ
+                                            @Html.Raw(Model?.Initial_Observ)
                                         </td>
                                     </tr>
 
@@ -609,7 +609,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:60px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Interim_Corrective">
-                                            @Model?.Interim_Corrective
+                                            @Html.Raw(Model?.Interim_Corrective)
                                         </td>
                                     </tr>
                                     <input type="hidden" id="Interim_Cor_Date" name="Interim_Cor_Date" value="@Model?.Interim_Cor_Date" />
@@ -625,7 +625,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Root_Cause_Anal">
-                                            @Model?.Root_Cause_Anal
+                                            @Html.Raw(Model?.Root_Cause_Anal)
                                         </td>
                                     </tr>
                                     <input type="hidden" name="Root_Cause_Date" id="Root_Cause_Date" value="@Model?.Root_Cause_Date" />
@@ -641,7 +641,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Corrective_Action">
-                                            @Model?.Corrective_Action
+                                            @Html.Raw(Model?.Corrective_Action)
                                         </td>
                                     </tr>
                                     <input type="hidden" name="Corrective_Action_Date" id="Corrective_Action_Date" value="@Model?.Corrective_Action_Date" />
@@ -892,7 +892,7 @@
                     const month = String(now.getMonth() + 1).padStart(2, "0");
                     const year = now.getFullYear();
 
-                    const formatted = `${day}-${month}-${year}`;
+                            const formatted = `${year}-${month}-${day}`;
 
                     hiddenInput.val(formatted);
                 }
@@ -1218,6 +1218,54 @@
             return v; // fallback (server may reject)
         }
 
+                function decodeHtmlOnce(str) {
+            const t = document.createElement("textarea");
+            t.innerHTML = str == null ? "" : String(str);
+            return t.value;
+        }
+
+        // decode multiple times (handles &amp;lt; -> &lt; -> <)
+        function decodeDeep(str, max = 3) {
+            let s = str == null ? "" : String(str);
+            for (let i = 0; i < max; i++) {
+                const d = decodeHtmlOnce(s);
+                if (d === s) break;
+                s = d;
+            }
+            return s;
+        }
+
+        // normalize html coming from contenteditable so you store clean HTML
+        function normalizeEditorHtml(html) {
+            let h = (html || "");
+
+            // Remove &nbsp; noise
+            h = h.replace(/&nbsp;/g, " ");
+
+            // IMPORTANT: if editor contains encoded tags (&lt;br&gt; / &amp;lt;br&amp;gt), decode them
+            h = decodeDeep(h, 3);
+
+            // Convert common contenteditable wrapper tags into <br>
+            // (prevents saving <div>...</div> mess)
+            h = h
+                .replace(/<\/(div|p)>/gi, "<br>")
+                .replace(/<(div|p)(\s[^>]*)?>/gi, "");
+
+            // Normalize <br> variants
+            h = h.replace(/<br\s*\/?>/gi, "<br>");
+
+            // Trim ending <br>
+            h = h.replace(/(<br>\s*)+$/i, "");
+
+            return h.trim();
+        }
+
+        function setContentEditableFromDb(el, dbValue) {
+            if (!el) return;
+            el.innerHTML = decodeDeep(dbValue || "", 3); // fixes &amp;lt;br&amp;gt on edit view
+        }
+
+
         async function saveCAReport() {
             const saveBtn = document.getElementById('saveBtn');
             if (!saveBtn) return;
@@ -1285,11 +1333,8 @@
                     const key = cell.getAttribute('data-name');
                     if (!key) return;
 
-                    // Use innerHTML if you want formatting, or innerText for plain text
-                    let val = (cell.innerHTML || '').trim();
-
-                    // Remove &nbsp; noise
-                    val = val.replace(/&nbsp;/g, ' ').trim();
+                    // ✅ normalize + decode deep to avoid &amp;lt;br&amp;gt saving
+                    const val = normalizeEditorHtml(cell.innerHTML);
 
                     formData.set(key, val);
                 });
@@ -1320,7 +1365,7 @@
                         SeqNo: idx + 1,
                         Action_Plan: (cells[1].innerText || '').trim(),
                         Target_Date: targetDateIso,
-                        Resp: (cells[3].innerHTML || '').trim(), // keep formatting
+                            Resp: normalizeEditorHtml(cells[3].innerHTML || ''), // keep formatting
                         Status: statusValue,
                         Deleted: false
                     });

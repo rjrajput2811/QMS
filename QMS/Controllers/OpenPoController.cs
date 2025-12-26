@@ -64,6 +64,7 @@ namespace QMS.Controllers
             try
             {
                 var uploadedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                bool status = false;
 
                 using var stream = new MemoryStream();
                 await file.CopyToAsync(stream);
@@ -97,7 +98,7 @@ namespace QMS.Controllers
                     rowsToAdd.Add(model);
                 }
 
-                var importResult = await _openPoReposiotry.BulkCreateDeliveryScheduleAsync_Dapper(rowsToAdd, uploadedBy);
+                var importResult = await _openPoReposiotry.BulkCreateDeliveryScheduleAsync_Dapper(rowsToAdd, uploadedBy, status);
 
                 // If failed -> return failed excel (same style)
                 if (importResult.FailedRecords.Any())
@@ -111,6 +112,11 @@ namespace QMS.Controllers
                     failSheet.Cell(1, 3).Value = "PO_No";
                     failSheet.Cell(1, 4).Value = "Reason";
 
+                    // Header style (optional)
+                    var headerRange = failSheet.Range(1, 1, 1, 4);
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
                     int i = 2;
                     foreach (var fail in importResult.FailedRecords)
                     {
@@ -120,19 +126,23 @@ namespace QMS.Controllers
                         failSheet.Cell(i, 4).Value = fail.Reason;
                         i++;
                     }
+
+                    failSheet.Columns().AdjustToContents();
+
                     failWb.SaveAs(failStream);
                     failStream.Position = 0;
 
                     var failedFileName = $"FailedOpenPoDelivery__{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-
-                    Response.Headers["Content-Disposition"] = $"attachment; filename={failedFileName}";
-                    return File(failStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", failedFileName);
+                    return File(
+                        failStream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        failedFileName);
                 }
 
                 return Json(new
                 {
                     success = true,
-                    message = $"Import completed. Total: {recordCount}, Saved: {rowsToAdd.Count}"
+                    message = $"Import completed. Total: {importResult.TotalRecords}, Imported: {importResult.ImportedRecords}, Failed: {importResult.FailedCount}"
                 });
             }
             catch (Exception ex)

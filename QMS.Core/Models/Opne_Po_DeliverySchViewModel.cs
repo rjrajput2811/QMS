@@ -55,4 +55,11 @@ namespace QMS.Core.Models
         public string? Remark { get; set; }
     }
 
+    public class ImportSummaryDto
+    {
+        public int TotalRecords { get; set; }
+        public int ImportedRecords { get; set; }
+        public int FailedRecords { get; set; }
+    }
+
 }

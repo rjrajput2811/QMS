@@ -2485,7 +2485,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
         }
 
 
-        public async Task<BulkOpenPoDeliveryResult> BulkCreateDeliveryScheduleAsync_Dapper(List<OpenPoDeliveryExcelRow> listOfData, string uploadedBy)
+        public async Task<BulkOpenPoDeliveryResult> BulkCreateDeliveryScheduleAsync_Dapper(List<OpenPoDeliveryExcelRow> listOfData, string uploadedBy,bool status)
         {
             var result = new BulkOpenPoDeliveryResult();
 
@@ -2533,6 +2533,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 var dp = new DynamicParameters();
                 dp.Add("@Rows", tvp.AsTableValuedParameter("dbo.OpenPoDelivery_ImportRow"));
                 dp.Add("@UploadedBy", uploadedBy, DbType.String, size: 100);
+                dp.Add("@Status", status, DbType.Boolean);
 
                 using var grid = await conn.QueryMultipleAsync(
                     sql: "dbo.sp_OpenPoDeliverySch_BulkImport",
@@ -2540,7 +2541,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     commandType: CommandType.StoredProcedure);
 
                 // 1) Summary
-                var summary = (await grid.ReadAsync()).FirstOrDefault();
+                 var summary = (await grid.ReadAsync<ImportSummaryDto>()).FirstOrDefault()
+                          ?? new ImportSummaryDto();
                 int total = (int)(summary?.TotalRecords ?? 0);
                 int imported = (int)(summary?.ImportedRecords ?? 0);
                 int failed = (int)(summary?.FailedRecords ?? 0);
@@ -2551,20 +2553,35 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 foreach (var f in failedRows)
                 {
                     // Map back to original by ExcelRowNo (best) else Key|PO_No
-                    var row = listOfData.FirstOrDefault(r => r.ExcelRowNo == (f.ExcelRowNo ?? -1))
-                              ?? listOfData.FirstOrDefault(r =>
-                                     string.Equals((r.Key ?? "").Trim(), (f.Key ?? "").Trim(), StringComparison.OrdinalIgnoreCase) &&
-                                     string.Equals((r.PO_No ?? "").Trim(), (f.PO_No ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
+                    OpenPoDeliveryExcelRow? row = null;
 
-                    result.FailedRecords.Add((row ?? new OpenPoDeliveryExcelRow { Key = f.Key ?? "", PO_No = f.PO_No }, f.Reason));
+                    if (f.ExcelRowNo.HasValue)
+                    {
+                        row = listOfData.FirstOrDefault(r => r.ExcelRowNo == f.ExcelRowNo.Value);
+                    }
+
+                    if (row == null)
+                    {
+                        row = listOfData.FirstOrDefault(r =>
+                            string.Equals((r.Key ?? "").Trim(), (f.Key ?? "").Trim(), StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals((r.PO_No ?? "").Trim(), (f.PO_No ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    result.FailedRecords.Add((row ?? new OpenPoDeliveryExcelRow
+                    {
+                        ExcelRowNo = f.ExcelRowNo ?? 0,
+                        Key = f.Key ?? "",
+                        PO_No = f.PO_No
+                    }, f.Reason ?? "Validation failed"));
                 }
 
+                // Success rule: partial success allowed
                 result.Result = new OperationResult
                 {
-                    Success = failedRows.Count == 0,
+                    Success = result.ImportedRecords > 0,
                     Message = failedRows.Any()
-                        ? $"Import completed: {imported}/{total} applied, {failed} failed."
-                        : $"All {imported}/{total} records imported successfully."
+                        ? $"Import completed: {result.ImportedRecords}/{result.TotalRecords} imported, {result.FailedCount} failed."
+                        : $"All {result.ImportedRecords}/{result.TotalRecords} records imported successfully."
                 };
             }
             catch (Exception ex)

@@ -383,7 +383,7 @@
                                         <td colspan="4"
                                             contenteditable="true" data-name="Description"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Description
+                                            @Html.Raw(Model?.Description)
                                         </td>
                                     </tr>
                                     <tr>
@@ -396,7 +396,7 @@
                                         <td colspan="4" data-name="Problem_State"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Problem_State
+                                            @Html.Raw(Model?.Problem_State)
                                         </td>
                                     </tr>
                                 </thead>
@@ -477,7 +477,7 @@
                                         <td colspan="4" data-name="Initial_Observ"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Initial_Observ
+                                            @Html.Raw(Model?.Initial_Observ)
                                         </td>
                                     </tr>
 
@@ -500,7 +500,7 @@
                                         <td colspan="4" data-name="Complaint_History"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:60px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Complaint_History
+                                            @Html.Raw(Model?.Complaint_History)
                                         </td>
                                     </tr>
 
@@ -510,12 +510,12 @@
                                             6. Initial Analysis:
                                         </th>
                                     </tr>
-                                    <tr>
+                                    @* <tr>
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
                                         </td>
-                                    </tr>
+                                    </tr> *@
 
                                 </tbody>
                             </table>
@@ -612,7 +612,7 @@
                                         <td colspan="4" data-name="Current_Process"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Current_Process
+                                            @Html.Raw(Model?.Current_Process)
                                         </td>
                                     </tr>
 
@@ -627,7 +627,7 @@
                                         <td colspan="4" data-name="Conclusion"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Conclusion
+                                            @Html.Raw(Model?.Conclusion)
                                         </td>
                                     </tr>
 
@@ -642,7 +642,7 @@
                                         <td colspan="4" data-name="Analysis_of_Defective100"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Analysis_of_Defective100
+                                            @Html.Raw(Model?.Analysis_of_Defective100)
                                         </td>
                                     </tr>
 
@@ -657,7 +657,7 @@
                                         <td colspan="4" data-name="Root_Cause_Anal"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Root_Cause_Anal
+                                            @Html.Raw(Model?.Root_Cause_Anal)
                                         </td>
                                     </tr>
                                     <input type="hidden" name="Root_Cause_Date" id="Root_Cause_Date" value="@Model?.Root_Cause_Date" />
@@ -797,7 +797,7 @@
                                         <td colspan="6" data-name="Corrective_Action"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Corrective_Action
+                                            @Html.Raw(Model?.Corrective_Action)
                                         </td>
                                         <input type="hidden" name="Corrective_Action_Date" id="Corrective_Action_Date" value="@Model?.Corrective_Action_Date" />
                                     </tr>
@@ -811,7 +811,7 @@
                                         <td colspan="6" data-name="Images_Corrections"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Images_Corrections
+                                            @Html.Raw(Model?.Images_Corrections)
                                         </td>
                                     </tr>
                                     <tr>
@@ -824,7 +824,7 @@
                                         <td colspan="6" data-name="Conclusion"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Conclusion
+                                            @Html.Raw(Model?.Conclusion)
                                         </td>
                                     </tr>
                                 </tbody>
@@ -905,7 +905,7 @@
                     const month = String(now.getMonth() + 1).padStart(2, "0");
                     const year = now.getFullYear();
 
-                    const formatted = `${day}-${month}-${year}`;
+                    const formatted = `${year}-${month}-${day}`;
 
                     hiddenInput.val(formatted);
                 }
@@ -1154,6 +1154,54 @@
         }
 
 
+        function decodeHtmlOnce(str) {
+            const t = document.createElement("textarea");
+            t.innerHTML = str == null ? "" : String(str);
+            return t.value;
+        }
+
+        // decode multiple times (handles &amp;lt; -> &lt; -> <)
+        function decodeDeep(str, max = 3) {
+            let s = str == null ? "" : String(str);
+            for (let i = 0; i < max; i++) {
+                const d = decodeHtmlOnce(s);
+                if (d === s) break;
+                s = d;
+            }
+            return s;
+        }
+
+        // normalize html coming from contenteditable so you store clean HTML
+        function normalizeEditorHtml(html) {
+            let h = (html || "");
+
+            // Remove &nbsp; noise
+            h = h.replace(/&nbsp;/g, " ");
+
+            // IMPORTANT: if editor contains encoded tags (&lt;br&gt; / &amp;lt;br&amp;gt), decode them
+            h = decodeDeep(h, 3);
+
+            // Convert common contenteditable wrapper tags into <br>
+            // (prevents saving <div>...</div> mess)
+            h = h
+                .replace(/<\/(div|p)>/gi, "<br>")
+                .replace(/<(div|p)(\s[^>]*)?>/gi, "");
+
+            // Normalize <br> variants
+            h = h.replace(/<br\s*\/?>/gi, "<br>");
+
+            // Trim ending <br>
+            h = h.replace(/(<br>\s*)+$/i, "");
+
+            return h.trim();
+        }
+
+        function setContentEditableFromDb(el, dbValue) {
+            if (!el) return;
+            el.innerHTML = decodeDeep(dbValue || "", 3); // fixes &amp;lt;br&amp;gt on edit view
+        }
+
+
         async function saveRCAReport() {
             debugger;
             const saveBtn = document.getElementById('saveBtn');
@@ -1222,11 +1270,8 @@
                     const key = cell.getAttribute('data-name');
                     if (!key) return;
 
-                    // Use innerHTML if you want formatting; innerText for plain text
-                    let val = (cell.innerHTML || '').trim();
-
-                    // Remove &nbsp; noise
-                    val = val.replace(/&nbsp;/g, ' ').trim();
+                    // ✅ normalize + decode deep to avoid &amp;lt;br&amp;gt saving
+                    const val = normalizeEditorHtml(cell.innerHTML);
 
                     formData.set(key, val);
                 });

@@ -62,6 +62,9 @@ namespace QMS.Core.DatabaseContext
 
     public class BulkOpenPoDeliveryResult
     {
+        public int TotalRecords { get; set; }
+        public int ImportedRecords { get; set; }
+        public int FailedCount { get; set; }
         public OperationResult Result { get; set; } = new();
         public List<(OpenPoDeliveryExcelRow Record, string Reason)> FailedRecords { get; set; } = new();
     }

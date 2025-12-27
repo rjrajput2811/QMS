@@ -1211,240 +1211,198 @@
                     else
                     {
 
-                                document.getElementById("exportExcel").addEventListener("click", function () {
-        if (!window.table) { alert("Tabulator table not found."); return; }
-        if (!window.XLSX) { alert("XLSX not found. Use xlsx-js-style for styling."); return; }
+                                                   document.getElementById("exportExcel").addEventListener("click", async function () {
+      if (!window.table) { alert("Tabulator table not found."); return; }
+      if (!window.ExcelJS) { alert("ExcelJS not found."); return; }
 
-        const CHILD_FIELD = "_children";
+      const CHILD_FIELD = "_children";
 
-        const columns = [
-            { key: "Key",          label: "Key" },
-            { key: "PRNo",         label: "PR No" },
-            { key: "BatchNo",      label: "Batch No" },
-            { key: "ReferenceNo",  label: "Reference No" },
-            { key: "Vendor",       label: "Vendor" },
-            { key: "PONo",         label: "PO No" },
+      const columns = [
+        { key: "Key",          label: "Key" },
+        { key: "PRNo",         label: "PR No" },
+        { key: "BatchNo",      label: "Batch No" },
+        { key: "ReferenceNo",  label: "Reference No" },
+        { key: "Vendor",       label: "Vendor" },
+        { key: "PONo",         label: "PO No" },
+        { key: "PODate",       label: "PO Date", type: "date" },
+        { key: "POQty",        label: "PO Qty" },
+        { key: "BalanceQty",   label: "BalanceQty" },
+        { key: "Destination",  label: "Destination" },
+        { key: "DeliveryDate", label: "Delivery Date", type: "date" },
+        { key: "DatePCWeek",   label: "Date PC Week" },
+        { key: "Qty",          label: "Qty" },
+        { key: "Remark",       label: "Remark" }
+      ];
 
-            // ✅ dates
-            { key: "PODate",       label: "PO Date", type: "date" },
+      const COLORS = { HEADER_BG: "FF1F4E79", HEADER_FG: "FFFFFFFF" };
 
-            { key: "POQty",        label: "PO Qty" },
-            { key: "BalanceQty",   label: "BalanceQty" },
-            { key: "Destination",  label: "Destination" },
+      const thinBorder = {
+        top:    { style: "thin" },
+        bottom: { style: "thin" },
+        left:   { style: "thin" },
+        right:  { style: "thin" }
+      };
 
-            // ✅ dates
-            { key: "DeliveryDate", label: "Delivery Date", type: "date" },
+      function toDate(val) {
+        if (!val) return null;
+        if (val instanceof Date && !isNaN(val.getTime())) return val;
 
-            { key: "DatePCWeek",   label: "Date PC Week" },
-            { key: "Qty",          label: "Qty" },
-            { key: "Remark",       label: "Remark" }
-        ];
+        const s = String(val).trim();
 
-        const COLORS = {
-            HEADER_BG: "1F4E79",
-            HEADER_FG: "FFFFFF",
-            PARENT_BG: "D9E1F2",
-            CHILD_BG:  "FFFFFF"
-        };
+        // dd/mm/yyyy
+        let m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
 
-        const thinBorder = {
-            top:    { style: "thin", color: { rgb: "BFBFBF" } },
-            bottom: { style: "thin", color: { rgb: "BFBFBF" } },
-            left:   { style: "thin", color: { rgb: "BFBFBF" } },
-            right:  { style: "thin", color: { rgb: "BFBFBF" } }
-        };
+        // dd-mm-yyyy
+        m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
 
-        // ---------- DATE HELPERS (ROBUST) ----------
-        function toDateObj(val) {
-            if (val === null || val === undefined || val === "") return null;
+        // ISO / other
+        const d = new Date(s);
+        return isNaN(d.getTime()) ? null : d;
+      }
 
-            // Already Date
-            if (val instanceof Date && !isNaN(val.getTime())) return val;
+      // ✅ Auto width based on MAX(header + data)
+      function autoSizeColumns(ws, minWidth = 10, maxWidth = 40) {
+        ws.columns.forEach(col => {
+          let maxLen = 0;
 
-            // If dd/MM/yyyy
-            if (typeof val === "string") {
-                const s = val.trim();
+          // Include header text
+          const headerVal = col.header;
+          if (headerVal) maxLen = Math.max(maxLen, String(headerVal).length);
 
-                // dd/MM/yyyy
-                if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-                    const [dd, mm, yyyy] = s.split("/").map(Number);
-                    const d = new Date(yyyy, mm - 1, dd);
-                    return isNaN(d.getTime()) ? null : d;
-                }
+          col.eachCell({ includeEmpty: true }, cell => {
+            let txt = "";
+            const v = cell.value;
 
-                // yyyy-MM-dd or yyyy-MM-ddTHH:mm:ss
-                const d1 = new Date(s);
-                if (!isNaN(d1.getTime())) return d1;
+            if (v === null || v === undefined) txt = "";
+            else if (v instanceof Date) txt = "dd/mm/yyyy";
+            else if (typeof v === "object" && v.richText) txt = v.richText.map(t => t.text).join("");
+            else txt = String(v);
 
-                return null;
-            }
+            maxLen = Math.max(maxLen, txt.length);
+          });
 
-            // If numeric timestamp (ms) - only accept if it's a sensible timestamp
-            if (typeof val === "number") {
-                // If it looks like milliseconds since epoch (>= 2001 roughly)
-                if (val > 100000000000) {
-                    const d = new Date(val);
-                    return isNaN(d.getTime()) ? null : d;
-                }
-                return null;
-            }
-
-            return null;
-        }
-
-        // Convert JS Date -> Excel serial number (1900 date system)
-        function dateToExcelSerial(d) {
-            // Excel serial day 1 = 1900-01-01
-            // Use UTC to avoid timezone shifting
-            const utc = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
-            const excelEpoch = Date.UTC(1899, 11, 30); // 1899-12-30 (Excel base)
-            return (utc - excelEpoch) / (24 * 60 * 60 * 1000);
-        }
-
-        // ---------- STYLING ----------
-        function styleRow(ws, rowIndex, colCount, bgRgb, options) {
-            for (let c = 0; c < colCount; c++) {
-                const addr = XLSX.utils.encode_cell({ r: rowIndex, c });
-                if (!ws[addr]) continue;
-
-                ws[addr].s = ws[addr].s || {};
-                ws[addr].s.fill = { patternType: "solid", fgColor: { rgb: bgRgb } };
-
-                if (options?.font) ws[addr].s.font = options.font;
-                if (options?.alignment) ws[addr].s.alignment = options.alignment;
-                if (options?.border) ws[addr].s.border = options.border;
-            }
-        }
-
-        // ---------- BUILD EXPORT DATA ----------
-        const data = table.getData(true);
-        const out = [];
-
-        data.forEach(parent => {
-            const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
-            const realChildren = children.filter(ch => !ch?._isChildHeader);
-
-            const base = {
-                Key: parent.Key || "",
-                PRNo: parent.PR_No || "",
-                BatchNo: parent.Batch_No || "",
-                ReferenceNo: parent.Reference_No || "",
-                Vendor: parent.Vendor || "",
-                PONo: parent.PO_No || "",
-
-                // ✅ keep original date value (convert later to Excel serial)
-                PODate: parent.PO_Date || "",
-
-                POQty: parent.PO_Qty ?? "",
-                BalanceQty: parent.Balance_Qty ?? "",
-                Destination: parent.Destination || ""
-            };
-
-            if (realChildren.length === 0) {
-                out.push({
-                    __rowType: "parent",
-                    ...base,
-                    DeliveryDate: "",
-                    DatePCWeek: "",
-                    Qty: "",
-                    Remark: ""
-                });
-                return;
-            }
-
-            realChildren.forEach((ch, idx) => {
-                out.push({
-                    __rowType: idx === 0 ? "parent" : "child",
-                    ...base,
-
-                    // ✅ keep original child date value
-                    DeliveryDate: ch.Delivery_Date || "",
-
-                    // ⚠️ map these correctly as per your child fields
-                       DatePCWeek: ch.Material || "", 
-                       Qty: ch.Hold_Date ?? "", 
-                       Remark: ch.Cleared_Date || ""
-                });
-            });
+          col.width = Math.min(maxWidth, Math.max(minWidth, maxLen + 2));
         });
+      }
 
-        // ---------- BUILD SHEET ----------
-        const header = columns.map(c => c.label);
-        const rows = out.map(r => columns.map(c => r[c.key] ?? ""));
-        const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+      // ---------- BUILD EXPORT DATA FROM TABULATOR ----------
+      const data = table.getData(true);
+      const out = [];
 
-        // Freeze header + filter + widths
-        ws["!freeze"] = { xSplit: 0, ySplit: 1 };
-        ws["!autofilter"] = {
-            ref: XLSX.utils.encode_range({
-                s: { r: 0, c: 0 },
-                e: { r: rows.length, c: header.length - 1 }
-            })
+      data.forEach(parent => {
+        const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
+        const realChildren = children.filter(ch => !ch?._isChildHeader);
+
+        const base = {
+          Key: parent.Key || "",
+          PRNo: parent.PR_No || "",
+          BatchNo: parent.Batch_No || "",
+          ReferenceNo: parent.Reference_No || "",
+          Vendor: parent.Vendor || "",
+          PONo: parent.PO_No || "",
+          PODate: parent.PO_Date || "",
+          POQty: parent.PO_Qty ?? "",
+          BalanceQty: parent.Balance_Qty ?? "",
+          Destination: parent.Destination || ""
         };
-        ws["!cols"] = header.map(h => ({ wch: Math.max(12, h.length + 2) }));
 
-        const totalCols = header.length;
+        if (realChildren.length === 0) {
+          out.push({
+            ...base,
+            DeliveryDate: "",
+            DatePCWeek: "",
+            Qty: "",
+            Remark: ""
+          });
+          return;
+        }
 
-        // Header style
-        styleRow(ws, 0, totalCols, COLORS.HEADER_BG, {
-            font: { bold: true, color: { rgb: COLORS.HEADER_FG } },
-            alignment: { horizontal: "center", vertical: "center" },
-            border: thinBorder
+        realChildren.forEach((ch) => {
+          out.push({
+            ...base,
+            DeliveryDate: ch.Delivery_Date || "",
+            DatePCWeek: ch.Material || "",
+            Qty: ch.Hold_Date ?? "",
+            Remark: ch.Cleared_Date || ""
+          });
         });
+      });
 
-        // Parent/Child style
-        for (let i = 0; i < out.length; i++) {
-            const excelRow = i + 1;
-            const bg = (out[i].__rowType === "parent") ? COLORS.PARENT_BG : COLORS.CHILD_BG;
+      // ---------- WORKBOOK / SHEET ----------
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Open Po List", {
+        views: [{ state: "frozen", xSplit: 0, ySplit: 1 }] // ✅ Freeze top row
+      });
 
-            styleRow(ws, excelRow, totalCols, bg, {
-                alignment: { vertical: "center" },
-                border: thinBorder
-            });
+      // Define columns (temporary width; will autosize later)
+      ws.columns = columns.map(c => ({
+        header: c.label,
+        key: c.key,
+        width: 15
+      }));
+
+      // Header row styling
+      const headerRow = ws.getRow(1);
+      headerRow.height = 22;
+
+      headerRow.eachCell(cell => {
+        cell.font = { bold: true, color: { argb: COLORS.HEADER_FG } };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLORS.HEADER_BG } };
+        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+        cell.border = thinBorder;
+      });
+
+      // Add data rows + styles
+      out.forEach((r) => {
+        const row = ws.addRow(r);
+        row.height = 18;
+
+        // ✅ Convert true date cells
+        const poD = toDate(r.PODate);
+        if (poD) {
+          const c = row.getCell("PODate");
+          c.value = poD;
+          c.numFmt = "dd/mm/yyyy";
         }
 
-        // ---------- APPLY TRUE EXCEL DATE FORMAT (NO 1970) ----------
-        const poDateCol = columns.findIndex(c => c.key === "PODate");
-        const delDateCol = columns.findIndex(c => c.key === "DeliveryDate");
-
-        function applyExcelDateColumn(colIndex) {
-            if (colIndex < 0) return;
-
-            for (let r = 1; r <= out.length; r++) {
-                const addr = XLSX.utils.encode_cell({ r, c: colIndex });
-                const cell = ws[addr];
-                if (!cell) continue;
-
-                // Current value is text/whatever from AOA
-                const d = toDateObj(cell.v);
-                if (!d) {
-                    // If blank, keep blank (do NOT format to date)
-                    continue;
-                }
-
-                // ✅ write Excel serial number
-                cell.t = "n";
-                cell.v = dateToExcelSerial(d);
-
-                cell.s = cell.s || {};
-                cell.s.numFmt = "dd/mm/yyyy";
-                cell.s.border = thinBorder;
-                cell.s.alignment = cell.s.alignment || { vertical: "center" };
-            }
+        const delD = toDate(r.DeliveryDate);
+        if (delD) {
+          const c = row.getCell("DeliveryDate");
+          c.value = delD;
+          c.numFmt = "dd/mm/yyyy";
         }
 
-        applyExcelDateColumn(poDateCol);
-        applyExcelDateColumn(delDateCol);
+        row.eachCell(cell => {
+          cell.alignment = cell.alignment || {};
+          cell.alignment.vertical = "middle";
+          cell.border = thinBorder;
+        });
+      });
 
-        // ---------- WORKBOOK + SAVE ----------
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Open Po List");
+      // ✅ AutoFilter (row 1)
+      ws.autoFilter = {
+        from: { row: 1, column: 1 },
+        to: { row: 1, column: columns.length }
+      };
 
-        XLSX.writeFile(wb, "Open Po List.xlsx");
+      // ✅ Auto-size columns AFTER data is filled
+      autoSizeColumns(ws, 10, 45);
+
+      // ---------- DOWNLOAD ----------
+      const buffer = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      });
+
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "Open Po List.xlsx";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     });
-
-
-
 
                     }
             // }

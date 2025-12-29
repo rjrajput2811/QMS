@@ -474,6 +474,15 @@ namespace QMS.Core.Repositories.CAReportRepository
                         Id = x.Id,
                         Complaint_No = x.Complaint_No,
                         Report_Date = x.Report_Date,
+                        Complaint_Type =
+                            string.Join(", ", new[]
+                            {
+                                x.Cust_Complaints ? "Customer Complaints" : null,
+                                x.NPI_Validations ? "NPI Validations" : null,
+                                x.PDI_Obser       ? "PDI Observations" : null,
+                                x.System          ? "System / Process Improvements" : null
+                            }.Where(v => v != null)),
+
                         Cust_Name_Location = x.Cust_Name_Location,
                         Source_Complaint = x.Source_Complaint,
                         Prod_Code_Desc = x.Prod_Code_Desc,

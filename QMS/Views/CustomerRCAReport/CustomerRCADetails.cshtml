@@ -914,30 +914,37 @@
             const inputElement = $("#BISsear_Code");
             if (inputElement.length) {
                 // Attach the keydown event handler
-                inputElement.on('keydown', function (event) {
+                    inputElement.on('input', function (event) {
                     handleBisSearch(event);
                 });
             }
         });
 
-            function handleBisSearch(event) {
-                debugger
-                if (event.key !== 'Enter') return;
+        function handleBisSearch(event) {
 
+            const input = event.target;
+            if (!input) return;
+
+            let searchQuery = input.value.trim();
+
+            // 🔴 Clear suggestions if less than 4 chars
+            if (searchQuery.length < 4) {
                 clearTimeout(searchTimeout);
-                let processedQuery = '';
-                let searchQuery = event.target.value.trim(); // Get value from input field
-                processedQuery = searchQuery.substring(0, 4);
-
-                let searchTerms = processedQuery;
-
-                // Debounce to reduce the frequency of API calls
-                searchTimeout = setTimeout(() => {
-                    pagedData = {}; // Clear cached data
-                    // Load data with the processed query
-                    fetchBisRelatedData(searchTerms, event.target);
-                }, 300); // Delay of 300ms
+                // optional: hide suggestion dropdown here
+                // hideBisSuggestions();
+                return;
             }
+
+            // ✅ Take first 4 characters only
+            const searchTerms = searchQuery.substring(0, 4);
+
+            // 🟡 Debounce API call
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                pagedData = {}; // Clear cached data
+                fetchBisRelatedData(searchTerms, input);
+            }, 300);
+        }
 
             function fetchBisRelatedData(productCatNo, inputField) {
                 debugger
@@ -961,7 +968,7 @@
 
 
             // Function to display suggestions in a dropdown
-                function displayBisSuggestions(data, inputField) {
+        function displayBisSuggestions(data, inputField) {
             // Remove any existing dropdown (if any)
             removeExistingDropdown(inputField);
 

@@ -274,6 +274,7 @@ function calculateAllSummaries() {
 }
 
 function saveCsatSummary() {
+    debugger
 
     if (!table) return;
 
@@ -299,6 +300,7 @@ function saveCsatSummary() {
     // Id from hidden or YTD row
     let csatId = 0;
     const hiddenId = $("#hdnCsatId").val();
+    const cSAT_Business = $("#cSAT_Business").val() || "";
     if (hiddenId && !isNaN(parseInt(hiddenId))) {
         csatId = parseInt(hiddenId);
     } else {
@@ -314,6 +316,7 @@ function saveCsatSummary() {
     const entity = {
         Id: csatId,
         IsDeleted: false,
+        CSAT_Business: cSAT_Business,
         CreatedBy: currentUser,
         UpdatedBy: currentUser
     };

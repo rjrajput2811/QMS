@@ -683,9 +683,12 @@
                         return value ? new Date(value).toLocaleDateString("en-GB") : "";
                 }
 
+                function statusText(v) {
+                    // false => Saved, true => Submitted
+                    return isTrue(v) ? "Submitted" : "Saved";
+                }
 
-
-                 function isTrue(v) {
+                function isTrue(v) {
                   return v === true || v === 1 || v === "1" ||
                          (typeof v === "string" && v.toLowerCase() === "true");
                 }
@@ -734,6 +737,12 @@
                         Buffer_Day : item.buffer_Day,
                         CreatedBy: item.createdBy,
                         CreatedDate : formatDate(item.createdDate),
+                        // ✅ Status should show on PARENT, but it comes from child
+                        // We'll fill it from children below:
+                        Status: "",
+
+                        // Internal tracker for picking "latest child status"
+                        _statusDate: null,
                         SuppressChildDelivery: !!item.suppressChildDelivery,
                         "1stcommit" : "",
                         "2ndcommit" : "",
@@ -756,7 +765,7 @@
                              Delivery_Date: "Delivery Date",
                              Material: "Date PC Week",
                              Hold_Date: "Qty",
-                             Cleared_Date: "Remark"
+                             Cleared_Date: "Remark",
                            });
                            parentRow._childrenHeaderAdded = true;
                         }
@@ -772,6 +781,20 @@
                         const firstCommit   = (Comit_DateStr && Comit_QtyStr) ? `${Comit_DateStr} - ${Comit_QtyStr}` : "";
                         const secondCommit  = (Comit_Date1Str && Comit_Qty1Str) ? `${Comit_Date1Str} - ${Comit_Qty1Str}` : "";
                         const finalCommit   = (Comit_Final_DateStr && Comit_Final_QtyStr) ? `${Comit_Final_DateStr} - ${Comit_Final_QtyStr}` : "";
+
+                        // ✅ Child status value (supports both 'status' and 'Status')
+                        const childStatus = statusText(this.status ?? this.Status ?? false);
+
+                        // ✅ Pick latest child status for parent (by delivery_Date, else createdDate)
+                        const childDate = parseAnyDate(this.delivery_Date) || parseAnyDate(this.createdDate) || parseAnyDate(this.createdDateStr);
+                        const prevDate = parseAnyDate(parentRow._statusDate);
+
+                        if (childStatus) {
+                            if (!prevDate || (childDate && childDate > prevDate)) {
+                                parentRow.Status = childStatus;      // ✅ this will show on parent row
+                                parentRow._statusDate = childDate;   // internal
+                            }
+                        }
 
                         parentRow._children.push({
                             DeliverySchu_Id: this.id, // pick what your API returns
@@ -798,6 +821,7 @@
                             Comit_Final_Date : formatDate(this.comit_Final_Date),
                             Comit_Final_Qty : this.comit_Final_Qty,
                             "3rdcommit" : finalCommit,
+                            Status: childStatus,
                             CreatedBy: "",    // empty in child if not used
 
                         });
@@ -859,18 +883,44 @@
                 }
 
 
-                columns.push({
-                title: "<input type='checkbox' class='large-checkbox' onclick='toggleAllCheckboxes(this)' style='left:4px'/>",
-                    field: "Selected",
-                    hozAlign: "center",
-                    width: 45,
-                    headerSort : false,
-                    formatter: function (cell, formatterParams) {
-                        const isChecked = cell.getValue() ? "checked" : "";
-                        return `<input type="checkbox" class="large-checkbox" ${isChecked} onchange="onSelectCheckboxChange(this, ${cell.getRow().getData().Id})">`;
-                    },
-                    headerTooltip: "Select row"
-                });
+                // columns.push({
+                // title: "<input type='checkbox' class='large-checkbox' onclick='toggleAllCheckboxes(this)' style='left:4px'/>",
+                //     field: "Selected",
+                //     hozAlign: "center",
+                //     width: 45,
+                //     headerSort : false,
+                //     formatter: function (cell, formatterParams) {
+                //         const isChecked = cell.getValue() ? "checked" : "";
+                //         return `<input type="checkbox" class="large-checkbox" ${isChecked} onchange="onSelectCheckboxChange(this, ${cell.getRow().getData().Id})">`;
+                //     },
+                //     headerTooltip: "Select row"
+                // });
+
+                        columns.push({
+                          title: "<input type='checkbox' class='large-checkbox' onclick='toggleAllCheckboxes(this)' style='left:4px'/>",
+                          field: "Selected",
+                          hozAlign: "center",
+                          width: 45,
+                          headerSort: false,
+
+                          formatter: function (cell) {
+                            const row = cell.getRow();
+                            const data = row.getData();
+
+                            // ❌ hide checkbox for child header
+                            if (data._isChildHeader) return "";
+
+                            // ❌ hide checkbox for child rows
+                            if (row.getTreeParent && row.getTreeParent()) return "";
+
+                            // ✅ show checkbox ONLY for parent rows
+                            const isChecked = cell.getValue() ? "checked" : "";
+                            return `<input type="checkbox"
+                                          class="large-checkbox"
+                                          ${isChecked}
+                                          onchange="onSelectCheckboxChange(this, ${data.Id})">`;
+                          }
+                        });
 
 
 
@@ -904,6 +954,28 @@
                     columns.push({
                         title: "SNo", field: "Sr_No", sorter: "number", width: 65, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
                     });
+
+                    if (userType == "Vendor") {
+                        columns.push({
+                            title: "Status",
+                            field: "Status",
+                            headerMenu: headerMenu,
+                            headerFilter: "input",
+                            hozAlign: "center",
+                            headerHozAlign: "center",
+                            formatter: function (cell) {
+                                const row = cell.getRow();
+                                const data = row.getData();
+
+                                if (data._isChildHeader) return "";
+
+                                // hide status for child rows, show only on parent
+                                if (row.getTreeParent && row.getTreeParent()) return "";
+
+                                return data.Status || "";
+                            }
+                        });
+                    }
 
                     columns.push({ title: "Key", field: "Key", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                     if (userType != "Vendor") {
@@ -1211,198 +1283,198 @@
                     else
                     {
 
-                                                   document.getElementById("exportExcel").addEventListener("click", async function () {
-      if (!window.table) { alert("Tabulator table not found."); return; }
-      if (!window.ExcelJS) { alert("ExcelJS not found."); return; }
+                          document.getElementById("exportExcel").addEventListener("click", async function () {
+                            if (!window.table) { alert("Tabulator table not found."); return; }
+                            if (!window.ExcelJS) { alert("ExcelJS not found."); return; }
 
-      const CHILD_FIELD = "_children";
+                            const CHILD_FIELD = "_children";
 
-      const columns = [
-        { key: "Key",          label: "Key" },
-        { key: "PRNo",         label: "PR No" },
-        { key: "BatchNo",      label: "Batch No" },
-        { key: "ReferenceNo",  label: "Reference No" },
-        { key: "Vendor",       label: "Vendor" },
-        { key: "PONo",         label: "PO No" },
-        { key: "PODate",       label: "PO Date", type: "date" },
-        { key: "POQty",        label: "PO Qty" },
-        { key: "BalanceQty",   label: "BalanceQty" },
-        { key: "Destination",  label: "Destination" },
-        { key: "DeliveryDate", label: "Delivery Date", type: "date" },
-        { key: "DatePCWeek",   label: "Date PC Week" },
-        { key: "Qty",          label: "Qty" },
-        { key: "Remark",       label: "Remark" }
-      ];
+                            const columns = [
+                              { key: "Key",          label: "Key" },
+                              { key: "PRNo",         label: "PR No" },
+                              { key: "BatchNo",      label: "Batch No" },
+                              { key: "ReferenceNo",  label: "Reference No" },
+                              { key: "Vendor",       label: "Vendor" },
+                              { key: "PONo",         label: "PO No" },
+                              { key: "PODate",       label: "PO Date", type: "date" },
+                              { key: "POQty",        label: "PO Qty" },
+                              { key: "BalanceQty",   label: "BalanceQty" },
+                              { key: "Destination",  label: "Destination" },
+                              { key: "DeliveryDate", label: "Delivery Date", type: "date" },
+                              { key: "DatePCWeek",   label: "Date PC Week" },
+                              { key: "Qty",          label: "Qty" },
+                              { key: "Remark",       label: "Remark" }
+                            ];
 
-      const COLORS = { HEADER_BG: "FF1F4E79", HEADER_FG: "FFFFFFFF" };
+                            const COLORS = { HEADER_BG: "FF1F4E79", HEADER_FG: "FFFFFFFF" };
 
-      const thinBorder = {
-        top:    { style: "thin" },
-        bottom: { style: "thin" },
-        left:   { style: "thin" },
-        right:  { style: "thin" }
-      };
+                            const thinBorder = {
+                              top:    { style: "thin" },
+                              bottom: { style: "thin" },
+                              left:   { style: "thin" },
+                              right:  { style: "thin" }
+                            };
 
-      function toDate(val) {
-        if (!val) return null;
-        if (val instanceof Date && !isNaN(val.getTime())) return val;
+                            function toDate(val) {
+                              if (!val) return null;
+                              if (val instanceof Date && !isNaN(val.getTime())) return val;
 
-        const s = String(val).trim();
+                              const s = String(val).trim();
 
-        // dd/mm/yyyy
-        let m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-        if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+                              // dd/mm/yyyy
+                              let m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                              if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
 
-        // dd-mm-yyyy
-        m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
-        if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+                              // dd-mm-yyyy
+                              m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+                              if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
 
-        // ISO / other
-        const d = new Date(s);
-        return isNaN(d.getTime()) ? null : d;
-      }
+                              // ISO / other
+                              const d = new Date(s);
+                              return isNaN(d.getTime()) ? null : d;
+                            }
 
-      // ✅ Auto width based on MAX(header + data)
-      function autoSizeColumns(ws, minWidth = 10, maxWidth = 40) {
-        ws.columns.forEach(col => {
-          let maxLen = 0;
+                            // ✅ Auto width based on MAX(header + data)
+                            function autoSizeColumns(ws, minWidth = 10, maxWidth = 40) {
+                              ws.columns.forEach(col => {
+                                let maxLen = 0;
 
-          // Include header text
-          const headerVal = col.header;
-          if (headerVal) maxLen = Math.max(maxLen, String(headerVal).length);
+                                // Include header text
+                                const headerVal = col.header;
+                                if (headerVal) maxLen = Math.max(maxLen, String(headerVal).length);
 
-          col.eachCell({ includeEmpty: true }, cell => {
-            let txt = "";
-            const v = cell.value;
+                                col.eachCell({ includeEmpty: true }, cell => {
+                                  let txt = "";
+                                  const v = cell.value;
 
-            if (v === null || v === undefined) txt = "";
-            else if (v instanceof Date) txt = "dd/mm/yyyy";
-            else if (typeof v === "object" && v.richText) txt = v.richText.map(t => t.text).join("");
-            else txt = String(v);
+                                  if (v === null || v === undefined) txt = "";
+                                  else if (v instanceof Date) txt = "dd/mm/yyyy";
+                                  else if (typeof v === "object" && v.richText) txt = v.richText.map(t => t.text).join("");
+                                  else txt = String(v);
 
-            maxLen = Math.max(maxLen, txt.length);
-          });
+                                  maxLen = Math.max(maxLen, txt.length);
+                                });
 
-          col.width = Math.min(maxWidth, Math.max(minWidth, maxLen + 2));
-        });
-      }
+                                col.width = Math.min(maxWidth, Math.max(minWidth, maxLen + 2));
+                              });
+                            }
 
-      // ---------- BUILD EXPORT DATA FROM TABULATOR ----------
-      const data = table.getData(true);
-      const out = [];
+                            // ---------- BUILD EXPORT DATA FROM TABULATOR ----------
+                            const data = table.getData(true);
+                            const out = [];
 
-      data.forEach(parent => {
-        const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
-        const realChildren = children.filter(ch => !ch?._isChildHeader);
+                            data.forEach(parent => {
+                              const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
+                              const realChildren = children.filter(ch => !ch?._isChildHeader);
 
-        const base = {
-          Key: parent.Key || "",
-          PRNo: parent.PR_No || "",
-          BatchNo: parent.Batch_No || "",
-          ReferenceNo: parent.Reference_No || "",
-          Vendor: parent.Vendor || "",
-          PONo: parent.PO_No || "",
-          PODate: parent.PO_Date || "",
-          POQty: parent.PO_Qty ?? "",
-          BalanceQty: parent.Balance_Qty ?? "",
-          Destination: parent.Destination || ""
-        };
+                              const base = {
+                                Key: parent.Key || "",
+                                PRNo: parent.PR_No || "",
+                                BatchNo: parent.Batch_No || "",
+                                ReferenceNo: parent.Reference_No || "",
+                                Vendor: parent.Vendor || "",
+                                PONo: parent.PO_No || "",
+                                PODate: parent.PO_Date || "",
+                                POQty: parent.PO_Qty ?? "",
+                                BalanceQty: parent.Balance_Qty ?? "",
+                                Destination: parent.Destination || ""
+                              };
 
-        if (realChildren.length === 0) {
-          out.push({
-            ...base,
-            DeliveryDate: "",
-            DatePCWeek: "",
-            Qty: "",
-            Remark: ""
-          });
-          return;
-        }
+                              if (realChildren.length === 0) {
+                                out.push({
+                                  ...base,
+                                  DeliveryDate: "",
+                                  DatePCWeek: "",
+                                  Qty: "",
+                                  Remark: ""
+                                });
+                                return;
+                              }
 
-        realChildren.forEach((ch) => {
-          out.push({
-            ...base,
-            DeliveryDate: ch.Delivery_Date || "",
-            DatePCWeek: ch.Material || "",
-            Qty: ch.Hold_Date ?? "",
-            Remark: ch.Cleared_Date || ""
-          });
-        });
-      });
+                              realChildren.forEach((ch) => {
+                                out.push({
+                                  ...base,
+                                  DeliveryDate: ch.Delivery_Date || "",
+                                  DatePCWeek: ch.Material || "",
+                                  Qty: ch.Hold_Date ?? "",
+                                  Remark: ch.Cleared_Date || ""
+                                });
+                              });
+                            });
 
-      // ---------- WORKBOOK / SHEET ----------
-      const wb = new ExcelJS.Workbook();
-      const ws = wb.addWorksheet("Open Po List", {
-        views: [{ state: "frozen", xSplit: 0, ySplit: 1 }] // ✅ Freeze top row
-      });
+                            // ---------- WORKBOOK / SHEET ----------
+                            const wb = new ExcelJS.Workbook();
+                            const ws = wb.addWorksheet("Open Po List", {
+                              views: [{ state: "frozen", xSplit: 0, ySplit: 1 }] // ✅ Freeze top row
+                            });
 
-      // Define columns (temporary width; will autosize later)
-      ws.columns = columns.map(c => ({
-        header: c.label,
-        key: c.key,
-        width: 15
-      }));
+                            // Define columns (temporary width; will autosize later)
+                            ws.columns = columns.map(c => ({
+                              header: c.label,
+                              key: c.key,
+                              width: 15
+                            }));
 
-      // Header row styling
-      const headerRow = ws.getRow(1);
-      headerRow.height = 22;
+                            // Header row styling
+                            const headerRow = ws.getRow(1);
+                            headerRow.height = 22;
 
-      headerRow.eachCell(cell => {
-        cell.font = { bold: true, color: { argb: COLORS.HEADER_FG } };
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLORS.HEADER_BG } };
-        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-        cell.border = thinBorder;
-      });
+                            headerRow.eachCell(cell => {
+                              cell.font = { bold: true, color: { argb: COLORS.HEADER_FG } };
+                              cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLORS.HEADER_BG } };
+                              cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+                              cell.border = thinBorder;
+                            });
 
-      // Add data rows + styles
-      out.forEach((r) => {
-        const row = ws.addRow(r);
-        row.height = 18;
+                            // Add data rows + styles
+                            out.forEach((r) => {
+                              const row = ws.addRow(r);
+                              row.height = 18;
 
-        // ✅ Convert true date cells
-        const poD = toDate(r.PODate);
-        if (poD) {
-          const c = row.getCell("PODate");
-          c.value = poD;
-          c.numFmt = "dd/mm/yyyy";
-        }
+                              // ✅ Convert true date cells
+                              const poD = toDate(r.PODate);
+                              if (poD) {
+                                const c = row.getCell("PODate");
+                                c.value = poD;
+                                c.numFmt = "dd/mm/yyyy";
+                              }
 
-        const delD = toDate(r.DeliveryDate);
-        if (delD) {
-          const c = row.getCell("DeliveryDate");
-          c.value = delD;
-          c.numFmt = "dd/mm/yyyy";
-        }
+                              const delD = toDate(r.DeliveryDate);
+                              if (delD) {
+                                const c = row.getCell("DeliveryDate");
+                                c.value = delD;
+                                c.numFmt = "dd/mm/yyyy";
+                              }
 
-        row.eachCell(cell => {
-          cell.alignment = cell.alignment || {};
-          cell.alignment.vertical = "middle";
-          cell.border = thinBorder;
-        });
-      });
+                              row.eachCell(cell => {
+                                cell.alignment = cell.alignment || {};
+                                cell.alignment.vertical = "middle";
+                                cell.border = thinBorder;
+                              });
+                            });
 
-      // ✅ AutoFilter (row 1)
-      ws.autoFilter = {
-        from: { row: 1, column: 1 },
-        to: { row: 1, column: columns.length }
-      };
+                            // ✅ AutoFilter (row 1)
+                            ws.autoFilter = {
+                              from: { row: 1, column: 1 },
+                              to: { row: 1, column: columns.length }
+                            };
 
-      // ✅ Auto-size columns AFTER data is filled
-      autoSizeColumns(ws, 10, 45);
+                            // ✅ Auto-size columns AFTER data is filled
+                            autoSizeColumns(ws, 10, 45);
 
-      // ---------- DOWNLOAD ----------
-      const buffer = await wb.xlsx.writeBuffer();
-      const blob = new Blob([buffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      });
+                            // ---------- DOWNLOAD ----------
+                            const buffer = await wb.xlsx.writeBuffer();
+                            const blob = new Blob([buffer], {
+                              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            });
 
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "Open Po List.xlsx";
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    });
+                            const link = document.createElement("a");
+                            link.href = URL.createObjectURL(blob);
+                            link.download = "Open Po List.xlsx";
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
+                        });
 
                     }
             // }
@@ -1423,20 +1495,30 @@
             }
         }
 
-        function toggleAllCheckboxes(headerCheckbox) {
-            const table = Tabulator.findTable("#openPo_Table")[0];
-            const isChecked = headerCheckbox.checked;
+        // function toggleAllCheckboxes(headerCheckbox) {
+        //     const table = Tabulator.findTable("#openPo_Table")[0];
+        //     const isChecked = headerCheckbox.checked;
 
-            // Get table data
-            const allData = table.getData();
+        //     // Get table data
+        //     const allData = table.getData();
 
-            // Update Selected field in bulk
-            allData.forEach(item => {
-                item.Selected = isChecked;
-            });
+        //     // Update Selected field in bulk
+        //     allData.forEach(item => {
+        //         item.Selected = isChecked;
+        //     });
 
-            // Replace the table data at once
-            table.replaceData(allData);
+        //     // Replace the table data at once
+        //     table.replaceData(allData);
+        // }
+
+        function toggleAllCheckboxes(master) {
+          const checked = master.checked;
+
+          table.getRows().forEach(row => {
+            if (!row.getTreeParent()) {   // ✅ only parent rows
+              row.update({ Selected: checked });
+            }
+          });
         }
 
 

@@ -956,68 +956,69 @@
 
         // Function to display suggestions in a dropdown
             function displayBisSuggestions(data, inputField) {
-        // Remove any existing dropdown (if any)
-        removeExistingDropdown(inputField);
+                // Remove any existing dropdown (if any)
+                removeExistingDropdown(inputField);
 
-        // Ensure parent can anchor absolute dropdown
-        const parent = inputField.parentElement;
-        if (getComputedStyle(parent).position === "static") {
-            parent.style.position = "relative";
-        }
-
-        const dropdown = document.createElement('div');
-        dropdown.className = 'suggestion-dropdown';
-        dropdown.style.position = 'absolute';
-        dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
-        dropdown.style.left = inputField.offsetLeft + 'px';
-        dropdown.style.backgroundColor = 'white';
-        dropdown.style.border = '1px solid #ccc';
-        dropdown.style.zIndex = 1000;
-        dropdown.style.overflowY = 'auto';
-        dropdown.style.maxHeight = '300px';
-        dropdown.style.width = inputField.offsetWidth + 'px';
-        dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-
-        data.forEach(item => {
-            const code = (item.oldPart_No || "").toString().trim();
-            // change these keys as per your API response:
-            const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
-
-            const option = document.createElement('div');
-            option.className = 'suggestion-item';
-            option.textContent = desc ? `${code} | ${desc}` : code;
-            option.style.padding = '8px';
-            option.style.cursor = 'pointer';
-
-            option.addEventListener('mouseover', () => {
-                option.style.backgroundColor = '#4682B4';
-                option.style.color = '#fff';
-            });
-            option.addEventListener('mouseout', () => {
-                option.style.backgroundColor = '';
-                option.style.color = '';
-            });
-
-            option.addEventListener('click', () => {
-                const productInput = document.getElementById('BISproductCodeInput');
-                if (productInput) {
-                    productInput.value = desc ? `${code} | ${desc}` : code;
+                // Ensure parent can anchor absolute dropdown
+                const parent = inputField.parentElement;
+                if (getComputedStyle(parent).position === "static") {
+                    parent.style.position = "relative";
                 }
 
-                // optional: also set search box to just code
-                const searchBox = document.getElementById('BISsear_Code');
-                if (searchBox) {
-                    searchBox.value = code;
-                }
+                const dropdown = document.createElement('div');
+                dropdown.className = 'suggestion-dropdown';
+                dropdown.style.position = 'absolute';
+                dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                dropdown.style.left = inputField.offsetLeft + 'px';
+                dropdown.style.backgroundColor = 'white';
+                dropdown.style.border = '1px solid #ccc';
+                dropdown.style.zIndex = 1000;
+                dropdown.style.overflowY = 'auto';
+                dropdown.style.maxHeight = '300px';
+                dropdown.style.width = inputField.offsetWidth + 'px';
+                dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
 
-                dropdown.remove();
-            });
+                data.forEach(item => {
+                    const code = (item.oldPart_No || "").toString().trim();
+                    // change these keys as per your API response:
+                    const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
 
-            dropdown.appendChild(option);
-        });
+                    const option = document.createElement('div');
+                    option.className = 'suggestion-item';
+                    option.textContent = desc ? `${code} | ${desc}` : code;
+                    option.style.padding = '8px';
+                    option.style.cursor = 'pointer';
 
-        parent.appendChild(dropdown);
-    }
+                    option.addEventListener('mouseover', () => {
+                        option.style.backgroundColor = '#4682B4';
+                        option.style.color = '#fff';
+                    });
+                    option.addEventListener('mouseout', () => {
+                        option.style.backgroundColor = '';
+                        option.style.color = '';
+                    });
+
+                    option.addEventListener('click', () => {
+                        const productInput = document.getElementById('BISproductCodeInput');
+                        if (productInput) {
+                            productInput.value = desc ? `${code} | ${desc}` : code;
+                        }
+
+                        // optional: also set search box to just code
+                        const searchBox = document.getElementById('BISsear_Code');
+                        if (searchBox) {
+                            searchBox.value = code;
+                        }
+
+                        dropdown.remove();
+                    });
+
+                    dropdown.appendChild(option);
+                });
+
+                parent.appendChild(dropdown);
+            }
+
 
 
         // Function to remove any existing dropdowns

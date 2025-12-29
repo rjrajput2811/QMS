@@ -94,7 +94,22 @@
     <div class="card shadow-sm">
         <input type="hidden" id="hdnCsatId" value="@Model.Id" />
         <div class="card-body">
-            <div id="csatTable"></div>
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label for="CSAT_Business" class="form-label mb-0 fw-semibold">
+                        CSAT Business
+                    </label>
+                </div>
+
+                <div class="col-md-9">
+                    <input type="text"
+                           name="CSAT_Business"
+                           id="cSAT_Business"
+                           class="form-control"
+                           value="@Model?.CSAT_Business" />
+                </div>
+            </div>
+            <div id="csatTable" style="margin-top:2px"></div>
         </div>
     </div>
 

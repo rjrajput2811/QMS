@@ -469,6 +469,364 @@ namespace QMS.Controllers
         //         fileName);
         // }
 
+        //[HttpGet]
+        //public async Task<IActionResult> ExportCAReportToExcel(int id)
+        //{
+        //    // ✅ 15.Customer RCA.xlsx export
+        //    // ✅ Initial Analysis: 1 template row, rest dynamic
+        //    // ✅ Failed Samples section has 4 images
+        //    // ✅ Corrections section has ONLY TEXT (no images)
+        //    // ✅ All “below parts” are set by finding text (row shift safe)
+
+        //    var model = await _rCAReportRepository.GetRCAReportByIdAsync(id);
+        //    if (model == null) return NotFound();
+
+        //    var templatePath = Path.Combine(_env.WebRootPath, "templates", "15.Customer RCA.xlsx");
+        //    if (!System.IO.File.Exists(templatePath))
+        //        return NotFound("Customer RCA template not found at " + templatePath);
+
+        //    using var wb = new XLWorkbook(templatePath);
+        //    var ws = wb.Worksheet(1);
+
+        //    // =========================================================
+        //    // Helpers
+        //    // =========================================================
+        //    static string S(string? v) => v ?? "";
+        //    static string DateStr(DateTime? dt, string fmt = "dd-MMM-yyyy") => dt.HasValue ? dt.Value.ToString(fmt) : "";
+        //    static string IntStr(int? v) => v.HasValue ? v.Value.ToString() : "";
+
+        //    static int FindRowByContains(IXLWorksheet sheet, int col, string containsText)
+        //    {
+        //        var last = sheet.LastRowUsed()?.RowNumber() ?? 1;
+        //        for (int r = 1; r <= last; r++)
+        //        {
+        //            var txt = sheet.Cell(r, col).GetString();
+        //            if (!string.IsNullOrWhiteSpace(txt) &&
+        //                txt.IndexOf(containsText, StringComparison.OrdinalIgnoreCase) >= 0)
+        //                return r;
+        //        }
+        //        return -1;
+        //    }
+
+        //    static void SetSameLineKeepTitle(IXLWorksheet sheet, string address, string value)
+        //    {
+        //        var cell = sheet.Cell(address);
+        //        var title = cell.GetString() ?? "";
+        //        cell.Value = $"{title}{value}";
+        //    }
+
+        //    static void SetNewLineKeepTitle(IXLWorksheet sheet, int row, int col, string value)
+        //    {
+        //        if (row <= 0) return;
+        //        var cell = sheet.Cell(row, col);
+        //        var title = cell.GetString() ?? "";
+        //        cell.Value = $"{title}\n{value}";
+        //        cell.Style.Alignment.WrapText = true;
+        //    }
+
+        //    static void ClearCell(IXLWorksheet sheet, string address)
+        //    {
+        //        sheet.Cell(address).Clear(XLClearOptions.Contents);
+        //    }
+
+        //    // ---------------- IMAGE HELPERS ----------------
+        //    string? MapWebPathToPhysical(string? path)
+        //    {
+        //        if (string.IsNullOrWhiteSpace(path)) return null;
+        //        path = path.Replace("~", "").TrimStart('/', '\\');
+        //        path = path.Replace("/", Path.DirectorySeparatorChar.ToString());
+        //        return Path.Combine(_env.WebRootPath, path);
+        //    }
+
+        //    static double ColWidthToPixels(double excelColWidth) => excelColWidth * 7.0;
+        //    static double RowPointsToPixels(double points) => points * 1.333;
+
+        //    static (double wPx, double hPx) GetBoxPixels(IXLRange box)
+        //    {
+        //        double w = 0;
+        //        for (int c = box.FirstColumn().ColumnNumber(); c <= box.LastColumn().ColumnNumber(); c++)
+        //            w += ColWidthToPixels(box.Worksheet.Column(c).Width);
+
+        //        double h = 0;
+        //        for (int r = box.FirstRow().RowNumber(); r <= box.LastRow().RowNumber(); r++)
+        //        {
+        //            var row = box.Worksheet.Row(r);
+        //            var pt = row.Height > 0 ? row.Height : 15.0;
+        //            h += RowPointsToPixels(pt);
+        //        }
+
+        //        w = Math.Max(10, w - 10);
+        //        h = Math.Max(10, h - 10);
+        //        return (w, h);
+        //    }
+
+        //    void InsertImageCentered(string? webPath, IXLRange box)
+        //    {
+        //        var physical = MapWebPathToPhysical(webPath);
+        //        if (string.IsNullOrWhiteSpace(physical) || !System.IO.File.Exists(physical))
+        //            return;
+
+        //        using var img = Image.FromFile(physical);
+        //        if (img.Width <= 0 || img.Height <= 0) return;
+
+        //        var (boxW, boxH) = GetBoxPixels(box);
+
+        //        var scale = Math.Min(boxW / img.Width, boxH / img.Height);
+        //        if (scale > 1.0) scale = 1.0;
+
+        //        int finalW = Math.Max(1, (int)(img.Width * scale));
+        //        int finalH = Math.Max(1, (int)(img.Height * scale));
+
+        //        int offsetX = Math.Max(0, (int)((boxW - finalW) / 2));
+        //        int offsetY = Math.Max(0, (int)((boxH - finalH) / 2));
+
+        //        var pic = ws.AddPicture(physical);
+        //        pic.MoveTo(box.FirstCell(), offsetX, offsetY);
+        //        pic.WithSize(finalW, finalH);
+        //    }
+
+        //    IXLRange GetMergedRangeForCell(IXLWorksheet sheet, IXLCell cell)
+        //    {
+        //        foreach (var mr in sheet.MergedRanges)
+        //            if (mr.Contains(cell)) return mr;
+
+        //        return sheet.Range(cell.Address, cell.Address);
+        //    }
+
+        //    IXLCell? FindCellContains(IXLWorksheet sheet, string containsText)
+        //    {
+        //        return sheet.CellsUsed(c =>
+        //        {
+        //            var s = c.GetString();
+        //            return !string.IsNullOrWhiteSpace(s) &&
+        //                   s.IndexOf(containsText, StringComparison.OrdinalIgnoreCase) >= 0;
+        //        }).FirstOrDefault();
+        //    }
+
+        //    /// <summary>
+        //    /// Finds merged image boxes under a header text. Returns boxes sorted left->right then top->bottom.
+        //    /// Works even if template has 4 boxes in a grid.
+        //    /// </summary>
+        //    List<IXLRange> FindImageBoxesUnderHeader(string headerContains, int scanRows = 6)
+        //    {
+        //        var headerCell = FindCellContains(ws, headerContains);
+        //        if (headerCell == null) return new List<IXLRange>();
+
+        //        var headerRange = GetMergedRangeForCell(ws, headerCell);
+
+        //        int startRow = headerCell.Address.RowNumber + 1;
+        //        int endRow = startRow + Math.Max(1, scanRows) - 1;
+
+        //        int minC = headerRange.FirstColumn().ColumnNumber();
+        //        int maxC = headerRange.LastColumn().ColumnNumber();
+
+        //        var boxes = ws.MergedRanges
+        //            .Select(m => ws.Range(m.RangeAddress.FirstAddress, m.RangeAddress.LastAddress))
+        //            .Where(r =>
+        //            {
+        //                var a = r.RangeAddress;
+        //                return a.FirstAddress.RowNumber >= startRow &&
+        //                       a.LastAddress.RowNumber <= endRow &&
+        //                       a.FirstAddress.ColumnNumber >= minC &&
+        //                       a.LastAddress.ColumnNumber <= maxC;
+        //            })
+        //            .OrderBy(r => r.FirstRow().RowNumber())
+        //            .ThenBy(r => r.FirstColumn().ColumnNumber())
+        //            .ToList();
+
+        //        return boxes;
+        //    }
+
+        //    void InsertImagesIntoHeaderBoxes(string headerContains, IEnumerable<string?> webPaths, int scanRows = 6)
+        //    {
+        //        var boxes = FindImageBoxesUnderHeader(headerContains, scanRows);
+        //        var imgs = webPaths.Where(p => !string.IsNullOrWhiteSpace(p)).ToList();
+        //        if (boxes.Count == 0 || imgs.Count == 0) return;
+
+        //        int count = Math.Min(boxes.Count, imgs.Count);
+        //        for (int i = 0; i < count; i++)
+        //            InsertImageCentered(imgs[i], boxes[i]);
+        //    }
+
+        //    // =========================================================
+        //    // 1) Fill main fields
+        //    // =========================================================
+        //    ws.Cell("B11").Value = $"1. Complaint No:- {S(model.Complaint_No)}";
+        //    ws.Cell("G11").Value = $"Reported Date : {DateStr(model.Report_Date)}";
+
+        //    ws.Cell("B12").Value = model.Cust_Complaints ? "✓ Customer complaints" : "Customer complaints";
+        //    ws.Cell("F12").Value = model.NPI_Validations ? "✓ NPI Validations" : " NPI Validations";
+        //    ws.Cell("G12").Value = model.PDI_Obser ? "✓ PDI Observations." : " PDI Observations.";
+        //    ws.Cell("H12").Value = model.System ? "✓ System/Process Improvements." : "System/Process Improvements. ";
+
+        //    SetSameLineKeepTitle(ws, "B13", S(model.Cust_Name_Location));
+        //    SetSameLineKeepTitle(ws, "B14", S(model.Source_Complaint));
+        //    SetSameLineKeepTitle(ws, "B15", S(model.Prod_Code_Desc));
+        //    SetSameLineKeepTitle(ws, "B16", S(model.Desc_Complaint));
+        //    SetSameLineKeepTitle(ws, "B17", S(model.Batch_Code));
+        //    SetSameLineKeepTitle(ws, "H17", S(model.Pkd));
+
+        //    SetSameLineKeepTitle(ws, "B18", IntStr(model.Supp_Qty));
+        //    SetSameLineKeepTitle(ws, "H18", IntStr(model.Failure)); // rename if required
+        //    SetSameLineKeepTitle(ws, "B19", IntStr(model.Failure_Qty));
+        //    SetSameLineKeepTitle(ws, "H19", S(model.Age_Install));
+
+        //    ws.Cell("B20").Value = $"2. Site Observations\n{S(model.Description)}";
+        //    ws.Cell("B20").Style.Alignment.WrapText = true;
+
+        //    ws.Cell("B22").Value = S(model.Problem_State);
+
+        //    ws.Cell("B28").Value = $"Initial observations:  \n{S(model.Initial_Observ)}";
+        //    ws.Cell("B28").Style.Alignment.WrapText = true;
+
+        //    ws.Cell("B29").Value = $"5. Complaint  History : \n{S(model.Complaint_History)}";
+        //    ws.Cell("B29").Style.Alignment.WrapText = true;
+        //    ClearCell(ws, "B30");
+
+        //    // =========================================================
+        //    // 2) Problem Visualization images (if present)
+        //    // =========================================================
+        //    InsertImagesIntoHeaderBoxes(
+        //        headerContains: "Problem Visualization",
+        //        webPaths: new[] { model.Problem_Visual_ImgA, model.Problem_Visual_ImgB, model.Problem_Visual_ImgC },
+        //        scanRows: 4
+        //    );
+
+        //    // =========================================================
+        //    // 3) Failed Samples Images (✅ 4 images)
+        //    //    Your template has 4 boxes under "Images of failed samples:"
+        //    // =========================================================
+        //    InsertImagesIntoHeaderBoxes(
+        //        headerContains: "Images of failed samples",
+        //        webPaths: new[] { model.Images_Failed_Samples1, model.Images_Failed_Samples2, model.Images_Failed_Samples3, model.Images_Failed_Samples4 },
+        //        scanRows: 8
+        //    );
+
+
+
+        //    // =========================================================
+        //    // 5) Initial Analysis (1 template row + dynamic)
+        //    // =========================================================
+        //    var iaList = model.Details ?? new List<RCAReportDetailViewModel>();
+
+        //    int iaHeaderRow = FindRowByContains(ws, 3, "Parameter Checked during internal Validation");
+        //    if (iaHeaderRow > 0)
+        //    {
+        //        int templateDetailRow = iaHeaderRow + 1;
+        //        int desiredCount = iaList.Count;
+        //        if (desiredCount <= 0) desiredCount = 1;
+
+        //        var templateMerges = ws.MergedRanges
+        //            .Where(r => r.RangeAddress.FirstAddress.RowNumber == templateDetailRow &&
+        //                        r.RangeAddress.LastAddress.RowNumber == templateDetailRow)
+        //            .Select(r => new
+        //            {
+        //                FirstCol = r.RangeAddress.FirstAddress.ColumnNumber,
+        //                LastCol = r.RangeAddress.LastAddress.ColumnNumber
+        //            })
+        //            .ToList();
+
+        //        if (desiredCount > 1)
+        //            ws.Row(templateDetailRow).InsertRowsBelow(desiredCount - 1);
+
+        //        for (int i = 0; i < desiredCount; i++)
+        //        {
+        //            int row = templateDetailRow + i;
+
+        //            if (i > 0)
+        //                ws.Row(templateDetailRow).CopyTo(ws.Row(row));
+
+        //            foreach (var m in templateMerges)
+        //            {
+        //                var rng = ws.Range(row, m.FirstCol, row, m.LastCol);
+        //                if (!rng.IsMerged()) rng.Merge();
+        //            }
+
+        //            ws.Cell(row, 2).Value = i + 1;
+
+        //            if (iaList.Count > 0)
+        //            {
+        //                ws.Cell(row, 3).Value = S(iaList[i].Parameter_Checked);
+        //                ws.Cell(row, 8).Value = S(iaList[i].Observations);
+        //            }
+        //            else
+        //            {
+        //                ws.Cell(row, 3).Value = "";
+        //                ws.Cell(row, 8).Value = "";
+        //            }
+
+        //            ws.Cell(row, 3).Style.Alignment.WrapText = true;
+        //            ws.Cell(row, 8).Style.Alignment.WrapText = true;
+        //        }
+        //    }
+
+        //    // =========================================================
+        //    // 6) Below Parts + Conclusion
+        //    // =========================================================
+        //    int row62 = FindRowByContains(ws, 2, "6.2 Current");
+        //    SetNewLineKeepTitle(ws, row62, 2, S(model.Current_Process));
+
+        //    int rowInitConclusion = FindRowByContains(ws, 2, "Initial Conclusion");
+        //    SetNewLineKeepTitle(ws, rowInitConclusion, 2, S(model.Conclusion));
+
+        //    int rowDefectives = FindRowByContains(ws, 2, "7.Analysis of Defectives 100nos samples:");
+        //    SetNewLineKeepTitle(ws, rowDefectives, 2, S(model.Analysis_of_Defective100));
+
+        //    int rowRootCause = FindRowByContains(ws, 2, "Root cause analysis");
+        //    SetNewLineKeepTitle(ws, rowRootCause, 2, S(model.Root_Cause_Anal));
+
+        //    int pbTitleRow = FindRowByContains(ws, 2, "Problem Basket");
+        //    if (pbTitleRow > 0)
+        //    {
+        //        int pbOptionsRow = pbTitleRow + 1;
+
+        //        ws.Cell(pbOptionsRow, 2).Value = model.Man_Issue_Prob ? "✓ manufacturing Issue" : "manufacturing Issue";
+        //        ws.Cell(pbOptionsRow, 3).Value = model.Design_Prob ? "✓ design" : "design";
+        //        ws.Cell(pbOptionsRow, 5).Value = model.Site_Issue_Prob ? "✓ Site Issue" : "Site Issue";
+        //        ws.Cell(pbOptionsRow, 6).Value = model.Com_Gap_Prob ? "✓ Communication gap." : "Commun...cation gap.";
+        //        ws.Cell(pbOptionsRow, 7).Value = model.Install_Issues_Prob ? "✓ Installation issues." : "Installation issues.";
+        //        ws.Cell(pbOptionsRow, 8).Value = model.Wrong_App_Prob ? "✓ Wrong Application" : "Wrong Application";
+        //    }
+
+        //    int rowCorrectiveAction = FindRowByContains(ws, 2, "Corrective Action");
+        //    if (rowCorrectiveAction > 0)
+        //    {
+        //        ws.Cell(rowCorrectiveAction + 1, 2).Value = S(model.Corrective_Action);
+        //        ws.Cell(rowCorrectiveAction + 1, 2).Style.Alignment.WrapText = true;
+        //    }
+
+        //    int rowCorrections = FindRowByContains(ws, 2, "Images of corrections");
+        //    if (rowCorrections > 0)
+        //    {
+        //        ws.Cell(rowCorrections + 1, 2).Value = S(model.Images_Corrections);
+        //        ws.Cell(rowCorrections + 1, 2).Style.Alignment.WrapText = true;
+        //    }
+
+        //    int rowConclusion = FindRowByContains(ws, 2, "Conclusion");
+        //    if (rowConclusion > 0)
+        //    {
+        //        ws.Cell(rowConclusion + 1, 2).Value = S(model.Conclusion);
+        //        ws.Cell(rowConclusion + 1, 2).Style.Alignment.WrapText = true;
+        //    }
+
+
+
+        //    // =========================================================
+        //    // 7) Return file
+        //    // =========================================================
+        //    using var stream = new MemoryStream();
+        //    wb.SaveAs(stream);
+        //    stream.Position = 0;
+
+        //    var safeComplaint = (model.Complaint_No ?? "NA").Replace("/", "-").Replace("\\", "-");
+        //    var fileName = $"RCA_{safeComplaint}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+
+        //    return File(stream.ToArray(),
+        //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        //        fileName);
+        //}
+
+
         [HttpGet]
         public async Task<IActionResult> ExportCAReportToExcel(int id)
         {
@@ -476,7 +834,7 @@ namespace QMS.Controllers
             // ✅ Initial Analysis: 1 template row, rest dynamic
             // ✅ Failed Samples section has 4 images
             // ✅ Corrections section has ONLY TEXT (no images)
-            // ✅ All “below parts” are set by finding text (row shift safe)
+            // ✅ All "below parts" are set by finding text (row shift safe)
 
             var model = await _rCAReportRepository.GetRCAReportByIdAsync(id);
             if (model == null) return NotFound();
@@ -614,7 +972,8 @@ namespace QMS.Controllers
 
                 var headerRange = GetMergedRangeForCell(ws, headerCell);
 
-                int startRow = headerCell.Address.RowNumber + 1;
+                // ✅ Start searching AFTER the header ends
+                int startRow = headerRange.LastRow().RowNumber() + 1;
                 int endRow = startRow + Math.Max(1, scanRows) - 1;
 
                 int minC = headerRange.FirstColumn().ColumnNumber();
@@ -625,8 +984,9 @@ namespace QMS.Controllers
                     .Where(r =>
                     {
                         var a = r.RangeAddress;
+                        // ✅ Check that box starts within scan range and overlaps with header columns
                         return a.FirstAddress.RowNumber >= startRow &&
-                               a.LastAddress.RowNumber <= endRow &&
+                               a.FirstAddress.RowNumber <= endRow &&
                                a.FirstAddress.ColumnNumber >= minC &&
                                a.LastAddress.ColumnNumber <= maxC;
                     })
@@ -667,7 +1027,7 @@ namespace QMS.Controllers
             SetSameLineKeepTitle(ws, "H17", S(model.Pkd));
 
             SetSameLineKeepTitle(ws, "B18", IntStr(model.Supp_Qty));
-            SetSameLineKeepTitle(ws, "H18", IntStr(model.Failure)); // rename if required
+            SetSameLineKeepTitle(ws, "H18", IntStr(model.Failure));
             SetSameLineKeepTitle(ws, "B19", IntStr(model.Failure_Qty));
             SetSameLineKeepTitle(ws, "H19", S(model.Age_Install));
 
@@ -698,11 +1058,14 @@ namespace QMS.Controllers
             // =========================================================
             InsertImagesIntoHeaderBoxes(
                 headerContains: "Images of failed samples",
-                webPaths: new[] { model.Images_Failed_Samples1, model.Images_Failed_Samples2, model.Images_Failed_Samples3, model.Images_Failed_Samples4 },
-                scanRows: 8
+                webPaths: new[] {
+            model.Images_Failed_Samples1,
+            model.Images_Failed_Samples2,
+            model.Images_Failed_Samples3,
+            model.Images_Failed_Samples4
+                },
+                scanRows: 10  // ✅ Increased to ensure all 4 boxes are found
             );
-
-            
 
             // =========================================================
             // 5) Initial Analysis (1 template row + dynamic)
@@ -783,7 +1146,7 @@ namespace QMS.Controllers
                 ws.Cell(pbOptionsRow, 2).Value = model.Man_Issue_Prob ? "✓ manufacturing Issue" : "manufacturing Issue";
                 ws.Cell(pbOptionsRow, 3).Value = model.Design_Prob ? "✓ design" : "design";
                 ws.Cell(pbOptionsRow, 5).Value = model.Site_Issue_Prob ? "✓ Site Issue" : "Site Issue";
-                ws.Cell(pbOptionsRow, 6).Value = model.Com_Gap_Prob ? "✓ Communication gap." : "Commun...cation gap.";
+                ws.Cell(pbOptionsRow, 6).Value = model.Com_Gap_Prob ? "✓ Communication gap." : "Communication gap.";
                 ws.Cell(pbOptionsRow, 7).Value = model.Install_Issues_Prob ? "✓ Installation issues." : "Installation issues.";
                 ws.Cell(pbOptionsRow, 8).Value = model.Wrong_App_Prob ? "✓ Wrong Application" : "Wrong Application";
             }
@@ -808,8 +1171,6 @@ namespace QMS.Controllers
                 ws.Cell(rowConclusion + 1, 2).Value = S(model.Conclusion);
                 ws.Cell(rowConclusion + 1, 2).Style.Alignment.WrapText = true;
             }
-
-           
 
             // =========================================================
             // 7) Return file

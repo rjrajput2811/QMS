@@ -535,15 +535,8 @@
                             </table>
                         </div>
 
-
+                        <!-- ========================= MONITORING TABLE ========================= -->
                         <div class="table-responsive" style="margin-top:0;">
-                            @if (Model?.Details != null && Model.Details.Count > 0)
-                            {
-                                for (int i = 0; i < Model.Details.Count; i++)
-                                {
-                                    @Html.HiddenFor(m => m.Details[i].Init_Ana_Id)
-                                }
-                            }
                             <table id="monitoringTable" class="table table-bordered"
                                    style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
                                 <thead>
@@ -555,6 +548,7 @@
                                 </thead>
                                 <tbody id="monitoringBody">
                                     @{
+                                        // NOTE: if you have separate lists in model, use that.
                                         var details = Model?.Details ?? new List<QMS.Core.Models.RCAReportDetailViewModel>();
                                         int idx = 1;
                                     }
@@ -563,34 +557,106 @@
                                     {
                                         foreach (var item in details)
                                         {
-                                            <tr style="height:120px;">
+                                            <tr style="height:50px;">
                                                 <td class="sr-cell" style="border:1.5px solid #000; text-align:center;">
                                                     @idx
-                                                    <button class="row-del-btn" title="Delete row">
+                                                    <button type="button" class="row-del-btn" title="Delete row">
                                                         <i class="fa fa-trash"></i>
                                                     </button>
                                                 </td>
 
-                                                <!-- Particular Of Test -->
                                                 <td contenteditable="true" data-name="Parameter_Checked" style="border:1.5px solid #000; vertical-align:top;">
                                                     @(item.Parameter_Checked ?? "")
                                                 </td>
 
-                                                <!-- Target Date -->
                                                 <td contenteditable="true" data-name="Observations" style="border:1.5px solid #000; vertical-align:top;">
                                                     @(item.Observations ?? "")
                                                 </td>
                                             </tr>
-
                                             idx++;
                                         }
                                     }
                                     else
                                     {
-                                        <tr>
+                                        <tr style="height:50px;">
                                             <td style="border:1.5px solid #000; text-align:center;">1</td>
-                                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Parameter_Checked"></td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Observations"></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ========================= CURRENT PROCESS ADD BUTTON ========================= -->
+                        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                                <tbody>
+                                    <tr>
+                                        <th colspan="4" 
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;; text-align:left;">
+                                            Current Process Verification Internal Checks:
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6" style="padding:12px; text-align:left;">
+                                            <button id="addCurrentProRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ========================= CURRENT PROCESS TABLE ========================= -->
+                        <div class="table-responsive" style="margin-top:0;">
+                            <table id="currentProcessTable" class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:8%; border:1.5px solid #000; text-align:center;">Sr. No</th>
+                                        <th style="width:70%; border:1.5px solid #000; text-align:center;">Parameter Checked during internal Validation</th>
+                                        <th style="width:30%; border:1.5px solid #000; text-align:center;">Observations</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="currentProcessBody">
+                                    @{
+                                        // ✅ FIXED: use details1 + idx1 correctly (previously it used details + idx)
+                                        var details1 = Model?.Details ?? new List<QMS.Core.Models.RCAReportDetailViewModel>();
+                                        int idx1 = 1;
+                                    }
+
+                                    @if (details1.Any())
+                                    {
+                                        foreach (var item in details1)
+                                        {
+                                            <tr style="height:50px;">
+                                                <td class="sr-cell" style="border:1.5px solid #000; text-align:center;">
+                                                    @idx1
+                                                    <button type="button" class="row-del-btn" title="Delete row">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </td>
+
+                                                <td contenteditable="true" data-name="Parameter_Checked" style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(item.Parameter_Checked ?? "")
+                                                </td>
+
+                                                <td contenteditable="true" data-name="Observations" style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(item.Observations ?? "")
+                                                </td>
+                                            </tr>
+
+                                            idx1++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr style="height:50px;">
+                                            <td style="border:1.5px solid #000; text-align:center;">1</td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Parameter_Checked"></td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Observations"></td>
                                         </tr>
                                     }
                                 </tbody>
@@ -602,7 +668,7 @@
                                    style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin:0;">
                                 <tbody>
                                     <!-- Current Process Verification -->
-                                    <tr>
+                                    @* <tr>
                                         <th colspan="4"
                                             style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
                                             Current Process Verification Internal Checks:
@@ -614,7 +680,7 @@
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
                                             @Html.Raw(Model?.Current_Process)
                                         </td>
-                                    </tr>
+                                    </tr> *@
 
                                     <!-- Initial Conclusion -->
                                     <tr>
@@ -874,12 +940,14 @@
 @section Scripts {
     <script>
 
-        let monitoringBody;
-        let monitoringAddBtn;
+            let monitoringBody, monitoringAddBtn;
+        let currentBody, currentAddBtn;
         let searchTimeout;
 
         $(document).ready(function () {
             initMonitoringTable();
+            initCurrentProcessTable();
+
             initPhotoPreviews();
             initAutoDate();
 
@@ -1049,12 +1117,35 @@
             });
 
 
-        function createMonitoringDeleteButton() {
+        // function createMonitoringDeleteButton() {
+        //     const btn = document.createElement('button');
+        //     btn.className = 'row-del-btn';
+        //     btn.title = 'Delete this row';
+        //     btn.innerHTML = '<i class="fa fa-trash"></i>';
+
+        //     Object.assign(btn.style, {
+        //         background: 'transparent',
+        //         border: 'none',
+        //         cursor: 'pointer',
+        //         color: 'red',
+        //         fontSize: '15px',
+        //         marginLeft: '6px'
+        //     });
+
+        //     btn.addEventListener('click', () => {
+        //         const tr = btn.closest('tr');
+        //         if (tr) tr.remove();
+        //         refreshMonitoringSerials();
+        //     });
+
+        //     return btn;
+        // }
+
+        function createDeleteButton(onDelete) {
             const btn = document.createElement('button');
             btn.className = 'row-del-btn';
             btn.title = 'Delete this row';
             btn.innerHTML = '<i class="fa fa-trash"></i>';
-
             Object.assign(btn.style, {
                 background: 'transparent',
                 border: 'none',
@@ -1063,44 +1154,91 @@
                 fontSize: '15px',
                 marginLeft: '6px'
             });
-
-            btn.addEventListener('click', () => {
-                const tr = btn.closest('tr');
-                if (tr) tr.remove();
-                refreshMonitoringSerials();
-            });
-
+            btn.addEventListener('click', onDelete);
             return btn;
         }
 
-        function refreshMonitoringSerials() {
-            if (!monitoringBody) return;
+        $(document).on("click", ".row-del-btn", function (e) {
+            e.preventDefault();
+            const tr = this.closest("tr");
+            if (!tr) return;
+            const tbody = tr.closest("tbody");
+            tr.remove();
+            refreshSerials(tbody);
+        });
 
-            Array.from(monitoringBody.rows).forEach((row, index) => {
+        // function refreshMonitoringSerials() {
+        //     if (!monitoringBody) return;
+
+        //     Array.from(monitoringBody.rows).forEach((row, index) => {
+        //         const srCell = row.cells[0];
+        //         if (!srCell) return;
+
+        //         srCell.innerHTML = '';
+        //         srCell.textContent = index + 1;
+        //         srCell.style.textAlign = 'center';
+        //         srCell.appendChild(createMonitoringDeleteButton());
+        //     });
+        // }
+
+        function refreshSerials(tbody) {
+            if (!tbody) return;
+            Array.from(tbody.rows).forEach((row, index) => {
                 const srCell = row.cells[0];
                 if (!srCell) return;
 
-                srCell.innerHTML = '';
-                srCell.textContent = index + 1;
-                srCell.style.textAlign = 'center';
-                srCell.appendChild(createMonitoringDeleteButton());
+                // keep delete button
+                srCell.innerHTML = `
+                    ${index + 1}
+                    <button type="button" class="row-del-btn" title="Delete row" style="background:transparent;border:none;color:red;font-size:15px;margin-left:6px;cursor:pointer;">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                `;
+                srCell.style.textAlign = "center";
             });
         }
 
-        function addMonitoringRow() {
-            const tr = document.createElement('tr');
+        // function addMonitoringRow() {
+        //     const tr = document.createElement('tr');
 
+        //     tr.innerHTML = `
+        //             <td style="border:1.5px solid #000; text-align:center;"></td>
+        //             <td style="border:1.5px solid #000;" contenteditable="true"></td>
+        //             <td style="border:1.5px solid #000;" contenteditable="true"></td>
+        //         `;
+
+        //     monitoringBody.appendChild(tr);
+        //     refreshMonitoringSerials();
+
+        //     const newRow = monitoringBody.lastElementChild;
+        //     if (newRow) newRow.cells[1].focus();
+        // }
+
+        $(document).on("click", "#addRowBtn", function () {
+            const tbody = document.getElementById("monitoringBody");
+            if (!tbody) return console.error("monitoringBody not found");
+            addRow(tbody);
+        });
+
+        $(document).on("click", "#addCurrentProRowBtn", function () {
+            const tbody = document.getElementById("currentProcessBody");
+            if (!tbody) return console.error("currentProcessBody not found");
+            addRow(tbody);
+        });
+
+        function addRow(tbody) {
+            const tr = document.createElement("tr");
+            tr.style.height = "50px";
             tr.innerHTML = `
-                    <td style="border:1.5px solid #000; text-align:center;"></td>
-                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                `;
-
-            monitoringBody.appendChild(tr);
-            refreshMonitoringSerials();
-
-            const newRow = monitoringBody.lastElementChild;
+                <td style="border:1.5px solid #000; text-align:center;"></td>
+                <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Parameter_Checked"></td>
+                <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Observations"></td>
+            `;
+            tbody.appendChild(tr);
+            refreshSerials(tbody);
+            const newRow = tbody.lastElementChild;
             if (newRow) newRow.cells[1].focus();
+            // tr.cells[1].focus();
         }
 
         function initMonitoringTable() {
@@ -1112,8 +1250,17 @@
                 return;
             }
 
-            monitoringAddBtn.addEventListener('click', addMonitoringRow);
-            refreshMonitoringSerials();
+            // monitoringAddBtn.addEventListener('click', () => addRow(monitoringBody));
+            refreshSerials(monitoringBody);
+        }
+
+        function initCurrentProcessTable() {
+            currentBody = document.getElementById('currentProcessBody');
+            currentAddBtn = document.getElementById('addCurrentProRowBtn');
+            if (!currentBody || !currentAddBtn) return;
+
+            // currentAddBtn.addEventListener('click', () => addRow(currentBody));
+            refreshSerials(currentBody);
         }
 
         function setupPreview(inputId, imgId) {
@@ -1311,8 +1458,36 @@
                     formData.append(`Details[${i}].Observations`, d.Observations || '');
                 });
 
+                const currentDetails = [];
+                const rows1 = Array.from(document.querySelectorAll('#currentProcessBody tr'));
+
+                rows1.forEach((row1, idx1) => {
+                    const cells = row1.querySelectorAll('td');
+                    if (!cells || cells.length < 3) return;
+
+                    const parameterChecked = (cells[1].innerText || '').trim();
+                    const observations = (cells[2].innerText || '').trim();
+
+                    // Ignore completely empty rows
+                    if (!parameterChecked && !observations) return;
+
+                    currentDetails.push({
+                        SeqNo: idx1 + 1,
+                        Parameter_Checked: parameterChecked,
+                        Observations: observations
+                    });
+                });
+
+                // Append Details to form data for model binding
+                currentDetails.forEach((d, i) => {
+                    formData.append(`Details[${i}].SeqNo`, d.SeqNo.toString());
+                    formData.append(`Details[${i}].Parameter_Checked`, d.Parameter_Checked || '');
+                    formData.append(`Details[${i}].Observations`, d.Observations || '');
+                });
+
                 // JSON backup (optional, for server-side manual parsing)
                 formData.set('DetailsJson', JSON.stringify(details));
+                formData.set('CurrentDetailsJson', JSON.stringify(currentDetails));
 
                 // jQuery AJAX
                 $.ajax({

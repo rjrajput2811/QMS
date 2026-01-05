@@ -15,6 +15,8 @@ namespace QMS.Core.Repositories.ContiImproveRespository
         Task<OperationResult> UpdateAsync(Continual_Improve_Tracker fIFOTracker, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int Id);
         Task<ContiImproveViewModel?> GetByIdAsync(int id);
+
+        Task<List<ContiImproveSummaryViewModel>> ContiImproveSummaryAsync(string fy);
         //Task<bool> CheckDuplicate(string searchText, int id);
     }
 }

@@ -125,9 +125,14 @@
                 <b style="font-size: large;color: #4682B4;">Continual Improvement Tracker</b>
             </div>
             <div class="col-md-3">
-                <div id="customDateTriggerCI" class="calendar-container">
-                    <i class="fa fa-calendar"></i>
-                    <span id="dateRangeCI">Select Date Range</span>
+                <div class="form-group row align-items-center">
+                    <label for="ddlFY" class="col-sm-4 col-form-label text-right">
+                        Financial Year
+                    </label>
+                    <div class="col-sm-3">
+                        <select id="ddlFY" class="form-control" onchange="loadData()">
+                        </select>
+                    </div>
                 </div>
             </div>
             <div>
@@ -171,60 +176,72 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
     <script>
-        let filterStartCIDate = moment().startOf('month').format('YYYY-MM-DD');
-        let filterEndCIDate = moment().endOf('month').format('YYYY-MM-DD');
+        // let filterStartCIDate = moment().startOf('month').format('YYYY-MM-DD');
+        // let filterEndCIDate = moment().endOf('month').format('YYYY-MM-DD');
 
         $(document).ready(function () {
-            $('#dateRangeCI').text(
-                moment(filterStartCIDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndCIDate).format('MMMM D, YYYY')
-            );
-
-            const picker = new Litepicker({
-                element: document.getElementById('customDateTriggerCI'),
-                singleMode: false,
-                format: 'DD-MM-YYYY',
-                numberOfMonths: 2,
-                numberOfColumns: 2,
-                dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
-                plugins: ['ranges'],
-                setup: (picker) => {
-                    picker.on('selected', (start, end) => {
-                        const startMoment = moment(start.getTime());
-                        const endMoment = moment(end.getTime());
-
-                        filterStartCIDate = startMoment.format('YYYY-MM-DD');
-                        filterEndCIDate = endMoment.format('YYYY-MM-DD');
-
-                        $('#dateRangeCI').text(`${startMoment.format('MMMM D, YYYY')} - ${endMoment.format('MMMM D, YYYY')}`);
-                        // hook your API call here if needed, e.g. loadCIData();
-                    });
-
-                    picker.on('clear', () => {
-                        filterStartCIDate = "";
-                        filterEndCIDate = "";
-                        $('#dateRangeCI').text("Select Date Range");
-                        // hook your API call here if needed, e.g. loadCIData();
-                    });
-                },
-                ranges: {
-                    Today: [moment(), moment()],
-                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                },
-                startDate: moment().startOf('month').format('DD-MM-YYYY'),
-                endDate: moment().endOf('month').format('DD-MM-YYYY')
-            });
-
-            $('#customDateTriggerCI').on('click', function () {
-                picker.show();
-            });
 
             // Initial grid load
-            loadCIGrid(null);
+            bindFinancialYears();
+            loadData();
+            // loadCIGrid(null);
         });
+
+        function loadData() {
+
+            Blockloadershow();
+            var fy = $("#ddlFY").val();
+
+            $.ajax({
+                url: '/ContiImprove/ContiImproveSummary',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    fY: fy
+                },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        loadCIGrid(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        function getCurrentFYStartYear() {
+            const d = new Date();
+            return (d.getMonth() >= 3) ? d.getFullYear() : d.getFullYear() - 1;
+        }
+
+        function fyText(startYear) {
+            return startYear + "-" + String(startYear + 1).slice(-2);
+        }
+
+        function bindFinancialYears() {
+            const ddl = $("#ddlFY");
+            ddl.empty(); // clear existing options
+
+            ddl.append(`<option value="">Select FY</option>`);
+
+            const startFrom = 2020;
+            const currentFY = getCurrentFYStartYear();
+            const endFY = currentFY + 1; // include upcoming year
+
+            for (let y = startFrom; y <= endFY; y++) {
+                const fy = fyText(y);
+                ddl.append(`<option value="${fy}">${fy}</option>`);
+            }
+
+            // default select current FY
+            ddl.val(fyText(currentFY));
+        }
 
         var headerMenu = function () {
             var menu = [];
@@ -267,17 +284,33 @@
             let tabledata = []; // replace with response later
             let columns = [];
 
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        FY: item.fy,
+                        Month: item.month,
+                        ISO9001: item.iso_9001,
+                        ISO14001: item.iso_14001,
+                        ISO45001: item.iso_45001,
+                        Total: item.total
+                    });
+                });
+            }
+
             columns.push(
                 {
                     title: "S.No",
-                    field: "SrNo",
+                    field: "Sr_No",
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
                     title: "Financial Year",
-                    field: "FinancialYear",
+                    field: "FY",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -293,40 +326,40 @@
                 },
                 {
                     title: "ISO 9001 (Nos)",
-                    field: "ISO9001Nos",
+                    field: "ISO9001",
                     headerFilter: "input",
-                    hozAlign: "right",
+                    hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
                     title: "ISO 14001 (Nos)",
-                    field: "ISO14001Nos",
+                    field: "ISO14001",
                     headerFilter: "input",
-                    hozAlign: "right",
+                    hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
                     title: "ISO 45001 (Nos)",
-                    field: "ISO45001Nos",
+                    field: "ISO45001",
                     headerFilter: "input",
-                    hozAlign: "right",
+                    hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
                     title: "Total (Nos)",
-                    field: "TotalNos",
+                    field: "Total",
                     headerFilter: "input",
-                    hozAlign: "right",
+                    hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 }
             );
 
             let table = new Tabulator("#ci_Table", {
-                data: [],
+                data: tabledata,
                 layout: "fitColumns",
                 movableColumns: true,
                 pagination: "local",

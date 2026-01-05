@@ -226,17 +226,18 @@
                                         <th colspan="2"
                                             style="background-color:#ffffff; border:1.5px solid #000; font-weight:700; text-align:left; padding:8px;">
                                             Report Date:-
-                                            @if (Model?.Id > 0)
+                                            @if (Model?.Id == 0)
                                             {
                                                 <input type="date" name="Report_Date"
-                                                       id="complaintDate"
-                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@Model?.Report_Date">
+                                                       id="complaint_Date"
+                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@DateTime.Now.ToString("yyyy-MM-dd")">
                                             }
                                             else
                                             {
                                                 <input type="date" name="Report_Date"
-                                                       id="complaintDate"
-                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                                                       id="complaint_Date"
+                                                       style="border:none; border-bottom:1px solid #000; background:transparent; outline:none; width:50%; margin-left:8px;" value="@Model?.Report_Date?.ToString("yyyy-MM-dd")">
+
                                             }
                                         </th>
                                     </tr>
@@ -296,7 +297,29 @@
                                     <tr>
                                         <td colspan="4" style="padding:8px; border:1.5px solid #000;">
                                             <label style="font-weight:600;">Product Code and Description:</label>
-                                            <input type="text" class="underline-input" style="width:80%; margin-left:6px;" placeholder="Enter product code and description" value="@Model?.Prod_Code_Desc" name="Prod_Code_Desc" />
+                                            <div class="row">
+                                                <div class="col-md-2">
+                                                    <input type="text"
+                                                           name="BISsear_Code"
+                                                           id="BISsear_Code"
+                                                           class="underline-input w-100"
+                                                           placeholder="Search Code"
+                                                           aria-label="Search Code"
+                                                           oninput="handleBisSearch(this)"
+                                                           style="text-transform: uppercase;" />
+                                                </div>
+
+                                                <div class="col-md-9">
+                                                    <input type="text"
+                                                           id="BISproductCodeInput"
+                                                           name="Prod_Code_Desc"
+                                                           class="underline-input w-100"
+                                                           placeholder="Enter product code and description"
+                                                           aria-label="Product Code and Description"
+                                                           autocomplete="off"
+                                                           value="@Model?.Prod_Code_Desc" />
+                                                </div>
+                                            </div>
                                         </td>
                                     </tr>
 
@@ -394,6 +417,7 @@
                                 <tbody>
                                     <tr>
                                         <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;">
+                                            @Html.HiddenFor(m => m.Problem_Visual_ImgA)
                                             <input type="file"
                                                    accept="image/*"
                                                    id="imgA"
@@ -408,6 +432,7 @@
                                             </div>
                                         </td>
                                         <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;" value="@Model?.Problem_Visual_ImgB" name="Problem_Visual_ImgB">
+                                            @Html.HiddenFor(m => m.Problem_Visual_ImgB)
                                             <input type="file"
                                                    accept="image/*"
                                                    id="imgB"
@@ -422,6 +447,7 @@
                                             </div>
                                         </td>
                                         <td style="width:33%; border:1.5px solid #000; height:200px; vertical-align:middle;" value="@Model?.Problem_Visual_ImgC" name="Problem_Visual_ImgC">
+                                            @Html.HiddenFor(m => m.Problem_Visual_ImgC)
                                             <input type="file"
                                                    accept="image/*"
                                                    id="imgC"
@@ -622,7 +648,7 @@
 
                                     <!-- Root Cause Analysis -->
                                     <tr>
-                                        <th colspan="4" 
+                                        <th colspan="4"
                                             style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
                                             Root Cause Analysis:
                                         </th>
@@ -634,6 +660,7 @@
                                             @Model?.Root_Cause_Anal
                                         </td>
                                     </tr>
+                                    <input type="hidden" name="Root_Cause_Date" id="Root_Cause_Date" value="@Model?.Root_Cause_Date" />
                                 </tbody>
                             </table>
                         </div>
@@ -656,40 +683,44 @@
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 1</p>
-                                                <input type="file" accept="image/*" id="photo1" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples1)
+                                                <input type="file" accept="image/*" id="photo1" name="Images_Failed_Samples1File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview1" alt="Photo 1" src="@Model?.Images_Failed_Samples1"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples1) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px;border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
 
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 2</p>
-                                                <input type="file" accept="image/*" id="photo2" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples2)
+                                                <input type="file" accept="image/*" id="photo2" name="Images_Failed_Samples2File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview2" alt="Photo 2" src="@Model?.Images_Failed_Samples2"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples2) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px; border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
 
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 3</p>
-                                                <input type="file" accept="image/*" id="photo3" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples3)
+                                                <input type="file" accept="image/*" id="photo3" name="Images_Failed_Samples3File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview3" alt="Photo 3" src="@Model?.Images_Failed_Samples3"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples3) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px;border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
 
                                         <td style="width:25%; border:1.5px solid #000; vertical-align:middle; height:180px;">
                                             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
                                                 <p style="margin:0 0 6px 0; font-weight:600;">Photo 4</p>
-                                                <input type="file" accept="image/*" id="photo4" style="margin-top:4px; font-size:13px;">
+                                                @Html.HiddenFor(m => m.Images_Failed_Samples4)
+                                                <input type="file" accept="image/*" id="photo4" name="Images_Failed_Samples4File" style="margin-top:4px; font-size:13px;">
                                                 <img id="preview4" alt="Photo 4" src="@Model?.Images_Failed_Samples4"
                                                 @(string.IsNullOrEmpty(Model?.Images_Failed_Samples4) ? "display:none;" : "display:block;")
-                                                     style="margin-top:6px; max-width:85%; max-height:110px; display:none; border:1px solid #aaa; border-radius:5px;">
+                                                     style="margin-top:6px; max-width:85%; max-height:110px;border:1px solid #aaa; border-radius:5px;">
                                             </div>
                                         </td>
                                     </tr>
@@ -710,55 +741,65 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkManufacturing" style="margin-right:6px;" @(Model?.Man_Issue_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkManufacturing" style="margin-right:6px;" @(Model?.Man_Issue_Prob == true ? "checked" : "") name="Man_Issue_Prob">
                                                 Manufacturing Issue
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;" @(Model?.Design_Prob == true ? "checked" : "")>
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkDesign" style="margin-right:6px;">
+                                                <input type="checkbox" id="chkDesign" style="margin-right:6px;" @(Model?.Design_Prob == true ? "checked" : "") name="Design_Prob">
                                                 Design
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkSiteIssue" style="margin-right:6px;" @(Model?.Site_Issue_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkSiteIssue" style="margin-right:6px;" @(Model?.Site_Issue_Prob == true ? "checked" : "") name="Site_Issue_Prob">
                                                 Site Issue
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkCommunication" style="margin-right:6px;" @(Model?.Com_Gap_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkCommunication" style="margin-right:6px;" @(Model?.Com_Gap_Prob == true ? "checked" : "") name="Com_Gap_Prob">
                                                 Communication Gap
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkInstallation" style="margin-right:6px;" @(Model?.Install_Issues_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkInstallation" style="margin-right:6px;" @(Model?.Install_Issues_Prob == true ? "checked" : "") name="Install_Issues_Prob">
                                                 Installation Issues
                                             </label>
                                         </td>
-                                        <td style="width:16.6%; border:1.5px solid #000; text-align:left; padding:8px;">
+                                        <td style="width:16%; border:1.5px solid #000; text-align:left; padding:8px;">
                                             <label style="font-weight:600;">
-                                                <input type="checkbox" id="chkWrongApplication" style="margin-right:6px;" @(Model?.Wrong_App_Prob == true ? "checked" : "")>
+                                                <input type="checkbox" id="chkWrongApplication" style="margin-right:6px;" @(Model?.Wrong_App_Prob == true ? "checked" : "") name="Wrong_App_Prob">
                                                 Wrong Application
                                             </label>
                                         </td>
                                     </tr>
-                                    <tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px; margin-bottom:0;">
+                                <thead style="border-collapse:collapse;">
+                                    <tr style="border:1.5px solid #000;">
                                         <th colspan="6"
                                             style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
                                             9. Corrective Action:
                                         </th>
                                     </tr>
+                                </thead>
+                                <tbody>
                                     <tr>
                                         <td colspan="6" data-name="Corrective_Action"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
                                             @Model?.Corrective_Action
                                         </td>
+                                        <input type="hidden" name="Corrective_Action_Date" id="Corrective_Action_Date" value="@Model?.Corrective_Action_Date" />
                                     </tr>
                                     <tr>
                                         <th colspan="6"
@@ -788,40 +829,41 @@
                                     </tr>
                                 </tbody>
                             </table>
-
-                            <div class="table-responsive" style="margin-top:0px;">
-                                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
-                                    <tbody>
-                                        <tr style="background-color:#c7d7ee;">
-                                            <!-- Left column -->
-                                            <td style="width:70%; border:1.5px solid #000; padding:8px; text-align:left;">
-                                                <strong>RCA Prepared By:-</strong>
-                                                <input type="text" name="Rca_Prepared_By"
-                                                       placeholder="Enter RCA Prepared By"
-                                                       style="width:60%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Rca_Prepared_By">
-
-                                                <br><br>
-
-                                                <strong>Name and Designation :</strong>
-                                                <input type="text" name="Name_Designation"
-                                                       placeholder="Enter Name and Designation"
-                                                       style="width:70%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Name_Designation">
-                                            </td>
-
-                                            <!-- Right column -->
-                                            <td style="width:30%; border:1.5px solid #000; padding:8px; text-align:left;">
-                                                <strong>Date:-</strong>
-                                                <input type="date" name="Date"
-                                                       style="width:80%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Date?.ToString("yyyy-MM-dd")">
-                                            </td>
-
-                                        </tr>
-
-                                    </tbody>
-                                </table>
-                            </div>
-
                         </div>
+
+
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:14px;">
+                                <tbody>
+                                    <tr style="background-color:#c7d7ee;">
+                                        <!-- Left column -->
+                                        <td style="width:70%; border:1.5px solid #000; padding:8px; text-align:left;">
+                                            <strong>RCA Prepared By:-</strong>
+                                            <input type="text" name="Rca_Prepared_By"
+                                                   placeholder="Enter RCA Prepared By"
+                                                   style="width:60%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Rca_Prepared_By">
+
+                                            <br><br>
+
+                                            <strong>Name and Designation :</strong>
+                                            <input type="text" name="Name_Designation"
+                                                   placeholder="Enter Name and Designation"
+                                                   style="width:70%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Name_Designation">
+                                        </td>
+
+                                        <!-- Right column -->
+                                        <td style="width:30%; border:1.5px solid #000; padding:8px; text-align:left;">
+                                            <strong>Date:-</strong>
+                                            <input type="date" name="Date"
+                                                   style="width:80%; border:none; border-bottom:1px solid #000; background:transparent; outline:none; margin-left:8px;" value="@Model?.Date?.ToString("yyyy-MM-dd")">
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
                 </div>
             </form>
@@ -834,12 +876,170 @@
 
         let monitoringBody;
         let monitoringAddBtn;
+        let searchTimeout;
 
         $(document).ready(function () {
             initMonitoringTable();
             initPhotoPreviews();
             initAutoDate();
+
+            // Map data-name => hidden input id
+            const dateMapping = {
+                "Root_Cause_Anal": "Root_Cause_Date",
+                "Corrective_Action": "Corrective_Action_Date"
+            };
+
+            $("[contenteditable='true']").on("input", function () {
+                const field = $(this).data("name");
+                const hiddenId = dateMapping[field];
+
+                if (!hiddenId) return; // safety
+
+                const hiddenInput = $("#" + hiddenId);
+
+                // Set date only once
+                if (!hiddenInput.val()) {
+
+                    const now = new Date();
+                    const day = String(now.getDate()).padStart(2, "0");
+                    const month = String(now.getMonth() + 1).padStart(2, "0");
+                    const year = now.getFullYear();
+
+                    const formatted = `${day}-${month}-${year}`;
+
+                    hiddenInput.val(formatted);
+                }
+            });
+
+            const inputElement = $("#BISsear_Code");
+            if (inputElement.length) {
+                // Attach the keydown event handler
+                inputElement.on('keydown', function (event) {
+                    handleBisSearch(event);
+                });
+            }
         });
+
+            function handleBisSearch(event) {
+                debugger
+                if (event.key !== 'Enter') return;
+
+                clearTimeout(searchTimeout);
+                let processedQuery = '';
+                let searchQuery = event.target.value.trim(); // Get value from input field
+                processedQuery = searchQuery.substring(0, 4);
+
+                let searchTerms = processedQuery;
+
+                // Debounce to reduce the frequency of API calls
+                searchTimeout = setTimeout(() => {
+                    pagedData = {}; // Clear cached data
+                    // Load data with the processed query
+                    fetchBisRelatedData(searchTerms, event.target);
+                }, 300); // Delay of 300ms
+            }
+
+            function fetchBisRelatedData(productCatNo, inputField) {
+                debugger
+                $.ajax({
+                    url: '/Vendor/GetCodeSearch', // API endpoint
+                    type: 'GET', // HTTP method
+                    data: { search: productCatNo }, // Query parameters
+                    dataType: 'json', // Expected response data type
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            displayBisSuggestions(data, inputField);
+                        } else {
+                            showDangerAlert('No data found for the entered Product Cat No.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching data:', error);
+                    }
+                });
+            }
+
+
+            // Function to display suggestions in a dropdown
+                function displayBisSuggestions(data, inputField) {
+            // Remove any existing dropdown (if any)
+            removeExistingDropdown(inputField);
+
+            // Ensure parent can anchor absolute dropdown
+            const parent = inputField.parentElement;
+            if (getComputedStyle(parent).position === "static") {
+                parent.style.position = "relative";
+            }
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'suggestion-dropdown';
+            dropdown.style.position = 'absolute';
+            dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+            dropdown.style.left = inputField.offsetLeft + 'px';
+            dropdown.style.backgroundColor = 'white';
+            dropdown.style.border = '1px solid #ccc';
+            dropdown.style.zIndex = 1000;
+            dropdown.style.overflowY = 'auto';
+            dropdown.style.maxHeight = '300px';
+            dropdown.style.width = inputField.offsetWidth + 'px';
+            dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+            data.forEach(item => {
+                const code = (item.oldPart_No || "").toString().trim();
+                // change these keys as per your API response:
+                const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                const option = document.createElement('div');
+                option.className = 'suggestion-item';
+                option.textContent = desc ? `${code} | ${desc}` : code;
+                option.style.padding = '8px';
+                option.style.cursor = 'pointer';
+
+                option.addEventListener('mouseover', () => {
+                    option.style.backgroundColor = '#4682B4';
+                    option.style.color = '#fff';
+                });
+                option.addEventListener('mouseout', () => {
+                    option.style.backgroundColor = '';
+                    option.style.color = '';
+                });
+
+                option.addEventListener('click', () => {
+                    const productInput = document.getElementById('BISproductCodeInput');
+                    if (productInput) {
+                        productInput.value = desc ? `${code} | ${desc}` : code;
+                    }
+
+                    // optional: also set search box to just code
+                    const searchBox = document.getElementById('BISsear_Code');
+                    if (searchBox) {
+                        searchBox.value = code;
+                    }
+
+                    dropdown.remove();
+                });
+
+                dropdown.appendChild(option);
+            });
+
+            parent.appendChild(dropdown);
+        }
+
+
+            // Function to remove any existing dropdowns
+            function removeExistingDropdown(inputField) {
+                const existingDropdown = document.querySelector('.suggestion-dropdown');
+                if (existingDropdown) {
+                    existingDropdown.remove();
+                }
+            }
+
+            // Remove dropdown on outside click
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#BISsear_Code')) {
+                    removeExistingDropdown();
+                }
+            });
 
 
         function createMonitoringDeleteButton() {
@@ -955,6 +1155,7 @@
 
 
         async function saveRCAReport() {
+            debugger;
             const saveBtn = document.getElementById('saveBtn');
             if (!saveBtn) return;
 

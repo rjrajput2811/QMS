@@ -58,6 +58,17 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
                     Other_Critical_Items = data.Other_Critical_Items,
                     Attchment = data.Attchment,
                     Remarks = data.Remarks,
+                    Housing_Body_Attch = data.Housing_Body_Attch,
+                    Wires_Cable_Attch = data.Wires_Cable_Attch,
+                    Diffuser_Lens_Attch = data.Diffuser_Lens_Attch,
+                    Pcb_Attch = data.Pcb_Attch,
+                    Connectors_Attch = data.Connectors_Attch,
+                    Powder_Coat_Attch = data.Powder_Coat_Attch,
+                    Led_LM80_Attch = data.Led_LM80_Attch,
+                    Led_Purchase_Proof_Attch = data.Led_Purchase_Proof_Attch,
+                    Driver_Attch = data.Driver_Attch,
+                    Pre_Treatment_Attch = data.Pre_Treatment_Attch,
+                    Hardware_Attch = data.Hardware_Attch,
                     CreatedDate = data.CreatedDate,
                     UpdatedDate = data.UpdatedDate,
                     CreatedBy = data.CreatedBy,
@@ -105,6 +116,17 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
                     Other_Critical_Items = data.Other_Critical_Items,
                     Attchment = data.Attchment,
                     Remarks = data.Remarks,
+                    Housing_Body_Attch = data.Housing_Body_Attch,
+                    Wires_Cable_Attch = data.Wires_Cable_Attch,
+                    Diffuser_Lens_Attch = data.Diffuser_Lens_Attch,
+                    Pcb_Attch = data.Pcb_Attch,
+                    Connectors_Attch = data.Connectors_Attch,
+                    Powder_Coat_Attch = data.Powder_Coat_Attch,
+                    Led_LM80_Attch = data.Led_LM80_Attch,
+                    Led_Purchase_Proof_Attch = data.Led_Purchase_Proof_Attch,
+                    Driver_Attch = data.Driver_Attch,
+                    Pre_Treatment_Attch = data.Pre_Treatment_Attch,
+                    Hardware_Attch = data.Hardware_Attch,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -122,7 +144,7 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
             }
         }
 
-        public async Task<OperationResult> CreateAsync(RM_TC_Tracker entity,bool returnCreatedRecord = false)
+        public async Task<OperationResult> CreateAsync(RM_TC_Tracker entity, bool returnCreatedRecord = false)
         {
             try
             {
@@ -146,6 +168,17 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
                     new SqlParameter("@Other_Critical_Items", entity.Other_Critical_Items ?? (object)DBNull.Value),
                     new SqlParameter("@Attchment", entity.Attchment ?? (object)DBNull.Value),
                     new SqlParameter("@Remarks", entity.Remarks ?? (object)DBNull.Value),
+                    new SqlParameter("@Housing_Body_Attch", entity.Housing_Body_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Wires_Cable_Attch", entity.Wires_Cable_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Diffuser_Lens_Attch", entity.Diffuser_Lens_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Pcb_Attch", entity.Pcb_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Connectors_Attch", entity.Connectors_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Powder_Coat_Attch", entity.Powder_Coat_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Led_LM80_Attch", entity.Led_LM80_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Led_Purchase_Proof_Attch", entity.Led_Purchase_Proof_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Driver_Attch", entity.Driver_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Pre_Treatment_Attch", entity.Pre_Treatment_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Hardware_Attch", entity.Hardware_Attch?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object)DBNull.Value)
                 };
 
@@ -153,7 +186,8 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
                     "EXEC sp_Insert_RM_TCTracker " +
                     "@Vendor, @Product_No, @ProdDesc, @Date, @Housing_Body, @Wires_Cable, " +
                     "@Diffuser_Lens, @Pcb, @Connectors, @Powder_Coat, @Led_LM80, @Led_Purchase_Proof, " +
-                    "@Driver, @Pre_Treatment, @Hardware, @Other_Critical_Items,@Attchment, @Remarks, @CreatedBy",
+                    "@Driver, @Pre_Treatment, @Hardware, @Other_Critical_Items,@Attchment, @Remarks,@Housing_Body_Attch,@Wires_Cable_Attch, @Diffuser_Lens_Attch," +
+                    "@Pcb_Attch, @Connectors_Attch, @Powder_Coat_Attch, @Led_LM80_Attch, @Led_Purchase_Proof_Attch, @Driver_Attch, @Pre_Treatment_Attch,@Hardware_Attch, @CreatedBy",
                     parameters
                 );
 
@@ -191,6 +225,17 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
                     new SqlParameter("@Other_Critical_Items", entity.Other_Critical_Items ?? (object)DBNull.Value),
                     new SqlParameter("@Attchment", entity.Attchment ?? (object)DBNull.Value),
                     new SqlParameter("@Remarks", entity.Remarks ?? (object)DBNull.Value),
+                    new SqlParameter("@Housing_Body_Attch", entity.Housing_Body_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Wires_Cable_Attch", entity.Wires_Cable_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Diffuser_Lens_Attch", entity.Diffuser_Lens_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Pcb_Attch", entity.Pcb_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Connectors_Attch", entity.Connectors_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Powder_Coat_Attch", entity.Powder_Coat_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Led_LM80_Attch", entity.Led_LM80_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Led_Purchase_Proof_Attch", entity.Led_Purchase_Proof_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Driver_Attch", entity.Driver_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Pre_Treatment_Attch", entity.Pre_Treatment_Attch?? (object)DBNull.Value),
+                    new SqlParameter("@Hardware_Attch", entity.Hardware_Attch?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", entity.UpdatedBy ?? (object)DBNull.Value)
                 };
 
@@ -198,7 +243,8 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
                     "EXEC sp_Update_RM_TCTracker " +
                     "@RMTCId, @Vendor, @Product_No, @ProdDesc, @Date, @Housing_Body, @Wires_Cable, " +
                     "@Diffuser_Lens, @Pcb, @Connectors, @Powder_Coat, @Led_LM80, @Led_Purchase_Proof, " +
-                    "@Driver, @Pre_Treatment, @Hardware, @Other_Critical_Items,@Attchment, @Remarks, @UpdatedBy",
+                    "@Driver, @Pre_Treatment, @Hardware, @Other_Critical_Items,@Attchment, @Remarks,@Housing_Body_Attch,@Wires_Cable_Attch,@Diffuser_Lens_Attch," +
+                    "@Pcb_Attch, @Connectors_Attch, @Powder_Coat_Attch, @Led_LM80_Attch, @Led_Purchase_Proof_Attch, @Driver_Attch, @Pre_Treatment_Attch,@Hardware_Attch,@UpdatedBy",
                     parameters
                 );
 
@@ -224,31 +270,29 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
             }
         }
 
-        public async Task<bool> UpdateAttachmentAsync(int id, string fileName)
+        public async Task<bool> UpdateAttachmentFieldAsync(int id, string field, string fileName, string updatedBy)
         {
-            try
+            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                if (string.IsNullOrWhiteSpace(fileName))
-                    return false;
+                "Housing_Body_Attch","Wires_Cable_Attch","Diffuser_Lens_Attch","Pcb_Attch","Connectors_Attch",
+                "Powder_Coat_Attch","Led_LM80_Attch","Led_Purchase_Proof_Attch","Driver_Attch","Pre_Treatment_Attch",
+                "Hardware_Attch","Attchment"
+            };
 
-                var record = await _dbContext.RM_TC_Tracker.FindAsync(id);
-                if (record == null)
-                    return false;
+            if (!allowed.Contains(field)) return false;
 
-                record.Attchment = fileName;
+            var entity = await _dbContext.RM_TC_Tracker.FirstOrDefaultAsync(x => x.Id == id);
+            if (entity == null) return false;
 
-                // Only update the BIS_Attachment property
-                _dbContext.Entry(record).Property(x => x.Attchment).IsModified = true;
+            var prop = entity.GetType().GetProperty(field);
+            if (prop == null) return false;
 
-                await _dbContext.SaveChangesAsync();
+            prop.SetValue(entity, fileName);
+            entity.UpdatedDate = DateTime.Now;
+            entity.UpdatedBy = updatedBy;
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog(ex.Message);
-                throw;
-            }
+            await _dbContext.SaveChangesAsync();
+            return true;
         }
 
     }

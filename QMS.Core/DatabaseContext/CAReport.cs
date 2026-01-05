@@ -41,7 +41,7 @@ namespace QMS.Core.DatabaseContext
 
         public int? Supp_Qty { get; set; }
         public int? Failure_Qty { get; set; }
-        public int? Failure { get; set; }
+        public double? Failure { get; set; }
 
         public string? Age_Install { get; set; }
         public string? Description { get; set; }

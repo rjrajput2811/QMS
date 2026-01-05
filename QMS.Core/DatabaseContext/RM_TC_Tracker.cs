@@ -41,6 +41,18 @@ namespace QMS.Core.DatabaseContext
         public string? Other_Critical_Items { get; set; }
         public string? Attchment { get; set; }     
         public string? Remarks { get; set; }
+
+        public string? Housing_Body_Attch { get; set;}
+		public string? Wires_Cable_Attch { get; set;}
+		public string? Diffuser_Lens_Attch { get; set;}
+		public string? Pcb_Attch { get; set;}
+		public string? Connectors_Attch { get; set;}
+		public string? Powder_Coat_Attch { get; set;}
+		public string? Led_LM80_Attch { get; set;}
+		public string? Led_Purchase_Proof_Attch { get; set;}
+		public string? Driver_Attch { get; set;}
+		public string? Pre_Treatment_Attch { get; set;}
+		public string? Hardware_Attch { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }

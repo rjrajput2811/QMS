@@ -10,6 +10,7 @@ using QMS.Core.Services.SystemLogs;
 using QMS.Core.Repositories.CAReportRepository;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Wordprocessing;
+using System.Drawing;
 //using static System.Net.Mime.MediaTypeNames;
 //using System.Drawing;
 
@@ -327,6 +328,18 @@ namespace QMS.Controllers
             // Reported Date (top row, right)
             ws.Cell("F11").Value = "Reported Date :" + model.Report_Date?.ToString("dd-MMM-yyyy") ?? "";
 
+            ws.Cell("A12").Value = model.Cust_Complaints
+                ? "✓ Customer complaints" : "Customer complaints";
+
+            ws.Cell("E12").Value = model.NPI_Validations
+                ? "✓ NPI Validations" : "NPI Validations";
+
+            ws.Cell("F12").Value = model.PDI_Obser
+                ? "✓ PDI Observations" : "PDI Observations";
+
+            ws.Cell("G12").Value = model.System
+                ? "✓ System/Process Improvements" : "System/Process Improvements";
+
             // Customer Name & Location
             ws.Cell("A13").Value = "Customer Name and Location: -  " + model.Cust_Name_Location ?? "";
 
@@ -465,62 +478,172 @@ namespace QMS.Controllers
 
             // helper to convert "/CAReport_Attach/....png" -> physical path
             // convert "/CAReport_Attach/....png" -> physical path under wwwroot
-            string MapWebPathToPhysical(string? path)
+            string? MapWebPathToPhysical(string? path)
             {
-                if (string.IsNullOrWhiteSpace(path))
-                    return null;
+                if (string.IsNullOrWhiteSpace(path)) return null;
 
-                // already physical path?
-                if (Path.IsPathRooted(path))
-                    return path;
-
+                // "/CAReport_Attach/2000_2526/x.png" -> "CAReport_Attach\2000_2526\x.png"
                 path = path.Replace("~", "").TrimStart('/', '\\');
                 path = path.Replace("/", Path.DirectorySeparatorChar.ToString());
+
                 return Path.Combine(_env.WebRootPath, path);
             }
 
-            // constants for the photo box – tune once to match your merged cells
-            const int MAX_WIDTH = 520;  // pixels
-            const int MAX_HEIGHT = 220;  // pixels
+            IXLRange GetMergedRangeForCell(IXLWorksheet sheet, IXLCell cell)
+            {
+                foreach (var mr in sheet.MergedRanges)
+                    if (mr.Contains(cell))
+                        return mr;
 
-            //void InsertImageFit(IXLWorksheet sheet, string? relativePath, IXLRange range)
-            //{
-            //    var physical = MapWebPathToPhysical(relativePath);
-            //    if (string.IsNullOrWhiteSpace(physical) || !System.IO.File.Exists(physical))
-            //        return;
+                return sheet.Range(cell.Address, cell.Address);
+            }
 
-            //    using (var img = System.Drawing.Image.FromFile(physical))
-            //    {
-            //        int origW = img.Width;
-            //        int origH = img.Height;
+            double ColWidthToPixels(double excelColWidth) => excelColWidth * 7.0;
+            double RowPointsToPixels(double points) => points * 1.333;
 
-            //        if (origW <= 0 || origH <= 0)
-            //            return;
+            (double wPx, double hPx) GetBoxPixels(IXLRange box)
+            {
+                double w = 0;
+                for (int c = box.FirstColumn().ColumnNumber(); c <= box.LastColumn().ColumnNumber(); c++)
+                    w += ColWidthToPixels(box.Worksheet.Column(c).Width);
 
-            //        // scale so it fits MAX_WIDTH x MAX_HEIGHT, keeping aspect ratio
-            //        double scale = Math.Min((double)MAX_WIDTH / origW,
-            //                                (double)MAX_HEIGHT / origH);
+                double h = 0;
+                for (int r = box.FirstRow().RowNumber(); r <= box.LastRow().RowNumber(); r++)
+                {
+                    var row = box.Worksheet.Row(r);
+                    double pt = row.Height > 0 ? row.Height : 15.0;
+                    h += RowPointsToPixels(pt);
+                }
 
-            //        // optional: don’t upscale tiny images
-            //        if (scale > 1.0)
-            //            scale = 1.0;
+                // padding so it doesn't touch borders
+                w = Math.Max(10, w - 10);
+                h = Math.Max(10, h - 10);
 
-            //        int finalW = (int)(origW * scale);
-            //        int finalH = (int)(origH * scale);
+                return (w, h);
+            }
 
-            //        var pic = sheet.AddPicture(physical);
-            //        pic.MoveTo(range.FirstCell());    // top-left of the box
-            //        pic.WithSize(finalW, finalH);     // final size inside box
-            //    }
-            //}
+            void InsertImageCentered(IXLWorksheet sheet, string? webPath, IXLRange box)
+            {
+                var physical = MapWebPathToPhysical(webPath);
 
-            //// ranges where images go (adjust columns if your template is different)
-            //var beforeRange = ws.Range(photoRow, 1, photoRow, 5);   // Before box
-            //var afterRange = ws.Range(photoRow, 6, photoRow, 10);  // After box
+                // If file doesn't exist, skip silently (or log)
+                if (string.IsNullOrWhiteSpace(physical) || !System.IO.File.Exists(physical))
+                    return;
 
-            //// insert Before / After images
-            //InsertImageFit(ws, model.Before_Photo, beforeRange);
-            //InsertImageFit(ws, model.After_Photo, afterRange);
+                using var img = Image.FromFile(physical);
+                if (img.Width <= 0 || img.Height <= 0)
+                    return;
+
+                var (boxW, boxH) = GetBoxPixels(box);
+
+                // Fit inside box
+                double scale = Math.Min(boxW / img.Width, boxH / img.Height);
+                if (scale > 1.0) scale = 1.0;
+
+                int finalW = Math.Max(1, (int)(img.Width * scale));
+                int finalH = Math.Max(1, (int)(img.Height * scale));
+
+                // Center offsets
+                int offsetX = Math.Max(0, (int)((boxW - finalW) / 2));
+                int offsetY = Math.Max(0, (int)((boxH - finalH) / 2));
+
+                var pic = sheet.AddPicture(physical);
+                pic.MoveTo(box.FirstCell(), offsetX, offsetY);
+                pic.WithSize(finalW, finalH);
+            }
+
+            // =====================================================
+            // 6) FIND "Photo" BOXES FROM TEMPLATE & INSERT IMAGES
+            //    (robust even after inserting rows)
+            // =====================================================
+            var photoCells = ws.CellsUsed(c => c.GetString().Trim().Equals("Photo", StringComparison.OrdinalIgnoreCase))
+                               .OrderBy(c => c.Address.RowNumber)
+                               .ThenBy(c => c.Address.ColumnNumber)
+                               .Take(2)
+                               .ToList();
+
+            // If your template has exactly 2 "Photo" texts (Before/After)
+            if (photoCells.Count == 2)
+            {
+                var beforeBox = GetMergedRangeForCell(ws, photoCells[0]);
+                var afterBox = GetMergedRangeForCell(ws, photoCells[1]);
+
+                InsertImageCentered(ws, model.Before_Photo, beforeBox);
+                InsertImageCentered(ws, model.After_Photo, afterBox);
+            }
+            else
+            {
+                // Fallback if "Photo" text not found / different wording
+                // Adjust these columns/rows once to match your template
+                var beforeBox = ws.Range(photoRow, 1, photoRow + 2, 5);   // A..E
+                var afterBox = ws.Range(photoRow, 6, photoRow + 2, 10);  // F..J
+
+                InsertImageCentered(ws, model.Before_Photo, beforeBox);
+                InsertImageCentered(ws, model.After_Photo, afterBox);
+            }
+
+            IXLCell? FindCellContains(IXLWorksheet sheet, string containsText)
+            {
+                return sheet.CellsUsed(c =>
+                {
+                    var s = c.GetString();
+                    return !string.IsNullOrWhiteSpace(s) &&
+                           s.Trim().IndexOf(containsText, StringComparison.OrdinalIgnoreCase) >= 0;
+                }).FirstOrDefault();
+            }
+
+            void InsertProblemVisualizationImages(string? imgA, string? imgB, string? imgC)
+            {
+                // 🔎 Find the header cell by text (NOT by address)
+                var headerCell = FindCellContains(ws, "Problem Visualization");
+                if (headerCell == null) return;
+
+                // Header is usually merged A23:H23
+                var headerRange = GetMergedRangeForCell(ws, headerCell);
+
+                int headerRow = headerCell.Address.RowNumber;
+                int firstCol = headerRange.FirstColumn().ColumnNumber();
+                int lastCol = headerRange.LastColumn().ColumnNumber();
+
+                // Image area is below header: 2 rows height (same like your template)
+                int imgTopRow = headerRow + 1;
+                int imgBottomRow = headerRow + 2;
+
+                // Total columns in the section
+                int totalCols = lastCol - firstCol + 1;
+
+                // Split into 3 boxes (try best equal)
+                int box1Cols = totalCols / 3;
+                int box2Cols = totalCols / 3;
+                int box3Cols = totalCols - box1Cols - box2Cols;
+
+                int box1Start = firstCol;
+                int box1End = box1Start + box1Cols - 1;
+
+                int box2Start = box1End + 1;
+                int box2End = box2Start + box2Cols - 1;
+
+                int box3Start = box2End + 1;
+                int box3End = lastCol;
+
+                // Build ranges
+                var boxA = ws.Range(imgTopRow, box1Start, imgBottomRow, box1End);
+                var boxB = ws.Range(imgTopRow, box2Start, imgBottomRow, box2End);
+                var boxC = ws.Range(imgTopRow, box3Start, imgBottomRow, box3End);
+
+                // Insert images centered + auto-fit
+                InsertImageCentered(ws, imgA, boxA);
+                InsertImageCentered(ws, imgB, boxB);
+                InsertImageCentered(ws, imgC, boxC);
+            }
+
+            // ✅ Call it (use your actual properties)
+            InsertProblemVisualizationImages(
+                model.Problem_Visual_ImgA,   // replace with your property
+                model.Problem_Visual_ImgB,   // replace with your property
+                model.Problem_Visual_ImgC    // replace with your property
+            );
+
 
             // Footer – RCA Prepared By / Name & Designation / Date
             ws.Cell(rcaRow, 1).Value =

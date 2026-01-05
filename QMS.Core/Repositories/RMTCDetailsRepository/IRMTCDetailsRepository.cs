@@ -10,6 +10,6 @@ namespace QMS.Core.Repositories.RMTCDetailsRepository
         Task<OperationResult> CreateAsync(RM_TC_Tracker entity, bool returnCreatedRecord = false);
         Task<OperationResult> UpdateAsync(RM_TC_Tracker entity, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int id);
-        Task<bool> UpdateAttachmentAsync(int id, string fileName);
+        Task<bool> UpdateAttachmentFieldAsync(int id, string field, string fileName, string updatedBy);
     }
 }

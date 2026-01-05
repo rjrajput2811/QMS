@@ -740,6 +740,138 @@ Tabulator.extendModule("edit", "editors", {
     }
 });
 
+function vendorEditor(cell, onRendered, success, cancel, editorParams) {
+    const currentValue = cell.getValue() || "";
+
+    // Create a <select> element for Select2
+    const select = document.createElement("select");
+    select.style.width = "100%";
+
+    // Build options from editorParams.values (your vendorOptions dictionary)
+    const values = editorParams && editorParams.values ? editorParams.values : {};
+
+    // Optional empty option
+    const emptyOpt = document.createElement("option");
+    emptyOpt.value = "";
+    emptyOpt.text = "";
+    select.appendChild(emptyOpt);
+
+    Object.keys(values).forEach(key => {
+        const opt = document.createElement("option");
+        opt.value = key;
+        opt.text = values[key];
+        select.appendChild(opt);
+    });
+
+    // Set initial value (if any)
+    if (currentValue) {
+        // If value does not exist in the list (manual text from before), add it
+        if (!values[currentValue]) {
+            const opt = document.createElement("option");
+            opt.value = currentValue;
+            opt.text = currentValue;
+            select.appendChild(opt);
+        }
+        select.value = currentValue;
+    }
+
+    onRendered(function () {
+        // Initialize Select2 with tags:true so user can type new values
+        $(select).select2({
+            width: "resolve",
+            tags: true,              // 👈 allows manual input
+            placeholder: "",
+            dropdownAutoWidth: true
+        });
+
+        // Ensure Select2 shows current value
+        $(select).val(currentValue).trigger("change.select2");
+
+        // Commit value when user closes Select2
+        $(select).on("select2:close", function () {
+            const val = $(this).val();
+            success(val);           // send final value back to Tabulator
+        });
+    });
+
+    // Handle ESC -> cancel edit
+    select.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            e.stopPropagation();
+            cancel();
+        }
+        if (e.key === "Enter") {
+            e.preventDefault();
+        }
+    });
+
+    return select;
+}
+
+function _valuesToMap(values) {
+    if (!values) return null;
+    if (Array.isArray(values)) {
+        const map = {};
+        values.forEach(opt => {
+            if (opt && typeof opt === "object") {
+                map[String(opt.value)] = opt.label ?? opt.text ?? opt.value;
+            } else {
+                map[String(opt)] = String(opt);
+            }
+        });
+        return map;
+    }
+    if (typeof values === "object") return values;
+    return null;
+}
+
+// Safely run a column's custom formatter (function formatters only)
+function _runFormatter(cell, def) {
+    if (typeof def.formatter !== "function") return null; // built-in string formatters won't work here
+    try {
+        const out = def.formatter(cell, def.formatterParams || {}, function onRendered() { });
+        if (out == null) return null;
+        if (typeof out === "string") return out.replace(/<[^>]*>/g, "").trim();
+        if (out instanceof HTMLElement) return (out.textContent || "").trim();
+    } catch (e) {
+        // swallow—fallbacks will handle
+    }
+    return null;
+}
+
+// Get display string for Excel export WITHOUT using cell.getFormattedValue()
+function getDisplayValue(cell) {
+    const def = cell.getColumn().getDefinition();
+    let v = cell.getValue(); // raw
+
+    // 1) Try mapping via editor/headerFilter configs (good for lists/selects)
+    const maps = [];
+    if (def.editorParams && def.editorParams.values) maps.push(_valuesToMap(def.editorParams.values));
+    if (def.headerFilterParams && def.headerFilterParams.values) maps.push(_valuesToMap(def.headerFilterParams.values));
+
+    // 2) Field-specific fallbacks to your global dictionaries
+    //if (def.field === "BatchCodeVendor" && window.batchCodeOptions) maps.push(window.batchCodeOptions);
+    if (def.field === "Location" && window.vendorOptions) maps.push(window.vendorOptions);
+
+    for (const map of maps) {
+        if (map && Object.prototype.hasOwnProperty.call(map, String(v))) {
+            v = map[String(v)];
+            break;
+        }
+    }
+
+    // 3) If still raw and there is a custom formatter FUNCTION, use it
+    if (typeof def.formatter === "function") {
+        const formatted = _runFormatter(cell, def);
+        if (formatted != null && formatted !== "") v = formatted;
+    }
+
+    // 4) Clean up to plain text
+    if (v == null) return "";
+    return (typeof v === "string") ? v.replace(/<[^>]*>/g, "").trim() : v;
+}
+
+
 
 function OnTabThirdInsGridLoad(response) {
     Blockloadershow();
@@ -845,16 +977,39 @@ function OnTabThirdInsGridLoad(response) {
         editableColumn("Project Value(Mn).", "ProjectValue", "input", "left", "input", {}, {}),
         editableColumn("TPI Duration(DAYS)", "Tpi_Duration", "input", "center", "input", {}, {}),
         //editableColumn("Location(Waluj Lab/Vendor Location)", "Location", "input", "left", "input", {}, {}),
-        editableColumn(
-            "Location(Waluj Lab/Vendor Location)",
-            "Location",
-            "list",                        // editor type
-            "center",                      // hoz align
-            "list",                        // header filter type
-            { values: { "Waluj Lab": "Waluj Lab", "Vendor Location": "Vendor Location" } },
-            { values: { "Waluj Lab": "Waluj Lab", "Vendor Location": "Vendor Location" }, allowEmpty: true },
-            null
-        ),
+        //editableColumn(
+        //    "Location(Waluj Lab/Vendor Location)",
+        //    "Location",
+        //    "list",                        // editor type
+        //    "center",                      // hoz align
+        //    "list",                        // header filter type
+        //    { values: { "Waluj Lab": "Waluj Lab", "Vendor Location": "Vendor Location" } },
+        //    { values: { "Waluj Lab": "Waluj Lab", "Vendor Location": "Vendor Location" }, allowEmpty: true },
+        //    null
+        //),
+
+        {
+            title: "Location(Waluj Lab/Vendor Location)",
+            field: "Location",
+            headerSort: false,
+            headerMenu: headerMenu,
+            headerFilter: "input",
+            hozAlign: "center",
+            headerHozAlign: "center",
+            width: 130,
+
+            // Display: if value is a key in vendorOptions, show name; else show raw value
+            formatter: function (cell) {
+                const val = cell.getValue();
+                return vendorOptions[val] || val || "";
+            },
+
+            // Custom Select2 editor that allows manual typing
+            editor: vendorEditor,
+            editorParams: {
+                values: vendorOptions      // pass your dictionary here
+            }
+        },
         //editableColumn("Mode Of Inspection(Physical/Online)", "Mode", "input", "center", "input", {}, {}),
         editableColumn(
             "Mode Of Inspection(Physical/Online)",
@@ -1032,11 +1187,11 @@ function OnTabThirdInsGridLoad(response) {
         });
     })();
 
-    function getDisplayValue(cell) {
-        if (!cell) return "";
-        const v = cell.getValue();
-        return v == null ? "" : String(v);
-    }
+    //function getDisplayValue(cell) {
+    //    if (!cell) return "";
+    //    const v = cell.getValue();
+    //    return v == null ? "" : String(v);
+    //}
 
     // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
     document.getElementById("exportThirdPartyInsButton").addEventListener("click", async function () {

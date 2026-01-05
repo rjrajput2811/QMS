@@ -422,15 +422,253 @@ function OnTabGridLoad(response) {
     })();
 
     // helper to renumber Sr_No after inserts/deletes/sorts (if needed)
+    //document.getElementById("exportPDIAuthButton").addEventListener("click", async function () {
+    //    const EXPORT_SCOPE = "active"; // "active" | "selected" | "all"
+    //    const EXPORT_RAW = false;    // false = use display/labels
+
+    //    // ===== 1) Build columns list from visible Tabulator columns (exclude Action/User)
+    //    if (!window.table) { console.error("Tabulator 'table' not found."); return; }
+
+    //    const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
+    //    const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
+
+    //    const tabCols = table.getColumns(true)
+    //        .filter(c => c.getField())
+    //        .filter(c => c.isVisible())
+    //        .filter(c => {
+    //            const def = c.getDefinition();
+    //            const field = def.field || "";
+    //            const title = (def.title || "").trim();
+    //            return !EXCLUDE_FIELDS.has(field) && !EXCLUDE_TITLES.has(title);
+    //        });
+
+    //    const excelCols = tabCols.map(col => {
+    //        const def = col.getDefinition();
+    //        const label = def.title || def.field;
+    //        const px = (def.width || col.getWidth() || 120);
+    //        const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
+    //        return { label, key: def.field, width };
+    //    });
+
+    //    if (!excelCols.length) { alert("No visible columns to export."); return; }
+
+    //    // ===== 2) DOC DETAILS (fixed two rightmost columns)
+    //    const docDetails = [
+    //        ["Document No", "WCIB/LS/QA/R/005"],
+    //        ["Effective Date", "01/10/2022"],
+    //        ["Revision No", "0"],
+    //        ["Revision Date", "01/10/2022"],
+    //        ["Page No", "1 of 1"]
+    //    ];
+
+    //    // ===== 3) Layout constants =====
+    //    const TOTAL_COLS = excelCols.length;
+    //    const HEADER_TOP = 1;
+    //    const HEADER_BOTTOM = 5;
+    //    const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
+    //    const TITLE_TEXT = "PDI AUTHORISED SIGNATORY";
+
+    //    // Logo block (A1:B5)
+    //    const LOGO_COL_START = 1, LOGO_COL_END = 2;
+    //    const LOGO_ROW_START = HEADER_TOP, LOGO_ROW_END = HEADER_BOTTOM;
+
+    //    const TITLE_COL_START = Math.min(3, TOTAL_COLS);
+    //    const TITLE_COL_END = Math.max(TITLE_COL_START, TOTAL_COLS - 2);
+
+    //    const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
+    //    const DETAILS_VALUE_COL = TOTAL_COLS;
+
+    //    // ===== 4) Helpers =====
+    //    async function fetchAsBase64(url) {
+    //        const res = await fetch(url);
+    //        const blob = await res.blob();
+    //        return new Promise((resolve) => {
+    //            const reader = new FileReader();
+    //            reader.onloadend = () => resolve(reader.result.split(",")[1]);
+    //            reader.readAsDataURL(blob);
+    //        });
+    //    }
+    //    function setBorder(cell, style = "thin") {
+    //        cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
+    //    }
+    //    function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
+    //        for (let c = c1; c <= c2; c++) {
+    //            const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
+    //            top.border = { ...top.border, top: { style } };
+    //            bottom.border = { ...bottom.border, bottom: { style } };
+    //        }
+    //        for (let r = r1; r <= r2; r++) {
+    //            const left = ws.getCell(r, c1), right = ws.getCell(r, c2);
+    //            left.border = { ...left.border, left: { style } };
+    //            right.border = { ...right.border, right: { style } };
+    //        }
+    //    }
+
+    //    // ===== 5) Workbook / Sheet =====
+    //    const wb = new ExcelJS.Workbook();
+    //    const ws = wb.addWorksheet("PDI Authorised Signatory", {
+    //        properties: { defaultRowHeight: 15 },
+    //        views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+    //    });
+
+    //    ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
+
+    //    // Row heights so logo fits
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) ws.getRow(r).height = 18;
+
+    //    ws.pageSetup = {
+    //        orientation: "landscape",
+    //        fitToPage: true,
+    //        fitToWidth: 1,
+    //        fitToHeight: 0,
+    //        margins: { left: 0.3, right: 0.3, top: 0.5, bottom: 0.5, header: 0.2, footer: 0.2 },
+    //        printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
+    //    };
+
+    //    // ===== 6) Header band fill =====
+    //    for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
+    //        for (let c = 1; c <= TOTAL_COLS; c++) {
+    //            ws.getCell(r, c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" } };
+    //        }
+    //    }
+
+    //    // ===== 7) Logo centered in A1:B5 (no stretch) + outline =====
+    //    const LOGO_WIDTH_PX = 100, LOGO_HEIGHT_PX = 100;
+
+    //    const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);
+    //    const ROW_PX = (r) => ((ws.getRow(r).height || 15) * (96 / 72));
+
+    //    let rectWpx = 0; for (let c = LOGO_COL_START; c <= LOGO_COL_END; c++) rectWpx += COL_PX(c);
+    //    let rectHpx = 0; for (let r = LOGO_ROW_START; r <= LOGO_ROW_END; r++) rectHpx += ROW_PX(r);
+
+    //    const avgColPx = rectWpx / (LOGO_COL_END - LOGO_COL_START + 1);
+    //    const avgRowPx = rectHpx / (LOGO_ROW_END - LOGO_ROW_START + 1);
+
+    //    const logoCols = LOGO_WIDTH_PX / avgColPx;
+    //    const logoRows = LOGO_HEIGHT_PX / avgRowPx;
+
+    //    const tlCol = (LOGO_COL_START - 1) + ((LOGO_COL_END - LOGO_COL_START + 1) - logoCols) / 2;
+    //    const tlRow = (LOGO_ROW_START - 1) + ((LOGO_ROW_END - LOGO_ROW_START + 1) - logoRows) / 2;
+
+    //    const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
+    //    if (logoUrl) {
+    //        try {
+    //            const base64 = await fetchAsBase64(logoUrl);
+    //            const imgId = wb.addImage({ base64, extension: "png" });
+    //            ws.addImage(imgId, {
+    //                tl: { col: tlCol, row: tlRow },
+    //                ext: { width: LOGO_WIDTH_PX, height: LOGO_HEIGHT_PX },
+    //                editAs: "oneCell"
+    //            });
+    //        } catch (e) { console.warn("Logo load failed:", e); }
+    //    }
+    //    outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
+
+    //    // ===== 8) Title (merge) + outline =====
+    //    ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
+    //    const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
+    //    titleCell.value = TITLE_TEXT;
+    //    titleCell.font = { bold: true, size: 18 };
+    //    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+    //    outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
+
+    //    // ===== 9) Document details in the last two columns =====
+    //    const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
+    //    docDetails.forEach((pair, i) => {
+    //        const r = HEADER_TOP + i;
+    //        const labelCell = ws.getCell(r, DETAILS_LABEL_COL);
+    //        const valueCell = ws.getCell(r, DETAILS_VALUE_COL);
+
+    //        labelCell.value = pair[0];
+    //        valueCell.value = pair[1];
+
+    //        labelCell.font = { bold: true };
+    //        [labelCell, valueCell].forEach(cell => {
+    //            cell.alignment = { vertical: "middle", horizontal: "left", wrapText: true };
+    //            setBorder(cell, "thin");
+    //        });
+    //    });
+    //    outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
+
+    //    // ===== 10) Manual table header row =====
+    //    while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // pad to row before header
+
+    //    const headerTitles = excelCols.map(c => c.label);
+    //    const headerRow = ws.addRow(headerTitles);
+    //    headerRow.height = 22;
+    //    headerRow.eachCell((cell) => {
+    //        cell.font = { bold: true };
+    //        cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+    //        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFD9E1F2" } };
+    //        setBorder(cell);
+    //    });
+
+    //    // ===== 11) DATA ROWS (use display text for dropdowns) =====
+    //    let tabRows;
+    //    switch (EXPORT_SCOPE) {
+    //        case "selected": tabRows = table.getSelectedRows(); break;
+    //        case "all": tabRows = table.getRows(); break;
+    //        case "active":
+    //        default: tabRows = table.getRows("active"); break;
+    //    }
+
+    //    tabRows.forEach(row => {
+    //        const cells = row.getCells();
+    //        const byField = {};
+
+    //        cells.forEach(cell => {
+    //            const f = cell.getField();
+    //            if (!f) return;
+
+    //            const def = cell.getColumn().getDefinition();
+    //            const title = (def.title || "").trim();
+
+    //            if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
+
+    //            byField[f] = EXPORT_RAW ? row.getData()[f] : getDisplayValue(cell);
+    //        });
+
+    //        const values = excelCols.map(c => byField[c.key] ?? "");
+    //        const xRow = ws.addRow(values);
+
+    //        xRow.eachCell((cell, colNumber) => {
+    //            cell.alignment = {
+    //                vertical: "middle",
+    //                horizontal: colNumber === 1 ? "center" : "left",
+    //                wrapText: true
+    //            };
+    //            setBorder(cell);
+    //        });
+    //    });
+
+    //    // ===== 12) DOWNLOAD =====
+    //    const buffer = await wb.xlsx.writeBuffer();
+    //    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    //    const link = document.createElement("a");
+    //    link.href = URL.createObjectURL(blob);
+    //    link.download = "PDI Authorised Signatory.xlsx";
+    //    document.body.appendChild(link);
+    //    link.click();
+    //    link.remove();
+    //});
+
     document.getElementById("exportPDIAuthButton").addEventListener("click", async function () {
         const EXPORT_SCOPE = "active"; // "active" | "selected" | "all"
-        const EXPORT_RAW = false;    // false = use display/labels
+        const EXPORT_RAW = false;      // false = use display/labels
 
-        // ===== 1) Build columns list from visible Tabulator columns (exclude Action/User)
         if (!window.table) { console.error("Tabulator 'table' not found."); return; }
 
         const EXCLUDE_FIELDS = new Set(["Action", "action", "Actions", "CreatedBy"]);
         const EXCLUDE_TITLES = new Set(["Action", "Actions", "User"]);
+
+        // ✅ Only these two fields must be exported as images
+        const IMAGE_FIELDS = new Set(["Photo_Inspector", "Specimen_Sign"]);
+        const isImageField = (f) => IMAGE_FIELDS.has(f);
+
+        // ✅ Your folder pattern
+        const BASE_ATTACH_FOLDER = "/PDIAuthSign_Attach/";
+        // ✅ The row field that contains the folder id (10/1/3 etc.)
+        const ROW_ID_FIELD = "Id"; // <-- CHANGE if your data uses different name
 
         const tabCols = table.getColumns(true)
             .filter(c => c.getField())
@@ -446,13 +684,12 @@ function OnTabGridLoad(response) {
             const def = col.getDefinition();
             const label = def.title || def.field;
             const px = (def.width || col.getWidth() || 120);
-            const width = Math.max(8, Math.min(40, Math.round(px / 7))); // px->char heuristic
+            const width = Math.max(8, Math.min(40, Math.round(px / 7)));
             return { label, key: def.field, width };
         });
 
         if (!excelCols.length) { alert("No visible columns to export."); return; }
 
-        // ===== 2) DOC DETAILS (fixed two rightmost columns)
         const docDetails = [
             ["Document No", "WCIB/LS/QA/R/005"],
             ["Effective Date", "01/10/2022"],
@@ -461,14 +698,12 @@ function OnTabGridLoad(response) {
             ["Page No", "1 of 1"]
         ];
 
-        // ===== 3) Layout constants =====
         const TOTAL_COLS = excelCols.length;
         const HEADER_TOP = 1;
         const HEADER_BOTTOM = 5;
         const GRID_HEADER_ROW = HEADER_BOTTOM + 1;
         const TITLE_TEXT = "PDI AUTHORISED SIGNATORY";
 
-        // Logo block (A1:B5)
         const LOGO_COL_START = 1, LOGO_COL_END = 2;
         const LOGO_ROW_START = HEADER_TOP, LOGO_ROW_END = HEADER_BOTTOM;
 
@@ -478,19 +713,11 @@ function OnTabGridLoad(response) {
         const DETAILS_LABEL_COL = Math.max(1, TOTAL_COLS - 1);
         const DETAILS_VALUE_COL = TOTAL_COLS;
 
-        // ===== 4) Helpers =====
-        async function fetchAsBase64(url) {
-            const res = await fetch(url);
-            const blob = await res.blob();
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result.split(",")[1]);
-                reader.readAsDataURL(blob);
-            });
-        }
+        // ===== Helpers =====
         function setBorder(cell, style = "thin") {
             cell.border = { top: { style }, bottom: { style }, left: { style }, right: { style } };
         }
+
         function outlineRange(ws, r1, c1, r2, c2, style = "thin") {
             for (let c = c1; c <= c2; c++) {
                 const top = ws.getCell(r1, c), bottom = ws.getCell(r2, c);
@@ -504,16 +731,68 @@ function OnTabGridLoad(response) {
             }
         }
 
-        // ===== 5) Workbook / Sheet =====
+        function guessExt(url) {
+            const u = (url || "").split("?")[0].toLowerCase();
+            if (u.endsWith(".jpg") || u.endsWith(".jpeg")) return "jpeg";
+            if (u.endsWith(".webp")) return "webp";
+            return "png";
+        }
+
+        async function fetchAsBase64(url) {
+            const res = await fetch(url, { mode: "cors" });
+            if (!res.ok) throw new Error(`Image fetch failed ${res.status}: ${url}`);
+            const blob = await res.blob();
+
+            const base64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                reader.readAsDataURL(blob);
+            });
+
+            const mime = (blob.type || "").toLowerCase();
+            let ext = "png";
+            if (mime.includes("jpeg") || mime.includes("jpg")) ext = "jpeg";
+            else if (mime.includes("png")) ext = "png";
+            else if (mime.includes("webp")) ext = "webp";
+            else ext = guessExt(url);
+
+            return { base64, ext };
+        }
+
+        // ✅ Build URL: /PDIAuthSign_Attach/{id}/{filename}
+        function buildAttachUrl(rowData, fileNameOrUrl) {
+            if (!fileNameOrUrl) return "";
+            const v = String(fileNameOrUrl).trim();
+            if (!v) return "";
+
+            // already full URL
+            if (/^https?:\/\//i.test(v)) return v;
+
+            // already a rooted path
+            if (v.startsWith("/")) return location.origin + v;
+
+            // filename only -> build using row folder id
+            const folderId = rowData?.[ROW_ID_FIELD];
+            if (folderId === undefined || folderId === null || String(folderId).trim() === "") {
+                // if id missing, cannot locate correct folder
+                console.warn("ROW_ID missing in row data. Set ROW_ID_FIELD correctly.", rowData);
+                return "";
+            }
+
+            // encode filename because it has spaces
+            const safeFile = encodeURIComponent(v);
+            return location.origin + BASE_ATTACH_FOLDER + encodeURIComponent(String(folderId)) + "/" + safeFile;
+        }
+
+        // ===== Workbook / Sheet =====
         const wb = new ExcelJS.Workbook();
         const ws = wb.addWorksheet("PDI Authorised Signatory", {
             properties: { defaultRowHeight: 15 },
-            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }] // sticky header
+            views: [{ state: "frozen", xSplit: 0, ySplit: GRID_HEADER_ROW }]
         });
 
         ws.columns = excelCols.map(c => ({ key: c.key, width: c.width }));
 
-        // Row heights so logo fits
         for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) ws.getRow(r).height = 18;
 
         ws.pageSetup = {
@@ -525,14 +804,14 @@ function OnTabGridLoad(response) {
             printTitlesRow: `${HEADER_TOP}:${GRID_HEADER_ROW}`
         };
 
-        // ===== 6) Header band fill =====
+        // ===== Header band fill =====
         for (let r = HEADER_TOP; r <= HEADER_BOTTOM; r++) {
             for (let c = 1; c <= TOTAL_COLS; c++) {
                 ws.getCell(r, c).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFF7F7F7" } };
             }
         }
 
-        // ===== 7) Logo centered in A1:B5 (no stretch) + outline =====
+        // ===== Logo block =====
         const LOGO_WIDTH_PX = 100, LOGO_HEIGHT_PX = 100;
 
         const COL_PX = (c) => ((ws.getColumn(c).width || 8) * 7);
@@ -553,7 +832,7 @@ function OnTabGridLoad(response) {
         const logoUrl = window.LOGO_URL || (window.APP_BASE && (window.APP_BASE + "images/wipro-logo.png"));
         if (logoUrl) {
             try {
-                const base64 = await fetchAsBase64(logoUrl);
+                const { base64 } = await fetchAsBase64(logoUrl);
                 const imgId = wb.addImage({ base64, extension: "png" });
                 ws.addImage(imgId, {
                     tl: { col: tlCol, row: tlRow },
@@ -564,7 +843,7 @@ function OnTabGridLoad(response) {
         }
         outlineRange(ws, LOGO_ROW_START, LOGO_COL_START, LOGO_ROW_END, LOGO_COL_END, "thin");
 
-        // ===== 8) Title (merge) + outline =====
+        // ===== Title =====
         ws.mergeCells(HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END);
         const titleCell = ws.getCell(HEADER_TOP, TITLE_COL_START);
         titleCell.value = TITLE_TEXT;
@@ -572,7 +851,7 @@ function OnTabGridLoad(response) {
         titleCell.alignment = { horizontal: "center", vertical: "middle" };
         outlineRange(ws, HEADER_TOP, TITLE_COL_START, HEADER_TOP + 2, TITLE_COL_END, "thin");
 
-        // ===== 9) Document details in the last two columns =====
+        // ===== Document details =====
         const detailsRowsEnd = HEADER_TOP + docDetails.length - 1;
         docDetails.forEach((pair, i) => {
             const r = HEADER_TOP + i;
@@ -590,8 +869,8 @@ function OnTabGridLoad(response) {
         });
         outlineRange(ws, HEADER_TOP, DETAILS_LABEL_COL, detailsRowsEnd, DETAILS_VALUE_COL, "thin");
 
-        // ===== 10) Manual table header row =====
-        while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]); // pad to row before header
+        // ===== Table header =====
+        while (ws.rowCount < GRID_HEADER_ROW - 1) ws.addRow([]);
 
         const headerTitles = excelCols.map(c => c.label);
         const headerRow = ws.addRow(headerTitles);
@@ -603,7 +882,7 @@ function OnTabGridLoad(response) {
             setBorder(cell);
         });
 
-        // ===== 11) DATA ROWS (use display text for dropdowns) =====
+        // ===== Data rows =====
         let tabRows;
         switch (EXPORT_SCOPE) {
             case "selected": tabRows = table.getSelectedRows(); break;
@@ -612,7 +891,18 @@ function OnTabGridLoad(response) {
             default: tabRows = table.getRows("active"); break;
         }
 
-        tabRows.forEach(row => {
+        // cache to speed up repeated image loads
+        const imageCache = new Map(); // url -> {base64, ext}
+        async function getCachedImage(url) {
+            if (!url) return null;
+            if (imageCache.has(url)) return imageCache.get(url);
+            const data = await fetchAsBase64(url);
+            imageCache.set(url, data);
+            return data;
+        }
+
+        for (const row of tabRows) {
+            const rowData = row.getData();
             const cells = row.getCells();
             const byField = {};
 
@@ -625,12 +915,18 @@ function OnTabGridLoad(response) {
 
                 if (EXCLUDE_FIELDS.has(f) || EXCLUDE_TITLES.has(title)) return;
 
-                byField[f] = EXPORT_RAW ? row.getData()[f] : getDisplayValue(cell);
+                const rawVal = rowData[f];
+
+                // keep raw filename for image fields
+                if (isImageField(f)) byField[f] = rawVal;
+                else byField[f] = EXPORT_RAW ? rawVal : getDisplayValue(cell);
             });
 
-            const values = excelCols.map(c => byField[c.key] ?? "");
+            // ✅ IMPORTANT: For image columns, export BLANK so filename/path won't show
+            const values = excelCols.map(c => isImageField(c.key) ? "" : (byField[c.key] ?? ""));
             const xRow = ws.addRow(values);
 
+            // style row cells
             xRow.eachCell((cell, colNumber) => {
                 cell.alignment = {
                     vertical: "middle",
@@ -639,9 +935,55 @@ function OnTabGridLoad(response) {
                 };
                 setBorder(cell);
             });
-        });
 
-        // ===== 12) DOWNLOAD =====
+            // row height for images
+            ws.getRow(xRow.number).height = 85;
+
+            // ✅ Embed images in Photo_Inspector & Specimen_Sign
+            for (let i = 0; i < excelCols.length; i++) {
+                const field = excelCols[i].key;
+                if (!isImageField(field)) continue;
+
+                const fileNameOrUrl = byField[field];
+                if (!fileNameOrUrl) continue;
+
+                // take first if multiple values
+                const first = String(fileNameOrUrl).split(/[,;]+/).map(s => s.trim()).filter(Boolean)[0];
+                if (!first) continue;
+
+                const imgUrl = buildAttachUrl(rowData, first);
+
+                try {
+                    const imgData = await getCachedImage(imgUrl);
+                    if (!imgData) continue;
+
+                    const imgId = wb.addImage({ base64: imgData.base64, extension: imgData.ext });
+
+                    // keep cell blank
+                    ws.getCell(xRow.number, i + 1).value = "";
+                    ws.getCell(xRow.number, i + 1).alignment = { horizontal: "center", vertical: "middle" };
+
+                    // size settings
+                    const isSign = (field === "Specimen_Sign");
+                    const imgW = isSign ? 170 : 125;
+                    const imgH = isSign ? 55 : 75;
+
+                    // anchor (0-based)
+                    const col0 = i;
+                    const row0 = xRow.number - 1;
+
+                    ws.addImage(imgId, {
+                        tl: { col: col0 + 0.15, row: row0 + 0.18 },
+                        ext: { width: imgW, height: imgH },
+                        editAs: "oneCell"
+                    });
+                } catch (e) {
+                    console.warn("Failed to embed image:", field, imgUrl, e);
+                }
+            }
+        }
+
+        // ===== Download =====
         const buffer = await wb.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const link = document.createElement("a");
@@ -651,6 +993,8 @@ function OnTabGridLoad(response) {
         link.click();
         link.remove();
     });
+
+
 
     Blockloaderhide();
 }

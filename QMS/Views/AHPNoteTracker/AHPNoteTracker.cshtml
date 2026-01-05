@@ -386,6 +386,25 @@
                     tabledata.push({
                         Sr_No: index + 1,
                         Id: item.id,
+                        FinancialYear : item.financialYear,
+                        Lit_SEE_Engagement_Target : item.lit_SEE_Engagement_Target,
+                        Lit_SEE_Engagement_PreviousYear_Q1 : item.lit_SEE_Engagement_PreviousYear_Q1,
+                        Lit_SEE_Engagement_PreviousYear_Q2 : item.lit_SEE_Engagement_PreviousYear_Q2,
+                        Lit_SEE_Engagement_PreviousYear_Q3 : item.lit_SEE_Engagement_PreviousYear_Q3,
+                        Lit_SEE_Engagement_PreviousYear_Q4 : item.lit_SEE_Engagement_PreviousYear_Q4,
+                        Lit_SEE_Engagement_CurrentYear_Q1 : item.lit_SEE_Engagement_CurrentYear_Q1,
+                        Lit_SEE_Engagement_CurrentYear_Q2 : item.lit_SEE_Engagement_CurrentYear_Q2,
+                        Lit_SEE_Engagement_CurrentYear_Q3 : item.lit_SEE_Engagement_CurrentYear_Q3,
+                        Lit_SEE_Engagement_CurrentYear_Q4 : item.lit_SEE_Engagement_CurrentYear_Q4,
+                        Lit_SEE_Effectiveness_Target : item.Lit_SEE_Effectiveness_Target,
+                        Lit_SEE_Effectiveness_PreviousYear_Q1 : item.lit_SEE_Effectiveness_PreviousYear_Q1,
+                        Lit_SEE_Effectiveness_PreviousYear_Q2 : item.lit_SEE_Effectiveness_PreviousYear_Q2,
+                        Lit_SEE_Effectiveness_PreviousYear_Q3 : item.lit_SEE_Effectiveness_PreviousYear_Q3,
+                        Lit_SEE_Effectiveness_PreviousYear_Q4 : item.lit_SEE_Effectiveness_PreviousYear_Q4,
+                        Lit_SEE_Effectiveness_CurrentYear_Q1 : item.lit_SEE_Effectiveness_CurrentYear_Q1,
+                        Lit_SEE_Effectiveness_CurrentYear_Q2 : item.lit_SEE_Effectiveness_CurrentYear_Q2,
+                        Lit_SEE_Effectiveness_CurrentYear_Q3 : item.lit_SEE_Effectiveness_CurrentYear_Q3,
+                        Lit_SEE_Effectiveness_CurrentYear_Q4 : item.lit_SEE_Effectiveness_CurrentYear_Q4,
                         User: item.user
                     });
                 });
@@ -409,7 +428,19 @@
                         }
                     },
                     { title: "SNo", field: "Sr_No", width: 50, responsive: 0,  sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left" },
-                    { title: "User", field: "User", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Financial Year", field: "FinancialYear", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                    { title: "SEE Engagement Target", field: "Lit_SEE_Engagement_Target", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Engagement PreviousYear Q1", field: "Lit_SEE_Engagement_PreviousYear_Q1", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Engagement PreviousYear Q2", field: "Lit_SEE_Engagement_PreviousYear_Q2", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Engagement PreviousYear Q3", field: "Lit_SEE_Engagement_PreviousYear_Q3", responsive: 5,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Engagement PreviousYear Q4", field: "Lit_SEE_Engagement_PreviousYear_Q4", responsive: 6,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Engagement PreviousYear Q4", field: "Lit_SEE_Engagement_PreviousYear_Q4", responsive: 7,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Effectiveness Target", field: "Lit_SEE_Effectiveness_Target", responsive: 8,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Effectiveness PreviousYear Q1", field: "Lit_SEE_Effectiveness_PreviousYear_Q1", responsive: 9,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Effectiveness PreviousYear Q2", field: "Lit_SEE_Effectiveness_PreviousYear_Q2", responsive: 10,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Effectiveness PreviousYear Q3", field: "Lit_SEE_Effectiveness_PreviousYear_Q3", responsive: 11,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "SEE Effectiveness PreviousYear Q4", field: "Lit_SEE_Effectiveness_PreviousYear_Q4", responsive: 12,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "User", field: "User", responsive: 13,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                 );
 
                 // // Initialize Tabulator

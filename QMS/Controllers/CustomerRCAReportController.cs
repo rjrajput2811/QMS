@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
+using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.CAReportRepository;
 using QMS.Core.Repositories.RCAReportRepository;
@@ -44,22 +45,33 @@ namespace QMS.Controllers
         [HttpGet]
         public async Task<IActionResult> CustomerRCADetails(int id)
         {
-            RCAReportViewModel model;
+            RCAReportViewModel model = new RCAReportViewModel();
 
-            if (id == 0)
+            //if (id == 0)
+            //{
+            //    model = new RCAReportViewModel
+            //    {
+            //        Date = DateTime.Now
+            //    };
+            //}
+            //else
+            //{
+            //    model = await _rCAReportRepository.GetRCAReportByIdAsync(id);
+
+            //    if (model == null)
+            //    {
+            //        return NotFound();
+            //    }
+            //}
+
+            if (id > 0)
             {
-                model = new RCAReportViewModel
-                {
-                    Date = DateTime.Now
-                };
-            }
-            else
-            {
+                // Fetch existing record
                 model = await _rCAReportRepository.GetRCAReportByIdAsync(id);
 
                 if (model == null)
                 {
-                    return NotFound();
+                    return NotFound($"CA Report not found for Id: {id}");
                 }
             }
 
@@ -136,11 +148,29 @@ namespace QMS.Controllers
                     return Json(new { Success = false, Errors = errors });
                 }
 
-                bool exists = await _rCAReportRepository.CheckDuplicate(model.Complaint_No!.Trim(), 0);
-                if (exists)
+                bool exists;
+
+                if (model.Id > 0)
                 {
-                    return Json(new { Success = false, Errors = new[] { "RCA Report Detail already exists." } });
+                    // UPDATE: exclude same Id record
+                    exists = await _rCAReportRepository.CheckDuplicate(
+                        model.Complaint_No!.Trim(),
+                        model.Id
+                    );
                 }
+                else
+                {
+                    // INSERT: check if complaint already used anywhere
+                    exists = await _rCAReportRepository.CheckDuplicate(
+                        model.Complaint_No!.Trim(),
+                        0
+                    );
+                }
+                //bool exists = await _rCAReportRepository.CheckDuplicate(model.Complaint_No!.Trim(), 0);
+                //if (exists)
+                //{
+                //    return Json(new { Success = false, Errors = new[] { "RCA Report Detail already exists." } });
+                //}
 
                 var user = HttpContext.Session.GetString("FullName") ?? "System";
                 OperationResult result;

@@ -335,7 +335,7 @@
                                         <th style="width:8%; text-align:center;">Sr. No.</th>
                                         <th style="width:44%; text-align:center;">CHANGE FROM</th>
                                         <th style="width:44%; text-align:center;">CHANGE TO</th>
-                                        <th style="width:4%; text-align:center;">CATEGORY*</th>
+                                        <th style="width:4%; text-align:center;">CATEGORY</th>
                                     </tr>
                                 </thead>
                                 <tbody id="changesItemsTbody">
@@ -356,7 +356,13 @@
                                                 </td>
                                                 <td contenteditable="true" data-name="ChangeFrom">@item.ChangeFrom</td>
                                                 <td contenteditable="true" data-name="ChangeTo">@item.ChangeTo</td>
-                                                <td contenteditable="true" data-name="Category">@item.Category</td>
+                                               @*  <td contenteditable="true" data-name="Category">@item.Category *@
+                                                <td data-name="Category" contenteditable="true">
+                                                 <select class="form-control">
+                                                 <option value="A">A</option>
+                                                <option value="B">B</option>
+                                                       </select>
+                                                   </td>
                                             </tr>
                                             counter++;
                                         }
@@ -372,34 +378,37 @@
                                 </colgroup>
                                 <tbody>
                                     <tr>
-                                        <!-- REMARKS -->
-                                        <td style="vertical-align:top;">
-                                            <strong style="display:block; margin-bottom:8px;">
-                                                REMARKS :
-                                            </strong>
+    <!-- REMARKS -->
+    <td style="vertical-align:top; width: 50%;">
+        <strong style="display:block; margin-bottom:8px;">
+            REMARKS :
+        </strong>
+        <div id="remarksEditable"
+             contenteditable="true"
+            
+             data-name="Remarks">
+            @Model.Remarks
+        </div>
+    </td>
+    
+    <!-- CATEGORY INFO - Right Side -->
+    <td style="vertical-align:top; width: 50%; padding-left:20px;">
+        <strong style="display:block; margin-bottom:8px;">
+            * CHANGE NOTE CATEGORY
+        </strong>
+        
+        <div style="margin-bottom:15px;">
+            <strong>A: EXTREMELY URGENT & CRITICAL</strong><br/>
+            <span style="font-size:0.9em;">To be implemented with immediate effect</span>
+        </div>
+        
+        <div style="margin-bottom:15px;">
+            <strong>B: FOR PRODUCT UPGRADATION</strong><br/>
+            <span style="font-size:0.9em;">To be implemented after existing inventory consumption.</span>
+        </div>
+    </td>
+</tr>
 
-                                            <div id="remarksEditable"
-                                                 contenteditable="true"
-                                                 style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;"
-                                                 data-name="Remarks">
-                                                @Model.Remarks
-                                            </div>
-                                        </td>
-
-                                        <!-- CATEGORY (rowspan) -->
-                                        <td rowspan="2" style="vertical-align:top;">
-                                            <strong style="display:block; margin-bottom:8px;">
-                                                * CHANGE NOTE CATEGORY :
-                                            </strong>
-
-                                            <div id="categoryEditable"
-                                                 contenteditable="true"
-                                                 style="min-height:154px; line-height:1.4; white-space:pre-wrap; outline:none;"
-                                                 data-name="ChangeNoteCategory">
-                                                @Model.ChangeNoteCategory
-                                            </div>
-                                        </td>
-                                    </tr>
 
                                     <tr>
                                         <!-- COPY TO -->

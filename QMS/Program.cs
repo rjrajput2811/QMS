@@ -7,6 +7,9 @@ using QMS.Core.Repositories.AHPNoteReposotory;
 using QMS.Core.Repositories.BisProjectTracRepository;
 using QMS.Core.Repositories.CAReportRepository;
 using QMS.Core.Repositories.CertificateMasterRepository;
+using QMS.Core.Repositories.ChangeNoteImplementationItemRepository;
+using QMS.Core.Repositories.ChangeNoteItemsRepository;
+using QMS.Core.Repositories.ChangeNoteRepository;
 using QMS.Core.Repositories.ContiImproveRespository;
 using QMS.Core.Repositories.COPQComplaintDumpRepository;
 using QMS.Core.Repositories.CSATCommentRepository;
@@ -36,13 +39,11 @@ using QMS.Core.Repositories.SixSigmaIndicesRepository;
 using QMS.Core.Repositories.SPMReportRepository;
 using QMS.Core.Repositories.ThirdPartyCertRepository;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
-using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Repositories.ThirdPartyTestRepository;
 using QMS.Core.Repositories.UserRolesRepository;
 using QMS.Core.Repositories.UsersRepository;
 using QMS.Core.Repositories.VendorRepository;
-using QMS.Core.Repositories.SixSigmaIndicesRepo;
-using QMS.Core.Repositories.SixSigmaIndicesRepository;
+using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
 
@@ -97,6 +98,10 @@ builder.Services.AddTransient<ICSATSummaryRepository, CSATSummaryRepository>();
 builder.Services.AddTransient<ICAReportRepository, CAReportRepository>();
 builder.Services.AddTransient<IRCAReportRepository, RCAReportRepository>();
 builder.Services.AddScoped<ISixSigmaIndicesRepository, SixSigmaIndicesRepository>();
+builder.Services.AddTransient<IChangeNoteRepository, ChangeNoteRepository>();
+builder.Services.AddTransient<IChangeNoteItemsRepository, ChangeNoteItemsRepository>();
+builder.Services.AddTransient<IChangeNoteImplementationItemRepository, ChangeNoteImplementationItemRepository>();
+builder.Services.AddTransient<IChangeNoteService, ChangeNoteService>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

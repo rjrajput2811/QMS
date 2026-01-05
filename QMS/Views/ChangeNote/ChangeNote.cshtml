@@ -1,0 +1,391 @@
+﻿@{
+    ViewData["Title"] = "Change Note";
+}
+
+<!-- CSS files -->
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+
+<!-- CSS: same style as Photometry Test Report header -->
+<style>
+    .header-card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+    }
+
+    .header-title {
+        font-size: large;
+        color: #4682B4;
+        font-weight: 700;
+    }
+
+    .header-btn {
+        width: 140px;
+        font-size: 15px;
+        border-radius: 6px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .header-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .mr-2 { margin-right: 8px; }
+
+    /* small helper so placeholder area looks neat */
+    .content-placeholder {
+        border: 1px dashed #e2e8f0;
+        border-radius: 6px;
+        padding: 18px;
+        background: #fff;
+        min-height: 220px;
+    }
+
+    /* responsive tweak so buttons don't wrap badly */
+ 
+</style>
+
+<div class="content">
+    <!-- Header Card: Change Note -->
+    <div class="card shadow-sm mb-3 header-card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <b class="header-title">CHANGE NOTE</b>
+            </div>
+
+            <div>
+                <!-- Add button: goes to the "details" / create page -->
+                <button id="addChangeNoteBtn"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2 header-btn"
+                        onclick="location.href='@Url.Action("ChangeNoteDetails", "ChangeNote")'">
+                    <i class="fas fa-plus mr-2 fa-1x"></i> Add
+                </button>
+
+                <!-- Back button: returns to Change Note list page -->
+                <button id="backBtn"
+                        type="button"
+                        class="btn btn-outline-primary header-btn"
+                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div id="rmtc_table_wrapper" style="overflow-x: auto;">
+                            <div id="changeNote_table"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+    <script asp-append-version="true">
+        var tabledata = [];
+        var table = '';
+        const searchTerms = {};
+        $(document).ready(function () {
+            loadChangeNoteGridData();
+        });
+
+        function loadChangeNoteGridData() {
+            Blockloadershow();
+            $.ajax({
+                url: '@Url.Action("ChangeNoteList", "ChangeNote")',
+                type: 'GET',
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnChangeNoteGridLoad(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+
+                //create checkbox element using font awesome icons
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                //build label
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                //create menu item
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        //prevent menu closing
+                        e.stopPropagation();
+
+                        //toggle current column visibility
+                        column.toggle();
+
+                        //change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+        function OnChangeNoteGridLoad(response) {
+            Blockloadershow();
+
+            if (Tabulator.findTable("#changeNote_table").length > 0) {
+                Tabulator.findTable("#changeNote_table")[0].destroy();
+            }
+
+            tabledata = [];
+            let columns = [];
+
+            // Map the response to the table format
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        Description: item.description,
+                        ChangeNoteCategory: item.changeNoteCategory,
+                        VendorName: item.vendorName,
+                        User: item.user
+                    });
+                });
+
+                columns.push(
+                    {
+                        title: "Action",
+                        field: "Action",
+                        width: 80,
+                        headerMenu: headerMenu,
+                        hozAlign: "center",
+                        headerHozAlign: "center",
+                        formatter: function (cell, formatterParams) {
+                            const rowData = cell.getRow().getData();
+                            let actionButtons = "";
+
+                            actionButtons += `<i data-toggle="modal" onclick="delChangeNoteConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+                            actionButtons += `<i onclick="exportToPDF(${rowData.Id})" class="fas fa-file-pdf fa-1x" title="Export to PDF" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+
+                            return actionButtons;
+                        }
+                    },
+                    { title: "SNo", field: "Sr_No", width: 50, responsive: 0,  sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left" },
+                    { title: "Description", field: "Description", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Change Note Category", field: "ChangeNoteCategory", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Vendor", field: "VendorName", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "User", field: "User", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                );
+
+                // // Initialize Tabulator
+                table = new Tabulator("#changeNote_table", {
+                    data: tabledata,
+                    layout: "fitDataTable",
+                    responsiveLayout: false,
+                    height: "auto",
+                    movableColumns: true,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                    paginationCounter: "rows",
+                    paginationElement: document.getElementById("pager"),
+                    dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                    columns: columns
+                });
+
+                table.on("cellClick", function (e, cell) {
+                    let columnField = cell.getColumn().getField();
+
+                    if (columnField !== "Action") {
+                        let rowData = cell.getRow().getData();
+                        window.open("@Url.Action("ChangeNoteDetails", "ChangeNote")" + "/" + rowData.Id, '_self');
+                    }
+                });
+
+                let savedFilters = sessionStorage.getItem("ChangeNoteFilters");
+                if (savedFilters) {
+                    const filters = JSON.parse(savedFilters);
+
+                    // Apply filters to the table
+                    table.setFilter(filters);
+
+                    // After table is fully built, set header filter inputs
+                    table.on("tableBuilt", function () {
+                        filters.forEach(f => {
+                            if (f.field && f.value !== undefined) {
+                                table.setHeaderFilterValue(f.field, f.value);
+                            }
+                        });
+                    });
+                }
+
+                table.on("dataFiltered", function (filters) {
+
+                    if (filters.length === 0) {
+                        return false;
+                    }
+                    // only store header filters, not programmatic ones
+                    let headerFilters = table.getHeaderFilters();
+
+                    // If all header inputs are empty, force-clear filters
+                    if (headerFilters.length === 0) {
+                        table.clearFilter(true); // true = silent clear (prevents loops)
+                        sessionStorage.removeItem("ChangeNoteFilters");
+                        return;
+                    }
+
+                    // Otherwise, save unique filters
+                    let unique = [];
+                    let seen = new Set();
+
+                    headerFilters.forEach(f => {
+                        if (f.value !== "" && !seen.has(f.field)) {
+                            seen.add(f.field);
+                            unique.push(f);
+                        }
+                    });
+
+                    if (unique.length > 0) {
+                        sessionStorage.setItem("ChangeNoteFilters", JSON.stringify(unique));
+                    } else {
+                        sessionStorage.removeItem("ChangeNoteFilters");
+                    }
+                });
+
+                // Force refresh when inputs are cleared
+                table.on("headerFilterBlur", function () {
+                    let headerFilters = table.getHeaderFilters();
+
+                    if (headerFilters.length === 0) {
+                        table.clearFilter(); // unfilter table
+                    }
+                });
+            }
+            else {
+                showDangerAlert('No data available.');
+            }
+
+            // Hide loader
+            Blockloaderhide();
+        }
+
+        function delChangeNoteConfirm(recid) {
+            PNotify.prototype.options.styling = "bootstrap3";
+            (new PNotify({
+                title: 'Confirmation Needed',
+                text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+                icon: 'glyphicon glyphicon-question-sign',
+                hide: false,
+                confirm: {
+                    confirm: true
+                },
+                buttons: {
+                    closer: false,
+                    sticker: false
+                },
+                history: {
+                    history: false
+                },
+            })).get().on('pnotify.confirm', function () {
+                $.ajax({
+                    url: '@Url.Action("DeleteChangeNote", "ChangeNote")',
+                    type: 'POST',
+                    data: { Id: recid },
+                    success: function (data) {
+                        if (data.success == true) {
+                            showSuccessAlert("Deleted successfully.");
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 2500);
+                        }
+                        else {
+                            showDangerAlert(data.message);
+                        }
+                    },
+                    error: function () {
+                        showDangerAlert('Error retrieving data.');
+                    }
+                });
+            }).on('pnotify.cancel', function () {
+                loadData();
+            });
+        }
+
+        function exportToPDF(recid) {
+            // Blockloadershow();
+            // var url = '@Url.Action("ExportToPDF", "ChangeNote")' + "?id=" + recid;
+
+            // fetch(url, {
+            //     method: 'GET',
+            //     data: { id: recid }
+            // })
+            // .then(response => response.blob())
+            // .then(blob => {
+            //     // Create a new object URL for the PDF blob
+            //     var url = window.URL.createObjectURL(blob);
+
+            //     // Create a link element to download the PDF
+            //     var a = document.createElement('a');
+            //     a.href = url;
+            //     a.download = 'AHP_Note_' + recid + '.pdf';
+            //     document.body.appendChild(a);  // Append link to body
+            //     a.click();  // Trigger click event to download
+            //     a.remove();  // Remove the link after download
+            //     Blockloaderhide();
+            // })
+            // .catch(error => {
+            //     Blockloaderhide();
+            //     showDangerAlert('Error exporting PDF: ' + error);
+            // });
+        }
+    </script>
+
+    <script src="~/scripts/rmtc/rmtc-tracker.js" asp-append-version="true"></script>
+}
+   
+@section HideSidebar { }

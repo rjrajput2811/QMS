@@ -1,4 +1,8 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model ChangeNoteViewModel
+
+@{
     ViewData["Title"] = "Change Note";
 }
 
@@ -17,7 +21,7 @@
         width: 70%;
         padding: 2px 4px;
         transition: border-color .2s ease-in-out;
-    }
+    }`  
 
         .same-input:focus {
             border-bottom-color: #4682B4;
@@ -277,7 +281,7 @@
                             <i class="fas fa-save mr-1"></i>Save
                         </button>
 
-                        <a href='@Url.Action("ChangeNotee", "ChangeNote")'
+                        <a href='@Url.Action("ChangeNote", "ChangeNote")'
                            class="btn btn-outline-primary"
                            style="width:120px; font-size:15px;">
                             <i class="fas fa-arrow-left"></i> BACK
@@ -286,251 +290,265 @@
                 </div>
             </div>
 
-            <!-- MAIN CARD -->
-            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body">
+            <form id="changeNotw-form" method="post" asp-action="InsertUpdateChangeNote" asp-controller="ChangeNote">
+                @Html.HiddenFor(m => m.Id)
+                <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                    <div class="card-body">
+                        <div class="tables-flush">
+                            <!-- header (Description + Vendor) -->
+                            <table class="header-table" style="margin:0;">
+                                <colgroup>
+                                    <col style="width:50%;">
+                                    <col style="width:50%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Description:</span>
+                                            @Html.TextBoxFor(m => m.Description, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Change Description" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Vendor:</span>
+                                            @Html.DropDownListFor(m => m.VendorId, (IEnumerable<SelectListItem>)ViewBag.VendorList, "Select Vendor", new { @class = "inline-input", style = "width:75%;" })
+                                        </td>
+                                    </tr>
 
-                    <!-- Tabs -->
-                    <ul class="nav nav-tabs" id="changeTabs" role="tablist" style="margin-bottom:0;">
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link active"
-                               id="change-note-tab"
-                               data-bs-toggle="tab"
-                               href="#change-note"
-                               role="tab"
-                               aria-controls="change-note"
-                               aria-selected="true">
-                                Change Note
-                            </a>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <a class="nav-link"
-                               id="change-log-tab"
-                               data-bs-toggle="tab"
-                               href="#change-log"
-                               role="tab"
-                               aria-controls="change-log"
-                               aria-selected="false">
-                                Change Note Implementation
-                            </a>
-                        </li>
-                    </ul>
+                                    <tr>
+                                        <td colspan="2" style="padding:12px;">
+                                            <button id="addRowBtn"
+                                                    type="button"
+                                                    class="btn btn-outline-success"
+                                                    style="width:120px; font-size:15px; border-radius:6px;">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                    <!-- Tab content -->
-                    <div class="tab-content mt-3" id="changeTabsContent">
+                            <!-- items table for Change Note -->
+                            <table class="pv-table"
+                                   id="changesItemsTable"
+                                   style="margin-top:-1px; margin-bottom:0;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:8%; text-align:center;">Sr. No.</th>
+                                        <th style="width:44%; text-align:center;">CHANGE FROM</th>
+                                        <th style="width:44%; text-align:center;">CHANGE TO</th>
+                                        <th style="width:4%; text-align:center;">CATEGORY*</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="changesItemsTbody">
+                                    @if (Model.Items.Count > 0)
+                                    {
+                                        var counter = 1;
+                                        foreach (var item in Model.Items)
+                                        {
+                                            <tr>
+                                                <td style="text-align:center;">
+                                                    <span class="srno">@counter</span>
+                                                    <button type="button"
+                                                            class="btn btn-link p-0 ml-2 delete-row-btn"
+                                                            title="Delete row"
+                                                            style="color:#c0392b; margin-left:6px;">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                                <td contenteditable="true" data-name="ChangeFrom">@item.ChangeFrom</td>
+                                                <td contenteditable="true" data-name="ChangeTo">@item.ChangeTo</td>
+                                                <td contenteditable="true" data-name="Category">@item.Category</td>
+                                            </tr>
+                                            counter++;
+                                        }
+                                    }
+                                </tbody>
+                            </table>
 
-                        <!-- ================= CHANGE NOTE TAB ================= -->
-                        <div class="tab-pane fade show active" id="change-note" role="tabpanel" aria-labelledby="change-note-tab">
-                            <div class="tables-flush">
+                            <!-- remarks + category + copy to -->
+                            <table class="header-table" style="margin-top:-1px;">
+                                <colgroup>
+                                    <col style="width:65%;">
+                                    <col style="width:35%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <!-- REMARKS -->
+                                        <td style="vertical-align:top;">
+                                            <strong style="display:block; margin-bottom:8px;">
+                                                REMARKS :
+                                            </strong>
 
-                                <!-- header (Description + Vendor) -->
-                                <table class="header-table" style="margin:0;">
-                                    <colgroup>
-                                        <col style="width:50%;">
-                                        <col style="width:50%;">
-                                    </colgroup>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <span class="field-label">Description:</span>
-                                                <input type="text"
-                                                       name="ChangeDescription"
-                                                       class="inline-input"
-                                                       placeholder="Enter Change Description"
-                                                       style="width:75%;" />
-                                            </td>
-                                            <td>
-                                                <span class="field-label">Vendor:</span>
-                                                <input type="text"
-                                                       name="Vendor"
-                                                       class="inline-input"
-                                                       placeholder="Enter Vendor Name"
-                                                       style="width:75%;" />
-                                            </td>
-                                        </tr>
+                                            <div id="remarksEditable"
+                                                 contenteditable="true"
+                                                 style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;"
+                                                 data-name="Remarks">
+                                                @Model.Remarks
+                                            </div>
+                                        </td>
 
-                                        <tr>
-                                            <td colspan="2" style="padding:12px;">
-                                                <button id="addRowBtn"
-                                                        type="button"
-                                                        class="btn btn-outline-success"
-                                                        style="width:120px; font-size:15px; border-radius:6px;">
-                                                    <i class="fas fa-plus"></i> Add
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                        <!-- CATEGORY (rowspan) -->
+                                        <td rowspan="2" style="vertical-align:top;">
+                                            <strong style="display:block; margin-bottom:8px;">
+                                                * CHANGE NOTE CATEGORY :
+                                            </strong>
 
-                                <!-- items table for Change Note -->
-                                <table class="pv-table"
-                                       id="changesItemsTable"
-                                       style="margin-top:-1px; margin-bottom:0;">
-                                    <thead>
-                                        <tr>
-                                            <th style="width:8%; text-align:center;">Sr. No.</th>
-                                            <th style="width:44%; text-align:center;">CHANGE FROM</th>
-                                            <th style="width:44%; text-align:center;">CHANGE TO</th>
-                                            <th style="width:4%; text-align:center;">CATEGORY*</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="changesItemsTbody">
-                                        <tr>
-                                            <td style="text-align:center;">
-                                                <span class="srno">1</span>
-                                                <button type="button"
-                                                        class="btn btn-link p-0 ml-2 delete-row-btn"
-                                                        title="Delete row"
-                                                        style="color:#c0392b; margin-left:6px;">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true"></td>
-                                            <td contenteditable="true" style="text-align:center;"></td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                            <div id="categoryEditable"
+                                                 contenteditable="true"
+                                                 style="min-height:154px; line-height:1.4; white-space:pre-wrap; outline:none;"
+                                                 data-name="ChangeNoteCategory">
+                                                @Model.ChangeNoteCategory
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <!-- remarks + category + copy to -->
-                                <table class="header-table" style="margin-top:-1px;">
-                                    <colgroup>
-                                        <col style="width:65%;">
-                                        <col style="width:35%;">
-                                    </colgroup>
-                                    <tbody>
-                                        <tr>
-                                            <!-- REMARKS -->
-                                            <td style="vertical-align:top;">
-                                                <strong style="display:block; margin-bottom:8px;">
-                                                    REMARKS :
-                                                </strong>
+                                    <tr>
+                                        <!-- COPY TO -->
+                                        <td style="vertical-align:top;">
+                                            <strong>COPY TO :</strong>
 
-                                                <div id="remarksEditable"
-                                                     contenteditable="true"
-                                                     style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;">
-                                                </div>
-                                            </td>
+                                            <div style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap;">
+                                                <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                    <input type="checkbox"
+                                                           name="CopyTo"
+                                                           value="PMG.O"
+                                                           @(Model.CopyTo != null && Model.CopyTo.Contains("PMG.O") ? "checked" : "")
+                                                           style="transform:scale(1.1);"> PMG.O
+                                                </label>
 
-                                            <!-- CATEGORY (rowspan) -->
-                                            <td rowspan="2" style="vertical-align:top;">
-                                                <strong style="display:block; margin-bottom:8px;">
-                                                    * CHANGE NOTE CATEGORY :
-                                                </strong>
+                                                <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                    <input type="checkbox"
+                                                           name="CopyTo"
+                                                           value="LSG"
+                                                           @(Model.CopyTo != null && Model.CopyTo.Contains("LSG") ? "checked" : "")
+                                                           style="transform:scale(1.1);"> LSG
+                                                </label>
 
-                                                <div id="categoryEditable"
-                                                     contenteditable="true"
-                                                     style="min-height:154px; line-height:1.4; white-space:pre-wrap; outline:none;">
-                                                </div>
-                                            </td>
-                                        </tr>
+                                                <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                    <input type="checkbox"
+                                                           name="CopyTo"
+                                                           value="MATL.S."
+                                                           @(Model.CopyTo != null && Model.CopyTo.Contains("MATL.S.") ? "checked" : "")
+                                                           style="transform:scale(1.1);"> MATL.S.
+                                                </label>
 
-                                        <tr>
-                                            <!-- COPY TO -->
-                                            <td style="vertical-align:top;">
-                                                <strong>COPY TO :</strong>
+                                                <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                    <input type="checkbox"
+                                                           name="CopyTo"
+                                                           value="QA"
+                                                           @(Model.CopyTo != null && Model.CopyTo.Contains("QA") ? "checked" : "")
+                                                           style="transform:scale(1.1);"> QA
+                                                </label>
 
-                                                <div style="display:flex; gap:18px; margin-top:12px; flex-wrap:wrap;">
-                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                                        <input type="checkbox" name="CopyTo" value="PMG.O" style="transform:scale(1.1);"> PMG.O
-                                                    </label>
+                                                <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
+                                                    <input type="checkbox"
+                                                           name="CopyTo"
+                                                           value="PDG"
+                                                           @(Model.CopyTo != null && Model.CopyTo.Contains("PDG") ? "checked" : "")
+                                                           style="transform:scale(1.1);"> PDG
+                                                </label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                                        <input type="checkbox" name="CopyTo" value="LSG" style="transform:scale(1.1);"> LSG
-                                                    </label>
+                            <!-- signature / date / group -->
+                            <table class="header-table" style="margin-top:0;">
+                                <colgroup>
+                                    <col style="width:15%;">
+                                    <col style="width:85%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Signature:</strong></td>
+                                        <td></td>
+                                    </tr>
 
-                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                                        <input type="checkbox" name="CopyTo" value="MATL.S." style="transform:scale(1.1);"> MATL.S.
-                                                    </label>
+                                    <tr>
+                                        <td><strong>Date:</strong></td>
+                                        <td>
+                                            <input type="date"
+                                                   asp-for="SignatureDate"
+                                                   id="signatureDate"
+                                                   name="signatureDate"
+                                                   class="inline-date"
+                                                   style="border:none; width:220px; padding:6px 4px; font-size:14px;">
+                                        </td>
+                                    </tr>
 
-                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                                        <input type="checkbox" name="CopyTo" value="QA" style="transform:scale(1.1);"> QA
-                                                    </label>
+                                    <tr>
+                                        <td><strong>Group :</strong></td>
+                                        <td>
+                                            @{
+                                                var selectedGroups = Model.ChangeNoteGroup?
+                                                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                                .Select(x => x.Trim())
+                                                .ToList() ?? new List<string>();
+                                            }
+                                            <div class="soft-multiselect-wrapper" style="max-width:420px;">
+                                                <select id="groupHiddenSelect"
+                                                        name="groups"
+                                                        multiple
+                                                        style="display:none;">
 
-                                                    <label style="display:flex; align-items:center; gap:6px; font-weight:600;">
-                                                        <input type="checkbox" name="CopyTo" value="PDG" style="transform:scale(1.1);"> PDG
-                                                    </label>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                                    <option value="Product Design"
+                                                            selected="@(selectedGroups.Contains("Product Design") ? "selected" : null)">
+                                                        Product Design
+                                                    </option>
 
-                                <!-- signature / date / group -->
-                                <table class="header-table" style="margin-top:0;">
-                                    <colgroup>
-                                        <col style="width:15%;">
-                                        <col style="width:85%;">
-                                    </colgroup>
-                                    <tbody>
-                                        <tr>
-                                            <td><strong>Signature:</strong></td>
-                                            <td>
-                                                <input type="file"
-                                                       id="signatureFile"
-                                                       name="signatureFile"
-                                                       accept="image/*"
-                                                       style="border:none; font-size:14px;">
-                                            </td>
-                                        </tr>
+                                                    <option value="Quality Assurance"
+                                                            selected="@(selectedGroups.Contains("Quality Assurance") ? "selected" : null)">
+                                                        Quality Assurance
+                                                    </option>
 
-                                        <tr>
-                                            <td><strong>Date:</strong></td>
-                                            <td>
-                                                <input type="date"
-                                                       id="signatureDate"
-                                                       name="signatureDate"
-                                                       class="inline-date"
-                                                       style="border:none; width:220px; padding:6px 4px; font-size:14px;">
-                                            </td>
-                                        </tr>
+                                                    <option value="Materials"
+                                                            selected="@(selectedGroups.Contains("Materials") ? "selected" : null)">
+                                                        Materials
+                                                    </option>
 
-                                        <tr>
-                                            <td><strong>Group :</strong></td>
-                                            <td>
-                                                <div class="soft-multiselect-wrapper" style="max-width:420px;">
-                                                    <select id="groupHiddenSelect"
-                                                            name="groups"
-                                                            multiple
-                                                            style="display:none;">
-                                                        <option value="Product Design">Product Design</option>
-                                                        <option value="Quality Assurance">Quality Assurance</option>
-                                                        <option value="Materials">Materials</option>
-                                                        <option value="PMG">PMG</option>
-                                                        <option value="Lighting Technology">Lighting Technology</option>
-                                                    </select>
+                                                    <option value="PMG"
+                                                            selected="@(selectedGroups.Contains("PMG") ? "selected" : null)">
+                                                        PMG
+                                                    </option>
 
-                                                    <div class="soft-multiselect" id="groupMulti">
-                                                        <div class="soft-multiselect-value"
-                                                             id="groupValue"
-                                                             tabindex="0"
-                                                             aria-haspopup="listbox"
-                                                             aria-expanded="false">
-                                                            <div class="chips" id="groupChips">
-                                                                <span class="placeholder">Please select...</span>
-                                                            </div>
-                                                            <div class="chev">▾</div>
+                                                    <option value="Lighting Technology"
+                                                            selected="@(selectedGroups.Contains("Lighting Technology") ? "selected" : null)">
+                                                        Lighting Technology
+                                                    </option>
+
+                                                </select>
+
+                                                <div class="soft-multiselect" id="groupMulti">
+                                                    <div class="soft-multiselect-value"
+                                                         id="groupValue"
+                                                         tabindex="0"
+                                                         aria-haspopup="listbox"
+                                                         aria-expanded="false">
+                                                        <div class="chips" id="groupChips">
+                                                            <span class="placeholder">Please select...</span>
                                                         </div>
+                                                        <div class="chev">▾</div>
+                                                    </div>
 
-                                                        <div class="soft-multiselect-dropdown"
-                                                             id="groupDropdown"
-                                                             role="listbox"
-                                                             aria-multiselectable="true">
-                                                            <div class="dropdown-inner"></div>
-                                                        </div>
+                                                    <div class="soft-multiselect-dropdown"
+                                                         id="groupDropdown"
+                                                         role="listbox"
+                                                         aria-multiselectable="true">
+                                                        <div class="dropdown-inner"></div>
                                                     </div>
                                                 </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                            </div>
                         </div>
-
-                        <!-- ================= CHANGE LOG / IMPLEMENTATION TAB ================= -->
-                        <div class="tab-pane fade" id="change-log" role="tabpanel" aria-labelledby="change-log-tab">
-
+                    </div>
+                </div>
+                <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                    <div class="card-body">
+                        <div class="tables-flush">
                             <!-- Implementation header -->
                             <table class="header-table" style="margin:0;">
                                 <colgroup>
@@ -542,6 +560,7 @@
                                         <td>
                                             <span class="field-label">Change Note Ref. No.</span>
                                             <input type="text"
+                                                   asp-for="ChangeNoteRefNo"
                                                    name="ChangeNoteRef"
                                                    class="inline-input"
                                                    placeholder="Enter Note Ref. No"
@@ -550,20 +569,17 @@
                                         <td>
                                             <span class="field-label">Date of Issue:</span>
                                             <input type="date"
+                                                   asp-for="DateOfIssue"
                                                    name="DateOfIssue"
                                                    class="inline-date"
-                                                   style="width:75%;" />
+                                                   style="width:25%;" />
                                         </td>
                                     </tr>
 
                                     <tr>
                                         <td colspan="2">
                                             <span class="field-label">Vendor / QA In charge:</span>
-                                            <input type="text"
-                                                   name="VendorQA"
-                                                   class="inline-input"
-                                                   placeholder="Enter Vendor / QA In charge"
-                                                   style="width:40%;" />
+                                            @Html.DropDownListFor(m => m.VendorId, (IEnumerable<SelectListItem>)ViewBag.VendorList, "Select Vendor / QA In charge", new { @class = "inline-input", style = "width:40%;" })
                                         </td>
                                     </tr>
 
@@ -594,21 +610,40 @@
                                     </tr>
                                 </thead>
                                 <tbody id="changesItemsTbody_Log">
-                                    <tr>
-                                        <td style="text-align:center;">
-                                            <span class="srno-log">1</span>
-                                            <button type="button"
-                                                    class="btn btn-link p-0 ml-2 delete-row-btn-log"
-                                                    title="Delete row"
-                                                    style="color:#c0392b; margin-left:6px;">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </td>
-                                        <td contenteditable="true" style="min-height:60px;"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true" style="text-align:center;"></td>
-                                    </tr>
+                                    @if (Model.ImplementationItems.Count > 0)
+                                    {
+                                        var counter1 = 1;
+                                        foreach (var imItem in Model.ImplementationItems)
+                                        {
+                                            <tr>
+                                                <td style="text-align:center;">
+                                                    <span class="srno-log">@counter1</span>
+                                                    <button type="button"
+                                                            class="btn btn-link p-0 ml-2 delete-row-btn-log"
+                                                            title="Delete row"
+                                                            style="color:#c0392b; margin-left:6px;">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                                <td contenteditable="true" style="min-height:60px;" data-name="ActionPlanned">@imItem.ActionPlanned</td>
+                                                <td contenteditable="true" data-name="WhoWillDo">@imItem.WhoWillDo</td>
+                                                <td class="text-center">
+                                                    <input type="date"
+                                                           data-name="ProposedCutOffDate"
+                                                           value="@(imItem.ProposedCutOffDate?.ToString("yyyy-MM-dd"))"
+                                                           style="border:none; background:transparent; width:40%; color:inherit;" />
+                                                </td>
+
+                                                <td style="text-align:center;">
+                                                    <input type="date"
+                                                           data-name="ActualDate"
+                                                           value="@(imItem.ActualDate?.ToString("yyyy-MM-dd"))"
+                                                           style="border:none; background:transparent; width:100%; color:inherit; text-align:center;" />
+                                                </td>
+                                            </tr>
+                                            counter1++;
+                                        }
+                                    }
                                 </tbody>
                             </table>
 
@@ -627,7 +662,9 @@
 
                                             <div id="finalRemarksQA"
                                                  contenteditable="true"
+                                                 data-name="FinalQARemarks"
                                                  style="min-height:74px; line-height:1.4; white-space:pre-wrap; outline:none;">
+                                                 @Model.FinalQARemarks
                                             </div>
                                         </td>
                                     </tr>
@@ -636,13 +673,7 @@
                                         <td style="padding:12px; vertical-align:top; font-weight:600;">
                                             Signature :
                                         </td>
-                                        <td style="padding:12px; vertical-align:top;">
-                                            <input type="file"
-                                                   id="finalSignatureFile"
-                                                   name="finalSignatureFile"
-                                                   accept="image/*"
-                                                   style="font-size:14px;" />
-                                        </td>
+                                        <td style="padding:12px; vertical-align:top;"></td>
                                     </tr>
 
                                     <tr>
@@ -650,22 +681,18 @@
                                             Note:
                                         </td>
                                         <td id="finalRemarksNote"
-                                            style="padding:12px; vertical-align:top; min-height:120px;"
-                                            contenteditable="true">
+                                            style="padding:12px; vertical-align:top; min-height:120px;">
                                             QA Team member will provide his final remarks as soon as the changes are<br />
                                             implemented at vendor location and acknowledge to Product Design Group by sending a copy of this implementation note.<br />
-                                            This is required to update the Technical Specification.
+                                            This is required to update the Technical Specification.<br />
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
-
-                        </div> 
-
-                    </div> 
-                </div> 
-            </div> 
-
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -680,7 +707,7 @@
             initSoftMultiSelect();
         });
 
-       
+
         function initMainChangeTable() {
             const addBtn = document.getElementById('addRowBtn');
             const tbody = document.getElementById('changesItemsTbody');
@@ -697,41 +724,34 @@
             function createRow() {
                 const tr = document.createElement('tr');
 
+                // Column 1: Sr No & Delete Button
                 const tdSr = document.createElement('td');
                 tdSr.style.textAlign = 'center';
-                tdSr.style.verticalAlign = 'middle';
-
-                const spanNo = document.createElement('span');
-                spanNo.className = 'srno';
-                spanNo.textContent = tbody.querySelectorAll('tr').length + 1;
-                tdSr.appendChild(spanNo);
-
-                const delBtn = document.createElement('button');
-                delBtn.type = 'button';
-                delBtn.className = 'btn btn-link p-0 delete-row-btn';
-                delBtn.title = 'Delete row';
-                delBtn.style.color = '#c0392b';
-                delBtn.style.marginLeft = '8px';
-                delBtn.innerHTML = '<i class="fas fa-trash"></i>';
-                delBtn.addEventListener('click', function () {
-                    tr.remove();
-                    refreshSerials();
-                });
-
-                tdSr.appendChild(delBtn);
+                tdSr.innerHTML = `
+                    <span class="srno"></span>
+                    <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn"
+                            title="Delete row" style="color:#c0392b; margin-left:6px;">
+                        <i class="fas fa-trash"></i>
+                    </button>`;
                 tr.appendChild(tdSr);
 
+                // Column 2: Change From (Added data-name)
                 const tdFrom = document.createElement('td');
                 tdFrom.setAttribute('contenteditable', 'true');
+                tdFrom.setAttribute('data-name', 'ChangeFrom'); // <--- CRITICAL FIX
                 tr.appendChild(tdFrom);
 
+                // Column 3: Change To (Added data-name)
                 const tdTo = document.createElement('td');
                 tdTo.setAttribute('contenteditable', 'true');
+                tdTo.setAttribute('data-name', 'ChangeTo'); // <--- CRITICAL FIX
                 tr.appendChild(tdTo);
 
+                // Column 4: Category (Added data-name)
                 const tdCat = document.createElement('td');
                 tdCat.style.textAlign = 'center';
                 tdCat.setAttribute('contenteditable', 'true');
+                tdCat.setAttribute('data-name', 'Category'); // <--- CRITICAL FIX
                 tr.appendChild(tdCat);
 
                 return tr;
@@ -744,7 +764,6 @@
                 newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
 
-         
             tbody.addEventListener('click', function (e) {
                 if (e.target.closest('.delete-row-btn')) {
                     const tr = e.target.closest('tr');
@@ -758,7 +777,7 @@
             refreshSerials();
         }
 
-     
+
         function initChangeLogTable() {
             const addBtnLog = document.getElementById('addRowBtnLog');
             const tbodyLog = document.getElementById('changesItemsTbody_Log');
@@ -774,18 +793,33 @@
 
             function createRowLog() {
                 const tr = document.createElement('tr');
+
+                // We use innerHTML for cleaner reading, matching the Razor structure exactly
                 tr.innerHTML = `
-                            <td style="text-align:center; vertical-align:middle;">
-                                <span class="srno-log"></span>
-                                <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn-log" style="color:#c0392b;">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                            <td style="min-height:60px;" contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td style="text-align:center;" contenteditable="true"></td>
-                        `;
+                    <td style="text-align:center;">
+                        <span class="srno-log"></span>
+                        <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn-log"
+                                title="Delete row" style="color:#c0392b; margin-left:6px;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+
+                    <td contenteditable="true" style="min-height:60px;" data-name="ActionPlanned"></td>
+
+                    <td contenteditable="true" data-name="WhoWillDo"></td>
+
+                    <td class="text-center">
+                        <input type="date"
+                               data-name="ProposedCutOffDate"
+                               style="border:none; background:transparent; width:40%; color:inherit;" />
+                    </td>
+
+                    <td style="text-align:center;">
+                        <input type="date"
+                               data-name="ActualDate"
+                               style="border:none; background:transparent; width:100%; color:inherit; text-align:center;" />
+                    </td>
+                `;
                 return tr;
             }
 
@@ -796,7 +830,6 @@
                 r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             });
 
-            // delete (delegated)
             tbodyLog.addEventListener('click', function (e) {
                 if (e.target.closest('.delete-row-btn-log')) {
                     const tr = e.target.closest('tr');
@@ -943,6 +976,100 @@
             });
 
             updateUI();
+        }
+
+        function saveChangeNote() {
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'Description', name: 'Description' },
+                { id: 'VendorId', name: 'Vendor' }
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+            $("#Id").val(@Model.Id);
+            var formData = new FormData($('#changeNotw-form')[0]);
+
+            formData.set('ChangeNoteRefNo', $('#ChangeNoteRefNo').val().trim());
+            formData.set('Remarks', $('#remarksEditable').text().trim());
+            formData.set('ChangeNoteCategory', $('#categoryEditable').text().trim());
+            formData.set('FinalQARemarks', $('#finalRemarksQA').text().trim());
+
+            var copyToVal = $('input[name="CopyTo"]:checked').map(function() {
+                return $(this).val();
+            }).get().join(',');
+
+            formData.set('CopyTo', copyToVal);
+
+            formData.delete('groups');
+            var groupVal = $('#groupHiddenSelect').val() || [];
+            formData.append('ChangeNoteGroup', groupVal.join(','));
+
+            $('#changesItemsTbody tr').each(function(index) {
+                $(this).find('[data-name]').each(function() {
+                    var prop = $(this).data('name');
+                    var val = $(this).text().trim();
+                    formData.append('Items[' + index + '].' + prop, val);
+                });
+            });
+
+            $('#changesItemsTbody_Log tr').each(function(index) {
+                $(this).find('[data-name]').each(function() {
+                    var $el = $(this);
+                    var prop = $el.data('name');
+                    var val = $el.is(':input') ? $el.val() : $el.text().trim();
+                    formData.append('ImplementationItems[' + index + '].' + prop, val);
+                });
+            });
+
+            $.ajax({
+                url: $('#changeNotw-form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    Blockloaderhide();
+                    if (response.success || response === true) {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("ChangeNote", "ChangeNote")', '_self');
+                        }, 2500);
+                    } else {
+                        showDangerAlert("Error: " + (response.message || "Unknown error"));
+                    }
+                },
+                error: function(xhr) {
+                    Blockloaderhide();
+                    showDangerAlert("An error occurred while communicating with the server.");
+                }
+            });
         }
     </script>
 }

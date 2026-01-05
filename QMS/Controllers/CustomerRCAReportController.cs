@@ -36,6 +36,12 @@ namespace QMS.Controllers
             return Json(result);
         }
 
+        public async Task<JsonResult> GetRCATrackingAsync(DateTime? startDate, DateTime? endDate)
+        {
+            var result = await _rCAReportRepository.GetRCATrackingAsync(startDate, endDate);
+            return Json(result);
+        }
+
         [HttpGet]
         public async Task<ActionResult> GetRCAReportByIdAsync(int internalTypeId)
         {

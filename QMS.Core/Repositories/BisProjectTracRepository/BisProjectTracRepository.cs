@@ -84,6 +84,65 @@ namespace QMS.Core.Repositories.BisProjectTracRepository
             }
         }
 
+        public async Task<List<BisProjectTracViewModel>> GetBisProjectTrackerAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                var result = await _dbContext.BisProject_Tracker.FromSqlRaw("EXEC sp_Get_BisProject_Tracker").ToListAsync();
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    result = result
+                        .Where(x => x.CreatedDate.HasValue &&
+                                    x.CreatedDate.Value.Date >= startDate.Value.Date &&
+                                    x.CreatedDate.Value.Date <= endDate.Value.Date)
+                        .ToList();
+                }
+
+                // Map results to ViewModel
+                var viewModelList = result.Select(data => new BisProjectTracViewModel
+                {
+                    Id = data.Id,
+                    Financial_Year = data.Financial_Year,
+                    Mon_Pc = data.Mon_Pc,
+                    Nat_Project = data.Nat_Project,
+                    Lea_Model_No = data.Lea_Model_No,
+                    No_Seri_Add = data.No_Seri_Add,
+                    Cat_Ref_Lea_Model = data.Cat_Ref_Lea_Model,
+                    Section = data.Section,
+                    Manuf_Location = data.Manuf_Location,
+                    BIS_Project_Id = data.BIS_Project_Id,
+                    Lab = data.Lab,
+                    Report_Owner = data.Report_Owner,
+                    Ven_Sample_Sub_Date = data.Ven_Sample_Sub_Date,
+                    Start_Date = data.Start_Date,
+                    Comp_Date = data.Comp_Date,
+                    Test_Duration = data.Test_Duration,
+                    Submitted_Date = data.Submitted_Date,
+                    Received_Date = data.Received_Date,
+                    Bis_Duration = data.Bis_Duration,
+                    Current_Status = data.Current_Status,
+                    BIS_Attachment = data.BIS_Attachment,
+                    Document_No = data.Document_No,
+                    Effective_Date = data.Effective_Date,
+                    Revision_No = data.Revision_No,
+                    Revision_Date = data.Revision_Date,
+                    CreatedBy = data.CreatedBy,
+                    CreatedDate = data.CreatedDate,
+                    UpdatedBy = data.UpdatedBy,
+                    UpdatedDate = data.UpdatedDate
+                }).ToList();
+
+                return viewModelList;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
         public async Task<OperationResult> CreateAsync(BisProject_Tracker newRecord, bool returnCreatedRecord = false)
         {
             try

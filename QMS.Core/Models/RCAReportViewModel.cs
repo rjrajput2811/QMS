@@ -87,6 +87,12 @@ namespace QMS.Core.Models
         public DateTime? Corrective_Action_Date { get; set; }
         public int? Root_Cause_Day { get; set; }
         public int? Corrective_Action_Day { get; set; }
+
+        public string? Issue_Problems { get; set; }   // or any name you like
+        public string? Complaint_Type { get; set; }   // or any name you like
+
+        public int? Closure_Day { get; set; }
+
     }
 
     public class RCAReportDetailViewModel

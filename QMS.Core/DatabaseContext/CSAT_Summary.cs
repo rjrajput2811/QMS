@@ -158,6 +158,7 @@ namespace QMS.Core.DatabaseContext
         public double? Ytd_Detractor11 { get; set; }
         public double? Ytd_Nps11 { get; set; }
         public string? Ytd_Detractor_Detail11 { get; set; }
+        public string? CSAT_Business { get; set; }
 
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }

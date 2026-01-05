@@ -155,6 +155,7 @@ function OnTabGridLoad(response) {
                 Q13: item.q13 || "",
                 Cust_Critical_Aspect: item.cust_Critical_Aspect || "",
                 Comment: item.comment || "",
+                CSAT_Business: item.csaT_Business ||"",
                 CreatedDate: item.createdDate || "",
                 CreatedBy: item.createdBy || "",
                 UpdatedDate: item.updatedDate || "",
@@ -180,6 +181,7 @@ function OnTabGridLoad(response) {
         },
         { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, width: 80, headerMenu: headerMenu },
 
+        editableColumn("CSAT Business", "CSAT_Business", true, "left"),
         editableColumn("Quarter", "Quarter", true),
         editableColumn("Organisation", "Organisation", true, "left"),
         editableColumn("Powder Region", "Region", true, "left"),
@@ -383,6 +385,7 @@ function OnTabGridLoad(response) {
                 const newRow = {
                     Id: 0,
                     Sr_No: table.getDataCount() + 1,
+                    CSAT_Business: "",
                     Quarter: "",
                     Organisation: "",
                     Region: "",
@@ -858,6 +861,7 @@ function saveEditedRow(rowData) {
         Q13: rowData.Q13 || "",
         Cust_Critical_Aspect: rowData.Cust_Critical_Aspect || "",
         Comment: rowData.Comment || "",
+        CSAT_Business: rowData.CSAT_Business || ""
     };
 
     console.log(cleanedData);

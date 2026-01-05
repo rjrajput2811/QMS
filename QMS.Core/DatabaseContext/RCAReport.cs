@@ -26,10 +26,10 @@ namespace QMS.Core.DatabaseContext
         public string? Complaint_No { get; set; }
         public DateTime? Report_Date { get; set; }
 
-        public bool? Cust_Complaints { get; set; }
-        public bool? NPI_Validations { get; set; }
-        public bool? PDI_Obser { get; set; }
-        public bool? System { get; set; }
+        public bool Cust_Complaints { get; set; }
+        public bool NPI_Validations { get; set; }
+        public bool PDI_Obser { get; set; }
+        public bool System { get; set; }
 
         public string? Cust_Name_Location { get; set; }
         public string? Source_Complaint { get; set; }
@@ -52,12 +52,12 @@ namespace QMS.Core.DatabaseContext
 
         public string? Initial_Observ { get; set; }
 
-        public bool? Man_Issue_Prob { get; set; }
-        public bool? Design_Prob { get; set; }
-        public bool? Site_Issue_Prob { get; set; }
-        public bool? Com_Gap_Prob { get; set; }
-        public bool? Install_Issues_Prob { get; set; }
-        public bool? Wrong_App_Prob { get; set; }
+        public bool Man_Issue_Prob { get; set; }
+        public bool Design_Prob { get; set; }
+        public bool Site_Issue_Prob { get; set; }
+        public bool Com_Gap_Prob { get; set; }
+        public bool Install_Issues_Prob { get; set; }
+        public bool Wrong_App_Prob { get; set; }
 
         public string? Complaint_History { get; set; }
         public string? Current_Process { get; set; }

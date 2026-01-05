@@ -60,6 +60,16 @@ $(document).ready(function () {
     });
 
     loadData();
+
+    $(document)
+        .off("mousedown.pdiUpload click.pdiUpload")
+        .on("mousedown.pdiUpload click.pdiUpload", "#pdiAuth_table .pdi-upload-btn", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const input = $(this).closest(".pdi-attach-wrap").find("input.bis-upload")[0];
+            if (input) input.click();
+        });
 });
 
 function loadData() {
@@ -220,11 +230,71 @@ function getDisplayValue(cell) {
     return (typeof v === "string") ? v.replace(/<[^>]*>/g, "").trim() : v;
 }
 
+
+
+
 function OnTabGridLoad(response) {
     Blockloadershow();
 
     let tabledata = [];
     let columns = [];
+
+    function isImageFile(name) {
+        const n = (name || "").toLowerCase().split("?")[0];
+        return /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(n);
+    }
+    function isPdfFile(name) {
+        const n = (name || "").toLowerCase().split("?")[0];
+        return /\.pdf$/i.test(n);
+    }
+
+    // builds: /PDIAuthSign_Attach/{Id}/{FileName}
+    function buildAttachHref(rowData, fileName, baseFolder = "/PDIAuthSign_Attach/") {
+        if (!fileName) return "";
+        const id = rowData?.Id;
+        if (!id) return "";
+        return `${baseFolder}${encodeURIComponent(String(id))}/${encodeURIComponent(String(fileName).trim())}`;
+    }
+
+    // formatter that shows preview + Upload button + hidden input
+    function attachPreviewFormatter(typeLabel) {
+        return function (cell) {
+            const rowData = cell.getRow().getData();
+            const fileName = cell.getValue();
+            const id = rowData.Id;
+
+            const href = fileName
+                ? `/PDIAuthSign_Attach/${encodeURIComponent(id)}/${encodeURIComponent(String(fileName).trim())}`
+                : "";
+
+            const lower = (fileName || "").toLowerCase().split("?")[0];
+            const isImg = /\.(jpg|jpeg|png|webp|gif|bmp)$/i.test(lower);
+            const isPdf = /\.pdf$/i.test(lower);
+
+            let preview = `<div style="font-size:12px;color:#999;">No file</div>`;
+            if (fileName && isImg) {
+                preview = `<a href="${href}" target="_blank"><img src="${href}" style="width:90px;height:70px;object-fit:cover;border:1px solid #ddd;border-radius:6px;"></a>`;
+            } else if (fileName && isPdf) {
+                preview = `<a href="${href}" target="_blank" class="btn btn-sm btn-outline-secondary">View PDF</a>`;
+            } else if (fileName) {
+                preview = `<a href="${href}" target="_blank" class="btn btn-sm btn-outline-secondary">Open</a>`;
+            }
+
+            return `
+      <div class="pdi-attach-wrap" style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        ${preview}
+        <button type="button" class="btn btn-sm btn-primary pdi-upload-btn"
+                data-id="${id}" data-type="${typeLabel}">
+          Upload
+        </button>
+
+        <input type="file" accept=".pdf,image/*"
+               class="bis-upload pdi-file-hidden"
+               data-id="${id}" data-type="${typeLabel}" />
+      </div>`;
+        };
+    }
+
 
     if (response.length > 0) {
         $.each(response, function (index, item) {
@@ -297,44 +367,17 @@ function OnTabGridLoad(response) {
             hozAlign: "center",
             headerHozAlign: "center",
             headerMenu: headerMenu,
-            formatter: function (cell, formatterParams) {
-                const rowData = cell.getRow().getData();
-                const fileName = cell.getValue();
-                const fileDisplay = fileName
-                    ? `<a href="/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
-                    : '';
-
-                return `
-            ${fileDisplay}
-            <input type="file" accept=".pdf,image/*" class="form-control-file bis-upload" data-id="${cell.getRow().getData().Id}" data-type="Photo" style="width:160px;" />`;
-            },
-            cellClick: function (e, cell) {
-                // prevent Tabulator from swallowing the file input click
-                e.stopPropagation();
-            }
+            formatter: attachPreviewFormatter("Photo"),
+            cellClick: function (e) { e.stopPropagation(); }
         },
-
         {
             title: "Specimen Signature",
             field: "Specimen_Sign",
             hozAlign: "center",
             headerHozAlign: "center",
             headerMenu: headerMenu,
-            formatter: function (cell, formatterParams) {
-                const rowData = cell.getRow().getData();
-                const fileName = cell.getValue();
-                const fileDisplay = fileName
-                    ? `<a href="/PDIAuthSign_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
-                    : '';
-
-                return `
-            ${fileDisplay}
-            <input type="file" accept=".pdf,image/*" class="form-control-file bis-upload" data-id="${cell.getRow().getData().Id}" data-type="Sign" style="width:160px;" />`;
-            },
-            cellClick: function (e, cell) {
-                // prevent Tabulator from swallowing the file input click
-                e.stopPropagation();
-            }
+            formatter: attachPreviewFormatter("Sign"),
+            cellClick: function (e) { e.stopPropagation(); }
         },
 
         editableColumn("Remark", "Remark", true),

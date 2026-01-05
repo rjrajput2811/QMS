@@ -78,6 +78,7 @@ namespace QMS.Core.Models
         public IFormFile? After_PhotoFile { get; set; }
 
         public string? Issue_Problems { get; set; }   // or any name you like
+        public string? Complaint_Type { get; set; }   // or any name you like
 
         public DateTime? Interim_Cor_Date { get; set; }
         public DateTime? Root_Cause_Date { get; set; }

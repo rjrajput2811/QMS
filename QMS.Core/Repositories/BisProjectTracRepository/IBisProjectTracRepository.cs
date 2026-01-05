@@ -26,5 +26,7 @@ namespace QMS.Core.Repositories.BisProjectTracRepository
         Task<bool> CheckNatProjectDuplicate(string searchText, int Id);
         Task<List<DropdownOptionViewModel>> GetNatProjectDropdownAsync();
         Task<bool> UpdateAttachmentAsync(int id, string fileName);
+
+        Task<List<BisProjectTracViewModel>> GetBisProjectTrackerAsync(DateTime? startDate = null, DateTime? endDate = null);
     }
 }

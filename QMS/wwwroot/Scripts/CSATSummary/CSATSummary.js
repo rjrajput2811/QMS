@@ -162,6 +162,7 @@ function OnTabGridLoad(response) {
             tabledata.push({
                 Sr_No: index + 1,
                 Id: item.id,
+                CSAT_Business: item.csaT_Business || "",
                 Ytd_ReqSent11: item.ytd_ReqSent11,
                 Ytd_ResRece11: item.ytd_ResRece11,
                 Ytd_Promoter11: item.ytd_Promoter11,
@@ -195,6 +196,7 @@ function OnTabGridLoad(response) {
             {
                 title: "SNo", field: "Sr_No", sorter: "number", width: 35, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
             },
+            { title: "CSAT Business", field: "CSAT_Business", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
             { title: "Request Sent", field: "Ytd_ReqSent11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
             { title: "Response Received", field: "Ytd_ResRece11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
             { title: "Promoters ", field: "Ytd_Promoter11", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },

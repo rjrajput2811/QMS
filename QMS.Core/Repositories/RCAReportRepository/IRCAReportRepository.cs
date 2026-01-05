@@ -15,5 +15,6 @@ namespace QMS.Core.Repositories.RCAReportRepository
         Task<OperationResult> UpdateRCAReportAsync(RCAReportViewModel model);
         Task<OperationResult> DeleteAsync(int id);
         Task<bool> CheckDuplicate(string searchText, int Id);
+        Task<List<RCAReportViewModel>> GetRCATrackingAsync(DateTime? startDate = null, DateTime? endDate = null);
     }
 }

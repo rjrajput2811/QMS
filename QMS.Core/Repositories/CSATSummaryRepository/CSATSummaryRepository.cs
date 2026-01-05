@@ -181,6 +181,7 @@ namespace QMS.Core.Repositories.CSATSummaryRepository
                     Ytd_Detractor11 = data.Ytd_Detractor11,
                     Ytd_Nps11 = data.Ytd_Nps11,
                     Ytd_Detractor_Detail11 = data.Ytd_Detractor_Detail11,
+                    CSAT_Business = data.CSAT_Business,
 
                     CreatedDate = data.CreatedDate,
                     CreatedBy = data.CreatedBy,
@@ -350,6 +351,7 @@ namespace QMS.Core.Repositories.CSATSummaryRepository
                     Ytd_Detractor11 = data.Ytd_Detractor11,
                     Ytd_Nps11 = data.Ytd_Nps11,
                     Ytd_Detractor_Detail11 = data.Ytd_Detractor_Detail11,
+                    CSAT_Business = data.CSAT_Business,
 
                     CreatedDate = data.CreatedDate,
                     CreatedBy = data.CreatedBy,
@@ -511,6 +513,7 @@ namespace QMS.Core.Repositories.CSATSummaryRepository
                     new SqlParameter("@Ytd_Detractor11", entity.Ytd_Detractor11 ?? (object?)DBNull.Value),
                     new SqlParameter("@Ytd_Nps11", entity.Ytd_Nps11 ?? (object?)DBNull.Value),
                     new SqlParameter("@Ytd_Detractor_Detail11", entity.Ytd_Detractor_Detail11 ?? (object?)DBNull.Value),
+                    new SqlParameter("@CSAT_Business", entity.CSAT_Business ?? (object?)DBNull.Value),
 
                     new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object?)DBNull.Value)
                 };
@@ -534,7 +537,7 @@ namespace QMS.Core.Repositories.CSATSummaryRepository
                 "@Q4Pc11_ReqSent1, @Q4Pc11_ResRece1, @Q4Pc11_Promoter1, @Q4Pc11_Collection1, @Q4Pc11_Detractor1, @Q4Pc11_Nps1, @Q4Pc11_Detractor_Detail1, " +
                 "@Q4Pc12_ReqSent1, @Q4Pc12_ResRece1, @Q4Pc12_Promoter1, @Q4Pc12_Collection1, @Q4Pc12_Detractor1, @Q4Pc12_Nps1, @Q4Pc12_Detractor_Detail1, " +
                 "@Q4Q4_ReqSent1, @Q4Q4_ResRece1, @Q4Q4_Promoter1, @Q4Q4_Collection1, @Q4Q4_Detractor1, @Q4Q4_Nps1, @Q4Q4_Detractor_Detail1, " +
-                "@Ytd_ReqSent11, @Ytd_ResRece11, @Ytd_Promoter11, @Ytd_Collection11, @Ytd_Detractor11, @Ytd_Nps11, @Ytd_Detractor_Detail11, " +
+                "@Ytd_ReqSent11, @Ytd_ResRece11, @Ytd_Promoter11, @Ytd_Collection11, @Ytd_Detractor11, @Ytd_Nps11, @Ytd_Detractor_Detail11,@CSAT_Business, " +
                 "@CreatedBy",
                     parameters
                 );
@@ -692,6 +695,7 @@ namespace QMS.Core.Repositories.CSATSummaryRepository
                     new SqlParameter("@Ytd_Detractor11", entity.Ytd_Detractor11 ?? (object?)DBNull.Value),
                     new SqlParameter("@Ytd_Nps11", entity.Ytd_Nps11 ?? (object?)DBNull.Value),
                     new SqlParameter("@Ytd_Detractor_Detail11", entity.Ytd_Detractor_Detail11 ?? (object?)DBNull.Value),
+                    new SqlParameter("@CSAT_Business", entity.CSAT_Business ?? (object?)DBNull.Value),
                     
                     new SqlParameter("@UpdatedBy", entity.UpdatedBy ?? (object)DBNull.Value),
                 };
@@ -714,7 +718,7 @@ namespace QMS.Core.Repositories.CSATSummaryRepository
                 "@Q4Pc11_ReqSent1, @Q4Pc11_ResRece1, @Q4Pc11_Promoter1, @Q4Pc11_Collection1, @Q4Pc11_Detractor1, @Q4Pc11_Nps1, @Q4Pc11_Detractor_Detail1, " +
                 "@Q4Pc12_ReqSent1, @Q4Pc12_ResRece1, @Q4Pc12_Promoter1, @Q4Pc12_Collection1, @Q4Pc12_Detractor1, @Q4Pc12_Nps1, @Q4Pc12_Detractor_Detail1, " +
                 "@Q4Q4_ReqSent1, @Q4Q4_ResRece1, @Q4Q4_Promoter1, @Q4Q4_Collection1, @Q4Q4_Detractor1, @Q4Q4_Nps1, @Q4Q4_Detractor_Detail1, " +
-                "@Ytd_ReqSent11, @Ytd_ResRece11, @Ytd_Promoter11, @Ytd_Collection11, @Ytd_Detractor11, @Ytd_Nps11, @Ytd_Detractor_Detail11, " +
+                "@Ytd_ReqSent11, @Ytd_ResRece11, @Ytd_Promoter11, @Ytd_Collection11, @Ytd_Detractor11, @Ytd_Nps11, @Ytd_Detractor_Detail11,@CSAT_Business," +
                 "@UpdatedBy",
                     parameters
                 );

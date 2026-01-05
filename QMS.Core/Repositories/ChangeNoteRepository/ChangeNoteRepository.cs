@@ -38,6 +38,7 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
                 .Select(x => new ChangeNoteViewModel
                 {
                     Id = x.Id,
+                    DocumentNo = x.DocumentNo,
                     Description = x.Description,
                     VendorId = x.VendorId,
                     ChangeNoteCategory = x.ChangeNoteCategory,
@@ -76,6 +77,8 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
                 .Select(x => new ChangeNoteViewModel
                 {
                     Id = x.Id,
+                    DocumentNo = x.DocumentNo,
+                    RevisionNo = x.RevisionNo,
                     Description = x.Description,
                     VendorId = x.VendorId,
                     Remarks = x.Remarks,
@@ -112,6 +115,8 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
 
             var parameters = new[]
             {
+                new SqlParameter("@DocumentNo", model.DocumentNo ?? (object)DBNull.Value),
+                new SqlParameter("@RevisionNo", model.RevisionNo ?? (object)DBNull.Value),
                 new SqlParameter("@Description", model.Description ?? (object)DBNull.Value),
                 new SqlParameter("@VendorId", model.VendorId),
                 new SqlParameter("@Remarks", model.Remarks ?? (object)DBNull.Value),
@@ -132,8 +137,8 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
 
             await _dbContext.Database.ExecuteSqlRawAsync(
                 "EXEC sp_Insert_ChangeNote " +
-                "@Description, @VendorId, @Remarks, @ChangeNoteCategory, @CopyTo, " +
-                "@SignatureFilePath, @SignatureDate, @ChangeNoteGroup, @ChangeNoteRefNo, " +
+                "@DocumentNo, @RevisionNo, @Description, @VendorId, @Remarks, @ChangeNoteCategory, " +
+                "@CopyTo, @SignatureFilePath, @SignatureDate, @ChangeNoteGroup, @ChangeNoteRefNo, " +
                 "@DateOfIssue, @VendorQAInChargeId, @FinalQARemarks, @FinalSignatureFilePath, " +
                 "@AddedBy, @AddedOn, @NewId OUT",
                 parameters
@@ -156,6 +161,8 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
             var parameters = new[]
             {
                 new SqlParameter("@Id", model.Id),
+                new SqlParameter("@DocumentNo", model.DocumentNo ?? (object)DBNull.Value),
+                new SqlParameter("@RevisionNo", model.RevisionNo ?? (object)DBNull.Value),
                 new SqlParameter("@Description", model.Description ?? (object)DBNull.Value),
                 new SqlParameter("@VendorId", model.VendorId),
                 new SqlParameter("@Remarks", model.Remarks ?? (object)DBNull.Value),
@@ -175,8 +182,8 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
 
             await _dbContext.Database.ExecuteSqlRawAsync(
                 "EXEC sp_Update_ChangeNote " +
-                "@Id, @Description, @VendorId, @Remarks, @ChangeNoteCategory, @CopyTo, " +
-                "@SignatureFilePath, @SignatureDate, @ChangeNoteGroup, @ChangeNoteRefNo, " +
+                "@Id, @DocumentNo, @RevisionNo, @Description, @VendorId, @Remarks, @ChangeNoteCategory, " +
+                "@CopyTo, @SignatureFilePath, @SignatureDate, @ChangeNoteGroup, @ChangeNoteRefNo, " +
                 "@DateOfIssue, @VendorQAInChargeId, @FinalQARemarks, @FinalSignatureFilePath, " +
                 "@UpdatedBy, @UpdatedOn",
                 parameters

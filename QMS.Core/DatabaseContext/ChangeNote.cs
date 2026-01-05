@@ -6,6 +6,8 @@ namespace QMS.Core.DatabaseContext;
 [Table("tbl_Change_Note")]
 public class ChangeNote : SqlTable
 {
+    public string? DocumentNo { get; set; }
+    public string? RevisionNo { get; set; }
     public string? Description { get; set; }
     public int? VendorId { get; set; }
     public string? Remarks { get; set; }

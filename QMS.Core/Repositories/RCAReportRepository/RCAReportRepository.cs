@@ -677,5 +677,90 @@ namespace QMS.Core.Repositories.RCAReportRepository
             }
         }
 
+        public async Task<List<RCAReportViewModel>> GetRCATrackingAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                var sql = @"EXEC sp_Get_RCA_Report";
+
+                var rows = await _dbContext.RCAReport.FromSqlRaw(sql).ToListAsync();
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    rows = rows
+                        .Where(data => data.CreatedDate.HasValue
+                                    && data.CreatedDate.Value.Date >= startDate.Value.Date
+                                    && data.CreatedDate.Value.Date <= endDate.Value.Date)
+                        .ToList();
+                }
+
+                var result = rows
+                    .Select(x => new RCAReportViewModel
+                    {
+                        Id = x.Id,
+                        Complaint_No = x.Complaint_No,
+                        Report_Date = x.Report_Date,
+                        Complaint_Type =
+                            string.Join(", ", new[]
+                            {
+                                x.Cust_Complaints ? "Customer Complaints" : null,
+                                x.NPI_Validations ? "NPI Validations" : null,
+                                x.PDI_Obser       ? "PDI Observations" : null,
+                                x.System          ? "System / Process Improvements" : null
+                            }.Where(v => v != null)),
+
+                        Cust_Name_Location = x.Cust_Name_Location,
+                        Source_Complaint = x.Source_Complaint,
+                        Prod_Code_Desc = x.Prod_Code_Desc,
+                        Desc_Complaint = x.Desc_Complaint,
+                        Batch_Code = x.Batch_Code,
+                        Pkd = x.Pkd,
+                        Supp_Qty = x.Supp_Qty,
+                        Failure_Qty = x.Failure_Qty,
+                        Description = x.Description,
+                        Problem_State = x.Problem_State,
+                        Complaint_History = x.Complaint_History,
+                        Root_Cause_Anal = x.Root_Cause_Anal,
+                        Corrective_Action = x.Corrective_Action,
+                        Date = x.Date,
+                        CreatedBy = x.CreatedBy,
+                        CreatedDate = x.CreatedDate,
+                        UpdatedBy = x.UpdatedBy,
+                        UpdatedDate = x.UpdatedDate,
+                        Issue_Problems =
+                            string.Join(", ", new[]
+                            {
+                                x.Man_Issue_Prob        ? "Manufacturing Issue" : null,
+                                x.Design_Prob           ? "Design" : null,
+                                x.Site_Issue_Prob       ? "Site Issue" : null,
+                                x.Com_Gap_Prob          ? "Communication Gap" : null,
+                                x.Install_Issues_Prob   ? "Installation Issues" : null,
+                                x.Wrong_App_Prob        ? "Wrong Application" : null
+                            }.Where(v => v != null)),
+                        Corrective_Action_Date = x.Corrective_Action_Date,
+                        Root_Cause_Date = x.Root_Cause_Date,
+                        Closure_Day = (x.Date.HasValue && x.Report_Date.HasValue)
+                            ? (int?)(x.Date.Value.Date - x.Report_Date.Value.Date).TotalDays
+                            : null,
+
+                        Root_Cause_Day = (x.Root_Cause_Date.HasValue && x.Report_Date.HasValue)
+                            ? (int?)(x.Root_Cause_Date.Value.Date - x.Report_Date.Value.Date).TotalDays
+                            : null,
+
+                        Corrective_Action_Day = (x.Corrective_Action_Date.HasValue && x.Report_Date.HasValue)
+                            ? (int?)(x.Corrective_Action_Date.Value.Date - x.Report_Date.Value.Date).TotalDays
+                            : null,
+                    })
+                    .ToList();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.ToString());
+                throw;
+            }
+        }
+
     }
 }

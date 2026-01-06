@@ -438,7 +438,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Description">
-                                            @Model?.Description
+                                            @Html.Raw(Model?.Description)
                                         </td>
                                     </tr>
                                     <tr>
@@ -451,7 +451,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Problem_State">
-                                            @Model?.Problem_State
+                                            @Html.Raw(Model?.Problem_State)
                                         </td>
                                     </tr>
                                 </thead>
@@ -532,7 +532,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Initial_Observ">
-                                            @Model?.Initial_Observ
+                                            @Html.Raw(Model?.Initial_Observ)
                                         </td>
                                     </tr>
 
@@ -609,7 +609,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:60px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Interim_Corrective">
-                                            @Model?.Interim_Corrective
+                                            @Html.Raw(Model?.Interim_Corrective)
                                         </td>
                                     </tr>
                                     <input type="hidden" id="Interim_Cor_Date" name="Interim_Cor_Date" value="@Model?.Interim_Cor_Date" />
@@ -625,7 +625,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Root_Cause_Anal">
-                                            @Model?.Root_Cause_Anal
+                                            @Html.Raw(Model?.Root_Cause_Anal)
                                         </td>
                                     </tr>
                                     <input type="hidden" name="Root_Cause_Date" id="Root_Cause_Date" value="@Model?.Root_Cause_Date" />
@@ -641,7 +641,7 @@
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;" data-name="Corrective_Action">
-                                            @Model?.Corrective_Action
+                                            @Html.Raw(Model?.Corrective_Action)
                                         </td>
                                     </tr>
                                     <input type="hidden" name="Corrective_Action_Date" id="Corrective_Action_Date" value="@Model?.Corrective_Action_Date" />
@@ -892,7 +892,7 @@
                     const month = String(now.getMonth() + 1).padStart(2, "0");
                     const year = now.getFullYear();
 
-                    const formatted = `${day}-${month}-${year}`;
+                            const formatted = `${year}-${month}-${day}`;
 
                     hiddenInput.val(formatted);
                 }
@@ -901,30 +901,37 @@
             const inputElement = $("#BISsear_Code");
             if (inputElement.length) {
                 // Attach the keydown event handler
-                inputElement.on('keydown', function (event) {
+                    inputElement.on('input', function (event) {
                     handleBisSearch(event);
                 });
             }
         });
 
-        function handleBisSearch(event) {
-            debugger
-            if (event.key !== 'Enter') return;
+           function handleBisSearch(event) {
 
+        const input = event.target;
+        if (!input) return;
+
+        let searchQuery = input.value.trim();
+
+        // 🔴 Clear suggestions if less than 4 chars
+        if (searchQuery.length < 4) {
             clearTimeout(searchTimeout);
-            let processedQuery = '';
-            let searchQuery = event.target.value.trim(); // Get value from input field
-            processedQuery = searchQuery.substring(0, 4);
-
-            let searchTerms = processedQuery;
-
-            // Debounce to reduce the frequency of API calls
-            searchTimeout = setTimeout(() => {
-                pagedData = {}; // Clear cached data
-                // Load data with the processed query
-                fetchBisRelatedData(searchTerms, event.target);
-            }, 300); // Delay of 300ms
+            // optional: hide suggestion dropdown here
+            // hideBisSuggestions();
+            return;
         }
+
+        // ✅ Take first 4 characters only
+        const searchTerms = searchQuery.substring(0, 4);
+
+        // 🟡 Debounce API call
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            pagedData = {}; // Clear cached data
+            fetchBisRelatedData(searchTerms, input);
+        }, 300);
+    }
 
         function fetchBisRelatedData(productCatNo, inputField) {
             debugger
@@ -949,68 +956,69 @@
 
         // Function to display suggestions in a dropdown
             function displayBisSuggestions(data, inputField) {
-        // Remove any existing dropdown (if any)
-        removeExistingDropdown(inputField);
+                // Remove any existing dropdown (if any)
+                removeExistingDropdown(inputField);
 
-        // Ensure parent can anchor absolute dropdown
-        const parent = inputField.parentElement;
-        if (getComputedStyle(parent).position === "static") {
-            parent.style.position = "relative";
-        }
-
-        const dropdown = document.createElement('div');
-        dropdown.className = 'suggestion-dropdown';
-        dropdown.style.position = 'absolute';
-        dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
-        dropdown.style.left = inputField.offsetLeft + 'px';
-        dropdown.style.backgroundColor = 'white';
-        dropdown.style.border = '1px solid #ccc';
-        dropdown.style.zIndex = 1000;
-        dropdown.style.overflowY = 'auto';
-        dropdown.style.maxHeight = '300px';
-        dropdown.style.width = inputField.offsetWidth + 'px';
-        dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
-
-        data.forEach(item => {
-            const code = (item.oldPart_No || "").toString().trim();
-            // change these keys as per your API response:
-            const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
-
-            const option = document.createElement('div');
-            option.className = 'suggestion-item';
-            option.textContent = desc ? `${code} | ${desc}` : code;
-            option.style.padding = '8px';
-            option.style.cursor = 'pointer';
-
-            option.addEventListener('mouseover', () => {
-                option.style.backgroundColor = '#4682B4';
-                option.style.color = '#fff';
-            });
-            option.addEventListener('mouseout', () => {
-                option.style.backgroundColor = '';
-                option.style.color = '';
-            });
-
-            option.addEventListener('click', () => {
-                const productInput = document.getElementById('BISproductCodeInput');
-                if (productInput) {
-                    productInput.value = desc ? `${code} | ${desc}` : code;
+                // Ensure parent can anchor absolute dropdown
+                const parent = inputField.parentElement;
+                if (getComputedStyle(parent).position === "static") {
+                    parent.style.position = "relative";
                 }
 
-                // optional: also set search box to just code
-                const searchBox = document.getElementById('BISsear_Code');
-                if (searchBox) {
-                    searchBox.value = code;
-                }
+                const dropdown = document.createElement('div');
+                dropdown.className = 'suggestion-dropdown';
+                dropdown.style.position = 'absolute';
+                dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                dropdown.style.left = inputField.offsetLeft + 'px';
+                dropdown.style.backgroundColor = 'white';
+                dropdown.style.border = '1px solid #ccc';
+                dropdown.style.zIndex = 1000;
+                dropdown.style.overflowY = 'auto';
+                dropdown.style.maxHeight = '300px';
+                dropdown.style.width = inputField.offsetWidth + 'px';
+                dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
 
-                dropdown.remove();
-            });
+                data.forEach(item => {
+                    const code = (item.oldPart_No || "").toString().trim();
+                    // change these keys as per your API response:
+                    const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
 
-            dropdown.appendChild(option);
-        });
+                    const option = document.createElement('div');
+                    option.className = 'suggestion-item';
+                    option.textContent = desc ? `${code} | ${desc}` : code;
+                    option.style.padding = '8px';
+                    option.style.cursor = 'pointer';
 
-        parent.appendChild(dropdown);
-    }
+                    option.addEventListener('mouseover', () => {
+                        option.style.backgroundColor = '#4682B4';
+                        option.style.color = '#fff';
+                    });
+                    option.addEventListener('mouseout', () => {
+                        option.style.backgroundColor = '';
+                        option.style.color = '';
+                    });
+
+                    option.addEventListener('click', () => {
+                        const productInput = document.getElementById('BISproductCodeInput');
+                        if (productInput) {
+                            productInput.value = desc ? `${code} | ${desc}` : code;
+                        }
+
+                        // optional: also set search box to just code
+                        const searchBox = document.getElementById('BISsear_Code');
+                        if (searchBox) {
+                            searchBox.value = code;
+                        }
+
+                        dropdown.remove();
+                    });
+
+                    dropdown.appendChild(option);
+                });
+
+                parent.appendChild(dropdown);
+            }
+
 
 
         // Function to remove any existing dropdowns
@@ -1186,6 +1194,79 @@
             refreshMonitoringSerials();
         }
 
+                function isoToDdMmYyyy(iso) {
+            if (!iso) return "";
+            const m = String(iso).trim().match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!m) return iso;
+            return `${m[3]}-${m[2]}-${m[1]}`;
+        }
+
+        // dd-MM-yyyy (from UI text) -> yyyy-MM-dd (for server)
+        function ddMmYyyyToIso(value) {
+            const v = (value || "").trim();
+            if (!v) return "";
+            const m = v.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+            if (!m) return v; // already iso or other format
+            return `${m[3]}-${m[2]}-${m[1]}`;
+        }
+
+        // Normalize anything into yyyy-MM-dd if possible
+        function normalizeToIsoDate(value) {
+            const v = (value || "").trim();
+            if (!v) return "";
+            if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;           // iso already
+            if (/^\d{2}-\d{2}-\d{4}$/.test(v)) return ddMmYyyyToIso(v); // dd-MM-yyyy
+            return v; // fallback (server may reject)
+        }
+
+                function decodeHtmlOnce(str) {
+            const t = document.createElement("textarea");
+            t.innerHTML = str == null ? "" : String(str);
+            return t.value;
+        }
+
+        // decode multiple times (handles &amp;lt; -> &lt; -> <)
+        function decodeDeep(str, max = 3) {
+            let s = str == null ? "" : String(str);
+            for (let i = 0; i < max; i++) {
+                const d = decodeHtmlOnce(s);
+                if (d === s) break;
+                s = d;
+            }
+            return s;
+        }
+
+        // normalize html coming from contenteditable so you store clean HTML
+        function normalizeEditorHtml(html) {
+            let h = (html || "");
+
+            // Remove &nbsp; noise
+            h = h.replace(/&nbsp;/g, " ");
+
+            // IMPORTANT: if editor contains encoded tags (&lt;br&gt; / &amp;lt;br&amp;gt), decode them
+            h = decodeDeep(h, 3);
+
+            // Convert common contenteditable wrapper tags into <br>
+            // (prevents saving <div>...</div> mess)
+            h = h
+                .replace(/<\/(div|p)>/gi, "<br>")
+                .replace(/<(div|p)(\s[^>]*)?>/gi, "");
+
+            // Normalize <br> variants
+            h = h.replace(/<br\s*\/?>/gi, "<br>");
+
+            // Trim ending <br>
+            h = h.replace(/(<br>\s*)+$/i, "");
+
+            return h.trim();
+        }
+
+        function setContentEditableFromDb(el, dbValue) {
+            if (!el) return;
+            el.innerHTML = decodeDeep(dbValue || "", 3); // fixes &amp;lt;br&amp;gt on edit view
+        }
+
+
         async function saveCAReport() {
             const saveBtn = document.getElementById('saveBtn');
             if (!saveBtn) return;
@@ -1253,11 +1334,8 @@
                     const key = cell.getAttribute('data-name');
                     if (!key) return;
 
-                    // Use innerHTML if you want formatting, or innerText for plain text
-                    let val = (cell.innerHTML || '').trim();
-
-                    // Remove &nbsp; noise
-                    val = val.replace(/&nbsp;/g, ' ').trim();
+                    // ✅ normalize + decode deep to avoid &amp;lt;br&amp;gt saving
+                    const val = normalizeEditorHtml(cell.innerHTML);
 
                     formData.set(key, val);
                 });
@@ -1273,24 +1351,42 @@
                     const statusValue = statusSelect ? statusSelect.value : '';
 
                     // Prefer the date input value; fallback to cell text
-                    const dateInput = cells[2].querySelector('input.target-date-input');
-                    let targetDateRaw = '';
+                    const dateInput = cells[2].querySelector("input.target-date-input");
+                    let targetDateIso = "";
+
                     if (dateInput && dateInput.value) {
-                        // convert yyyy-MM-dd -> dd-MM-yyyy
-                        targetDateRaw = convertYyyyMmDdToDdMmYyyy(dateInput.value);
+                        // <input type="date"> gives yyyy-MM-dd ✅
+                        targetDateIso = normalizeToIsoDate(dateInput.value);
                     } else {
-                        targetDateRaw = (cells[2].innerText || '').trim();
+                        // fallback: maybe UI text contains dd-MM-yyyy -> convert to iso
+                        targetDateIso = normalizeToIsoDate((cells[2].innerText || "").trim());
                     }
 
                     details.push({
                         SeqNo: idx + 1,
                         Action_Plan: (cells[1].innerText || '').trim(),
-                        Target_Date: targetDateRaw,
-                        Resp: (cells[3].innerHTML || '').trim(), // keep formatting
+                        Target_Date: targetDateIso,
+                            Resp: normalizeEditorHtml(cells[3].innerHTML || ''), // keep formatting
                         Status: statusValue,
                         Deleted: false
                     });
                 });
+
+                 const invalidDates = details
+                .filter(d => d.Target_Date && !/^\d{4}-\d{2}-\d{2}$/.test(d.Target_Date))
+                .map(d => `Row ${d.SeqNo}: "${d.Target_Date}"`);
+
+                if (invalidDates.length > 0) {
+                    showDangerAlert(
+                        `<p>Invalid Target Date format. Please use a valid date:</p><ul>${
+                            invalidDates.map(x => `<li>${x}</li>`).join("")
+                        }</ul>`
+                    );
+                    Blockloaderhide();
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHTML;
+                    return;
+                }
 
                 // Append Details to form data for model binding
                 details.forEach((d, i) => {

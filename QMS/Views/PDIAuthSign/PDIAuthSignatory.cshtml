@@ -62,7 +62,7 @@
     .tabulator-row .tabulator-cell {
         padding: 5px 5px;
         font-size: 14px;
-        height: 50px;
+        height: 120px;
     }
 
     .tabulator-cell:hover {
@@ -215,6 +215,30 @@
         .autocomplete-option:hover, .autocomplete-option.active {
             background: #f2f6ff;
         }
+
+    #pdiAuth_table .pdi-attach-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 4px 0;
+    }
+
+    #pdiAuth_table .pdi-attach-thumb {
+        width: 50px;
+        height: 50px;
+        object-fit: fill;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+    }
+
+    .pdi-file-hidden {
+        position: absolute !important;
+        left: -9999px !important;
+        width: 1px !important;
+        height: 1px !important;
+        opacity: 0 !important;
+    }
 </style>
 
 <div class="content">

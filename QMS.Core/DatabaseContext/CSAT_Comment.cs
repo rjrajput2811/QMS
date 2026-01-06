@@ -41,6 +41,7 @@ namespace QMS.Core.DatabaseContext
         public string? Q13 { get; set; }
         public string? Cust_Critical_Aspect { get; set; }
         public string? Comment { get; set; }
+        public string? CSAT_Business { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }

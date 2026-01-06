@@ -428,7 +428,7 @@
                 </li>
 
                 <div class="navbar-brand">
-                    <span class="h5"><strong>Quality Management System (QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.3.3 23/12/2025</span>
+                    <span class="h5"><strong>Quality Management System (QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.4.1 26/12/2025</span>
                 </div>
 
             </ul>
@@ -760,7 +760,7 @@
                         inputUrl: '@Url.Action("CustomerRCA", "CustomerRCAReport")',
                         inputLabel: 'Input',
                         outputs: [
-                            { label: 'Output', url: '@Url.Action("CustomerRCA", "CustomerRCAReport")', css: 'btn-output' }
+                            { label: 'Customer RCA Tracking', url: '@Url.Action("CustomerRCATracker", "TrackerOutput")', css: 'btn-output' }
                         ]
                     }
                 ]
@@ -788,7 +788,7 @@
                         name: 'BIS Working Template',
                         inputUrl: '@Url.Action("BisProjectTracker", "BisProjectTrac")',
                         outputs: [
-                            { label: 'Output', url: '@Url.Action("BisProjectTracker", "BisProjectTrac")', css: 'btn-output' }
+                            { label: 'BIS Project Tracker', url: '@Url.Action("BISProkectTracker", "TrackerOutput")', css: 'btn-output' }
                         ]
                     }
                 ]

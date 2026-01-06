@@ -51,6 +51,13 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
+        public async Task<JsonResult> GetBisProjectTracker(DateTime? startDate, DateTime? endDate)
+        {
+            var bisProjectList = await _bisProjectRepository.GetBisProjectTrackerAsync(startDate, endDate);
+            return Json(bisProjectList);
+        }
+
+        [HttpGet]
         public async Task<JsonResult> GetById(int Id)
         {
             var bisProject = await _bisProjectRepository.GetByIdAsync(Id);

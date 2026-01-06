@@ -383,7 +383,7 @@
                                         <td colspan="4"
                                             contenteditable="true" data-name="Description"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Description
+                                            @Html.Raw(Model?.Description)
                                         </td>
                                     </tr>
                                     <tr>
@@ -396,7 +396,7 @@
                                         <td colspan="4" data-name="Problem_State"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Problem_State
+                                            @Html.Raw(Model?.Problem_State)
                                         </td>
                                     </tr>
                                 </thead>
@@ -477,7 +477,7 @@
                                         <td colspan="4" data-name="Initial_Observ"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Initial_Observ
+                                            @Html.Raw(Model?.Initial_Observ)
                                         </td>
                                     </tr>
 
@@ -500,7 +500,7 @@
                                         <td colspan="4" data-name="Complaint_History"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:60px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Complaint_History
+                                            @Html.Raw(Model?.Complaint_History)
                                         </td>
                                     </tr>
 
@@ -510,12 +510,12 @@
                                             6. Initial Analysis:
                                         </th>
                                     </tr>
-                                    <tr>
+                                    @* <tr>
                                         <td colspan="4"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
                                         </td>
-                                    </tr>
+                                    </tr> *@
 
                                 </tbody>
                             </table>
@@ -535,15 +535,8 @@
                             </table>
                         </div>
 
-
+                        <!-- ========================= MONITORING TABLE ========================= -->
                         <div class="table-responsive" style="margin-top:0;">
-                            @if (Model?.Details != null && Model.Details.Count > 0)
-                            {
-                                for (int i = 0; i < Model.Details.Count; i++)
-                                {
-                                    @Html.HiddenFor(m => m.Details[i].Init_Ana_Id)
-                                }
-                            }
                             <table id="monitoringTable" class="table table-bordered"
                                    style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
                                 <thead>
@@ -555,6 +548,7 @@
                                 </thead>
                                 <tbody id="monitoringBody">
                                     @{
+                                        // NOTE: if you have separate lists in model, use that.
                                         var details = Model?.Details ?? new List<QMS.Core.Models.RCAReportDetailViewModel>();
                                         int idx = 1;
                                     }
@@ -563,34 +557,106 @@
                                     {
                                         foreach (var item in details)
                                         {
-                                            <tr style="height:120px;">
+                                            <tr style="height:50px;">
                                                 <td class="sr-cell" style="border:1.5px solid #000; text-align:center;">
                                                     @idx
-                                                    <button class="row-del-btn" title="Delete row">
+                                                    <button type="button" class="row-del-btn" title="Delete row">
                                                         <i class="fa fa-trash"></i>
                                                     </button>
                                                 </td>
 
-                                                <!-- Particular Of Test -->
                                                 <td contenteditable="true" data-name="Parameter_Checked" style="border:1.5px solid #000; vertical-align:top;">
                                                     @(item.Parameter_Checked ?? "")
                                                 </td>
 
-                                                <!-- Target Date -->
                                                 <td contenteditable="true" data-name="Observations" style="border:1.5px solid #000; vertical-align:top;">
                                                     @(item.Observations ?? "")
                                                 </td>
                                             </tr>
-
                                             idx++;
                                         }
                                     }
                                     else
                                     {
-                                        <tr>
+                                        <tr style="height:50px;">
                                             <td style="border:1.5px solid #000; text-align:center;">1</td>
-                                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                                            <td style="border:1.5px solid #000;" contenteditable="true"></td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Parameter_Checked"></td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Observations"></td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ========================= CURRENT PROCESS ADD BUTTON ========================= -->
+                        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; margin-bottom:0;">
+                                <tbody>
+                                    <tr>
+                                        <th colspan="4" 
+                                            style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;; text-align:left;">
+                                            Current Process Verification Internal Checks:
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="6" style="padding:12px; text-align:left;">
+                                            <button id="addCurrentProRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
+                                                <i class="fas fa-plus"></i> Add
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- ========================= CURRENT PROCESS TABLE ========================= -->
+                        <div class="table-responsive" style="margin-top:0;">
+                            <table id="currentProcessTable" class="table table-bordered"
+                                   style="width:100%; border-collapse:collapse; text-align:left; font-size:14px; margin-top:-1.5px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:8%; border:1.5px solid #000; text-align:center;">Sr. No</th>
+                                        <th style="width:70%; border:1.5px solid #000; text-align:center;">Parameter Checked during internal Validation</th>
+                                        <th style="width:30%; border:1.5px solid #000; text-align:center;">Observations</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="currentProcessBody">
+                                    @{
+                                        // ✅ FIXED: use details1 + idx1 correctly (previously it used details + idx)
+                                        var details1 = Model?.Details ?? new List<QMS.Core.Models.RCAReportDetailViewModel>();
+                                        int idx1 = 1;
+                                    }
+
+                                    @if (details1.Any())
+                                    {
+                                        foreach (var item in details1)
+                                        {
+                                            <tr style="height:50px;">
+                                                <td class="sr-cell" style="border:1.5px solid #000; text-align:center;">
+                                                    @idx1
+                                                    <button type="button" class="row-del-btn" title="Delete row">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </td>
+
+                                                <td contenteditable="true" data-name="Parameter_Checked" style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(item.Parameter_Checked ?? "")
+                                                </td>
+
+                                                <td contenteditable="true" data-name="Observations" style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(item.Observations ?? "")
+                                                </td>
+                                            </tr>
+
+                                            idx1++;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr style="height:50px;">
+                                            <td style="border:1.5px solid #000; text-align:center;">1</td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Parameter_Checked"></td>
+                                            <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Observations"></td>
                                         </tr>
                                     }
                                 </tbody>
@@ -602,7 +668,7 @@
                                    style="width:100%; border-collapse:collapse; font-size:14px; text-align:left; margin:0;">
                                 <tbody>
                                     <!-- Current Process Verification -->
-                                    <tr>
+                                    @* <tr>
                                         <th colspan="4"
                                             style="background-color:#d9e7f7; border:1.5px solid #000; font-weight:700; padding:8px;">
                                             Current Process Verification Internal Checks:
@@ -612,9 +678,9 @@
                                         <td colspan="4" data-name="Current_Process"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Current_Process
+                                            @Html.Raw(Model?.Current_Process)
                                         </td>
-                                    </tr>
+                                    </tr> *@
 
                                     <!-- Initial Conclusion -->
                                     <tr>
@@ -627,7 +693,7 @@
                                         <td colspan="4" data-name="Conclusion"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Conclusion
+                                            @Html.Raw(Model?.Conclusion)
                                         </td>
                                     </tr>
 
@@ -642,7 +708,7 @@
                                         <td colspan="4" data-name="Analysis_of_Defective100"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Analysis_of_Defective100
+                                            @Html.Raw(Model?.Analysis_of_Defective100)
                                         </td>
                                     </tr>
 
@@ -657,7 +723,7 @@
                                         <td colspan="4" data-name="Root_Cause_Anal"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Root_Cause_Anal
+                                            @Html.Raw(Model?.Root_Cause_Anal)
                                         </td>
                                     </tr>
                                     <input type="hidden" name="Root_Cause_Date" id="Root_Cause_Date" value="@Model?.Root_Cause_Date" />
@@ -797,7 +863,7 @@
                                         <td colspan="6" data-name="Corrective_Action"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Corrective_Action
+                                            @Html.Raw(Model?.Corrective_Action)
                                         </td>
                                         <input type="hidden" name="Corrective_Action_Date" id="Corrective_Action_Date" value="@Model?.Corrective_Action_Date" />
                                     </tr>
@@ -811,7 +877,7 @@
                                         <td colspan="6" data-name="Images_Corrections"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Images_Corrections
+                                            @Html.Raw(Model?.Images_Corrections)
                                         </td>
                                     </tr>
                                     <tr>
@@ -824,7 +890,7 @@
                                         <td colspan="6" data-name="Conclusion"
                                             contenteditable="true"
                                             style="border:1.5px solid #000; height:80px; vertical-align:top; padding:8px; background-color:#fff;">
-                                            @Model?.Conclusion
+                                            @Html.Raw(Model?.Conclusion)
                                         </td>
                                     </tr>
                                 </tbody>
@@ -874,12 +940,14 @@
 @section Scripts {
     <script>
 
-        let monitoringBody;
-        let monitoringAddBtn;
+            let monitoringBody, monitoringAddBtn;
+        let currentBody, currentAddBtn;
         let searchTimeout;
 
         $(document).ready(function () {
             initMonitoringTable();
+            initCurrentProcessTable();
+
             initPhotoPreviews();
             initAutoDate();
 
@@ -905,7 +973,7 @@
                     const month = String(now.getMonth() + 1).padStart(2, "0");
                     const year = now.getFullYear();
 
-                    const formatted = `${day}-${month}-${year}`;
+                    const formatted = `${year}-${month}-${day}`;
 
                     hiddenInput.val(formatted);
                 }
@@ -914,30 +982,37 @@
             const inputElement = $("#BISsear_Code");
             if (inputElement.length) {
                 // Attach the keydown event handler
-                inputElement.on('keydown', function (event) {
+                    inputElement.on('input', function (event) {
                     handleBisSearch(event);
                 });
             }
         });
 
-            function handleBisSearch(event) {
-                debugger
-                if (event.key !== 'Enter') return;
+        function handleBisSearch(event) {
 
+            const input = event.target;
+            if (!input) return;
+
+            let searchQuery = input.value.trim();
+
+            // 🔴 Clear suggestions if less than 4 chars
+            if (searchQuery.length < 4) {
                 clearTimeout(searchTimeout);
-                let processedQuery = '';
-                let searchQuery = event.target.value.trim(); // Get value from input field
-                processedQuery = searchQuery.substring(0, 4);
-
-                let searchTerms = processedQuery;
-
-                // Debounce to reduce the frequency of API calls
-                searchTimeout = setTimeout(() => {
-                    pagedData = {}; // Clear cached data
-                    // Load data with the processed query
-                    fetchBisRelatedData(searchTerms, event.target);
-                }, 300); // Delay of 300ms
+                // optional: hide suggestion dropdown here
+                // hideBisSuggestions();
+                return;
             }
+
+            // ✅ Take first 4 characters only
+            const searchTerms = searchQuery.substring(0, 4);
+
+            // 🟡 Debounce API call
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                pagedData = {}; // Clear cached data
+                fetchBisRelatedData(searchTerms, input);
+            }, 300);
+        }
 
             function fetchBisRelatedData(productCatNo, inputField) {
                 debugger
@@ -961,7 +1036,7 @@
 
 
             // Function to display suggestions in a dropdown
-                function displayBisSuggestions(data, inputField) {
+        function displayBisSuggestions(data, inputField) {
             // Remove any existing dropdown (if any)
             removeExistingDropdown(inputField);
 
@@ -1042,12 +1117,35 @@
             });
 
 
-        function createMonitoringDeleteButton() {
+        // function createMonitoringDeleteButton() {
+        //     const btn = document.createElement('button');
+        //     btn.className = 'row-del-btn';
+        //     btn.title = 'Delete this row';
+        //     btn.innerHTML = '<i class="fa fa-trash"></i>';
+
+        //     Object.assign(btn.style, {
+        //         background: 'transparent',
+        //         border: 'none',
+        //         cursor: 'pointer',
+        //         color: 'red',
+        //         fontSize: '15px',
+        //         marginLeft: '6px'
+        //     });
+
+        //     btn.addEventListener('click', () => {
+        //         const tr = btn.closest('tr');
+        //         if (tr) tr.remove();
+        //         refreshMonitoringSerials();
+        //     });
+
+        //     return btn;
+        // }
+
+        function createDeleteButton(onDelete) {
             const btn = document.createElement('button');
             btn.className = 'row-del-btn';
             btn.title = 'Delete this row';
             btn.innerHTML = '<i class="fa fa-trash"></i>';
-
             Object.assign(btn.style, {
                 background: 'transparent',
                 border: 'none',
@@ -1056,44 +1154,91 @@
                 fontSize: '15px',
                 marginLeft: '6px'
             });
-
-            btn.addEventListener('click', () => {
-                const tr = btn.closest('tr');
-                if (tr) tr.remove();
-                refreshMonitoringSerials();
-            });
-
+            btn.addEventListener('click', onDelete);
             return btn;
         }
 
-        function refreshMonitoringSerials() {
-            if (!monitoringBody) return;
+        $(document).on("click", ".row-del-btn", function (e) {
+            e.preventDefault();
+            const tr = this.closest("tr");
+            if (!tr) return;
+            const tbody = tr.closest("tbody");
+            tr.remove();
+            refreshSerials(tbody);
+        });
 
-            Array.from(monitoringBody.rows).forEach((row, index) => {
+        // function refreshMonitoringSerials() {
+        //     if (!monitoringBody) return;
+
+        //     Array.from(monitoringBody.rows).forEach((row, index) => {
+        //         const srCell = row.cells[0];
+        //         if (!srCell) return;
+
+        //         srCell.innerHTML = '';
+        //         srCell.textContent = index + 1;
+        //         srCell.style.textAlign = 'center';
+        //         srCell.appendChild(createMonitoringDeleteButton());
+        //     });
+        // }
+
+        function refreshSerials(tbody) {
+            if (!tbody) return;
+            Array.from(tbody.rows).forEach((row, index) => {
                 const srCell = row.cells[0];
                 if (!srCell) return;
 
-                srCell.innerHTML = '';
-                srCell.textContent = index + 1;
-                srCell.style.textAlign = 'center';
-                srCell.appendChild(createMonitoringDeleteButton());
+                // keep delete button
+                srCell.innerHTML = `
+                    ${index + 1}
+                    <button type="button" class="row-del-btn" title="Delete row" style="background:transparent;border:none;color:red;font-size:15px;margin-left:6px;cursor:pointer;">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                `;
+                srCell.style.textAlign = "center";
             });
         }
 
-        function addMonitoringRow() {
-            const tr = document.createElement('tr');
+        // function addMonitoringRow() {
+        //     const tr = document.createElement('tr');
 
+        //     tr.innerHTML = `
+        //             <td style="border:1.5px solid #000; text-align:center;"></td>
+        //             <td style="border:1.5px solid #000;" contenteditable="true"></td>
+        //             <td style="border:1.5px solid #000;" contenteditable="true"></td>
+        //         `;
+
+        //     monitoringBody.appendChild(tr);
+        //     refreshMonitoringSerials();
+
+        //     const newRow = monitoringBody.lastElementChild;
+        //     if (newRow) newRow.cells[1].focus();
+        // }
+
+        $(document).on("click", "#addRowBtn", function () {
+            const tbody = document.getElementById("monitoringBody");
+            if (!tbody) return console.error("monitoringBody not found");
+            addRow(tbody);
+        });
+
+        $(document).on("click", "#addCurrentProRowBtn", function () {
+            const tbody = document.getElementById("currentProcessBody");
+            if (!tbody) return console.error("currentProcessBody not found");
+            addRow(tbody);
+        });
+
+        function addRow(tbody) {
+            const tr = document.createElement("tr");
+            tr.style.height = "50px";
             tr.innerHTML = `
-                    <td style="border:1.5px solid #000; text-align:center;"></td>
-                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                    <td style="border:1.5px solid #000;" contenteditable="true"></td>
-                `;
-
-            monitoringBody.appendChild(tr);
-            refreshMonitoringSerials();
-
-            const newRow = monitoringBody.lastElementChild;
+                <td style="border:1.5px solid #000; text-align:center;"></td>
+                <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Parameter_Checked"></td>
+                <td style="border:1.5px solid #000; vertical-align:top;" contenteditable="true" data-name="Observations"></td>
+            `;
+            tbody.appendChild(tr);
+            refreshSerials(tbody);
+            const newRow = tbody.lastElementChild;
             if (newRow) newRow.cells[1].focus();
+            // tr.cells[1].focus();
         }
 
         function initMonitoringTable() {
@@ -1105,8 +1250,17 @@
                 return;
             }
 
-            monitoringAddBtn.addEventListener('click', addMonitoringRow);
-            refreshMonitoringSerials();
+            // monitoringAddBtn.addEventListener('click', () => addRow(monitoringBody));
+            refreshSerials(monitoringBody);
+        }
+
+        function initCurrentProcessTable() {
+            currentBody = document.getElementById('currentProcessBody');
+            currentAddBtn = document.getElementById('addCurrentProRowBtn');
+            if (!currentBody || !currentAddBtn) return;
+
+            // currentAddBtn.addEventListener('click', () => addRow(currentBody));
+            refreshSerials(currentBody);
         }
 
         function setupPreview(inputId, imgId) {
@@ -1151,6 +1305,54 @@
             const dd = String(today.getDate()).padStart(2, '0');
 
             dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+
+
+        function decodeHtmlOnce(str) {
+            const t = document.createElement("textarea");
+            t.innerHTML = str == null ? "" : String(str);
+            return t.value;
+        }
+
+        // decode multiple times (handles &amp;lt; -> &lt; -> <)
+        function decodeDeep(str, max = 3) {
+            let s = str == null ? "" : String(str);
+            for (let i = 0; i < max; i++) {
+                const d = decodeHtmlOnce(s);
+                if (d === s) break;
+                s = d;
+            }
+            return s;
+        }
+
+        // normalize html coming from contenteditable so you store clean HTML
+        function normalizeEditorHtml(html) {
+            let h = (html || "");
+
+            // Remove &nbsp; noise
+            h = h.replace(/&nbsp;/g, " ");
+
+            // IMPORTANT: if editor contains encoded tags (&lt;br&gt; / &amp;lt;br&amp;gt), decode them
+            h = decodeDeep(h, 3);
+
+            // Convert common contenteditable wrapper tags into <br>
+            // (prevents saving <div>...</div> mess)
+            h = h
+                .replace(/<\/(div|p)>/gi, "<br>")
+                .replace(/<(div|p)(\s[^>]*)?>/gi, "");
+
+            // Normalize <br> variants
+            h = h.replace(/<br\s*\/?>/gi, "<br>");
+
+            // Trim ending <br>
+            h = h.replace(/(<br>\s*)+$/i, "");
+
+            return h.trim();
+        }
+
+        function setContentEditableFromDb(el, dbValue) {
+            if (!el) return;
+            el.innerHTML = decodeDeep(dbValue || "", 3); // fixes &amp;lt;br&amp;gt on edit view
         }
 
 
@@ -1222,11 +1424,8 @@
                     const key = cell.getAttribute('data-name');
                     if (!key) return;
 
-                    // Use innerHTML if you want formatting; innerText for plain text
-                    let val = (cell.innerHTML || '').trim();
-
-                    // Remove &nbsp; noise
-                    val = val.replace(/&nbsp;/g, ' ').trim();
+                    // ✅ normalize + decode deep to avoid &amp;lt;br&amp;gt saving
+                    const val = normalizeEditorHtml(cell.innerHTML);
 
                     formData.set(key, val);
                 });
@@ -1259,8 +1458,36 @@
                     formData.append(`Details[${i}].Observations`, d.Observations || '');
                 });
 
+                const currentDetails = [];
+                const rows1 = Array.from(document.querySelectorAll('#currentProcessBody tr'));
+
+                rows1.forEach((row1, idx1) => {
+                    const cells = row1.querySelectorAll('td');
+                    if (!cells || cells.length < 3) return;
+
+                    const parameterChecked = (cells[1].innerText || '').trim();
+                    const observations = (cells[2].innerText || '').trim();
+
+                    // Ignore completely empty rows
+                    if (!parameterChecked && !observations) return;
+
+                    currentDetails.push({
+                        SeqNo: idx1 + 1,
+                        Parameter_Checked: parameterChecked,
+                        Observations: observations
+                    });
+                });
+
+                // Append Details to form data for model binding
+                currentDetails.forEach((d, i) => {
+                    formData.append(`Details[${i}].SeqNo`, d.SeqNo.toString());
+                    formData.append(`Details[${i}].Parameter_Checked`, d.Parameter_Checked || '');
+                    formData.append(`Details[${i}].Observations`, d.Observations || '');
+                });
+
                 // JSON backup (optional, for server-side manual parsing)
                 formData.set('DetailsJson', JSON.stringify(details));
+                formData.set('CurrentDetailsJson', JSON.stringify(currentDetails));
 
                 // jQuery AJAX
                 $.ajax({

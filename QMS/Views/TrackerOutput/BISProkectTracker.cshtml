@@ -201,14 +201,14 @@
                         filterEndBISDate = endMoment.format('YYYY-MM-DD');
 
                         $('#dateRangeBIS').text(`${startMoment.format('MMMM D, YYYY')} - ${endMoment.format('MMMM D, YYYY')}`);
-                        // loadBISProjectTrackerGrid(); // call with filters if needed
+                        loadData();
                     });
 
                     picker.on('clear', () => {
                         filterStartBISDate = "";
                         filterEndBISDate = "";
                         $('#dateRangeBIS').text("Select Date Range");
-                        // loadBISProjectTrackerGrid();
+                        loadData();
                     });
                 },
                 ranges: {
@@ -228,8 +228,34 @@
             });
 
             // Initial grid load
-            loadBISProjectTrackerGrid(null);
+            loadData();
         });
+
+        function loadData() {
+            Blockloadershow();
+            $.ajax({
+                url: '/BisProjectTrac/GetBisProjectTracker',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartBISDate,
+                    endDate: filterEndBISDate
+                },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        loadBISProjectTrackerGrid(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
 
         var headerMenu = function () {
             var menu = [];
@@ -272,17 +298,42 @@
             let tabledata = []; // put your response data here later
             let columns = [];
 
+                if (response.length > 0) {
+            $.each(response, function (index, item) {
+
+                function formatDate(value) {
+                    return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                }
+
+
+                tabledata.push({
+                    Sr_No: index + 1,
+                    Id: item.id,
+                    Financial_Year: item.financial_Year,
+                    Mon_PC: item.mon_Pc,
+                    Nat_Project: item.nat_Project,
+                    Lea_Model_No: item.lea_Model_No,
+                    Section: item.section,
+                    Manuf_Location: item.manuf_Location,
+                    Lab: item.lab,
+                    Start_Date: formatDate(item.start_Date),
+                    Submitted_Date: formatDate(item.submitted_Date),
+                    Current_Status: item.current_Status
+                });
+            });
+        }
+
             columns.push(
                 {
                     title: "Sr No",
-                    field: "SrNo",
+                    field: "Sr_No",
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
                 {
                     title: "Financial Year",
-                    field: "FinancialYear",
+                    field: "Financial_Year",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -290,7 +341,7 @@
                 },
                 {
                     title: "Month/PC",
-                    field: "MonthPC",
+                    field: "Mon_PC",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -298,7 +349,7 @@
                 },
                 {
                     title: "Nature of Project",
-                    field: "NatureOfProject",
+                    field: "Nat_Project",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -306,7 +357,7 @@
                 },
                 {
                     title: "Lead Model Number",
-                    field: "LeadModelNumber",
+                    field: "Lea_Model_No",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -322,7 +373,7 @@
                 },
                 {
                     title: "Manufacturing Location",
-                    field: "ManufacturingLocation",
+                    field: "Manuf_Location",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -338,7 +389,7 @@
                 },
                 {
                     title: "Test Start Date",
-                    field: "TestStartDate",
+                    field: "Start_Date",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -346,7 +397,7 @@
                 },
                 {
                     title: "BIS Submitted Date",
-                    field: "BISSubmittedDate",
+                    field: "Submitted_Date",
                     headerFilter: "input",
                     hozAlign: "center",
                     headerHozAlign: "center",
@@ -354,7 +405,7 @@
                 },
                 {
                     title: "Current Status",
-                    field: "CurrentStatus",
+                    field: "Current_Status",
                     headerFilter: "input",
                     hozAlign: "left",
                     headerHozAlign: "center",
@@ -364,7 +415,7 @@
 
             let table = new Tabulator("#bisProjectTracker_Table", {
                 data: [],
-                layout: "fitColumns",
+                layout: "fitDataTable",
                 movableColumns: true,
                 pagination: "local",
                 paginationSize: 10,

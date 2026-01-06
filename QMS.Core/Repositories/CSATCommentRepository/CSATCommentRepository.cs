@@ -64,6 +64,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
                     Q13 = data.Q13,
                     Cust_Critical_Aspect = data.Cust_Critical_Aspect,
                     Comment = data.Comment,
+                    CSAT_Business = data.CSAT_Business,
                     CreatedDate = data.CreatedDate,
                     UpdatedDate = data.UpdatedDate,
                     CreatedBy = data.CreatedBy,
@@ -111,6 +112,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
                     Q13 = data.Q13,
                     Cust_Critical_Aspect = data.Cust_Critical_Aspect,
                     Comment = data.Comment,
+                    CSAT_Business = data.CSAT_Business,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -152,6 +154,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
                     new SqlParameter("@Q13", entity.Q13 ?? (object)DBNull.Value),
                     new SqlParameter("@Cust_Critical_Aspect", entity.Cust_Critical_Aspect ?? (object)DBNull.Value),
                     new SqlParameter("@Comment", entity.Comment ?? (object)DBNull.Value),
+                    new SqlParameter("@CSAT_Business", entity.CSAT_Business ?? (object)DBNull.Value),
                     new SqlParameter("@CreatedBy", entity.CreatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", entity.Deleted)
                 };
@@ -160,7 +163,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
                     "EXEC sp_Insert_CSAT_Comment " +
                     "@Quarter, @Organisation, @Region, @Q1, @Q2, @Q3, " +
                     "@Q4, @Q5, @Q6, @Q7, @Q8, @Q9, " +
-                    "@Q10, @Q11, @Q12, @Q13,@Cust_Critical_Aspect, @Comment, @CreatedBy, @IsDeleted",
+                    "@Q10, @Q11, @Q12, @Q13,@Cust_Critical_Aspect, @Comment, @CSAT_Business, @CreatedBy, @IsDeleted",
                     parameters
                 );
 
@@ -198,6 +201,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
                     new SqlParameter("@Q13", entity.Q13 ?? (object)DBNull.Value),
                     new SqlParameter("@Cust_Critical_Aspect", entity.Cust_Critical_Aspect ?? (object)DBNull.Value),
                     new SqlParameter("@Comment", entity.Comment ?? (object)DBNull.Value),
+                    new SqlParameter("@CSAT_Business", entity.CSAT_Business ?? (object)DBNull.Value),
                     new SqlParameter("@UpdatedBy", entity.UpdatedBy ?? (object)DBNull.Value),
                     new SqlParameter("@IsDeleted", entity.Deleted)
                 };
@@ -206,7 +210,7 @@ namespace QMS.Core.Repositories.CSATCommentRepository
                     "EXEC sp_Update_CSAT_Comment " +
                     "@Csat_Id, @Quarter, @Organisation, @Region, @Q1, @Q2, @Q3, " +
                     "@Q4, @Q5, @Q6, @Q7, @Q8, @Q9, " +
-                    "@Q10, @Q11, @Q12, @Q13,@Cust_Critical_Aspect, @Comment, @UpdatedBy, @IsDeleted",
+                    "@Q10, @Q11, @Q12, @Q13,@Cust_Critical_Aspect, @Comment, @CSAT_Business, @UpdatedBy, @IsDeleted",
                     parameters
                 );
 

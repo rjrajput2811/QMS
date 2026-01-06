@@ -1135,7 +1135,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
 
 
-        public async Task<int> SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model,string updatedBy)
+        public async Task<int> SaveDeliveryScheduleAsync(Opne_Po_DeliverySchViewModel model, string updatedBy)
         {
             try
             {
@@ -1206,6 +1206,32 @@ namespace QMS.Core.Repositories.OpenPoRepository
                         await connection.OpenAsync();
 
                     using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
+
+                    {
+                        var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
+                        var deliverySchedules = (await multi.ReadAsync<Opne_Po_DeliverySchedule>()).ToList();
+
+                        return (poHeaders, deliverySchedules);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleVendorAsync(string vendor)
+        {
+            try
+            {
+                using (var connection = _dbContext.Database.GetDbConnection())
+                {
+                    if (connection.State != ConnectionState.Open)
+                        await connection.OpenAsync();
+
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule_ByVendor]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
 
                     {
                         var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
@@ -1911,13 +1937,13 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     (object?)x.Schedule_Line_Date3 ?? DBNull.Value
                 );
             }
-            
 
-            
-                //var connectionString = _dbContext.Database.GetDbConnection();
-                using var conn = _dbContext.Database.GetDbConnection();
-                await conn.OpenAsync();
-                using var tran = conn.BeginTransaction(); // local transaction for safety
+
+
+            //var connectionString = _dbContext.Database.GetDbConnection();
+            using var conn = _dbContext.Database.GetDbConnection();
+            await conn.OpenAsync();
+            using var tran = conn.BeginTransaction(); // local transaction for safety
 
             try
             {
@@ -2456,6 +2482,135 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 _systemLogService.WriteLog(ex.Message);
                 throw;
             }
+        }
+
+
+        public async Task<BulkOpenPoDeliveryResult> BulkCreateDeliveryScheduleAsync_Dapper(List<OpenPoDeliveryExcelRow> listOfData, string uploadedBy,bool status)
+        {
+            var result = new BulkOpenPoDeliveryResult();
+
+            // Build TVP DataTable
+            var tvp = new DataTable();
+            tvp.Columns.AddRange(new[]
+            {
+                new DataColumn("ExcelRowNo", typeof(int)),
+                new DataColumn("Key", typeof(string)),
+                new DataColumn("Vendor", typeof(string)),
+                new DataColumn("PO_No", typeof(string)),
+                new DataColumn("PO_Date", typeof(DateTime)),
+                new DataColumn("PO_Qty", typeof(int)),
+                new DataColumn("BalanceQty", typeof(int)),
+                new DataColumn("Delivery_Date", typeof(DateTime)),
+                new DataColumn("Date_PC_Week", typeof(string)),
+                new DataColumn("Qty", typeof(int)),
+                new DataColumn("Remark", typeof(string))
+            });
+
+            string? trim(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+            foreach (var x in listOfData)
+            {
+                tvp.Rows.Add(
+                    x.ExcelRowNo,
+                    trim(x.Key) ?? "",
+                    trim(x.Vendor),
+                    trim(x.PO_No),
+                    x.PO_Date.HasValue ? x.PO_Date.Value : (object)DBNull.Value,
+                    x.PO_Qty.HasValue ? x.PO_Qty.Value : (object)DBNull.Value,
+                    x.BalanceQty.HasValue ? x.BalanceQty.Value : (object)DBNull.Value,
+                    x.Delivery_Date.HasValue ? x.Delivery_Date.Value : (object)DBNull.Value,
+                    trim(x.Date_PC_Week),
+                    x.Qty.HasValue ? x.Qty.Value : (object)DBNull.Value,
+                    trim(x.Remark)
+                );
+            }
+
+            try
+            {
+                using var conn = _dbContext.Database.GetDbConnection();
+                await conn.OpenAsync();
+
+                var dp = new DynamicParameters();
+                dp.Add("@Rows", tvp.AsTableValuedParameter("dbo.OpenPoDelivery_ImportRow"));
+                dp.Add("@UploadedBy", uploadedBy, DbType.String, size: 100);
+                dp.Add("@Status", status, DbType.Boolean);
+
+                using var grid = await conn.QueryMultipleAsync(
+                    sql: "dbo.sp_OpenPoDeliverySch_BulkImport",
+                    param: dp,
+                    commandType: CommandType.StoredProcedure);
+
+                // 1) Summary
+                 var summary = (await grid.ReadAsync<ImportSummaryDto>()).FirstOrDefault()
+                          ?? new ImportSummaryDto();
+                int total = (int)(summary?.TotalRecords ?? 0);
+                int imported = (int)(summary?.ImportedRecords ?? 0);
+                int failed = (int)(summary?.FailedRecords ?? 0);
+
+                // 2) Failed rows
+                var failedRows = (await grid.ReadAsync<FailedRowDto>()).ToList();
+
+                foreach (var f in failedRows)
+                {
+                    // Map back to original by ExcelRowNo (best) else Key|PO_No
+                    OpenPoDeliveryExcelRow? row = null;
+
+                    if (f.ExcelRowNo.HasValue)
+                    {
+                        row = listOfData.FirstOrDefault(r => r.ExcelRowNo == f.ExcelRowNo.Value);
+                    }
+
+                    if (row == null)
+                    {
+                        row = listOfData.FirstOrDefault(r =>
+                            string.Equals((r.Key ?? "").Trim(), (f.Key ?? "").Trim(), StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals((r.PO_No ?? "").Trim(), (f.PO_No ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    result.FailedRecords.Add((row ?? new OpenPoDeliveryExcelRow
+                    {
+                        ExcelRowNo = f.ExcelRowNo ?? 0,
+                        Key = f.Key ?? "",
+                        PO_No = f.PO_No
+                    }, f.Reason ?? "Validation failed"));
+                }
+
+                // Success rule: partial success allowed
+                result.Result = new OperationResult
+                {
+                    Success = result.ImportedRecords > 0,
+                    Message = failedRows.Any()
+                        ? $"Import completed: {result.ImportedRecords}/{result.TotalRecords} imported, {result.FailedCount} failed."
+                        : $"All {result.ImportedRecords}/{result.TotalRecords} records imported successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                result.Result = new OperationResult
+                {
+                    Success = false,
+                    Message = "Error during import: " + ex.Message
+                };
+            }
+
+            return result;
+        }
+
+        public async Task<OperationResult> IsSubmittedAsync(IEnumerable<int> ids, bool returnCreatedRecord = false)
+        {
+            if (ids == null || !ids.Any())
+                return new OperationResult { Success = false, Message = "No data was selected!." };
+
+            var idList = ids.Distinct().ToList();
+
+            var updated = await _dbContext.Opne_Po_Deliveries
+                .Where(x => !x.Deleted && idList.Contains(x.Ven_PoId))
+                .ExecuteUpdateAsync(s => s.SetProperty(x => x.Status, true));
+
+            if (updated == 0)
+                return new OperationResult { Success = false, Message = "No matching records found." };
+
+            return new OperationResult { Success = true, Message = $"Updated successfully! Rows updated: {updated}." };
         }
 
 

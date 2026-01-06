@@ -24,6 +24,10 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
         Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor);
 
+        Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleVendorAsync(string vendor);
+
+        Task<OperationResult> IsSubmittedAsync(IEnumerable<int> ids, bool returnCreatedRecord = false);
+
         Task<List<Sales_Order_ViewModel>> GetSalesOrderListAsync(string? type);
 
         Task<List<Sales_Order_ViewModel>> GetSalesOrdersQtyAsync(string? type);
@@ -43,5 +47,6 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
         Task<List<MTAMasterViewModel>> GetMTAListAsync();
         Task<BulkMTACreateResult> BulkMTACreateAsync(List<MTAMasterViewModel> listOfData, string fileName, string uploadedBy);
+        Task<BulkOpenPoDeliveryResult> BulkCreateDeliveryScheduleAsync_Dapper(List<OpenPoDeliveryExcelRow> listOfData, string uploadedBy, bool status);
     }
 }

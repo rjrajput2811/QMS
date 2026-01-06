@@ -286,19 +286,109 @@
             return menu;
         };
 
-        function OnTabGridLoad(response) {
+                function decodeHtmlOnce(str) {
+            const t = document.createElement("textarea");
+            t.innerHTML = str == null ? "" : String(str);
+            return t.value;
+        }
+
+        // decode multiple times (handles &amp;lt; -> &lt; -> <)
+        function decodeDeep(str, max = 3) {
+            let s = str == null ? "" : String(str);
+            for (let i = 0; i < max; i++) {
+                const d = decodeHtmlOnce(s);
+                if (d === s) break;
+                s = d;
+            }
+            return s;
+        }
+
+        // OPTIONAL fallback sanitizer (recommended: DOMPurify)
+        function basicSanitizeHtml(html) {
+            let h = String(html || "");
+
+            // remove script/style blocks
+            h = h.replace(/<\s*script[^>]*>[\s\S]*?<\s*\/\s*script\s*>/gi, "");
+            h = h.replace(/<\s*style[^>]*>[\s\S]*?<\s*\/\s*style\s*>/gi, "");
+
+            // remove on* handlers
+            h = h.replace(/\son\w+\s*=\s*(".*?"|'.*?'|[^\s>]+)/gi, "");
+
+            // block javascript: urls
+            h = h.replace(/(href|src)\s*=\s*(['"])\s*javascript:[\s\S]*?\2/gi, '$1="#"');
+
+            return h;
+        }
+
+        // Convert DB value => safe display HTML for Tabulator
+        function toDisplayHtml(value) {
+            // 1) decode multi-encoded strings
+            let h = decodeDeep(value, 3);
+
+            // 2) normalize non-breaking spaces
+            h = h.replace(/&nbsp;/g, " ");
+
+            // 3) If it looks like plain text, escape and convert newlines to <br>
+            const looksLikeHtml = /<[^>]+>/.test(h);
+            if (!looksLikeHtml) {
+                h = h
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/\r\n|\r|\n/g, "<br>");
+            }
+
+            // 4) normalize <br>
+            h = h.replace(/<br\s*\/?>/gi, "<br>");
+
+            // 5) sanitize
+            if (window.DOMPurify) {
+                h = DOMPurify.sanitize(h, { USE_PROFILES: { html: true } });
+            } else {
+                h = basicSanitizeHtml(h);
+            }
+
+            // 6) trim ending <br>
+            h = h.replace(/(<br>\s*)+$/i, "");
+
+            return h.trim();
+        }
+
+        // For filtering: HTML -> plain text
+        function htmlToText(html) {
+            const div = document.createElement("div");
+            div.innerHTML = String(html || "");
+            return (div.textContent || div.innerText || "").trim();
+        }
+
+        // Reusable header filter for HTML cells
+        function htmlHeaderFilterFunc(headerValue, rowValue) {
+            const hv = String(headerValue || "").toLowerCase().trim();
+            if (!hv) return true;
+            const text = htmlToText(rowValue).toLowerCase();
+            return text.includes(hv);
+        }
+
+        // Optional: cell style for multi-line display
+        function multiLineCellFormatter(cell) {
+            const v = cell.getValue();
+            return v || "";
+        }
+
+                function OnTabGridLoad(response) {
             Blockloadershow();
 
             tabledata = [];
             let columns = [];
 
-            if (response.length > 0) {
+            if (response && response.length > 0) {
                 $.each(response, function (index, item) {
 
                     let formattedDate = "";
                     let updatedDate = "";
                     let reportDate = "";
                     let date = "";
+
                     if (item.createdDate) {
                         const dateObj = new Date(item.createdDate);
                         formattedDate = dateObj.toLocaleDateString("en-GB");
@@ -320,9 +410,10 @@
                         Sr_No: index + 1,
                         Id: item.id,
                         Complaint_No: item.complaint_No,
+                        Complaint_Type: item.complaint_Type,
                         Report_Date: reportDate,
                         Cust_Name_Location: item.cust_Name_Location,
-                        Source_Complaint :item.source_Complaint,
+                        Source_Complaint: item.source_Complaint,
                         Prod_Code_Desc: item.prod_Code_Desc,
                         Desc_Complaint: item.desc_Complaint,
                         Batch_Code: item.batch_Code,
@@ -330,22 +421,33 @@
                         Supp_Qty: item.supp_Qty,
                         Failure_Qty: item.failure_Qty,
                         Problem_State: item.problem_State,
-                        Interim_Corrective: item.interim_Corrective,
-                        Interim_Day :item.interim_Day,
-                        Root_Cause_Anal: item.root_Cause_Anal,
-                        Root_Cause_Day :item.root_Cause_Day,
-                        Corrective_Action: item.corrective_Action,
-                        Corrective_Action_Day :item.corrective_Action_Day,
+
+                        // ✅ IMPORTANT: decode + sanitize on retrieve
+                        Interim_Corrective: toDisplayHtml(item.interim_Corrective),
+                        Interim_Day: item.interim_Day,
+
+                        Root_Cause_Anal: toDisplayHtml(item.root_Cause_Anal),
+                        Root_Cause_Day: item.root_Cause_Day,
+
+                        Corrective_Action: toDisplayHtml(item.corrective_Action),
+                        Corrective_Action_Day: item.corrective_Action_Day,
+
                         Date: date,
-                        Closure_Day : item.closure_Day,
+                        Closure_Day: item.closure_Day,
                         ProblemBasket: item.issue_Problems,
                         CreatedDate: formattedDate,
                         CreatedBy: item.createdBy,
                         UpdatedBy: item.updatedBy,
-                        UpdatedDate: updatedDate
+                        UpdatedDate: updatedDate,
+
+                        CapaReportAttachments: item.capaReportAttachments
                     });
                 });
             }
+
+            // =========================
+            // COLUMNS
+            // =========================
             columns.push(
                 {
                     title: "Sr No",
@@ -355,7 +457,6 @@
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
-
                 {
                     title: "Complaint No.",
                     field: "Complaint_No",
@@ -374,10 +475,10 @@
                 },
                 {
                     title: "Complaint Type",
-                    field: "ComplaintType",
+                    field: "Complaint_Type",
                     headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
+                    hozAlign: "left",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -385,7 +486,7 @@
                     field: "Cust_Name_Location",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -393,7 +494,7 @@
                     field: "Source_Complaint",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",   
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -401,15 +502,15 @@
                     field: "Prod_Code_Desc",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
                     title: "Description of Complaint",
-                    field: "Desc_ComplaintDesc_Complaint",
+                    field: "Desc_Complaint",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -449,7 +550,7 @@
                     field: "Problem_State",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -457,15 +558,22 @@
                     field: "ProblemBasket",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
+
+                // ✅ HTML content columns (show <br>, decode, and filter as plain text)
                 {
                     title: "Interim Corrective action",
                     field: "Interim_Corrective",
                     headerFilter: "input",
+                    headerFilterFunc: htmlHeaderFilterFunc,
+                    formatter: multiLineCellFormatter,     // returns HTML
+                    variableHeight: true,
+                    cssClass: "cell-multiline",
+                    widthGrow: 2,
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -480,8 +588,13 @@
                     title: "Root Cause Analysis",
                     field: "Root_Cause_Anal",
                     headerFilter: "input",
+                    headerFilterFunc: htmlHeaderFilterFunc,
+                    formatter: multiLineCellFormatter,     // returns HTML
+                    variableHeight: true,
+                    cssClass: "cell-multiline",
+                    widthGrow: 2,
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -496,8 +609,13 @@
                     title: "Corrective Action",
                     field: "Corrective_Action",
                     headerFilter: "input",
+                    headerFilterFunc: htmlHeaderFilterFunc,
+                    formatter: multiLineCellFormatter,     // returns HTML
+                    variableHeight: true,
+                    cssClass: "cell-multiline",
+                    widthGrow: 2,
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 },
                 {
@@ -508,6 +626,7 @@
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
+
                 {
                     title: "Complaint Closure Date",
                     field: "Date",
@@ -529,12 +648,17 @@
                     field: "CapaReportAttachments",
                     headerFilter: "input",
                     hozAlign: "left",
-                    headerHozAlign: "center",
+                    headerHozAlign: "left",
                     headerMenu: headerMenu
                 }
             );
 
-            table = new Tabulator("#cso_Table", {
+            // Destroy old instance if needed (prevents duplicate table creation)
+            if (window.table && typeof window.table.destroy === "function") {
+                window.table.destroy();
+            }
+
+            window.table = new Tabulator("#cso_Table", {
                 data: tabledata,
                 layout: "fitDataTable",
                 movableColumns: true,

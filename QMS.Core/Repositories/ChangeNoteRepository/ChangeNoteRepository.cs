@@ -81,6 +81,7 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
                     RevisionNo = x.RevisionNo,
                     Description = x.Description,
                     VendorId = x.VendorId,
+                    VendorName = _dbContext.Vendor.Where(i => i.Id == x.VendorId).Select(x => x.Name).FirstOrDefault(),
                     Remarks = x.Remarks,
                     ChangeNoteCategory = x.ChangeNoteCategory,
                     CopyTo = x.CopyTo,
@@ -90,6 +91,7 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
                     ChangeNoteRefNo = x.ChangeNoteRefNo,
                     DateOfIssue = x.DateOfIssue,
                     VendorQAInChargeId = x.VendorQAInChargeId,
+                    VendorQAInChargeName = _dbContext.Vendor.Where(i => i.Id == x.VendorQAInChargeId).Select(x => x.Name).FirstOrDefault(),
                     FinalQARemarks = x.FinalQARemarks,
                     FinalSignatureFilePath = x.FinalSignatureFilePath
                 })

@@ -357,31 +357,31 @@
         }
 
         function exportToPDF(recid) {
-            // Blockloadershow();
-            // var url = '@Url.Action("ExportToPDF", "ChangeNote")' + "?id=" + recid;
+            Blockloadershow();
+            var url = '@Url.Action("ExportToPDF", "ChangeNote")' + "?id=" + recid;
 
-            // fetch(url, {
-            //     method: 'GET',
-            //     data: { id: recid }
-            // })
-            // .then(response => response.blob())
-            // .then(blob => {
-            //     // Create a new object URL for the PDF blob
-            //     var url = window.URL.createObjectURL(blob);
+            fetch(url, {
+                method: 'GET',
+                data: { id: recid }
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Create a new object URL for the PDF blob
+                var url = window.URL.createObjectURL(blob);
 
-            //     // Create a link element to download the PDF
-            //     var a = document.createElement('a');
-            //     a.href = url;
-            //     a.download = 'AHP_Note_' + recid + '.pdf';
-            //     document.body.appendChild(a);  // Append link to body
-            //     a.click();  // Trigger click event to download
-            //     a.remove();  // Remove the link after download
-            //     Blockloaderhide();
-            // })
-            // .catch(error => {
-            //     Blockloaderhide();
-            //     showDangerAlert('Error exporting PDF: ' + error);
-            // });
+                // Create a link element to download the PDF
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'ChangeNote_' + recid + '.pdf';
+                document.body.appendChild(a);  // Append link to body
+                a.click();  // Trigger click event to download
+                a.remove();  // Remove the link after download
+                Blockloaderhide();
+            })
+            .catch(error => {
+                Blockloaderhide();
+                showDangerAlert('Error exporting PDF: ' + error);
+            });
         }
     </script>
 

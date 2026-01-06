@@ -20,6 +20,7 @@ public class ChangeNoteViewModel
     public string? ChangeNoteRefNo { get; set; }
     public DateTime? DateOfIssue { get; set; }
     public int? VendorQAInChargeId { get; set; }
+    public string? VendorQAInChargeName { get; set; }
     public string? FinalQARemarks { get; set; }
     public string? FinalSignatureFilePath { get; set; }
     public int AddedBy { get; set; }

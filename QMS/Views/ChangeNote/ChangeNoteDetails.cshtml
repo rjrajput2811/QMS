@@ -304,6 +304,16 @@
                                 <tbody>
                                     <tr>
                                         <td>
+                                            <span class="field-label">Document No:</span>
+                                            @Html.TextBoxFor(m => m.DocumentNo, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Document No" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Revision No:</span>
+                                            @Html.TextBoxFor(m => m.RevisionNo, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Revision No" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
                                             <span class="field-label">Description:</span>
                                             @Html.TextBoxFor(m => m.Description, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Change Description" })
                                         </td>
@@ -356,13 +366,12 @@
                                                 </td>
                                                 <td contenteditable="true" data-name="ChangeFrom">@item.ChangeFrom</td>
                                                 <td contenteditable="true" data-name="ChangeTo">@item.ChangeTo</td>
-                                               @*  <td contenteditable="true" data-name="Category">@item.Category *@
-                                                <td data-name="Category" contenteditable="true">
-                                                 <select class="form-control">
-                                                 <option value="A">A</option>
-                                                <option value="B">B</option>
-                                                       </select>
-                                                   </td>
+                                                <td data-name="Category">
+                                                    <select class="form-control" style="height: 30px; padding: 0 5px; font-size: 14px;">
+                                                        <option value="A" selected="@(item.Category == "A" ? "selected" : null)">A</option>
+                                                        <option value="B" selected="@(item.Category == "B" ? "selected" : null)">B</option>
+                                                    </select>
+                                                </td>
                                             </tr>
                                             counter++;
                                         }
@@ -378,36 +387,36 @@
                                 </colgroup>
                                 <tbody>
                                     <tr>
-    <!-- REMARKS -->
-    <td style="vertical-align:top; width: 50%;">
-        <strong style="display:block; margin-bottom:8px;">
-            REMARKS :
-        </strong>
-        <div id="remarksEditable"
-             contenteditable="true"
+                                    <!-- REMARKS -->
+                                    <td style="vertical-align:top; width: 50%;">
+                                        <strong style="display:block; margin-bottom:8px;">
+                                            REMARKS :
+                                        </strong>
+                                        <div id="remarksEditable"
+                                             contenteditable="true"
             
-             data-name="Remarks">
-            @Model.Remarks
-        </div>
-    </td>
+                                             data-name="Remarks">
+                                            @Model.Remarks
+                                        </div>
+                                    </td>
     
-    <!-- CATEGORY INFO - Right Side -->
-    <td style="vertical-align:top; width: 50%; padding-left:20px;">
-        <strong style="display:block; margin-bottom:8px;">
-            * CHANGE NOTE CATEGORY
-        </strong>
+                                    <!-- CATEGORY INFO - Right Side -->
+                                    <td style="vertical-align:top; width: 50%; padding-left:20px;">
+                                        <strong style="display:block; margin-bottom:8px;">
+                                            * CHANGE NOTE CATEGORY
+                                        </strong>
         
-        <div style="margin-bottom:15px;">
-            <strong>A: EXTREMELY URGENT & CRITICAL</strong><br/>
-            <span style="font-size:0.9em;">To be implemented with immediate effect</span>
-        </div>
+                                        <div style="margin-bottom:15px;">
+                                            <strong>A: EXTREMELY URGENT & CRITICAL</strong><br/>
+                                            <span style="font-size:0.9em;">To be implemented with immediate effect</span>
+                                        </div>
         
-        <div style="margin-bottom:15px;">
-            <strong>B: FOR PRODUCT UPGRADATION</strong><br/>
-            <span style="font-size:0.9em;">To be implemented after existing inventory consumption.</span>
-        </div>
-    </td>
-</tr>
+                                        <div style="margin-bottom:15px;">
+                                            <strong>B: FOR PRODUCT UPGRADATION</strong><br/>
+                                            <span style="font-size:0.9em;">To be implemented after existing inventory consumption.</span>
+                                        </div>
+                                    </td>
+                                </tr>
 
 
                                     <tr>
@@ -588,7 +597,7 @@
                                     <tr>
                                         <td colspan="2">
                                             <span class="field-label">Vendor / QA In charge:</span>
-                                            @Html.DropDownListFor(m => m.VendorId, (IEnumerable<SelectListItem>)ViewBag.VendorList, "Select Vendor / QA In charge", new { @class = "inline-input", style = "width:40%;" })
+                                            @Html.DropDownListFor(m => m.VendorQAInChargeId, (IEnumerable<SelectListItem>)ViewBag.VendorList, "Select Vendor / QA In charge", new { @class = "inline-input", style = "width:40%;" })
                                         </td>
                                     </tr>
 
@@ -733,34 +742,37 @@
             function createRow() {
                 const tr = document.createElement('tr');
 
-                // Column 1: Sr No & Delete Button
+                // 1. Sr No Column
                 const tdSr = document.createElement('td');
                 tdSr.style.textAlign = 'center';
                 tdSr.innerHTML = `
                     <span class="srno"></span>
-                    <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn"
+                    <button type="button" class="btn btn-link p-0 ml-2 delete-row-btn" 
                             title="Delete row" style="color:#c0392b; margin-left:6px;">
                         <i class="fas fa-trash"></i>
                     </button>`;
                 tr.appendChild(tdSr);
 
-                // Column 2: Change From (Added data-name)
+                // 2. Change From
                 const tdFrom = document.createElement('td');
                 tdFrom.setAttribute('contenteditable', 'true');
-                tdFrom.setAttribute('data-name', 'ChangeFrom'); // <--- CRITICAL FIX
+                tdFrom.setAttribute('data-name', 'ChangeFrom');
                 tr.appendChild(tdFrom);
 
-                // Column 3: Change To (Added data-name)
+                // 3. Change To
                 const tdTo = document.createElement('td');
                 tdTo.setAttribute('contenteditable', 'true');
-                tdTo.setAttribute('data-name', 'ChangeTo'); // <--- CRITICAL FIX
+                tdTo.setAttribute('data-name', 'ChangeTo');
                 tr.appendChild(tdTo);
 
-                // Column 4: Category (Added data-name)
+                // 4. Category (NOW A DROPDOWN)
                 const tdCat = document.createElement('td');
-                tdCat.style.textAlign = 'center';
-                tdCat.setAttribute('contenteditable', 'true');
-                tdCat.setAttribute('data-name', 'Category'); // <--- CRITICAL FIX
+                tdCat.setAttribute('data-name', 'Category'); // No contenteditable here
+                tdCat.innerHTML = `
+                    <select class="form-control" style="height: 30px; padding: 0 5px; font-size: 14px;">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                    </select>`;
                 tr.appendChild(tdCat);
 
                 return tr;
@@ -1037,8 +1049,21 @@
 
             $('#changesItemsTbody tr').each(function(index) {
                 $(this).find('[data-name]').each(function() {
-                    var prop = $(this).data('name');
-                    var val = $(this).text().trim();
+                    var $td = $(this);
+                    var prop = $td.data('name');
+                    var val = "";
+
+                    // Check if this cell contains a <select> dropdown
+                    var $select = $td.find('select');
+        
+                    if ($select.length > 0) {
+                        // Case 1: It's a Dropdown -> Get the selected value
+                        val = $select.val();
+                    } else {
+                        // Case 2: It's a standard text cell -> Get the text
+                        val = $td.text().trim();
+                    }
+
                     formData.append('Items[' + index + '].' + prop, val);
                 });
             });

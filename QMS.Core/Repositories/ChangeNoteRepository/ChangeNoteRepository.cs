@@ -38,10 +38,10 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
                 .Select(x => new ChangeNoteViewModel
                 {
                     Id = x.Id,
+                    DateOfIssue = x.DateOfIssue,
                     DocumentNo = x.DocumentNo,
                     Description = x.Description,
                     VendorId = x.VendorId,
-                    ChangeNoteCategory = x.ChangeNoteCategory,
                     AddedBy = x.AddedBy
                 })
                 .ToList());
@@ -50,6 +50,7 @@ public class ChangeNoteRepository : SqlTableRepository, IChangeNoteRepository
             {
                 rec.User = await _dbContext.User.Where(i => i.Id == rec.AddedBy).Select(x => x.Name).FirstOrDefaultAsync();
                 rec.VendorName = await _dbContext.Vendor.Where(i => i.Id == rec.VendorId).Select(x => x.Name).FirstOrDefaultAsync();
+                rec.ChangeNoteCategory = await _dbContext.ChangeNoteItems.Where(i => i.ChangeNoteId == rec.Id).Select(x => x.Category).FirstOrDefaultAsync();
             }
 
             return result;

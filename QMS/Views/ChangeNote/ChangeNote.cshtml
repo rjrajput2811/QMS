@@ -44,6 +44,25 @@
         min-height: 220px;
     }
 
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 35px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
     /* responsive tweak so buttons don't wrap badly */
  
 </style>
@@ -63,6 +82,14 @@
                         class="btn btn-outline-success legitRipple mr-2 header-btn"
                         onclick="location.href='@Url.Action("ChangeNoteDetails", "ChangeNote")'">
                     <i class="fas fa-plus mr-2 fa-1x"></i> Add
+                </button>
+
+                <!-- Export button: export tabulator data to excel -->
+                <button id="exportExcelBtn"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2"
+                        onclick="exportToExcel()">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export To Excel
                 </button>
 
                 <!-- Back button: returns to Change Note list page -->
@@ -93,6 +120,7 @@
 @section Scripts {
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
+    <script src="~/js/xlsx.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
@@ -187,9 +215,23 @@
             // Map the response to the table format
             if (response.length > 0) {
                 $.each(response, function (index, item) {
+
+                    let changeDate = "";
+                    let month = "";
+                    if (item.dateOfIssue) {
+                        const dateObj = new Date(item.dateOfIssue);
+                        changeDate = dateObj.toLocaleDateString("en-GB");
+                        month = dateObj.toLocaleDateString("en-GB", { 
+                            month: 'long' 
+                        });
+                    }
+
                     tabledata.push({
                         Sr_No: index + 1,
                         Id: item.id,
+                        Month: month,
+                        Date: changeDate,
+                        DocumentNo: item.documentNo,
                         Description: item.description,
                         ChangeNoteCategory: item.changeNoteCategory,
                         VendorName: item.vendorName,
@@ -205,6 +247,7 @@
                         headerMenu: headerMenu,
                         hozAlign: "center",
                         headerHozAlign: "center",
+                        download: false,
                         formatter: function (cell, formatterParams) {
                             const rowData = cell.getRow().getData();
                             let actionButtons = "";
@@ -218,8 +261,7 @@
                     { title: "SNo", field: "Sr_No", width: 50, responsive: 0,  sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left" },
                    { title: "Month", field: "Month", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                     { title: "Date", field: "Date", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                 
-                    { title: "Document Number", field: "Document Number", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Document Number", field: "DocumentNo", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                     { title: "Category", field: "ChangeNoteCategory", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                     { title: "Vendor", field: "VendorName", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                     { title: "User", field: "User", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
@@ -385,6 +427,81 @@
                 Blockloaderhide();
                 showDangerAlert('Error exporting PDF: ' + error);
             });
+        }
+
+        async function exportToExcel() {
+            if (!table) {
+                showDangerAlert('Table data is not loaded yet.');
+                return;
+            }
+
+            // 1. Initialize Workbook and Worksheet
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Change Notes');
+
+            // 2. Define Columns (for width mapping)
+            worksheet.columns = [
+                { key: 'Sr_No', width: 4 },
+                { key: 'Month', width: 15 },
+                { key: 'Date', width: 15 },
+                { key: 'DocumentNo', width: 18 },
+                { key: 'Description', width: 35 },
+                { key: 'ChangeNoteCategory', width: 8 },
+                { key: 'VendorName', width: 40 },
+                { key: 'User', width: 20 }
+            ];
+
+            // 3. Add Header Row (Row 1)
+            const headerRow = worksheet.addRow([
+                "SNo", "Month", "Date", "Document Number", "Description", "Category", "Vendor", "User"
+            ]);
+
+            // Style the Headers (Bold + Light Gray Background + Border)
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: '95b3d7' } // Light Gray
+                };
+            });
+
+            // 4. Add Data Rows
+            // Get active data from Tabulator (respects filters)
+            const rowData = table.getData("active");
+
+            rowData.forEach(item => {
+                // Capture the row object
+                const row = worksheet.addRow([
+                    item.Sr_No,
+                    item.Month,
+                    item.Date,
+                    item.DocumentNo,
+                    item.Description || "", 
+                    item.ChangeNoteCategory,
+                    item.VendorName,
+                    item.User
+                ]);
+
+                // Target Cell 1 (Sr_No) and align it to Center
+                row.getCell(1).alignment = { horizontal: 'center' };
+        
+                // Optional: If you want text wrapping for the Description (Cell 5)
+                row.getCell(5).alignment = { wrapText: true };
+            });
+
+            // 5. Generate and Download the File
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = 'ChangeNote_Report.xlsx';
+            anchor.click();
+            window.URL.revokeObjectURL(url);
         }
     </script>
 

@@ -344,7 +344,7 @@
                 $.each(response, function (index, item) {
 
                     let reportDate = "";
-                    if (item.addedOn) {
+                    if (item.report_Date) {
                         const dateObj = new Date(item.report_Date);
                         reportDate = dateObj.toLocaleDateString("en-GB");
                     }

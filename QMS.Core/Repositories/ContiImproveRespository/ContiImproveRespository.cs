@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
@@ -7,6 +8,7 @@ using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -68,6 +70,46 @@ namespace QMS.Core.Repositories.ContiImproveRespository
                 throw;
             }
         }
+
+        public async Task<List<ContiImproveSummaryViewModel>> ContiImproveSummaryAsync(string fy)
+        {
+            try
+            {
+                var list = new List<ContiImproveSummaryViewModel>();
+
+                await using var conn = (SqlConnection)_dbContext.Database.GetDbConnection();
+                if (conn.State != ConnectionState.Open)
+                    await conn.OpenAsync();
+
+                await using var cmd = conn.CreateCommand();
+                cmd.CommandText = "dbo.sp_ContinualImprove_MonthlyISO_Summary_FY";
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.Add(new SqlParameter("@FY", fy));
+
+                await using var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    list.Add(new ContiImproveSummaryViewModel
+                    {
+                        FY = reader["FY"]?.ToString(),
+                        Month = reader["Month"]?.ToString(),
+                        Iso_9001 = reader["Iso_9001"] == DBNull.Value ? 0 : Convert.ToInt32(reader["Iso_9001"]),
+                        Iso_14001 = reader["ISO14001"] == DBNull.Value ? 0 : Convert.ToInt32(reader["ISO14001"]),
+                        Iso_45001 = reader["ISO45001"] == DBNull.Value ? 0 : Convert.ToInt32(reader["ISO45001"]),
+                        Total = reader["Total"] == DBNull.Value ? 0 : Convert.ToInt32(reader["Total"])
+                    });
+                }
+
+                return list;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
 
         public async Task<OperationResult> CreateAsync(Continual_Improve_Tracker newRecord, bool returnCreatedRecord = false)
         {

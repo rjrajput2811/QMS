@@ -24,5 +24,16 @@ namespace QMS.Core.Models
         public string? CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
         public string? UpdatedBy { get; set; }
+       
+    }
+
+    public class ContiImproveSummaryViewModel
+    {
+        public string? FY { get; set; }
+        public string? Month { get; set; }
+        public int Iso_9001 { get; set; }
+        public int Iso_14001 { get; set; }
+        public int Iso_45001 { get; set; }
+        public int Total { get; set; }
     }
 }

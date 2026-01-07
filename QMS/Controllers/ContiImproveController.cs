@@ -29,6 +29,13 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
+        public async Task<JsonResult> ContiImproveSummary(string fY)
+        {
+            var list = await _contiImproveRespository.ContiImproveSummaryAsync(fY);
+            return Json(list);
+        }
+
+        [HttpGet]
         public async Task<JsonResult> GetById(int id)
         {
             var data = await _contiImproveRespository.GetByIdAsync(id);

@@ -298,30 +298,30 @@
             let tabledata = []; // put your response data here later
             let columns = [];
 
-                if (response.length > 0) {
-            $.each(response, function (index, item) {
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
 
-                function formatDate(value) {
-                    return value ? new Date(value).toLocaleDateString("en-GB") : "";
-                }
+                    function formatDate(value) {
+                        return value ? new Date(value).toLocaleDateString("en-GB") : "";
+                    }
 
 
-                tabledata.push({
-                    Sr_No: index + 1,
-                    Id: item.id,
-                    Financial_Year: item.financial_Year,
-                    Mon_PC: item.mon_Pc,
-                    Nat_Project: item.nat_Project,
-                    Lea_Model_No: item.lea_Model_No,
-                    Section: item.section,
-                    Manuf_Location: item.manuf_Location,
-                    Lab: item.lab,
-                    Start_Date: formatDate(item.start_Date),
-                    Submitted_Date: formatDate(item.submitted_Date),
-                    Current_Status: item.current_Status
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        Financial_Year: item.financial_Year,
+                        Mon_PC: item.mon_Pc,
+                        Nat_Project: item.nat_Project,
+                        Lea_Model_No: item.lea_Model_No,
+                        Section: item.section,
+                        Manuf_Location: item.manuf_Location,
+                        Lab: item.lab,
+                        Start_Date: formatDate(item.start_Date),
+                        Submitted_Date: formatDate(item.submitted_Date),
+                        Current_Status: item.current_Status
+                    });
                 });
-            });
-        }
+            }
 
             columns.push(
                 {
@@ -414,7 +414,7 @@
             );
 
             let table = new Tabulator("#bisProjectTracker_Table", {
-                data: [],
+                data: tabledata,
                 layout: "fitDataTable",
                 movableColumns: true,
                 pagination: "local",

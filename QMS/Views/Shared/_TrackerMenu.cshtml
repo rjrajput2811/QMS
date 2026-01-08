@@ -926,34 +926,27 @@
                     }
                 ]
             },
-            {
-                id: 'see-indices',
-                name: 'SEE Indices',
-                icon: '📝',
-                items: [
-                    {
-                        name: 'SEE Indices',
-                        inputUrl: '@Url.Action("SEEIndices", "SEEIndices")',
-                        outputs: [
-                            { label: 'Output', url: '@Url.Action("SEEIndices", "SEEIndices")', css: 'btn-output' }
+
+                              {
+                                id: 'SEE-Indices',
+                                name: 'SEE Indices',
+                        icon: '📝',
+                        items: [
+                   
+                                            { name: 'SEE Indices', inputUrl: '@Url.Action("SEEIndices", "SEEIndices")', outputUrl: '@Url.Action("SEEIndicees", "SEEIndices")' }
                         ]
-                    }
-                ]
-            },
-            {
-                id: 'change-note',
-                name: 'Change Note',
-                icon: '📝',
-                items: [
+                    },
+
+
                     {
-                        name: 'Change Note Format',
-                        inputUrl: '@Url.Action("ChangeNotee", "ChangeNote")',
-                        outputs: [
-                            { label: 'Output', url: '@Url.Action("ChangeNotee", "ChangeNote")', css: 'btn-output' }
-                        ]
-                    }
-                ]
-            },
+                        id: 'Change-note',
+                        name: 'Change Note',
+                        icon: '📝',
+                        items: [
+                                      { name: 'Change Note Format', inputUrl: '@Url.Action("ChangeNote", "ChangeNote")', outputUrl: '@Url.Action("ChangeNotee", "ChangeNote")' }
+                      
+                        ]                  
+                    },
             {
                 id: 'rmtc',
                 name: 'Raw Material Test Certificate',

@@ -17,10 +17,29 @@
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
 <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
-@* <script src="~/js/xlsx.min.js"></script> *@
+<script src="~/js/xlsx.min.js"></script> 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
+    /* Header card */
+    .nav-pills .nav-link {
+        text-align: left;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+        font-weight: 500;
+        width: 100%;
+        padding: 12px;
+        background-color: #fff;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: #f4f3f8;
+            border-left: 4px solid #645394;
+            color: #645394;
+            font-weight: bold;
+        }
 
     .form-control {
         padding: 0 10px !important;
@@ -35,11 +54,11 @@
     }
 
     #scrollToTopBtn:hover {
-        background-color: #0056b3; /* Darker blue */
+        background-color: #0056b3;
     }
 
     #scrollToTopBtn {
-        outline: none; /* Removes the focus border */
+        outline: none;
     }
 
     .tabulator .tabulator-header .tabulator-col {
@@ -62,7 +81,16 @@
     }
 
     .form-group {
-        margin-bottom: 0.5rem; /* Reduce space between each input group */
+        margin-bottom: 0.5rem;
+    }
+    /* Select2 styling inside Tabulator cells */
+    .select2-container--default .select2-selection--single {
+        height: auto !important;
+        padding: 5px !important;
+    }
+
+    .select2-dropdown {
+        z-index: 999999 !important;
     }
 
     .calendar-container {
@@ -103,73 +131,144 @@
         font-size: 14px;
     }
 
-    @@keyframes flash-bg {
-        0% {
-            background-color: #fff3cd;
-        }
-        /* light warning */
-        100% {
-            background-color: transparent;
-        }
+    .tab-multi-ac {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        align-items: center;
+        min-height: 30px;
+        padding: 4px;
+        cursor: text;
     }
+
+        .tab-multi-ac input {
+            border: none;
+            outline: none;
+            flex: 1 0 120px;
+            min-width: 100px;
+        }
+
+    .tab-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: #eef1f6;
+        font-size: 12px;
+    }
+
+        .tab-tag .tab-x {
+            cursor: pointer;
+            font-weight: 700;
+        }
 
     .row-flash {
         animation: flash-bg 2s ease-out forwards;
     }
 
-    /* if your table has zebra or hover styles, ensure the flash wins */
-    .tabulator-row.row-flash {
-        transition: background-color 2s ease-out;
+    .row-flash1 {
+        animation: flashRow 0.8s ease;
+    }
+
+    @@keyframes flashRow {
+        0%, 100%
+
+    {
+        background-color: transparent;
+    }
+
+    50% {
+        background-color: #d4edda;
+    }
+
     }
 </style>
 
 <div class="content">
-    <div class="card">
+
+    <!-- Header Card -->
+    <div class="card shadow-sm header-card" style="width:100%; margin:0;">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <b style="font-size: large;color: #4682B4;">SMP Calculation Make</b>
+                <b class="header-title">SMP Calculation Make</b>
             </div>
             <div class="col-md-3">
-                <div id="customDateTriggerSPMMake" class="calendar-container">
+                <div id="customDateTrigger" class="calendar-container">
                     <i class="fa fa-calendar"></i>
-                    <span id="dateRangePaymentSPMMake">Select Date Range</span>
+                    <span id="dateRangeText">Select Date Range</span>
                 </div>
             </div>
             <div>
-                <button id="addPaymentButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 140px;font-size:15px" onclick="location.href='@Url.Action("SPMCalucationMakeDetails", "SPMCalculationMake")'">
-                    
-                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
+                <button id="addSpmButton"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2 header-btn"
+                        onclick="">
+                    <i class="fas fa-plus"></i> Add
                 </button>
-                <button id="backButton" class="btn btn-outline-primary legitRipple mr-2" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
-                    <i class="fas fa-arrow-left"></i> Back
+
+                <button id="exportSPMButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
                 </button>
+
+                <a href='@Url.Action("SPMCalucationMake", "SPMCalculationMake")'
+                   class="btn btn-outline-primary"
+                   style="width:120px; font-size:15px;">
+                    <i class="fas fa-arrow-left"></i> BACK
+                </a>
             </div>
+
         </div>
     </div>
 
+    <!-- Period Title + Table -->
+    <div class="card shadow-sm period-card"
+         style="border-radius:8px; border:1px solid #ccc; margin-top:20px; width:100%;">
+
+        <div class="card-body">
+            <div class="chart-container">
+                <div id="deviation_note_table_wrapper" style="overflow-x:auto;">
+                    <div id="spm_table"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 @section Scripts {
-    <!-- Font Awesome (if not already in your layout) -->
-    @* <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script> *@
 
-    <!-- Litepicker CSS/JS (move CSS to head in layout for production if you like) -->
+    <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
 
     <script>
 
-        let filterStartSPMMakeDate = moment().startOf('month').format('YYYY-MM-DD');
-        let filterEndSPMMakeDate = moment().endOf('month').format('YYYY-MM-DD');
+        // var tabledata = [];
+        var table = null;
+        // var tabledata1 = [];
+        let vendorOptions = {};
+        let filterStartSPMDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndSPMDate = moment().endOf('month').format('YYYY-MM-DD');
 
         $(document).ready(function () {
-
-            $('#dateRangePaymentSPMMake').text(
-                moment(filterStartSPMMakeDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndSPMMakeDate).format('MMMM D, YYYY')
+            $('#dateRangeText').text(
+                moment(filterStartSPMDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndSPMDate).format('MMMM D, YYYY')
             );
 
             const picker = new Litepicker({
-                element: document.getElementById('customDateTriggerSPMMake'),
+                element: document.getElementById('customDateTrigger'),
                 singleMode: false,
                 format: 'DD-MM-YYYY',
                 numberOfMonths: 2,
@@ -178,15 +277,17 @@
                 plugins: ['ranges'],
                 setup: (picker) => {
                     picker.on('selected', (start, end) => {
-                        filterStartSPMMakeDate = start.format('YYYY-MM-DD');
-                        filterEndSPMMakeDate = end.format('YYYY-MM-DD');
-                        $('#dateRangePaymentSPMMake').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                        filterStartSPMDate = start.format('YYYY-MM-DD');
+                        filterEndSPMDate = end.format('YYYY-MM-DD');
+                        $('#dateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                        loadData();
                     });
 
                     picker.on('clear', () => {
-                        filterStartSPMMakeDate = "";
-                        filterEndSPMMakeDate = "";
-                        $('#dateRangePaymentSPMMake').text("Select Date Range");
+                        filterStartSPMDate = "";
+                        filterEndSPMDate = "";
+                        $('#dateRangeText').text("Select Date Range");
+                        loadData();
                     });
                 },
                 ranges: {
@@ -201,18 +302,655 @@
                 endDate: moment().endOf('month').format('DD-MM-YYYY')
             });
 
-            $('#customDateTriggerSPMMake').on('click', function () {
+            $('#customDateTrigger').on('click', function () {
                 picker.show();
             });
 
-            document.addEventListener('DOMContentLoaded', function () {
-                document.getElementById('backButton').addEventListener('click', function () {
-                    window.history.back();
+            loadData();
+        });
+
+        function loadData() {
+            Blockloadershow();
+
+            $.ajax({
+                url: '/Service/GetVendor',
+                type: 'GET'
+            }).done(function (vendorData) {
+                //let vendorOptions = {};
+
+                if (Array.isArray(vendorData)) {
+                    vendorOptions = vendorData.reduce((acc, v) => {
+                        acc[v.value] = v.label;
+                        return acc;
+                    }, {});
+                }
+
+                $.ajax({
+                    url: '/SPMCalculationMake/GetAll',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {
+                        startDate: filterStartSPMDate,
+                        endDate: filterEndSPMDate
+                    },
+                    success: function (data) {
+                        if (Array.isArray(data)) {
+                            renderSPMTable(data); // load into Tabulator or grid
+                        } else {
+                            showDangerAlert('No Data available.');
+                        }
+                        Blockloaderhide();
+                    },
+
+                    error: function (xhr, status, error) {
+                        showDangerAlert('Error retrieving data: ' + error);
+                        Blockloaderhide();
+                    }
+                });
+
+            }).fail(function () {
+                Blockloaderhide();
+                showDangerAlert('Failed to load vendor data.');
+            });
+        }
+
+        var headerMenu = function () {
+            const menu = [];
+            const columns = this.getColumns();
+
+            columns.forEach(column => {
+                const icon = document.createElement("i");
+                icon.classList.add("fas", column.isVisible() ? "fa-check-square" : "fa-square");
+
+                const label = document.createElement("span");
+                const title = document.createElement("span");
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        e.stopPropagation();
+                        column.toggle();
+                        icon.classList.toggle("fa-check-square", column.isVisible());
+                        icon.classList.toggle("fa-square", !column.isVisible());
+                    }
                 });
             });
 
+            return menu;
+        };
+
+                function getFinancialYears() {
+            let today = new Date();
+            let year = today.getFullYear();
+            let month = today.getMonth() + 1; // Jan=0, so +1
+
+            let startYear;
+            if (month < 4) {
+                // Before April → FY belongs to previous year
+                startYear = year - 1;
+            } else {
+                startYear = year;
+            }
+
+            // Build last 5 financial years
+            let years = {};
+            for (let i = 0; i < 5; i++) {
+                let sYear = startYear - i;
+                let eYear = sYear + 1;
+                let fy = sYear + "-" + eYear.toString().slice(-2);
+                years[fy] = fy;
+            }
+
+            return years;
+        }
+
+        var financialYears = getFinancialYears();
+
+        function getMonthOptions() {
+            const months = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const yearSuffix = new Date().getFullYear().toString().slice(-2);
+            return months.map(m => `${m} - ${yearSuffix}`); // array of strings
+        }
+
+        function getMonthString() {
+            const months = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const today = new Date();
+            const monthName = months[today.getMonth()];
+            const yearSuffix = today.getFullYear().toString().slice(-2);
+            return monthName + " - " + yearSuffix;
+        }
+
+
+        function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
+            const col = {
+                title: title,
+                field: field,
+                editor: editorType,
+                editorParams: editorParams,
+                formatter: formatter,
+                headerFilter: headerFilterType,
+                headerFilterParams: headerFilterParams,
+                headerMenu: headerMenu,
+                hozAlign: align,
+                headerHozAlign: "left"
+            };
+            return col;
+        }
+
+        function renderSPMTable(response) {
+                let tabledata = [];
+
+            // Utility function to format date to dd/MM/yyyy
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+            }
+
+            // Prepare data
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id : item.id,
+                        Supp_Name : item.supp_Name || "",
+                        Quater : item.quater || "",
+                        Fy : item.fy || "",
+                        Month : item.month || "",
+                        Pc : item.pc || "",
+                        Location : item.location || "",
+                        Sqa : item.sqa || "",
+                        Ppm : item.ppm || 0,
+                        Delivery : item.delivery || 0,
+                        Capa : item.capa || 0,
+                        Audit : item.audit || 0,
+                        Cost : item.cost || 0,
+                        Npi_Resp : item.npi_Resp || 0,
+                        Rep_Lead_Time : item.rep_Lead_Time || 0,
+                        Ppm_Rating : item.ppm_Rating || 0,
+                        Delivery_Rating : item.delivery_Rating || 0,
+                        Capa_Rating : item.capa_Rating,
+                        Audit_Rating : item.audit_Rating || 0,
+                        Cost_Rating : item.cost_Rating || 0,
+                        Npi_Resp_Rating : item.npi_Resp_Rating || 0,
+                        Rep_Lead_Time_Rating : item.rep_Lead_Time_Rating || 0,
+                        Total : item.total || 0,
+                        UpdatedDate: item.updatedDate || "",
+                        CreatedDate: item.createdDate || "",
+                        CreatedBy: item.createdBy || "",
+                        UpdatedBy: item.updatedBy || ""
+                    });
+                });
+            }
+
+            const textEditor = "input";
+            const numEditor  = "number";
+
+            const columns = [
+                { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
+                // { title: "Supplier Name", field: "Supp_Name", hozAlign: "left", headerHozAlign: "center", frozen: true, editor: textEditor  },
+                {
+                  title: "Supplier Name",
+                  field: "Supp_Name",
+                  hozAlign: "left",
+                  headerHozAlign: "center",
+                  frozen: true,
+                  editor: "select2",                 // or your select2 editor function name
+                  editorParams: {
+                    values: vendorOptions          // { 1:"ABC", 2:"XYZ" }
+                  },
+                  formatter: function(cell){
+                    const v = cell.getValue();
+                    return vendorOptions[v] || v;
+                  },
+                  width: 180
+                },
+                { title: "Location", field: "Location", hozAlign: "center", headerHozAlign: "center", editor: textEditor  },
+                { title: "SQA", field: "Sqa", hozAlign: "center", headerHozAlign: "center", editor: textEditor  },
+                // { title: "Fy", field: "Fy", hozAlign: "center", headerHozAlign: "center" , editor: textEditor },
+                {
+                    title: "FY",
+                    field: "Fy",
+                    editor: "list",
+                    editorParams: {
+                        values: financialYears,
+                        clearable: true
+                    },
+                    headerFilter: "list",
+                    headerFilterParams: { values: financialYears },
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+
+                // { title: "Quater", field: "Quater", hozAlign: "center", headerHozAlign: "center", editor: textEditor  },
+                // { title: "Month", field: "Month", hozAlign: "center", headerHozAlign: "center" , editor: textEditor },
+
+                {
+                  title: "Quarter",
+                  field: "Quater",
+                  hozAlign: "center",
+                  headerHozAlign: "center",
+                  editor: "list",
+                  editorParams: {
+                    values: [
+                      { label: "Q1", value: "Q1" },
+                      { label: "Q2", value: "Q2" },
+                      { label: "Q3", value: "Q3" },
+                      { label: "Q4", value: "Q4" }
+                    ]
+                  },
+                  width: 100
+                },
+
+                {
+                    title: "Month",
+                    field: "Month",
+                    editor: "list",
+                    editorParams: {
+                        values: getMonthOptions(),   // array or object
+                        clearable: true
+                    },
+                    headerFilter: "list",
+                    headerFilterParams: { values: getMonthOptions() },
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu
+                },
+                { title: "PC", field: "Pc", hozAlign: "center", headerHozAlign: "center", editor: textEditor  },
+
+                { title: "PPM", headerHozAlign: "center",
+                    columns: [
+                        { title: "0-5000", field: "Ppm", hozAlign: "center", editor: numEditor }
+                    ]
+                },
+
+                { title: "Delivery Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "96-100", field: "Delivery", hozAlign: "center", editor: numEditor }
+                    ]
+                },
+
+                { title: "CAPA Age", headerHozAlign: "center",
+                    columns: [
+                        { title: "0-5", field: "Capa", hozAlign: "center", editor: numEditor }
+                    ]
+                },
+
+                { title: "Audit Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "> 85", field: "Audit", hozAlign: "center", editor: numEditor }
+                    ]
+                },
+
+                { title: "Cost Initiative", headerHozAlign: "center",
+                    columns: [
+                        { title: "1.5%", field: "Cost", hozAlign: "center", editor: numEditor }
+                    ]
+                },
+
+                { title: "NPI Response", headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "Npi_Resp", hozAlign: "center", editor: numEditor }
+                    ]
+                },
+
+                { title: "Replacement Lead Time", headerHozAlign: "center",
+                    columns: [
+                        { title: "<=7", field: "Rep_Lead_Time", hozAlign: "center", editor: numEditor }
+                    ]
+                },
+
+                { title: "PPM Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "20", field: "Ppm_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "Delivery Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "15", field: "Delivery_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "CAPA Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "Capa_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "Audit Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "20", field: "Audit_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "Cost Initiative Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "15", field: "Cost_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "NPI Response Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "Npi_Resp_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "Replace Lead Time Rating", headerHozAlign: "center",
+                    columns: [
+                        { title: "10", field: "Rep_Lead_Time_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "Total", headerHozAlign: "center",
+                    columns: [
+                        { title: "100", field: "Total", hozAlign: "center", editor: false}
+                    ]
+                },
+
+                { title: "Id", field: "Id",visible: false}
+            ];
+
+            // Create once, update after
+            if (!table) {
+                table = new Tabulator("#spm_table", {
+                    data: tabledata,
+                    columns: columns,
+                    layout: "fitDataFill",
+                    placeholder: "No data available",
+                    movableColumns: true,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [10, 20, 50, 100],
+                    paginationCounter: "rows",
+                    reactiveData: true,
+                    index: "Id",
+
+                    columnDefaults: {
+                       editor: false,
+                       headerMenu: headerMenu
+                    },
+
+                    tableBuilt: function () {
+                        this.redraw(true);
+                    }
+                });
+
+                table.on("cellEdited", function (cell) {
+                    debugger
+                    const row = cell.getRow();
+                    const rowData = row.getData();
+
+                    rowData.__tabRow = row;
+
+                    saveEditedSPMRow(cell.getRow().getData());
+                });
+
+            } else {
+                table.setColumns(columns);
+                table.replaceData(tabledata);
+                table.redraw(true);
+            }
+
+            (function bindAddButtonOnce() {
+                var $btn = $("#addSpmButton");
+                $btn.attr("type", "button");                       // avoid form submit duplicates
+                $btn.off("click.addrow").on("click.addrow", function (e) {
+                    e.preventDefault(); e.stopPropagation();
+                    if ($btn.data("busy")) return;                 // guard double-clicks
+                    $btn.data("busy", true).prop("disabled", true);
+
+                    try {
+                        const fyOptions = getFinancialYears() || {};
+                        const currentFY = Object.keys(fyOptions)[0] || "";
+                        const month = getMonthString() || "";
+
+                        const newRow = {
+                            Id: 0,
+                            Sr_No: table.getDataCount() + 1,
+                            Supp_Name : "",
+                            Location : "",
+                            Sqa : "",
+                            Fy : currentFY,
+                            Quater : "",
+                            Month : month,
+                            Pc : "",
+                            Ppm : 0,
+                            Delivery : 0,
+                            Capa : 0,
+                            Audit : 0,
+                            Cost : 0,
+                            Npi_Resp : 0,
+                            Rep_Lead_Time : 0,
+                            Ppm_Rating : 0,
+                            Delivery_Rating :  0,
+                            Capa_Rating : 0,
+                            Audit_Rating : 0,
+                            Cost_Rating :  0,
+                            Npi_Resp_Rating :  0,
+                            Rep_Lead_Time_Rating : 0
+                        };
+
+                        table.addRow(newRow, true).then(function (row) {
+                            table.scrollToRow(row, "top", false);
+                            if (row.select) row.select();
+
+                            const el = row.getElement();
+                            el.classList.add("row-flash");
+                            setTimeout(() => el.classList.remove("row-flash"), 1200);
+
+                            renumberSrNo(); // keep S.No sequence
+                        }).catch(console.error).finally(function () {
+                            $btn.data("busy", false).prop("disabled", false);
+                        });
+
+                    } catch (err) {
+                        console.error(err);
+                        $btn.data("busy", false).prop("disabled", false);
+                    }
+                });
+            })();
+
+            (function bindExportButtonOnce() {
+                var $btn = $("#exportSPMButton");
+                $btn.attr("type", "button");
+                $btn.off("click.export").on("click.export", function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if ($btn.data("busy")) return;
+                    $btn.data("busy", true).prop("disabled", true);
+
+                    try {
+                        const today = new Date();
+                        const filename = `SPM_Report_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.xlsx`;
+
+                        table.download("xlsx", filename, {
+                            sheetName: "SPM Data"
+                        });
+
+                        showSuccessAlert("Excel file exported successfully!");
+                    } catch (err) {
+                        console.error("Export error:", err);
+                        showDangerAlert("Error exporting to Excel: " + err.message);
+                    } finally {
+                        setTimeout(() => {
+                            $btn.data("busy", false).prop("disabled", false);
+                        }, 1000);
+                    }
+                });
+            })();
+
+            Blockloaderhide();
+        }
+           
+
+        Tabulator.extendModule("edit", "editors", {
+            select2: function (cell, onRendered, success, cancel, editorParams) {
+                const values = editorParams.values || {};
+                const select = document.createElement("select");
+                select.style.width = "100%";
+
+                if (Array.isArray(values)) {
+                    values.forEach(function (item) {
+                        let option = document.createElement("option");
+                        option.value = item.value;
+                        option.text = item.label;
+                        if (item.value === cell.getValue()) option.selected = true;
+                        select.appendChild(option);
+                    });
+                }
+                else {
+
+                    for (let val in values) {
+                        let option = document.createElement("option");
+                        option.value = val;
+                        option.text = values[val];
+                        if (val === cell.getValue()) option.selected = true;
+                        select.appendChild(option);
+                    }
+                }
+                onRendered(function () {
+                    $(select).select2({
+                        dropdownParent: document.body,
+                        width: 'resolve',
+                        placeholder: "Select value"
+                    }).on("change", function () {
+                        success(select.value);
+                    });
+                });
+
+                return select;
+            }
         });
+
+        function renumberSrNo() {
+            const rows = table.getRows("active");
+            $.each(rows, function (i, r) {
+                const d = r.getData();
+                if (d.Sr_No !== i + 1) { r.update({ Sr_No: i + 1 }); }
+            });
+        }
+
+        function saveEditedSPMRow(rowData) {
+            debugger
+
+            var errorMsg = "";
+            var fields = "";
+
+            if (rowData.Supp_Name == '' || rowData.Supp_Name == null || rowData.Supp_Name == undefined) {
+                fields += " - Supplier Name" + "<br>";
+            }
+
+            if (fields != "") {
+                errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
+            }
+
+            if (errorMsg != "") {
+                //Blockloaderhide();
+                showDangerAlert(errorMsg);
+                return false;
+            }
+
+            const cleanedData = {
+                Id: rowData.Id || 0,
+                Supp_Name : rowData.Supp_Name || null,
+                Quater : rowData.Quater || null,
+                Fy : rowData.Fy || null,
+                Month : rowData.Month ||null,
+                Pc : rowData.Pc || null,
+                Location : rowData.Location || null,
+                Sqa : rowData.Sqa || null,
+                Ppm : rowData.Ppm || 0,
+                Delivery : rowData.Delivery || 0,
+                Capa : rowData.Capa || 0,
+                Audit : rowData.Audit || 0,
+                Cost : rowData.Cost || 0,
+                Npi_Resp : rowData.Npi_Resp || 0,
+                Rep_Lead_Time : rowData.Rep_Lead_Time || 0
+            };
+
+            console.log("Cleaned data:", cleanedData);
+
+            const isNew = cleanedData.Id === 0;
+            const url = isNew ? "/SPMCalculationMake/Create" : "/SPMCalculationMake/Update";
+
+            $.ajax({
+                url,
+                type: "POST",
+                data: JSON.stringify(cleanedData),
+                contentType: "application/json",
+                success: function (data) {
+                    if (data && data.success) {
+                         const savedRow = data.row || data.payload || data.data;
+
+                        if (isNew && (data.id || data.Id)) {
+                            cleanedData.Id = data.id ?? data.Id;
+                            if (savedRow) savedRow.Id = cleanedData.Id;
+                        }
+
+                        // Find the row in the table by Id
+                        const tableRow = table.getRow(rowData.Id || cleanedData.Id);
+
+                        if (tableRow) {
+                            // Update with complete server response including ratings
+                            const updateData = {
+                                ...cleanedData,
+                                Id: cleanedData.Id,
+                                Ppm_Rating: savedRow?.ppm_Rating || savedRow?.Ppm_Rating || 0,
+                                Delivery_Rating: savedRow?.delivery_Rating || savedRow?.Delivery_Rating || 0,
+                                Capa_Rating: savedRow?.capa_Rating || savedRow?.Capa_Rating || 0,
+                                Audit_Rating: savedRow?.audit_Rating || savedRow?.Audit_Rating || 0,
+                                Cost_Rating: savedRow?.cost_Rating || savedRow?.Cost_Rating || 0,
+                                Npi_Resp_Rating: savedRow?.npi_Resp_Rating || savedRow?.Npi_Resp_Rating || 0,
+                                Rep_Lead_Time_Rating: savedRow?.rep_Lead_Time_Rating || savedRow?.Rep_Lead_Time_Rating || 0,
+                                Total: savedRow?.total || savedRow?.Total || 0,
+                                UpdatedDate: savedRow?.updatedDate || savedRow?.UpdatedDate || "",
+                                UpdatedBy: savedRow?.updatedBy || savedRow?.UpdatedBy || ""
+                            };
+
+                            tableRow.update(updateData);
+
+                            // Flash effect to show update
+                            const el = tableRow.getElement();
+                            el.classList.add("row-flash1");
+                            setTimeout(() => el.classList.remove("row-flash1"), 800);
+
+                        } else {
+                            // If row not found (shouldn't happen), reload data
+                            loadData?.();
+                        }
+                        
+                    } else {
+                        let errorMessg = "";
+                        if (data && data.errors) {
+                            for (const k in data.errors) {
+                                if (Object.prototype.hasOwnProperty.call(data.errors, k)) {
+                                    errorMessg += `${data.errors[k]}\n`;
+                                }
+                            }
+                        }
+                        showDangerAlert(errorMessg || (data && data.message) || "An error occurred while saving.");
+                    }
+                },
+                error: function (xhr) {
+                    showDangerAlert(xhr.responseText || "Error saving record.");
+                },
+            });
+        }
+
     </script>
+
 }
 
 @section HideSidebar { }
+

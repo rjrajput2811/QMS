@@ -45,6 +45,7 @@ using QMS.Core.Repositories.SixSigmaIndicesRepo;
 using QMS.Core.Repositories.SixSigmaIndicesRepository;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
+using QMS.Core.Repositories.SPMMakeRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -97,6 +98,7 @@ builder.Services.AddTransient<ICSATSummaryRepository, CSATSummaryRepository>();
 builder.Services.AddTransient<ICAReportRepository, CAReportRepository>();
 builder.Services.AddTransient<IRCAReportRepository, RCAReportRepository>();
 builder.Services.AddScoped<ISixSigmaIndicesRepository, SixSigmaIndicesRepository>();
+builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

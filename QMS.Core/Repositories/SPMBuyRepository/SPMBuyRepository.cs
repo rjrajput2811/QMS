@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.Shared;
+using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Services.SystemLogs;
 using System;
 using System.Collections.Generic;
@@ -10,29 +11,28 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
-namespace QMS.Core.Repositories.SPMMakeRepository
+namespace QMS.Core.Repositories.SPMBuyRepository
 {
-    public class SPMMakeRepository : SqlTableRepository, ISPMMakeRepository
+    public class SPMBuyRepository : SqlTableRepository, ISPMBuyRepository
     {
         private new readonly QMSDbContext _dbContext;
         private readonly ISystemLogService _systemLogService;
 
-        public SPMMakeRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
+        public SPMBuyRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
         {
             _dbContext = dbContext;
             _systemLogService = systemLogService;
         }
 
-        public async Task<List<SPM_MakeViewModel>> GetListAsync()
+        public async Task<List<SPM_BuyViewModel>> GetListAsync()
         {
             try
             {
-                var result = await _dbContext.SPM_Make.FromSqlRaw("EXEC sp_Get_SPM_Make").ToListAsync();
+                var result = await _dbContext.SPM_Buy.FromSqlRaw("EXEC sp_Get_SPM_Buy").ToListAsync();
 
                 // Map results to ViewModel
-                var viewModelList = result.Select(data => new SPM_MakeViewModel
+                var viewModelList = result.Select(data => new SPM_BuyViewModel
                 {
                     Id = data.Id,
                     Supp_Name = data.Supp_Name,
@@ -58,6 +58,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
                     Rep_Lead_Time_Rating = data.Rep_Lead_Time_Rating,
                     Total = data.Total,
                     Star_Rating = data.Star_Rating,
+                    Performance = data.Performance,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -73,7 +74,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
             }
         }
 
-        public async Task<List<SPM_Make>> GetByIdAsync(string fy, List<string> quaterList)
+        public async Task<List<SPM_Buy>> GetByIdAsync(string fy, List<string> quaterList)
         {
             try
             {
@@ -84,11 +85,11 @@ namespace QMS.Core.Repositories.SPMMakeRepository
                     new SqlParameter("@Quater", (object)quaterCsv ?? DBNull.Value)
                 };
 
-                var sql = @"EXEC sp_Get_SPM_Make_ById @Fy,@Quater";
+                var sql = @"EXEC sp_Get_SPM_Buy_ById @Fy,@Quater";
 
-                var result = await _dbContext.SPM_Make.FromSqlRaw(sql, parameters).ToListAsync();
+                var result = await _dbContext.SPM_Buy.FromSqlRaw(sql, parameters).ToListAsync();
 
-                var viewList = result.Select(data => new SPM_Make
+                var viewList = result.Select(data => new SPM_Buy
                 {
                     Id = data.Id,
                     Supp_Name = data.Supp_Name,
@@ -114,6 +115,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
                     Rep_Lead_Time_Rating = data.Rep_Lead_Time_Rating,
                     Total = data.Total,
                     Star_Rating = data.Star_Rating,
+                    Performance = data.Performance,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -129,7 +131,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
             }
         }
 
-        public async Task<OperationResult> CreateAsync(SPM_Make newRecord, bool returnCreatedRecord = false)
+        public async Task<OperationResult> CreateAsync(SPM_Buy newRecord, bool returnCreatedRecord = false)
         {
             var operationResult = new OperationResult();
             try
@@ -163,7 +165,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
         };
 
                 // Add @NewId OUTPUT to the SQL string
-                var sql = @"EXEC sp_SPM_Make_Insert 
+                var sql = @"EXEC sp_SPM_Buy_Insert 
                     @IsDeleted, @Supp_Name, @Quater, @Fy, @Month, @Pc, @Location, @Sqa,
                     @Ppm, @Delivery, @Capa, @Audit, @Cost, @Npi_Resp, @Rep_Lead_Time, 
                     @CreatedBy, @NewId OUTPUT";
@@ -177,7 +179,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
 
                 if (returnCreatedRecord)
                 {
-                    var createdRow = await _dbContext.SPM_Make
+                    var createdRow = await _dbContext.SPM_Buy
                         .AsNoTracking()
                         .FirstOrDefaultAsync(x => x.Id == newId);
 
@@ -198,13 +200,13 @@ namespace QMS.Core.Repositories.SPMMakeRepository
             }
         }
 
-        public async Task<OperationResult> UpdateAsync(SPM_Make updatedRecord, bool returnUpdatedRecord = false)
+        public async Task<OperationResult> UpdateAsync(SPM_Buy updatedRecord, bool returnUpdatedRecord = false)
         {
             try
             {
                 var parameters = new[]
                 {
-                    new SqlParameter("@SpmMake_Id", updatedRecord.Id),
+                    new SqlParameter("@SpmBuy_Id", updatedRecord.Id),
                     new SqlParameter("@IsDeleted", updatedRecord.Deleted),
                     new SqlParameter("@Supp_Name", updatedRecord.Supp_Name ?? (object)DBNull.Value),
                     new SqlParameter("@Quater", updatedRecord.Quater ?? (object)DBNull.Value),
@@ -223,14 +225,14 @@ namespace QMS.Core.Repositories.SPMMakeRepository
                     new SqlParameter("@UpdatedBy", updatedRecord.UpdatedBy ?? (object)DBNull.Value),
                 };
 
-                var sql = @"EXEC sp_SPM_Make_Update @SpmMake_Id,@IsDeleted,@Supp_Name,@Quater,@Fy,@Month,@Pc,@Location,@Sqa,
+                var sql = @"EXEC sp_SPM_Buy_Update @SpmBuy_Id,@IsDeleted,@Supp_Name,@Quater,@Fy,@Month,@Pc,@Location,@Sqa,
                             @Ppm,@Delivery,@Capa,@Audit,@Cost,@Npi_Resp,@Rep_Lead_Time, @UpdatedBy";
 
                 //await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
                 if (returnUpdatedRecord)
                 {
-                    var rows = await _dbContext.Set<SPM_Make>()
+                    var rows = await _dbContext.Set<SPM_Buy>()
                                     .FromSqlRaw(sql, parameters)
                                     .AsNoTracking()
                                     .ToListAsync();
@@ -256,7 +258,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
         {
             try
             {
-                return await base.DeleteAsync<SPM_Make>(id);
+                return await base.DeleteAsync<SPM_Buy>(id);
             }
             catch (Exception ex)
             {
@@ -265,20 +267,20 @@ namespace QMS.Core.Repositories.SPMMakeRepository
             }
         }
 
-        public async Task<bool> CheckDuplicate(string sup_Name,string qtr, int spmId)
+        public async Task<bool> CheckDuplicate(string sup_Name, string qtr, int spmId)
         {
             try
             {
                 bool existingFlag = false;
                 int? existingId = null;
 
-                IQueryable<int> query = _dbContext.SPM_Make
+                IQueryable<int> query = _dbContext.SPM_Buy
                     .Where(x => x.Deleted == false && x.Supp_Name == sup_Name && x.Quater == qtr)
                     .Select(x => x.Id);
 
                 if (spmId != 0)
                 {
-                    query = _dbContext.SPM_Make
+                    query = _dbContext.SPM_Buy
                         .Where(x => x.Deleted == false && x.Supp_Name == sup_Name && x.Quater == qtr && x.Id != spmId)
                         .Select(x => x.Id);
                 }

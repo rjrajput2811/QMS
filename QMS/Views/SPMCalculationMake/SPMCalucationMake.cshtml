@@ -5,7 +5,7 @@
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+@* <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> *@
 <script src="~/js/jquery.min.js"></script>
 <script src="~/js/jquery.datatables.js"></script>
 <link href="~/css/pnotify.css" rel="stylesheet" />
@@ -17,8 +17,10 @@
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
 <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
-<script src="~/js/xlsx.min.js"></script> 
+<script src="~/js/xlsx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+@* <link href="~/css/select2.min.css" rel="stylesheet" /> *@
 
 <style>
     /* Header card */
@@ -82,15 +84,6 @@
 
     .form-group {
         margin-bottom: 0.5rem;
-    }
-    /* Select2 styling inside Tabulator cells */
-    .select2-container--default .select2-selection--single {
-        height: auto !important;
-        padding: 5px !important;
-    }
-
-    .select2-dropdown {
-        z-index: 999999 !important;
     }
 
     .calendar-container {
@@ -172,17 +165,72 @@
     }
 
     @@keyframes flashRow {
-        0%, 100%
+        0%, 100% {
+            background-color: transparent;
+        }
 
-    {
-        background-color: transparent;
+        50% {
+            background-color: #d4edda;
+        }
     }
 
-    50% {
-        background-color: #d4edda;
+    .select2-container {
+        width: 100% !important;
+        box-sizing: border-box;
     }
 
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+        border: 0 !important;
+        border-bottom: 1px solid #cccccc !important;
+        border-radius: 0 !important;
+        min-height: 34px !important; 
+        height: auto !important;
+        padding: 0 10px !important;
+        display: flex !important;
+        align-items: center !important; 
+        box-sizing: border-box;
+        background: transparent !important;
     }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            padding: 0 !important;
+            line-height: 34px !important; 
+            color: #6c757d; 
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 34px !important;
+            top: 0 !important;
+        }
+
+    .select2-container--default .select2-selection--multiple {
+        padding: 2px 10px !important;
+    }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            margin: 0 !important;
+            border: 0 !important;
+            border-radius: 12px;
+            background: #eef1f6;
+            padding: 2px 8px;
+        }
+
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-bottom: 2px solid #645394 !important;
+        box-shadow: none !important;
+    }
+
 </style>
 
 <div class="content">
@@ -193,29 +241,52 @@
             <div>
                 <b class="header-title">SMP Calculation Make</b>
             </div>
-            <div class="col-md-3">
+            @*  <div class="col-md-3">
                 <div id="customDateTrigger" class="calendar-container">
                     <i class="fa fa-calendar"></i>
                     <span id="dateRangeText">Select Date Range</span>
                 </div>
+            </div> *@
+            <div class="col-md-3">
+                <div class="form-group row align-items-center">
+                    <label for="ddlFY" class="col-sm-4 col-form-label text-right">
+                        Financial Year
+                    </label>
+                    <div class="col-sm-4">
+                        <select id="ddlFY" class="form-control" onchange="filterData()">
+                        </select>
+                    </div>
+                </div>
             </div>
+
+            <div class="col-md-3">
+                <div class="form-group row align-items-center">
+                    <label for="quater" class="col-sm-4 col-form-label text-right">
+                        Quater
+                    </label>
+                    <div class="col-sm-7">
+                        <select id="quater" class="select2" multiple="multiple">
+                            <option value="Q1">Q1</option>
+                            <option value="Q2">Q2</option>
+                            <option value="Q3">Q3</option>
+                            <option value="Q4">Q4</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div>
-                <button id="addSpmButton"
-                        type="button"
-                        class="btn btn-outline-success legitRipple mr-2 header-btn"
-                        onclick="">
-                    <i class="fas fa-plus"></i> Add
+                <button id="addSpmButton" type="button" class="btn btn-outline-success legitRipple mr-2" style="width: 95px;font-size:15px">
+                    <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
 
-                <button id="exportSPMButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
+                <button id="exportExcelButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
                 </button>
 
-                <a href='@Url.Action("SPMCalucationMake", "SPMCalculationMake")'
-                   class="btn btn-outline-primary"
-                   style="width:120px; font-size:15px;">
-                    <i class="fas fa-arrow-left"></i> BACK
-                </a>
+                <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
             </div>
 
         </div>
@@ -239,7 +310,8 @@
 
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    @* <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> *@
+    <script src="~/js/select2.min.js"></script>
 
     <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
@@ -262,52 +334,50 @@
         let filterStartSPMDate = moment().startOf('month').format('YYYY-MM-DD');
         let filterEndSPMDate = moment().endOf('month').format('YYYY-MM-DD');
 
-        $(document).ready(function () {
-            $('#dateRangeText').text(
-                moment(filterStartSPMDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndSPMDate).format('MMMM D, YYYY')
-            );
-
-            const picker = new Litepicker({
-                element: document.getElementById('customDateTrigger'),
-                singleMode: false,
-                format: 'DD-MM-YYYY',
-                numberOfMonths: 2,
-                numberOfColumns: 2,
-                dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
-                plugins: ['ranges'],
-                setup: (picker) => {
-                    picker.on('selected', (start, end) => {
-                        filterStartSPMDate = start.format('YYYY-MM-DD');
-                        filterEndSPMDate = end.format('YYYY-MM-DD');
-                        $('#dateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                        loadData();
-                    });
-
-                    picker.on('clear', () => {
-                        filterStartSPMDate = "";
-                        filterEndSPMDate = "";
-                        $('#dateRangeText').text("Select Date Range");
-                        loadData();
-                    });
-                },
-                ranges: {
-                    Today: [moment(), moment()],
-                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                },
-                startDate: moment().startOf('month').format('DD-MM-YYYY'),
-                endDate: moment().endOf('month').format('DD-MM-YYYY')
+        $(document).ready(function ()
+        {
+             $('#quater').select2({
+                placeholder: "Select Quarter",
+                allowClear: true
             });
 
-            $('#customDateTrigger').on('click', function () {
-                picker.show();
+            $('#quater').on('change', function () {
+                filterData();
             });
+
+            bindFinancialYears();
 
             loadData();
+
         });
+
+        function getCurrentFYStartYear() {
+            const d = new Date();
+            return (d.getMonth() >= 3) ? d.getFullYear() : d.getFullYear() - 1;
+        }
+
+        function fyText(startYear) {
+            return startYear + "-" + String(startYear + 1).slice(-2);
+        }
+
+        function bindFinancialYears() {
+            const ddl = $("#ddlFY");
+            ddl.empty(); // clear existing options
+
+            ddl.append(`<option value="">Select FY</option>`);
+
+            const startFrom = 2020;
+            const currentFY = getCurrentFYStartYear();
+            const endFY = currentFY + 1; // include upcoming year
+
+            for (let y = startFrom; y <= endFY; y++) {
+                const fy = fyText(y);
+                ddl.append(`<option value="${fy}">${fy}</option>`);
+            }
+
+            // default select current FY
+            ddl.val(fyText(currentFY));
+        }
 
         function loadData() {
             Blockloadershow();
@@ -329,12 +399,9 @@
                     url: '/SPMCalculationMake/GetAll',
                     type: 'GET',
                     dataType: 'json',
-                    data: {
-                        startDate: filterStartSPMDate,
-                        endDate: filterEndSPMDate
-                    },
                     success: function (data) {
-                        if (Array.isArray(data)) {
+                        if (Array.isArray(data))
+                        {
                             renderSPMTable(data); // load into Tabulator or grid
                         } else {
                             showDangerAlert('No Data available.');
@@ -351,6 +418,45 @@
             }).fail(function () {
                 Blockloaderhide();
                 showDangerAlert('Failed to load vendor data.');
+            });
+        }
+
+
+        function filterData() {
+
+            var fy = $("#ddlFY").val();
+            var quater = $("#quater").val();
+
+            // 🔴 Validation: Quarter not selected
+            if (!quater || quater === "0") {
+                showDangerAlert("Please select Quarter.");
+                $("#quater").focus();
+                return; // stop further execution
+            }
+
+            Blockloadershow();
+
+            $.ajax({
+                url: '/SPMCalculationMake/GetById',
+                type: 'GET',
+                dataType: 'json',
+                traditional: true,
+                data: {
+                    Fy: fy,
+                    Quater: quater
+                },
+                success: function (data) {
+                    if (Array.isArray(data) && data.length > 0) {
+                        renderSPMTable(data);
+                    } else {
+                        showDangerAlert('No Data available.');
+                    }
+                    Blockloaderhide();
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
             });
         }
 
@@ -383,7 +489,7 @@
             return menu;
         };
 
-                function getFinancialYears() {
+        function getFinancialYears() {
             let today = new Date();
             let year = today.getFullYear();
             let month = today.getMonth() + 1; // Jan=0, so +1
@@ -447,6 +553,11 @@
             return col;
         }
 
+        function getVendorText(val) {
+            const key = (val ?? "").toString().trim();
+            return vendorOptions?.[key] || vendorOptions?.[val] || key; // fallback to value itself
+        }
+
         function renderSPMTable(response) {
                 let tabledata = [];
 
@@ -462,6 +573,7 @@
                         Sr_No: index + 1,
                         Id : item.id,
                         Supp_Name : item.supp_Name || "",
+                        Supp_Name_Text: getVendorText(item.supp_Name),
                         Quater : item.quater || "",
                         Fy : item.fy || "",
                         Month : item.month || "",
@@ -483,6 +595,7 @@
                         Npi_Resp_Rating : item.npi_Resp_Rating || 0,
                         Rep_Lead_Time_Rating : item.rep_Lead_Time_Rating || 0,
                         Total : item.total || 0,
+                        Star_Rating : item.star_Rating || 0,
                         UpdatedDate: item.updatedDate || "",
                         CreatedDate: item.createdDate || "",
                         CreatedBy: item.createdBy || "",
@@ -511,7 +624,13 @@
                     const v = cell.getValue();
                     return vendorOptions[v] || v;
                   },
-                  width: 180
+                  width: 180,
+                  cellEdited: function (cell) {
+                        const row = cell.getRow();
+                        const d = row.getData();
+                        d.Supp_Name_Text = getVendorText(d.Supp_Name);
+                        row.update({ Supp_Name_Text: d.Supp_Name_Text });
+                   }
                 },
                 { title: "Location", field: "Location", hozAlign: "center", headerHozAlign: "center", editor: textEditor  },
                 { title: "SQA", field: "Sqa", hozAlign: "center", headerHozAlign: "center", editor: textEditor  },
@@ -657,6 +776,12 @@
                     ]
                 },
 
+                { title: "", headerHozAlign: "center",
+                    columns: [
+                        { title: "", field: "Star_Rating", hozAlign: "center", editor: false}
+                    ]
+                },
+
                 { title: "Id", field: "Id",visible: false}
             ];
 
@@ -689,6 +814,12 @@
                     debugger
                     const row = cell.getRow();
                     const rowData = row.getData();
+
+                     // ✅ keep name text in sync always
+                    if (cell.getField() === "Supp_Name") {
+                        rowData.Supp_Name_Text = getVendorText(rowData.Supp_Name);
+                        row.update({ Supp_Name_Text: rowData.Supp_Name_Text });
+                    }
 
                     rowData.__tabRow = row;
 
@@ -760,39 +891,621 @@
                 });
             })();
 
-            (function bindExportButtonOnce() {
-                var $btn = $("#exportSPMButton");
-                $btn.attr("type", "button");
-                $btn.off("click.export").on("click.export", function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
 
-                    if ($btn.data("busy")) return;
-                    $btn.data("busy", true).prop("disabled", true);
 
-                    try {
-                        const today = new Date();
-                        const filename = `SPM_Report_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.xlsx`;
+                            const normalize = v => (v ?? "").toString().trim().toUpperCase();
 
-                        table.download("xlsx", filename, {
-                            sheetName: "SPM Data"
+        // vendorOptions example: { "1":"ABC Pvt Ltd", "2":"XYZ Ltd" }
+        function getVendorText(val) {
+            const key = (val ?? "").toString().trim();
+            return vendorOptions?.[key] || vendorOptions?.[val] || key;
+        }
+
+        /*
+        Excel Formula given by you:
+        =IF(AND(R4<=100,R4>84),5,
+         IF(AND(R4<=84,R4>74),4,
+         IF(AND(R4<=74,R4>59),3,
+         IF(AND(R4<=59,R4>49),2,
+         IF(R4<=49,1)))))
+
+        So ranges:
+        85–100 => 5
+        75–84  => 4
+        60–74  => 3
+        50–59  => 2
+        <=49   => 1
+        */
+        function scoreToStarRating(total) {
+            const t = Number(total ?? 0);
+
+            if (t <= 100 && t > 84) return 5;
+            if (t <= 84 && t > 74) return 4;
+            if (t <= 74 && t > 59) return 3;
+            if (t <= 59 && t > 49) return 2;
+            return 1;
+        }
+
+        function starTextFromRating(rating) {
+            const r = Math.max(0, Math.min(5, Number(rating || 0)));
+            return "★".repeat(r);
+        }
+
+        function exportSPMToExcelWithOverallRating() {
+            debugger;
+            try {
+                var selectedFY = $("#ddlFY").val();
+                if (!selectedFY || selectedFY === "" || selectedFY === "0") {
+                    showDangerAlert("Please select Financial Year before exporting.");
+                    $("#ddlFY").focus();
+                    return;
+                }
+
+                var selectedQuarters = $("#quater").val();
+                if (!selectedQuarters || selectedQuarters.length === 0) {
+                    showDangerAlert("Please select at least one Quarter before exporting.");
+                    $("#quater").focus();
+                    return;
+                }
+
+                Blockloadershow();
+
+                const allData = table.getData();
+
+                if (!allData || allData.length === 0) {
+                    Blockloaderhide();
+                    showDangerAlert("No data available in the table. Please load or add data first.");
+                    return;
+                }
+
+                // ✅ Ensure supplier TEXT exists (tabulator stores ID)
+                allData.forEach(r => {
+                    if (!r.Supp_Name_Text) r.Supp_Name_Text = getVendorText(r.Supp_Name);
+                });
+
+                const uniqueFYs = [...new Set(allData.map(row => row.Fy).filter(Boolean))];
+                const uniqueQuarters = [...new Set(allData.map(row => row.Quater).filter(Boolean))];
+
+                const fyQuarterOptions = [];
+                const missingQuarters = [];
+
+                selectedQuarters.forEach(quarter => {
+                    const hasData = allData.some(row =>
+                        normalize(row.Fy) === normalize(selectedFY) &&
+                        normalize(row.Quater) === normalize(quarter)
+                    );
+                    if (hasData) fyQuarterOptions.push(`${selectedFY}|${quarter}`);
+                    else missingQuarters.push(quarter);
+                });
+
+                if (fyQuarterOptions.length === 0) {
+                    Blockloaderhide();
+                    let errorMsg = `No data found for the selected criteria.\n\n`;
+                    errorMsg += `Selected: FY ${selectedFY}, Quarter(s): ${selectedQuarters.join(', ')}\n\n`;
+                    if (uniqueFYs.length > 0) errorMsg += `Available Financial Years in table: ${uniqueFYs.join(', ')}\n`;
+                    if (uniqueQuarters.length > 0) errorMsg += `Available Quarters in table: ${uniqueQuarters.join(', ')}\n\n`;
+                    showDangerAlert(errorMsg);
+                    return;
+                }
+
+                exportMultipleQuartersToExcel(selectedFY, fyQuarterOptions, allData);
+
+            } catch (err) {
+                Blockloaderhide();
+                console.error("Export error:", err);
+                showDangerAlert("Error: " + err.message);
+            }
+        }
+
+        function exportMultipleQuartersToExcel(selectedFY, fyQuarterOptions, allData) {
+            try {
+                Blockloadershow();
+
+                const wb = XLSX.utils.book_new();
+                const ws = createSPMSingleSheetForMultipleQuarters(selectedFY, fyQuarterOptions, allData);
+
+                if (!ws) {
+                    Blockloaderhide();
+                    showDangerAlert("No data could be exported");
+                    return;
+                }
+
+                const quarters = fyQuarterOptions.map(opt => opt.split('|')[1]).join('_');
+                XLSX.utils.book_append_sheet(wb, ws, `SPM_${selectedFY}_${quarters}`);
+
+                const today = new Date();
+                const filename = `SPM_Report_${selectedFY}_${quarters}_${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}.xlsx`;
+
+                XLSX.writeFile(wb, filename);
+
+                Blockloaderhide();
+                showSuccessAlert(`Excel exported successfully for ${selectedFY} with ${fyQuarterOptions.length} quarter(s): ${quarters.replace(/_/g, ', ')}!`);
+
+            } catch (err) {
+                Blockloaderhide();
+                console.error("Export error:", err);
+                showDangerAlert("Error: " + err.message);
+            }
+        }
+
+        function createSPMSingleSheetForMultipleQuarters(selectedFY, fyQuarterOptions, allData) {
+            try {
+                const monthOrder = {
+                    'JANUARY': 1, 'JAN': 1, 'FEBRUARY': 2, 'FEB': 2, 'MARCH': 3, 'MAR': 3,
+                    'APRIL': 4, 'APR': 4, 'MAY': 5, 'JUNE': 6, 'JUN': 6,
+                    'JULY': 7, 'JUL': 7, 'AUGUST': 8, 'AUG': 8, 'SEPTEMBER': 9, 'SEP': 9,
+                    'OCTOBER': 10, 'OCT': 10, 'NOVEMBER': 11, 'NOV': 11, 'DECEMBER': 12, 'DEC': 12
+                };
+
+                const extractMonthName = (monthStr) => {
+                    if (!monthStr) return '';
+                    let cleaned = monthStr.split(/\s*-/)[0].trim();
+                    cleaned = cleaned.replace(/\([^)]*\)/g, '').trim();
+                    return cleaned.toUpperCase();
+                };
+
+                // ✅ master supplier list uses TEXT name
+                const masterSuppliersMap = new Map();
+
+                fyQuarterOptions.forEach(option => {
+                    const [fy, quarter] = option.split('|');
+
+                    const filteredData = allData.filter(row =>
+                        normalize(row.Fy) === normalize(fy) &&
+                        normalize(row.Quater) === normalize(quarter)
+                    );
+
+                    filteredData.forEach(row => {
+                        const supplierNameForExcel = row.Supp_Name_Text || getVendorText(row.Supp_Name) || "";
+                        const key = `${supplierNameForExcel}_${row.Location || ''}_${row.Sqa || ''}`;
+
+                        if (!masterSuppliersMap.has(key)) {
+                            masterSuppliersMap.set(key, {
+                                Supp_Name_Text: supplierNameForExcel,
+                                Location: row.Location || '',
+                                Sqa: row.Sqa || ''
+                            });
+                        }
+                    });
+                });
+
+                const masterSuppliers = Array.from(masterSuppliersMap.values());
+
+                // Build quarter structures
+                const quarterStructures = [];
+
+                fyQuarterOptions.forEach(option => {
+                    const [fy, quarter] = option.split('|');
+
+                    const filteredData = allData.filter(row =>
+                        normalize(row.Fy) === normalize(fy) &&
+                        normalize(row.Quater) === normalize(quarter)
+                    );
+
+                    if (!filteredData.length) return;
+
+                    // sorted months (Month + PC)
+                    const monthPcMap = new Map();
+                    filteredData.forEach(row => {
+                        if (row.Month) {
+                            const monthName = extractMonthName(row.Month);
+                            const k = `${row.Month}${row.Pc ? '(' + row.Pc + ')' : ''}`;
+
+                            if (!monthPcMap.has(k)) {
+                                monthPcMap.set(k, {
+                                    sortOrder: monthOrder[monthName] || 999,
+                                    pc: row.Pc || ''
+                                });
+                            }
+                        }
+                    });
+
+                    const sortedMonthKeys = Array.from(monthPcMap.keys()).sort((a, b) => {
+                        const A = monthPcMap.get(a), B = monthPcMap.get(b);
+                        if (A.sortOrder !== B.sortOrder) return A.sortOrder - B.sortOrder;
+                        return (A.pc || '').localeCompare(B.pc || '');
+                    });
+
+                    // supplier map for this quarter (key based on text name)
+                    const quarterSupplierData = new Map();
+                    filteredData.forEach(row => {
+                        const supplierNameForExcel = row.Supp_Name_Text || getVendorText(row.Supp_Name) || "";
+                        const key = `${supplierNameForExcel}_${row.Location || ''}_${row.Sqa || ''}`;
+
+                        if (!quarterSupplierData.has(key)) quarterSupplierData.set(key, { monthData: {} });
+
+                        const monthKey = `${row.Month}${row.Pc ? '(' + row.Pc + ')' : ''}`;
+                        quarterSupplierData.get(key).monthData[monthKey] = row;
+                    });
+
+                    quarterStructures.push({
+                        quarter,
+                        sortedMonthKeys,
+                        supplierData: quarterSupplierData
+                    });
+                });
+
+                // =========================================================
+                // LAYOUT (MATCH YOUR SHEET)
+                // Month block has 16 columns (last = Star number)
+                // Overall block has 17 columns (adds Total star + STAR text)
+                // =========================================================
+                const fixedCols = 3;
+                const colsPerMonth = 16;
+                const overallRatingCols = 17;
+
+                let totalCols = fixedCols;
+                quarterStructures.forEach(qs => {
+                    totalCols += (qs.sortedMonthKeys.length * colsPerMonth) + overallRatingCols;
+                });
+
+                const wsData = [];
+
+                // ---------------- Row 1 ----------------
+                const row1 = new Array(totalCols).fill('');
+                let colIdx = fixedCols;
+
+                quarterStructures.forEach(qs => {
+                    qs.sortedMonthKeys.forEach(mk => {
+                        row1[colIdx] = mk;
+                        colIdx += colsPerMonth;
+                    });
+                    row1[colIdx] = `OVERALL RATING ${qs.quarter}`;
+                    colIdx += overallRatingCols;
+                });
+                wsData.push(row1);
+
+                // ---------------- Row 2 ----------------
+                const row2 = ['', '', ''];
+
+                quarterStructures.forEach(qs => {
+                    // Month headers (16) - last column numeric star
+                    qs.sortedMonthKeys.forEach(() => {
+                        row2.push(
+                            'PPM',
+                            'Delivery  \nRating',
+                            'CAPA Age',
+                            'Audit Rating',
+                            'Cost Initiative',
+                            'NPI Response ',
+                            'Replacement Lead Time',
+                            'PPM Rating',
+                            'Delivery\nRating',
+                            'CAPA Rating',
+                            'Audit Rating',
+                            'Cost Initiative Rating',
+                            'NPI Response Rating',
+                            'Replace Lead Time\nRating',
+                            'Total',
+                            'Star'
+                        );
+                    });
+
+                    // Overall headers (17) - overall total + star number + stars
+                    row2.push(
+                        'PPM',
+                        'Delivery  \nRating',
+                        'CAPA Age',
+                        'Audit Rating',
+                        'Cost Initiative',
+                        'NPI Response ',
+                        'Replacement Lead Time',
+                        'PPM Rating',
+                        'Delivery\nRating',
+                        'CAPA Rating',
+                        'Audit Rating',
+                        'Cost Initiative Rating',
+                        'NPI Response Rating',
+                        'Replace Lead Time\nRating',
+                        `Overall  \nRating\n${qs.quarter}`, // 0–100
+                        'Total',                           // star number (1–5)
+                        `STAR Rating ${qs.quarter}`        // stars text ★★★★★
+                    );
+                });
+
+                wsData.push(row2);
+
+                // ---------------- Row 3 ----------------
+                const row3 = ['Supplier name', 'Location', 'SQA'];
+
+                quarterStructures.forEach(qs => {
+                    qs.sortedMonthKeys.forEach(() => {
+                        row3.push(
+                            '0-5000','96-100','0-5','> 85','0.015','10','<=7',
+                            '20','15','10','20','15','10','10','100',''
+                        );
+                    });
+
+                    row3.push(
+                        '0-5000','96-100','0-5','> 85','0.015','10','<=7',
+                        '20','15','10','20','15','10','10',
+                        '100', // overall score
+                        '5',   // star number
+                        ''     // stars
+                    );
+                });
+
+                wsData.push(row3);
+
+                // helpers
+                const avg = (arr) => arr.length ? (arr.reduce((a,b)=>a+b,0) / arr.length) : 0;
+
+                const calcPpmRating = (val) => (val >= 0 && val <= 5000) ? 20 : (val <= 7500) ? 15 : (val <= 10000) ? 10 : (val >= 10001) ? 5 : 0;
+                const calcDeliveryRating = (val) => (val >= 90) ? 15 : (val >= 80) ? 10 : (val >= 60) ? 5 : (val <= 59) ? 1 : 0;
+                const calcAuditRating = (val) => (val >= 75) ? 20 : (val >= 65) ? 15 : (val >= 55) ? 10 : (val <= 54) ? 5 : 0;
+                const calcRepLTRating = (val) => (val <= 7) ? 10 : (val <= 15) ? 7 : (val <= 21) ? 5 : (val >= 21) ? 1 : 0;
+
+                // ---------------- DATA ROWS ----------------
+                masterSuppliers.forEach(supplier => {
+                    const dataRow = [supplier.Supp_Name_Text, supplier.Location, supplier.Sqa];
+
+                    quarterStructures.forEach(qs => {
+                        const supplierKey = `${supplier.Supp_Name_Text}_${supplier.Location}_${supplier.Sqa}`;
+                        const quarterSupplier = qs.supplierData.get(supplierKey);
+
+                        const inputValues = { ppm: [], delivery: [], capa: [], audit: [], cost: [], npi: [], repLT: [] };
+                        const monthTotals = []; // ✅ used to compute quarter overall total
+                        const monthStars = [];   // ✅ NEW: store month star numbers
+
+                        // Month blocks
+                        qs.sortedMonthKeys.forEach(monthKey => {
+                            const monthData = quarterSupplier?.monthData[monthKey];
+
+                            if (monthData) {
+                                const ppm = monthData.Ppm || 0;
+                                const delivery = monthData.Delivery || 0;
+                                const capa = monthData.Capa || 0;
+                                const audit = monthData.Audit || 0;
+                                const cost = monthData.Cost || 0;
+                                const npi = monthData.Npi_Resp || 0;
+                                const repLT = monthData.Rep_Lead_Time || 0;
+
+                                const monthTotalScore = Number(monthData.Total || 0);       // 0–100
+                                const monthStarNumber = Number(monthData.Star_Rating || 0); // numeric (1–5)
+
+                                dataRow.push(
+                                    ppm,
+                                    delivery,
+                                    capa,
+                                    audit,
+                                    cost,
+                                    npi,
+                                    repLT,
+                                    monthData.Ppm_Rating || 0,
+                                    monthData.Delivery_Rating || 0,
+                                    monthData.Capa_Rating || 0,
+                                    monthData.Audit_Rating || 0,
+                                    monthData.Cost_Rating || 0,
+                                    monthData.Npi_Resp_Rating || 0,
+                                    monthData.Rep_Lead_Time_Rating || 0,
+                                    monthTotalScore,
+                                    monthStarNumber          // ✅ month shows only numeric
+                                );
+
+                                monthTotals.push(monthTotalScore);
+                                monthStars.push(monthStarNumber);  // ✅ NEW
+
+                                if (ppm) inputValues.ppm.push(ppm);
+                                if (delivery) inputValues.delivery.push(delivery);
+                                if (capa) inputValues.capa.push(capa);
+                                if (audit) inputValues.audit.push(audit);
+                                if (cost) inputValues.cost.push(cost);
+                                if (npi) inputValues.npi.push(npi);
+                                if (repLT) inputValues.repLT.push(repLT);
+                            } else {
+                                for (let i = 0; i < colsPerMonth; i++) dataRow.push('');
+                            }
                         });
 
-                        showSuccessAlert("Excel file exported successfully!");
-                    } catch (err) {
-                        console.error("Export error:", err);
-                        showDangerAlert("Error exporting to Excel: " + err.message);
-                    } finally {
-                        setTimeout(() => {
-                            $btn.data("busy", false).prop("disabled", false);
-                        }, 1000);
-                    }
+                        // Your existing "overall rating averages"
+                        const avgPpm = avg(inputValues.ppm);
+                        const avgDelivery = avg(inputValues.delivery);
+                        const avgCapa = avg(inputValues.capa);
+                        const avgAudit = avg(inputValues.audit);
+                        const avgCost = avg(inputValues.cost);
+                        const avgNpi = avg(inputValues.npi);
+                        const avgRepLT = avg(inputValues.repLT);
+
+                        const overallPpmRating = calcPpmRating(avgPpm);
+                        const overallDeliveryRating = calcDeliveryRating(avgDelivery);
+                        const overallCapaRating = avgCapa;
+                        const overallAuditRating = calcAuditRating(avgAudit);
+                        const overallCostRating = avgCost;
+                        const overallNpiRating = avgNpi;
+                        const overallRepLTRating = calcRepLTRating(avgRepLT);
+
+                        // ✅ THIS IS THE MAIN FIX:
+                        // Quarter overall TOTAL is avg of month Total (0–100)
+                        const overallTotalFromMonths = avg(monthTotals);  // keep this as you already have
+
+                        // ✅ STAR RULE: SUM of month stars
+                        const overallStarNumeric = Math.min(5, monthStars.reduce((a,b)=>a+(Number(b)||0),0));
+
+                        // show exact star count (2 months => 2 stars, 3 months => 3 stars)
+                        const overallStarText = "★".repeat(overallStarNumeric);
+
+                        // Overall block (17 cols)
+                        dataRow.push(
+                            Math.round(avgPpm * 100) / 100,
+                            Math.round(avgDelivery * 100) / 100,
+                            Math.round(avgCapa * 100) / 100,
+                            Math.round(avgAudit * 100) / 100,
+                            Math.round(avgCost * 1000) / 1000,
+                            Math.round(avgNpi * 100) / 100,
+                            Math.round(avgRepLT * 100) / 100,
+                            overallPpmRating,
+                            overallDeliveryRating,
+                            overallCapaRating,
+                            overallAuditRating,
+                            overallCostRating,
+                            overallNpiRating,
+                            overallRepLTRating,
+                            Math.round(overallTotalFromMonths * 100) / 100, // Overall Rating (0–100)
+                            overallStarNumeric,                               // Total (star number)
+                            overallStarText                                   // STAR Rating Qx (★★★★★)
+                        );
+                    });
+
+                    wsData.push(dataRow);
                 });
-            })();
+
+                // Sheet
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                // widths
+                ws['!cols'] = [{ wch: 27 }, { wch: 12 }, { wch: 10 }];
+                for (let i = 0; i < (totalCols - fixedCols); i++) ws['!cols'].push({ wch: 11 });
+
+                // merges
+                ws['!merges'] = ws['!merges'] || [];
+                ws['!merges'].push({ s: { r: 0, c: 1 }, e: { r: 1, c: 2 } });
+
+                colIdx = fixedCols;
+                quarterStructures.forEach(qs => {
+                    qs.sortedMonthKeys.forEach(() => {
+                        ws['!merges'].push({ s: { r: 0, c: colIdx }, e: { r: 0, c: colIdx + colsPerMonth - 1 } });
+                        colIdx += colsPerMonth;
+                    });
+                    ws['!merges'].push({ s: { r: 0, c: colIdx }, e: { r: 0, c: colIdx + overallRatingCols - 1 } });
+                    colIdx += overallRatingCols;
+                });
+
+                // =================== STYLES (your same colors) ===================
+                const getColLetter = (colIndex) => {
+                    let letter = '';
+                    while (colIndex >= 0) {
+                        letter = String.fromCharCode((colIndex % 26) + 65) + letter;
+                        colIndex = Math.floor(colIndex / 26) - 1;
+                    }
+                    return letter;
+                };
+
+                const HEADER_BG = { rgb: "FF00B0F0" };
+                const HEADER_BORDER = { rgb: "FF0070C0" };
+                const DATA_BORDER = { rgb: "FFD0D0D0" };
+                const SUPPLIER_BG = { rgb: "FFE7E6E6" };
+
+                const headerStyle = {
+                    fill: { patternType: "solid", fgColor: HEADER_BG },
+                    font: { name: "Calibri", bold: true, color: { rgb: "FF000000" }, sz: 11 },
+                    alignment: { horizontal: "center", vertical: "center", wrapText: true },
+                    border: {
+                        top: { style: "thin", color: HEADER_BORDER },
+                        bottom: { style: "thin", color: HEADER_BORDER },
+                        left: { style: "thin", color: HEADER_BORDER },
+                        right: { style: "thin", color: HEADER_BORDER }
+                    }
+                };
+
+                const supplierStyle = {
+                    fill: { patternType: "solid", fgColor: SUPPLIER_BG },
+                    font: { name: "Calibri", bold: true, color: { rgb: "FF000000" }, sz: 11 },
+                    alignment: { horizontal: "left", vertical: "center", wrapText: false },
+                    border: {
+                        top: { style: "thin", color: DATA_BORDER },
+                        bottom: { style: "thin", color: DATA_BORDER },
+                        left: { style: "thin", color: DATA_BORDER },
+                        right: { style: "thin", color: DATA_BORDER }
+                    }
+                };
+
+                const dataStyle = {
+                    font: { name: "Calibri", sz: 11, color: { rgb: "FF000000" } },
+                    alignment: { horizontal: "center", vertical: "center", wrapText: false },
+                    border: {
+                        top: { style: "thin", color: DATA_BORDER },
+                        bottom: { style: "thin", color: DATA_BORDER },
+                        left: { style: "thin", color: DATA_BORDER },
+                        right: { style: "thin", color: DATA_BORDER }
+                    }
+                };
+
+                // header rows
+                for (let c = 0; c < totalCols; c++) {
+                    for (let r = 1; r <= 3; r++) {
+                        const addr = getColLetter(c) + r;
+                        if (!ws[addr]) ws[addr] = { v: "" };
+                        ws[addr].s = headerStyle;
+                    }
+                }
+
+                // data rows
+                for (let r = 4; r <= wsData.length; r++) {
+                    for (let c = 0; c < totalCols; c++) {
+                        const addr = getColLetter(c) + r;
+                        if (!ws[addr]) ws[addr] = { v: "" };
+                        ws[addr].s = (c === 0) ? supplierStyle : dataStyle;
+                    }
+                }
+
+                // Gold style only for STAR Rating columns (overall stars)
+                const starTextStyle = {
+                    font: { name: "Calibri", bold: true, sz: 14, color: { rgb: "FFFFC000" } },
+                    alignment: { horizontal: "left", vertical: "center", wrapText: false },
+                    border: dataStyle.border
+                };
+
+                // detect star columns by row2 header includes "STAR Rating"
+                const starCols = [];
+                for (let c = 0; c < totalCols; c++) {
+                    const addr = getColLetter(c) + "2";
+                    const v = ws[addr]?.v;
+                    if (typeof v === "string" && v.toUpperCase().includes("STAR RATING")) {
+                        starCols.push(c);
+                    }
+                }
+
+                for (let r = 4; r <= wsData.length; r++) {
+                    starCols.forEach(c => {
+                        const addr = getColLetter(c) + r;
+                        if (!ws[addr]) ws[addr] = { v: "" };
+                        ws[addr].s = starTextStyle;
+                    });
+                }
+
+                ws["!rows"] = ws["!rows"] || [];
+                ws["!rows"][0] = { hpt: 24 };
+                ws["!rows"][1] = { hpt: 38 };
+                ws["!rows"][2] = { hpt: 22 };
+
+                ws["!freeze"] = { xSplit: 3, ySplit: 3, topLeftCell: "D4", activePane: "bottomRight", state: "frozen" };
+
+                return ws;
+
+            } catch (err) {
+                console.error("Error creating single worksheet:", err);
+                return null;
+            }
+        }
+
+        // Export button binding
+        (function bindExportButtonOnce() {
+            var $btn = $("#exportExcelButton");
+            $btn.attr("type", "button");
+            $btn.off("click.export").on("click.export", function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                if ($btn.data("busy")) return;
+                $btn.data("busy", true).prop("disabled", true);
+
+                try {
+                    exportSPMToExcelWithOverallRating();
+                } catch (err) {
+                    console.error("Export error:", err);
+                    showDangerAlert("Error: " + err.message);
+                } finally {
+                    setTimeout(() => {
+                        $btn.data("busy", false).prop("disabled", false);
+                    }, 500);
+                }
+            });
+        })();
+
 
             Blockloaderhide();
         }
-           
+
 
         Tabulator.extendModule("edit", "editors", {
             select2: function (cell, onRendered, success, cancel, editorParams) {
@@ -891,45 +1604,54 @@
                 contentType: "application/json",
                 success: function (data) {
                     if (data && data.success) {
-                         const savedRow = data.row || data.payload || data.data;
+                         const savedRow = data.payload || data.row || data.data;
 
-                        if (isNew && (data.id || data.Id)) {
-                            cleanedData.Id = data.id ?? data.Id;
-                            if (savedRow) savedRow.Id = cleanedData.Id;
+                        if (isNew) {
+                             showSuccessAlert(data.message || "Saved.");
+                            const newId = data.id || data.Id;
+                            if (newId) cleanedData.Id = newId;
+                            loadData();
+                            return;
                         }
 
-                        // Find the row in the table by Id
+                        if (savedRow && cleanedData.Id) savedRow.Id = cleanedData.Id;
+
                         const tableRow = table.getRow(rowData.Id || cleanedData.Id);
 
+
                         if (tableRow) {
-                            // Update with complete server response including ratings
+                            // ✅ Set Id first so future updates work
+                            tableRow.update({ Id: cleanedData.Id });
+
                             const updateData = {
                                 ...cleanedData,
                                 Id: cleanedData.Id,
-                                Ppm_Rating: savedRow?.ppm_Rating || savedRow?.Ppm_Rating || 0,
-                                Delivery_Rating: savedRow?.delivery_Rating || savedRow?.Delivery_Rating || 0,
-                                Capa_Rating: savedRow?.capa_Rating || savedRow?.Capa_Rating || 0,
-                                Audit_Rating: savedRow?.audit_Rating || savedRow?.Audit_Rating || 0,
-                                Cost_Rating: savedRow?.cost_Rating || savedRow?.Cost_Rating || 0,
-                                Npi_Resp_Rating: savedRow?.npi_Resp_Rating || savedRow?.Npi_Resp_Rating || 0,
-                                Rep_Lead_Time_Rating: savedRow?.rep_Lead_Time_Rating || savedRow?.Rep_Lead_Time_Rating || 0,
-                                Total: savedRow?.total || savedRow?.Total || 0,
-                                UpdatedDate: savedRow?.updatedDate || savedRow?.UpdatedDate || "",
-                                UpdatedBy: savedRow?.updatedBy || savedRow?.UpdatedBy || ""
+
+                                // ratings/total/star from server
+                                Ppm_Rating: savedRow?.ppm_Rating ?? savedRow?.Ppm_Rating ?? 0,
+                                Delivery_Rating: savedRow?.delivery_Rating ?? savedRow?.Delivery_Rating ?? 0,
+                                Capa_Rating: savedRow?.capa_Rating ?? savedRow?.Capa_Rating ?? 0,
+                                Audit_Rating: savedRow?.audit_Rating ?? savedRow?.Audit_Rating ?? 0,
+                                Cost_Rating: savedRow?.cost_Rating ?? savedRow?.Cost_Rating ?? 0,
+                                Npi_Resp_Rating: savedRow?.npi_Resp_Rating ?? savedRow?.Npi_Resp_Rating ?? 0,
+                                Rep_Lead_Time_Rating: savedRow?.rep_Lead_Time_Rating ?? savedRow?.Rep_Lead_Time_Rating ?? 0,
+                                Total: savedRow?.total ?? savedRow?.Total ?? 0,
+                                Star_Rating: savedRow?.star_Rating ?? savedRow?.Star_Rating ?? 0,
+                                UpdatedDate: savedRow?.updatedDate ?? savedRow?.UpdatedDate ?? "",
+                                UpdatedBy: savedRow?.updatedBy ?? savedRow?.UpdatedBy ?? ""
                             };
 
                             tableRow.update(updateData);
 
-                            // Flash effect to show update
                             const el = tableRow.getElement();
                             el.classList.add("row-flash1");
                             setTimeout(() => el.classList.remove("row-flash1"), 800);
-
                         } else {
-                            // If row not found (shouldn't happen), reload data
                             loadData?.();
                         }
-                        
+
+                        showSuccessAlert(data.message || "Saved.");
+
                     } else {
                         let errorMessg = "";
                         if (data && data.errors) {

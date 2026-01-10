@@ -27,16 +27,16 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetAll(DateTime? startDate, DateTime? endDate)
+        public async Task<JsonResult> GetAll()
         {
-            var list = await _spmRepository.GetListAsync(startDate, endDate);
+            var list = await _spmRepository.GetListAsync();
             return Json(list);
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetById(int Id)
+        public async Task<JsonResult> GetById(string Fy, List<string> Quater)
         {
-            var bisProject = await _spmRepository.GetByIdAsync(Id);
+            var bisProject = await _spmRepository.GetByIdAsync(Fy, Quater);
             return Json(bisProject);
         }
 
@@ -52,11 +52,11 @@ namespace QMS.Controllers
 
 
                 model.CreatedBy = HttpContext.Session.GetString("FullName");
-                var result = await _spmRepository.CreateAsync(model);
+                var result = await _spmRepository.CreateAsync(model, returnCreatedRecord: true);
 
                 if (result.Success)
                 {
-                    return Json(new { success = true, message = "SPM Make Detail saved successfully." });
+                    return Json(new { success = true, message = "SPM Make Detail saved successfully.", id = result.ObjectId, payload = result.Payload });
                 }
 
                 return Json(new { success = false, message = "Failed to save third party inspectiont detail.", id = 0 });

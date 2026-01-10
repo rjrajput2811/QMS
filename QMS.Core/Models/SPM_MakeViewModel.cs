@@ -33,6 +33,7 @@ namespace QMS.Core.Models
         public double? Npi_Resp_Rating { get; set; }
         public double? Rep_Lead_Time_Rating { get; set; }
         public double? Total { get; set; }
+        public double? Star_Rating { get; set; }
         public DateTime? CreatedDate { get; set; }
         public string? CreatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }

@@ -6,6 +6,7 @@ using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,21 +25,11 @@ namespace QMS.Core.Repositories.SPMMakeRepository
             _systemLogService = systemLogService;
         }
 
-        public async Task<List<SPM_MakeViewModel>> GetListAsync(DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<List<SPM_MakeViewModel>> GetListAsync()
         {
             try
             {
                 var result = await _dbContext.SPM_Make.FromSqlRaw("EXEC sp_Get_SPM_Make").ToListAsync();
-
-
-                if (startDate.HasValue && endDate.HasValue)
-                {
-                    result = result
-                        .Where(x => x.CreatedDate.HasValue &&
-                                    x.CreatedDate.Value.Date >= startDate.Value.Date &&
-                                    x.CreatedDate.Value.Date <= endDate.Value.Date)
-                        .ToList();
-                }
 
                 // Map results to ViewModel
                 var viewModelList = result.Select(data => new SPM_MakeViewModel
@@ -66,6 +57,7 @@ namespace QMS.Core.Repositories.SPMMakeRepository
                     Npi_Resp_Rating = data.Npi_Resp_Rating,
                     Rep_Lead_Time_Rating = data.Rep_Lead_Time_Rating,
                     Total = data.Total,
+                    Star_Rating = data.Star_Rating,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
@@ -81,13 +73,18 @@ namespace QMS.Core.Repositories.SPMMakeRepository
             }
         }
 
-        public async Task<SPM_Make> GetByIdAsync(int spmMakeId)
+        public async Task<List<SPM_Make>> GetByIdAsync(string fy, List<string> quaterList)
         {
             try
             {
-                var parameters = new[] { new SqlParameter("@SpmMake_Id", spmMakeId) };
+                string quaterCsv = (quaterList != null && quaterList.Count > 0) ? string.Join(",", quaterList) : null;
 
-                var sql = @"EXEC sp_Get_SPM_Make_ById @SpmMake_Id";
+                var parameters = new[] {
+                    new SqlParameter("@Fy", (object)fy ?? DBNull.Value),
+                    new SqlParameter("@Quater", (object)quaterCsv ?? DBNull.Value)
+                };
+
+                var sql = @"EXEC sp_Get_SPM_Make_ById @Fy,@Quater";
 
                 var result = await _dbContext.SPM_Make.FromSqlRaw(sql, parameters).ToListAsync();
 
@@ -116,13 +113,14 @@ namespace QMS.Core.Repositories.SPMMakeRepository
                     Npi_Resp_Rating = data.Npi_Resp_Rating,
                     Rep_Lead_Time_Rating = data.Rep_Lead_Time_Rating,
                     Total = data.Total,
+                    Star_Rating = data.Star_Rating,
                     CreatedBy = data.CreatedBy,
                     CreatedDate = data.CreatedDate,
                     UpdatedBy = data.UpdatedBy,
                     UpdatedDate = data.UpdatedDate,
                 }).ToList();
 
-                return viewList.FirstOrDefault();
+                return viewList;
             }
             catch (Exception ex)
             {
@@ -134,44 +132,64 @@ namespace QMS.Core.Repositories.SPMMakeRepository
         public async Task<OperationResult> CreateAsync(SPM_Make newRecord, bool returnCreatedRecord = false)
         {
             var operationResult = new OperationResult();
-
             try
             {
-                var parameters = new[]
+                var outputParam = new SqlParameter
                 {
-                    new SqlParameter("@IsDeleted", newRecord.Deleted),
-                    new SqlParameter("@Supp_Name", newRecord.Supp_Name ?? (object)DBNull.Value),
-                    new SqlParameter("@Quater", newRecord.Quater ?? (object)DBNull.Value),
-                    new SqlParameter("@Fy", newRecord.Fy ?? (object)DBNull.Value),
-                    new SqlParameter("@Month", newRecord.Month ?? (object)DBNull.Value),
-                    new SqlParameter("@Pc", newRecord.Pc ?? (object)DBNull.Value),
-                    new SqlParameter("@Location", newRecord.Location ?? (object)DBNull.Value),
-                    new SqlParameter("@Sqa", newRecord.Sqa ?? (object)DBNull.Value),
-                    new SqlParameter("@Ppm", newRecord.Ppm ?? (object)DBNull.Value),
-                    new SqlParameter("@Delivery", newRecord.Delivery ?? (object)DBNull.Value),
-                    new SqlParameter("@Capa", newRecord.Capa ?? (object)DBNull.Value),
-                    new SqlParameter("@Audit", newRecord.Audit ?? (object)DBNull.Value),
-                    new SqlParameter("@Cost", newRecord.Cost ?? (object)DBNull.Value),
-                    new SqlParameter("@Npi_Resp", newRecord.Npi_Resp ?? (object)DBNull.Value),
-                    new SqlParameter("@Rep_Lead_Time", newRecord.Rep_Lead_Time ?? (object)DBNull.Value),
-                    new SqlParameter("@CreatedBy", newRecord.CreatedBy ?? (object)DBNull.Value),
+                    ParameterName = "@NewId",
+                    SqlDbType = SqlDbType.Int,
+                    Direction = ParameterDirection.Output
                 };
 
+                var parameters = new[]
+                {
+            new SqlParameter("@IsDeleted", newRecord.Deleted),
+            new SqlParameter("@Supp_Name", newRecord.Supp_Name ?? (object)DBNull.Value),
+            new SqlParameter("@Quater", newRecord.Quater ?? (object)DBNull.Value),
+            new SqlParameter("@Fy", newRecord.Fy ?? (object)DBNull.Value),
+            new SqlParameter("@Month", newRecord.Month ?? (object)DBNull.Value),
+            new SqlParameter("@Pc", newRecord.Pc ?? (object)DBNull.Value),
+            new SqlParameter("@Location", newRecord.Location ?? (object)DBNull.Value),
+            new SqlParameter("@Sqa", newRecord.Sqa ?? (object)DBNull.Value),
+            new SqlParameter("@Ppm", newRecord.Ppm ?? (object)DBNull.Value),
+            new SqlParameter("@Delivery", newRecord.Delivery ?? (object)DBNull.Value),
+            new SqlParameter("@Capa", newRecord.Capa ?? (object)DBNull.Value),
+            new SqlParameter("@Audit", newRecord.Audit ?? (object)DBNull.Value),
+            new SqlParameter("@Cost", newRecord.Cost ?? (object)DBNull.Value),
+            new SqlParameter("@Npi_Resp", newRecord.Npi_Resp ?? (object)DBNull.Value),
+            new SqlParameter("@Rep_Lead_Time", newRecord.Rep_Lead_Time ?? (object)DBNull.Value),
+            new SqlParameter("@CreatedBy", newRecord.CreatedBy ?? (object)DBNull.Value),
+            outputParam  // OUTPUT parameter must be in the array
+        };
 
-                var sql = @"EXEC sp_SPM_Make_Insert @IsDeleted,@Supp_Name,@Quater,@Fy,@Month,@Pc,@Location,@Sqa,
-                            @Ppm,@Delivery,@Capa,@Audit,@Cost,@Npi_Resp,@Rep_Lead_Time,@CreatedBy";
+                // Add @NewId OUTPUT to the SQL string
+                var sql = @"EXEC sp_SPM_Make_Insert 
+                    @IsDeleted, @Supp_Name, @Quater, @Fy, @Month, @Pc, @Location, @Sqa,
+                    @Ppm, @Delivery, @Capa, @Audit, @Cost, @Npi_Resp, @Rep_Lead_Time, 
+                    @CreatedBy, @NewId OUTPUT";
 
                 await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
 
+                var newId = (int)outputParam.Value;
+
+                if (newId <= 0)
+                    return new OperationResult { Success = false, Message = "Insert failed. No Id returned." };
+
                 if (returnCreatedRecord)
                 {
+                    var createdRow = await _dbContext.SPM_Make
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(x => x.Id == newId);
+
                     return new OperationResult
                     {
                         Success = true,
+                        ObjectId = newId,
+                        Payload = createdRow,
                     };
                 }
 
-                return new OperationResult { Success = true };
+                return new OperationResult { Success = true, ObjectId = newId };
             }
             catch (Exception ex)
             {

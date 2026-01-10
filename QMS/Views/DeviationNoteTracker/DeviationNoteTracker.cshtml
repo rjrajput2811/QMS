@@ -1,0 +1,513 @@
+﻿@{
+    ViewData["Title"] = "Deviation Note";
+}
+
+<!-- CSS files -->
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+
+<!-- CSS: same style as Photometry Test Report header -->
+<style>
+    .header-card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background-color: #fff;
+    }
+
+    .header-title {
+        font-size: large;
+        color: #4682B4;
+        font-weight: 700;
+    }
+
+    .header-btn {
+        width: 140px;
+        font-size: 15px;
+        border-radius: 6px;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .header-btn:hover {
+        transform: scale(1.05);
+    }
+
+    .mr-2 { margin-right: 8px; }
+
+    /* small helper so placeholder area looks neat */
+    .content-placeholder {
+        border: 1px dashed #e2e8f0;
+        border-radius: 6px;
+        padding: 18px;
+        background: #fff;
+        min-height: 220px;
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 35px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    /* responsive tweak so buttons don't wrap badly */
+ 
+</style>
+
+<div class="content">
+    <!-- Header Card:  Deviation Note -->
+    <div class="card shadow-sm mb-3 header-card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <b class="header-title">Deviation Note</b>
+            </div>
+
+            <div>
+                <!-- Add button: goes to the "details" / create page -->
+                <button id="addChangeNoteBtn"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2 header-btn"
+                        onclick="location.href='@Url.Action("DeviationNoteDetails", "DeviationNote")'">
+                    <i class="fas fa-plus mr-2 fa-1x"></i> Add
+                </button>
+
+                <!-- Export button: export tabulator data to excel -->
+                <button id="exportExcelBtn"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2"
+                        onclick="exportToExcel()">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export To Excel
+                </button>
+
+                <!-- Back button: returns to  Deviation Note list page -->
+                <button id="backBtn"
+                        type="button"
+                        class="btn btn-outline-primary header-btn"
+                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div id="rmtc_table_wrapper" style="overflow-x: auto;">
+                            <div id="DeviationNote_table"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+    <script src="~/js/xlsx.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+
+    <script asp-append-version="true">
+        var tabledata = [];
+        var table = '';
+        const searchTerms = {};
+        $(document).ready(function () {
+            loadDeviationNoteGridData();
+        });
+
+        function loadDeviationNoteGridData() {
+            Blockloadershow();
+            $.ajax({
+                url: '@Url.Action("DeviationList", "Deviation")',
+                type: 'GET',
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnChangeNoteGridLoad(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+
+                //create checkbox element using font awesome icons
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                //build label
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                //create menu item
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        //prevent menu closing
+                        e.stopPropagation();
+
+                        //toggle current column visibility
+                        column.toggle();
+
+                        //change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+        function OnDeviationNoteGridLoad(response) {
+            Blockloadershow();
+
+            if (Tabulator.findTable("#DeviationNote_table").length > 0) {
+                Tabulator.findTable("#DeviationNote_table")[0].destroy();
+            }
+
+            tabledata = [];
+            let columns = [];
+
+            // Map the response to the table format
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+
+                    let changeDate = "";
+                    let month = "";
+                    if (item.dateOfIssue) {
+                        const dateObj = new Date(item.dateOfIssue);
+                        changeDate = dateObj.toLocaleDateString("en-GB");
+                        month = dateObj.toLocaleDateString("en-GB", { 
+                            month: 'long' 
+                        });
+                    }
+
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        Month: month,
+                        Date: changeDate,
+                        DocumentNo: item.documentNo,
+                        Description: item.description,
+                        DeviationNoteCategory: item.DeviationNoteCategory,
+                        VendorName: item.vendorName,
+                        User: item.user
+                    });
+                });
+
+                columns.push(
+                    {
+                        title: "Action",
+                        field: "Action",
+                        width: 80,
+                        headerMenu: headerMenu,
+                        hozAlign: "center",
+                        headerHozAlign: "center",
+                        download: false,
+                        formatter: function (cell, formatterParams) {
+                            const rowData = cell.getRow().getData();
+                            let actionButtons = "";
+
+                            actionButtons += `<i data-toggle="modal" onclick="delDeviationNoteonfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+                            actionButtons += `<i onclick="exportToPDF(${rowData.Id})" class="fas fa-file-pdf fa-1x" title="Export to PDF" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+
+                            return actionButtons;
+                        }
+                    },
+                    { title: "SNo", field: "Sr_No", width: 50, responsive: 0,  sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left" },
+                   { title: "DEVIATION NOTE NUMBER", field: "NUMBER", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "DEVIAITON NOTE CATEGORY", field: "DeviationNoteCategory", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "PRODUCT CODE", field: "PRODUCTCODE", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "PRODUCT DESCRIPTION", field: "PRODUCTDESCRIPTION", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "WATTAGE", field: "WATTAGE", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "DEVIATION QTY", field: "DEVIATION QTY", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "DEVIATION REQUISTION BY", field: "DEVIATIONREQUISTIONBY", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                     { title: "VENDOR", field: "VENDOR", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                );
+
+                // // Initialize Tabulator
+                table = new Tabulator("#DeviationNote_table", {
+                    data: tabledata,
+                    layout: "fitDataTable",
+                    responsiveLayout: false,
+                    height: "auto",
+                    movableColumns: true,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                    paginationCounter: "rows",
+                    paginationElement: document.getElementById("pager"),
+                    dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                    columns: columns
+                });
+
+                table.on("cellClick", function (e, cell) {
+                    let columnField = cell.getColumn().getField();
+
+                    if (columnField !== "Action") {
+                        let rowData = cell.getRow().getData();
+                        window.open("@Url.Action("DeviationNoteDetails", "DeviationNote")" + "/" + rowData.Id, '_self');
+                    }
+                });
+
+                let savedFilters = sessionStorage.getItem("DeviationNoteFilters");
+                if (savedFilters) {
+                    const filters = JSON.parse(savedFilters);
+
+                    // Apply filters to the table
+                    table.setFilter(filters);
+
+                    // After table is fully built, set header filter inputs
+                    table.on("tableBuilt", function () {
+                        filters.forEach(f => {
+                            if (f.field && f.value !== undefined) {
+                                table.setHeaderFilterValue(f.field, f.value);
+                            }
+                        });
+                    });
+                }
+
+                table.on("dataFiltered", function (filters) {
+
+                    if (filters.length === 0) {
+                        return false;
+                    }
+                    // only store header filters, not programmatic ones
+                    let headerFilters = table.getHeaderFilters();
+
+                    // If all header inputs are empty, force-clear filters
+                    if (headerFilters.length === 0) {
+                        table.clearFilter(true); // true = silent clear (prevents loops)
+                        sessionStorage.removeItem("DeviationNoteFilters");
+                        return;
+                    }
+
+                    // Otherwise, save unique filters
+                    let unique = [];
+                    let seen = new Set();
+
+                    headerFilters.forEach(f => {
+                        if (f.value !== "" && !seen.has(f.field)) {
+                            seen.add(f.field);
+                            unique.push(f);
+                        }
+                    });
+
+                    if (unique.length > 0) {
+                        sessionStorage.setItem("DeviationNoteFilters", JSON.stringify(unique));
+                    } else {
+                        sessionStorage.removeItem("DeviationNoteFilters");
+                    }
+                });
+
+                // Force refresh when inputs are cleared
+                table.on("headerFilterBlur", function () {
+                    let headerFilters = table.getHeaderFilters();
+
+                    if (headerFilters.length === 0) {
+                        table.clearFilter(); // unfilter table
+                    }
+                });
+            }
+            else {
+                showDangerAlert('No data available.');
+            }
+
+            // Hide loader
+            Blockloaderhide();
+        }
+
+        function delDeviationNoteConfirm(recid) {
+            PNotify.prototype.options.styling = "bootstrap3";
+            (new PNotify({
+                title: 'Confirmation Needed',
+                text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+                icon: 'glyphicon glyphicon-question-sign',
+                hide: false,
+                confirm: {
+                    confirm: true
+                },
+                buttons: {
+                    closer: false,
+                    sticker: false
+                },
+                history: {
+                    history: false
+                },
+            })).get().on('pnotify.confirm', function () {
+                $.ajax({
+                    url: '@Url.Action("DeleteChangeNote", "DeviationNote")',
+                    type: 'POST',
+                    data: { Id: recid },
+                    success: function (data) {
+                        if (data.success == true) {
+                            showSuccessAlert("Deleted successfully.");
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 2500);
+                        }
+                        else {
+                            showDangerAlert(data.message);
+                        }
+                    },
+                    error: function () {
+                        showDangerAlert('Error retrieving data.');
+                    }
+                });
+            }).on('pnotify.cancel', function () {
+                loadData();
+            });
+        }
+
+        function exportToPDF(recid) {
+            Blockloadershow();
+            var url = '@Url.Action("ExportToPDF", "DeviationNote")' + "?id=" + recid;
+
+            fetch(url, {
+                method: 'GET',
+                data: { id: recid }
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                // Create a new object URL for the PDF blob
+                var url = window.URL.createObjectURL(blob);
+
+                // Create a link element to download the PDF
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = 'DeviationNote_' + recid + '.pdf';
+                document.body.appendChild(a);  // Append link to body
+                a.click();  // Trigger click event to download
+                a.remove();  // Remove the link after download
+                Blockloaderhide();
+            })
+            .catch(error => {
+                Blockloaderhide();
+                showDangerAlert('Error exporting PDF: ' + error);
+            });
+        }
+
+        async function exportToExcel() {
+            if (!table) {
+                showDangerAlert('Table data is not loaded yet.');
+                return;
+            }
+
+            // 1. Initialize Workbook and Worksheet
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Deviation Notes');
+
+            // 2. Define Columns (for width mapping)
+            worksheet.columns = [
+                { key: 'Sr_No', width: 4 },
+                { key: 'Month', width: 15 },
+                { key: 'Date', width: 15 },
+                { key: 'DEVIATION NOTE NUMBER', width: 18 },
+                { key: 'Description', width: 35 },
+                { key: 'DeviationNoteCategory', width: 8 },
+                { key: 'VendorName', width: 40 },
+                { key: 'User', width: 20 }
+            ];
+
+            // 3. Add Header Row (Row 1)
+            const headerRow = worksheet.addRow([
+                "SNo", "Month", "Date", "Document Number", "Description", "Category", "Vendor", "User"
+            ]);
+
+            // Style the Headers (Bold + Light Gray Background + Border)
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: '95b3d7' } // Light Gray
+                };
+            });
+
+            // 4. Add Data Rows
+            // Get active data from Tabulator (respects filters)
+            const rowData = table.getData("active");
+
+            rowData.forEach(item => {
+                // Capture the row object
+                const row = worksheet.addRow([
+                    item.Sr_No,
+                    item.Month,
+                    item.Date,
+                    item.DocumentNo,
+                    item.Description || "", 
+                    item.DeviationNoteCategory,
+                    item.VendorName,
+                    item.User
+                ]);
+
+                // Target Cell 1 (Sr_No) and align it to Center
+                row.getCell(1).alignment = { horizontal: 'center' };
+        
+                // Optional: If you want text wrapping for the Description (Cell 5)
+                row.getCell(5).alignment = { wrapText: true };
+            });
+
+            // 5. Generate and Download the File
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    
+            // Create download link
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = 'DeviationNote_Report.xlsx';
+            anchor.click();
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+
+    <script src="~/scripts/rmtc/rmtc-tracker.js" asp-append-version="true"></script>
+}
+   
+@section HideSidebar { }

@@ -47,6 +47,7 @@ using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
 using QMS.Core.Repositories.SPMMakeRepository;
+using QMS.Core.Repositories.SPMBuyRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -104,6 +105,7 @@ builder.Services.AddTransient<IChangeNoteItemsRepository, ChangeNoteItemsReposit
 builder.Services.AddTransient<IChangeNoteImplementationItemRepository, ChangeNoteImplementationItemRepository>();
 builder.Services.AddTransient<IChangeNoteService, ChangeNoteService>();
 builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
+builder.Services.AddScoped<ISPMBuyRepository, SPMBuyRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

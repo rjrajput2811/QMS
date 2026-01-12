@@ -14,7 +14,7 @@ namespace QMS.Core.Repositories.SPMBuyRepository
         Task<OperationResult> CreateAsync(SPM_Buy spmBuy, bool returnCreatedRecord = false);
         Task<OperationResult> UpdateAsync(SPM_Buy spmBuy, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int Id);
-        Task<List<SPM_Make>> GetByIdAsync(string fy, List<string> quaterList);
+        Task<List<SPM_Buy>> GetByIdAsync(string fy, List<string> quaterList);
         Task<bool> CheckDuplicate(string sup_Name, string qtr, int spmId);
     }
 }

@@ -81,6 +81,13 @@ namespace QMS.Controllers
         {
             return View();
         }
+
+        public IActionResult SMPBuyComparision()
+        {
+            return View();
+        }
+
+
     }
 }
 

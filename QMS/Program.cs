@@ -50,6 +50,8 @@ using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.DeviationNoteService;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
+using QMS.Core.Repositories.SPMMakeRepository;
+using QMS.Core.Repositories.SPMBuyRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -110,6 +112,8 @@ builder.Services.AddTransient<IDeviationNoteRepository, DeviationNoteRepository>
 builder.Services.AddTransient<IDeviationNoteItemsRepository, DeviationNoteItemsRepository>();
 builder.Services.AddTransient<IDeviationNoteImplementationItemRepository, DeviationNoteImplementationItemRepository>();
 builder.Services.AddTransient<IDeviationNoteService, DeviationNoteService>();
+builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
+builder.Services.AddScoped<ISPMBuyRepository, SPMBuyRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

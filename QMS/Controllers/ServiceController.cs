@@ -677,8 +677,8 @@ namespace QMS.Controllers
 
 
         //// ----------------- Po List ------------------- ////
-        
-        
+
+
         //// ----------------- Indant Dump ------------------- ////
 
         // Get PO list with optional date range
@@ -749,7 +749,7 @@ namespace QMS.Controllers
 
                 model.UpdatedDate = DateTime.Now;
                 model.UpdatedBy = HttpContext.Session.GetString("FullName") ?? "System";
-                model.Key = model.Indent_No +model.Material_No;
+                model.Key = model.Indent_No + model.Material_No;
 
                 var result = await _copqRepository.UpdateIndentAsync(model);
                 if (result.Success)
@@ -883,7 +883,7 @@ namespace QMS.Controllers
 
         //// ----------------- Indant Dump ------------------- ////
 
-        
+
         //// ----------------- Invoice List ------------------- ////
 
         [HttpGet]
@@ -1079,7 +1079,7 @@ namespace QMS.Controllers
         //// ----------------- Invoice List ------------------- ////
 
 
-        
+
         //// ----------------- Pc Chart ------------------- ////
 
         // Get PO list with optional date range
@@ -1261,7 +1261,7 @@ namespace QMS.Controllers
         //// ----------------- Pc Chart ------------------- ////
 
 
-       
+
         //// ----------------- Region ------------------- ////
 
 
@@ -2190,6 +2190,6 @@ namespace QMS.Controllers
 
 
         //// ----------------- Final Merge ------------------- ////
-
+        ///
     }
 }

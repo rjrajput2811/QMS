@@ -1,5 +1,5 @@
 ﻿@{
-    ViewData["Title"] = "SPM Comparison (Make)";
+    ViewData["Title"] = "SPM Comparison (Buy)";
 }
 
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
@@ -239,9 +239,9 @@
     <div class="card shadow-sm header-card" style="width:100%; margin:0;">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <b class="header-title">SPM Comparison (Make)</b>
+                <b class="header-title">SPM Comparison (Buy)</b>
             </div>
-           
+
             <div class="col-md-3">
                 <div class="form-group row align-items-center">
                     <label for="ddlFY" class="col-sm-4 col-form-label text-right">
@@ -275,7 +275,7 @@
         <div class="card-body">
             <div class="chart-container">
                 <div id="deviation_note_table_wrapper" style="overflow-x:auto;">
-                    <div id="spmMake_table"></div>
+                    <div id="spmBuy_table"></div>
                 </div>
             </div>
         </div>
@@ -371,7 +371,7 @@
                 }
 
                 $.ajax({
-                    url: '/SPMCalculationMake/GetById',
+                    url: '/SPMCalculationBuy/GetById',
                     type: 'GET',
                     dataType: 'json',
                     traditional: true,
@@ -512,7 +512,7 @@
             const columns = [
                 { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
 
-               
+
 
                 {
                     title: "FY",
@@ -561,7 +561,7 @@
 
             // Create once, update after
             if (!table) {
-                table = new Tabulator("#spmMake_table", {
+                table = new Tabulator("#spmBuy_table", {
                     data: tabledata,
                     columns: columns,
                     layout: "fitDataFill",

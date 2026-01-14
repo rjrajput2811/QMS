@@ -11,39 +11,39 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using QMS.Core.Models;
 using QMS.Core.Repositories.VendorRepository;
-using QMS.Core.Services.ChangeNoteService;
+using QMS.Core.Services.DeviationNoteService;
 
 namespace QMS.Controllers;
 
-public class ChangeNoteController : Controller
+public class DeviationNoteTrackerController : Controller
 {
-    private readonly IChangeNoteService _changeNoteService;
+    private readonly IDeviationNoteService _deviationNoteService;
     private readonly IVendorRepository _vendorRepository;
     private readonly IWebHostEnvironment _webHostEnvironment;
 
-    public ChangeNoteController(IChangeNoteService changeNoteService,
-                                IVendorRepository vendorRepository,
-                                IWebHostEnvironment webHostEnvironment)
+    public DeviationNoteTrackerController(IDeviationNoteService deviationNoteService,
+                                          IVendorRepository vendorRepository,
+                                          IWebHostEnvironment webHostEnvironment)
     {
-        _changeNoteService = changeNoteService;
+        _deviationNoteService = deviationNoteService;
         _vendorRepository = vendorRepository;
         _webHostEnvironment = webHostEnvironment;
     }
 
-    public IActionResult ChangeNoteAsync()
+    public IActionResult DeviationNote()
     {
         return View();
     }
 
-    public async Task<ActionResult> ChangeNoteListAsync()
+    public async Task<ActionResult> DeviationNoteListAsync()
     {
-        var list = await _changeNoteService.GetChangeNotesListAsync();
+        var list = await _deviationNoteService.GetDeviationNotesListAsync();
         return Json(list);
     }
 
-    public async Task<IActionResult> ChangeNoteDetailsAsync(int Id)
+    public async Task<IActionResult> DeviationNoteDetailsAsync(int Id)
     {
-        var model = new ChangeNoteViewModel();
+        var model = new DeviationNoteViewModel();
         var vendorList = await _vendorRepository.GetListAsync();
         var vendors = vendorList.Select(x => new SelectListItem
         {
@@ -54,12 +54,12 @@ public class ChangeNoteController : Controller
         ViewBag.VendorList = vendors;
         if (Id > 0)
         {
-            model = await _changeNoteService.GetChangeNotesDetailsAsync(Id);
+            model = await _deviationNoteService.GetDeviationNotesDetailsAsync(Id);
         }
         return View(model);
     }
 
-    public async Task<ActionResult> InsertUpdateChangeNoteAsync(ChangeNoteViewModel model)
+    public async Task<ActionResult> InsertUpdateDeviationNoteAsync(DeviationNoteViewModel model)
     {
         if (!ModelState.IsValid)
         {
@@ -71,21 +71,21 @@ public class ChangeNoteController : Controller
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
             model.UpdatedOn = DateTime.Now;
-            var result = await _changeNoteService.UpdateChangeNoteAsync(model);
+            var result = await _deviationNoteService.UpdateDeviationNoteAsync(model);
             return Json(result);
         }
         else
         {
             model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
             model.AddedOn = DateTime.Now;
-            var result = await _changeNoteService.InsertChangeNoteAsync(model);
+            var result = await _deviationNoteService.InsertDeviationNoteAsync(model);
             return Json(result);
         }
     }
 
-    public async Task<ActionResult> DeleteChangeNoteAsync(int Id)
+    public async Task<ActionResult> DeleteDeviationNoteAsync(int Id)
     {
-        var result = await _changeNoteService.DeleteChangeNoteAsync(Id);
+        var result = await _deviationNoteService.DeleteDeviationNoteAsync(Id);
         return Json(result);
     }
 
@@ -93,7 +93,7 @@ public class ChangeNoteController : Controller
     {
         try
         {
-            var model = await _changeNoteService.GetChangeNotesDetailsAsync(id);
+            var model = await _deviationNoteService.GetDeviationNotesDetailsAsync(id);
 
             using (var stream = new MemoryStream())
             {
@@ -137,8 +137,8 @@ public class ChangeNoteController : Controller
 
                 // Col 2: Title
                 Cell titleCell = new Cell().SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.MIDDLE).SetTextAlignment(TextAlignment.CENTER);
-                titleCell.Add(new Paragraph("CHANGE NOTE").SetFont(fontBold).SetFontSize(16));
-                titleCell.Add(new Paragraph("Proposal for change in product").SetFont(fontRegular).SetFontSize(9));
+                titleCell.Add(new Paragraph("DEVIATION NOTE").SetFont(fontBold).SetFontSize(16));
+                titleCell.Add(new Paragraph("Proposal for product deviation approval\r\nand regularization\r\n").SetFont(fontRegular).SetFontSize(9));
                 headerTable.AddCell(titleCell);
 
                 // Col 3 & 4: Doc No
@@ -152,24 +152,39 @@ public class ChangeNoteController : Controller
                 headerTable.AddCell(CreateMetaValue(model.DateOfIssue?.ToString("dd/MM/yyyy"), fontRegular));
 
 
-                // --- ROW 3: Description | Revision No ---
+                // --- ROW 3: Deviation Details | Sheet No ---
                 Paragraph descPara = new Paragraph()
-                    .Add(new Text("Description:      ").SetFont(fontBold).SetFontSize(9))
-                    .Add(new Text(model.Description ?? "").SetFont(fontRegular).SetFontSize(9));
-                headerTable.AddCell(new Cell(1, 2).Add(descPara).SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.BOTTOM));
-
-                headerTable.AddCell(CreateMetaLabel("Revision No. :", fontBold));
-                headerTable.AddCell(CreateMetaValue(model.RevisionNo, fontRegular));
-
-
-                // --- ROW 4: Vendor | Sheet No ---
-                Paragraph vendorPara = new Paragraph()
-                    .Add(new Text("Vendor       :      ").SetFont(fontBold).SetFontSize(9))
-                    .Add(new Text(model.VendorName ?? "").SetFont(fontRegular).SetFontSize(9));
-                headerTable.AddCell(new Cell(1, 2).Add(vendorPara).SetBorder(Border.NO_BORDER).SetVerticalAlignment(VerticalAlignment.BOTTOM));
+                    .Add(new Text("Deviation Details :      ").SetFont(fontBold).SetFontSize(9))
+                    .Add(new Text(model.DeviationDetails ?? "").SetFont(fontRegular).SetFontSize(9));
+                headerTable.AddCell(new Cell(1, 2).Add(descPara).SetBorder(Border.NO_BORDER));
 
                 headerTable.AddCell(CreateMetaLabel("Sheet No. :", fontBold));
                 headerTable.AddCell(CreateMetaValue("1 of 2", fontRegular));
+
+
+                // --- ROW 4: Cat. Ref / Product | (Empty Right Side) ---
+                Paragraph catrefPara = new Paragraph()
+                    .Add(new Text("Cat. Ref / Product:      ").SetFont(fontBold).SetFontSize(9))
+                    .Add(new Text(model.CatRefProduct ?? "").SetFont(fontRegular).SetFontSize(9));
+
+                // Add CatRef to Left (Col 1-2)
+                headerTable.AddCell(new Cell(1, 2).Add(catrefPara).SetBorder(Border.NO_BORDER));
+
+                // Add Empty Cell to Right (Col 3-4) to maintain grid alignment
+                headerTable.AddCell(new Cell(1, 2).SetBorder(Border.NO_BORDER));
+
+
+                // --- ROW 5: Vendor | (Empty Right Side) ---
+                Paragraph vendorPara = new Paragraph()
+                    .Add(new Text("Vendor         :      ").SetFont(fontBold).SetFontSize(9))
+                    .Add(new Text(model.VendorName ?? "").SetFont(fontRegular).SetFontSize(9));
+
+                // Add Vendor to Left (Col 1-2)
+                headerTable.AddCell(new Cell(1, 2).Add(vendorPara).SetBorder(Border.NO_BORDER));
+
+                // Add Empty Cell to Right (Col 3-4) to maintain grid alignment
+                headerTable.AddCell(new Cell(1, 2).SetBorder(Border.NO_BORDER));
+
 
                 // Add Header to Main
                 mainContainer.AddCell(new Cell().Add(headerTable).SetBorder(Border.NO_BORDER).SetPadding(5));
@@ -182,16 +197,16 @@ public class ChangeNoteController : Controller
                 Table gridTable = new Table(UnitValue.CreatePercentArray(columnWidths)).UseAllAvailableWidth().SetMarginTop(5);
 
                 gridTable.AddHeaderCell(CreateGridHeader("Sr.\nNo."));
-                gridTable.AddHeaderCell(CreateGridHeader("CHANGE FROM"));
-                gridTable.AddHeaderCell(CreateGridHeader("CHANGE TO"));
-                gridTable.AddHeaderCell(CreateGridHeader("CATEG\nORY*"));
+                gridTable.AddHeaderCell(CreateGridHeader("Standard Practice"));
+                gridTable.AddHeaderCell(CreateGridHeader("Deviation"));
+                gridTable.AddHeaderCell(CreateGridHeader("DEVIATION\nNOTE\nCATEGORY"));
 
                 int srNo = 1;
                 foreach (var item in model.Items)
                 {
                     gridTable.AddCell(CreateGridCell(srNo++.ToString(), fontRegular, TextAlignment.CENTER));
-                    gridTable.AddCell(CreateGridCell(item.ChangeFrom, fontRegular, TextAlignment.LEFT));
-                    gridTable.AddCell(CreateGridCell(item.ChangeTo, fontRegular, TextAlignment.LEFT));
+                    gridTable.AddCell(CreateGridCell(item.StandardPractice, fontRegular, TextAlignment.LEFT));
+                    gridTable.AddCell(CreateGridCell(item.Deviation, fontRegular, TextAlignment.LEFT));
                     gridTable.AddCell(CreateGridCell(item.Category, fontRegular, TextAlignment.CENTER));
                 }
 
@@ -252,9 +267,9 @@ public class ChangeNoteController : Controller
 
                 // Right Side (Legend)
                 Cell rightContainer = new Cell().SetBorder(new SolidBorder(borderW)).SetPadding(5);
-                rightContainer.Add(new Paragraph("* CHANGE NOTE CATEGORY").SetFont(fontBold).SetFontSize(8));
-                rightContainer.Add(new Paragraph("A: EXTREMELY URGENT & CRITICAL\nTo be implemented with immediate effect").SetFont(fontRegular).SetFontSize(7).SetMarginTop(5));
-                rightContainer.Add(new Paragraph("B: FOR PRODUCT UPGRADATION\nTo be implemented after existing inventory consumption.").SetFont(fontRegular).SetFontSize(7).SetMarginTop(5));
+                rightContainer.Add(new Paragraph("* DEVAITION NOTE CATEGORY").SetFont(fontBold).SetFontSize(8));
+                rightContainer.Add(new Paragraph("A: CRITICAL DEVIATIONS").SetFont(fontRegular).SetFontSize(7).SetMarginTop(5));
+                rightContainer.Add(new Paragraph("B: NON-CRITICAL DEVIATIONS").SetFont(fontRegular).SetFontSize(7).SetMarginTop(5));
 
                 bottomSection.AddCell(leftContainer);
                 bottomSection.AddCell(rightContainer);
@@ -278,7 +293,7 @@ public class ChangeNoteController : Controller
 
                 // Group Footer (Visual Spacing)
                 // A. Get Data and Split
-                string groupData = model.ChangeNoteGroup ?? ""; // e.g. "Materials,PMG"
+                string groupData = model.DeviationNoteGroup ?? ""; // e.g. "Materials,PMG"
                 string[] groups = groupData.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
                 // B. Create Paragraph
@@ -317,10 +332,10 @@ public class ChangeNoteController : Controller
 
                 Table page2Container = new Table(1).UseAllAvailableWidth().SetBorder(new SolidBorder(borderW));
 
-                page2Container.AddCell(new Cell().Add(new Paragraph("CHANGE NOTE IMPLEMENTATION").SetFont(fontBold).SetFontSize(11).SetTextAlignment(TextAlignment.CENTER)).SetPadding(10).SetBorder(Border.NO_BORDER));
+                page2Container.AddCell(new Cell().Add(new Paragraph("DEVAITION NOTE IMPLEMENTATION").SetFont(fontBold).SetFontSize(11).SetTextAlignment(TextAlignment.CENTER)).SetPadding(10).SetBorder(Border.NO_BORDER));
 
                 Table refTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1 })).UseAllAvailableWidth();
-                refTable.AddCell(CreateNoBorderCell($"Change Note Ref. No.: {model.ChangeNoteRefNo}", fontRegular));
+                refTable.AddCell(CreateNoBorderCell($"Deviation Note Ref. No.: {model.DeviationNoteRefNo}", fontRegular));
                 refTable.AddCell(CreateNoBorderCell($"Date of Issue: {model.DateOfIssue?.ToString("dd/MM/yyyy")}", fontRegular));
                 page2Container.AddCell(new Cell().Add(refTable).SetPadding(5).SetBorder(Border.NO_BORDER));
 
@@ -354,12 +369,10 @@ public class ChangeNoteController : Controller
                 Table qaSection = new Table(1).UseAllAvailableWidth().SetHeight(250);
                 Cell qaInner = new Cell().SetPadding(10);
                 qaInner.Add(new Paragraph("FINAL REMARKS FROM QA").SetFont(fontRegular).SetFontSize(10));
-                qaInner.Add(new Paragraph("\nTo. : Group manager : Product Design").SetFont(fontRegular).SetFontSize(10));
+                qaInner.Add(new Paragraph("\nTo. :").SetFont(fontRegular).SetFontSize(10));
                 qaInner.Add(new Paragraph("\nFrom. :").SetFont(fontRegular).SetFontSize(10));
-                qaInner.Add(new Paragraph($"\n\nThe change has been implemented at {model.VendorName}           for all dispatches from date {model.UpdatedOn?.ToString("dd-MM-yyyy")}").SetFont(fontRegular).SetFontSize(10));
                 qaInner.Add(new Paragraph("\nSignature").SetFont(fontRegular).SetFontSize(10));
-                qaInner.Add(new Paragraph("Note:\nQA Team member will provide his final remarks as soon as the changes are implemented at vendor location and acknowledge to Product Design Group by sending a copy of this implementation note.\nThis is required to update the Technical Specification.").SetFont(fontRegular).SetFontSize(8).SetMarginTop(20));
-
+                
                 qaSection.AddCell(qaInner);
                 page2Container.AddCell(new Cell().Add(qaSection).SetBorderTop(new SolidBorder(borderW)));
 

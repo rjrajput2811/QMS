@@ -9,18 +9,15 @@ namespace QMS.Core.Services.ChangeNoteService;
 
 public class ChangeNoteService : IChangeNoteService
 {
-    private readonly QMSDbContext _dbContext;
     private readonly IChangeNoteRepository _changeNoteRepository;
     private readonly IChangeNoteItemsRepository _changeNoteItemsRepository;
     private readonly IChangeNoteImplementationItemRepository _changeNoteImplementationItemRepository;
 
-    public ChangeNoteService(QMSDbContext dbContext,
-                             IChangeNoteRepository changeNoteRepository,
+    public ChangeNoteService(IChangeNoteRepository changeNoteRepository,
                              IChangeNoteItemsRepository changeNoteItemsRepository,
                              IChangeNoteImplementationItemRepository changeNoteImplementationItemRepository
     )
     {
-        _dbContext = dbContext;
         _changeNoteRepository = changeNoteRepository;
         _changeNoteItemsRepository = changeNoteItemsRepository;
         _changeNoteImplementationItemRepository = changeNoteImplementationItemRepository;

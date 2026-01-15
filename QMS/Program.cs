@@ -17,6 +17,9 @@ using QMS.Core.Repositories.CSATSummaryRepository;
 using QMS.Core.Repositories.CSOTrackerRepository;
 using QMS.Core.Repositories.DashBoardRepository;
 using QMS.Core.Repositories.DashBordRepository;
+using QMS.Core.Repositories.DeviationNoteImplementationItemRepository;
+using QMS.Core.Repositories.DeviationNoteItemsRepository;
+using QMS.Core.Repositories.DeviationNoteRepository;
 using QMS.Core.Repositories.DNTrackerRepository;
 using QMS.Core.Repositories.DocumentConfiRepository;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
@@ -44,8 +47,11 @@ using QMS.Core.Repositories.UserRolesRepository;
 using QMS.Core.Repositories.UsersRepository;
 using QMS.Core.Repositories.VendorRepository;
 using QMS.Core.Services.ChangeNoteService;
+using QMS.Core.Services.DeviationNoteService;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
+using QMS.Core.Repositories.SPMMakeRepository;
+using QMS.Core.Repositories.SPMBuyRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -102,6 +108,12 @@ builder.Services.AddTransient<IChangeNoteRepository, ChangeNoteRepository>();
 builder.Services.AddTransient<IChangeNoteItemsRepository, ChangeNoteItemsRepository>();
 builder.Services.AddTransient<IChangeNoteImplementationItemRepository, ChangeNoteImplementationItemRepository>();
 builder.Services.AddTransient<IChangeNoteService, ChangeNoteService>();
+builder.Services.AddTransient<IDeviationNoteRepository, DeviationNoteRepository>();
+builder.Services.AddTransient<IDeviationNoteItemsRepository, DeviationNoteItemsRepository>();
+builder.Services.AddTransient<IDeviationNoteImplementationItemRepository, DeviationNoteImplementationItemRepository>();
+builder.Services.AddTransient<IDeviationNoteService, DeviationNoteService>();
+builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
+builder.Services.AddScoped<ISPMBuyRepository, SPMBuyRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

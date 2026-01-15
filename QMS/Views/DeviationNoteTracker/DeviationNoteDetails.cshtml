@@ -1,4 +1,4 @@
-﻿@using QMS.Core.Models
+﻿@* @using QMS.Core.Models
 
 @model DeviationNoteViewModel
 
@@ -20,7 +20,7 @@
         font-size: 14px;
         width: 70%;
         padding: 2px 4px;
-        transition: border-color .2s ease-in-out;
+        /* transition: border-color .2s ease-in-out; */
     }
 
     `
@@ -275,15 +275,15 @@
                     </div>
 
                     <div>
-                        <button id="saveChangeNoteButton"
+                        <button id="saveDeviationNoteButton"
                                 type="button"
                                 class="btn btn-outline-success legitRipple mr-2"
-                                onclick="saveChangeNote()"
+                                onclick="saveDeviationNote()"
                                 style="width:120px; font-size:15px;">
                             <i class="fas fa-save mr-1"></i>Save
                         </button>
 
-                        <a href='@Url.Action("DeviationNote", "DeviationNote")'
+                        <a href='@Url.Action("DeviationNote", "DeviationNoteTracker")'
                            class="btn btn-outline-primary"
                            style="width:120px; font-size:15px;">
                             <i class="fas fa-arrow-left"></i> BACK
@@ -292,7 +292,7 @@
                 </div>
             </div>
 
-            <form id="changeNotw-form" method="post" asp-action="InsertUpdateChangeNote" asp-controller="DeviationNote">
+            <form id="deviationNotw-form" method="post" asp-action="InsertUpdateDeviationNote" asp-controller="DeviationNoteTracker">
                 @Html.HiddenFor(m => m.Id)
                 <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
                     <div class="card-body">
@@ -310,14 +310,14 @@
                                             @Html.TextBoxFor(m => m.DocumentNo, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Document No" })
                                         </td>
                                         <td>
-                                            <span class="field-label">Revision No:</span>
-                                            @Html.TextBoxFor(m => m.RevisionNo, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Revision No" })
+                                            <span class="field-label">Cat. Ref / Product :</span>
+                                            @Html.TextBoxFor(m => m.CatRefProduct, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Revision No" })
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>
-                                            <span class="field-label">Description:</span>
-                                            @Html.TextBoxFor(m => m.Description, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Change Description" })
+                                            <span class="field-label">Deviation Details:</span>
+                                            @Html.TextBoxFor(m => m.DeviationDetails, new { @class = "inline-input", style = "width:75%;", placeholder = "Enter Deviation Details" })
                                         </td>
                                         <td>
                                             <span class="field-label">Vendor:</span>
@@ -340,7 +340,7 @@
 
                             <!-- items table for Deviation Note -->
                             <table class="pv-table"
-                                   id="changesItemsTable"
+                                   id="deviationsItemsTable"
                                    style="margin-top:-1px; margin-bottom:0;">
                                 <thead>
                                     <tr>
@@ -350,7 +350,7 @@
                                         <th style="width:4%; text-align:center;">CATEGORY</th>
                                     </tr>
                                 </thead>
-                                <tbody id="changesItemsTbody">
+                                <tbody id="deviationsItemsTbody">
                                     @if (Model.Items.Count > 0)
                                     {
                                         var counter = 1;
@@ -617,7 +617,7 @@
 
                             <!-- Implementation items table -->
                             <table class="pv-table"
-                                   id="changesItemsTable_Log"
+                                   id="deviationsItemsTable_Log"
                                    style="margin-top:-1px;">
                                 <thead>
                                     <tr>
@@ -628,7 +628,7 @@
                                         <th style="width:10%; text-align:center;">ACTUAL<br />DATE</th>
                                     </tr>
                                 </thead>
-                                <tbody id="changesItemsTbody_Log">
+                                <tbody id="deviationsItemsTbody_Log">
                                     @if (Model.ImplementationItems.Count > 0)
                                     {
                                         var counter1 = 1;
@@ -701,7 +701,7 @@
                                         </td>
                                         <td id="finalRemarksNote"
                                             style="padding:12px; vertical-align:top; min-height:120px;">
-                                            QA Team member will provide his final remarks as soon as the changes are<br />
+                                            QA Team member will provide his final remarks as soon as the deviations are<br />
                                             implemented at vendor location and acknowledge to Product Design Group by sending a copy of this implementation note.<br />
                                             This is required to update the Technical Specification.<br />
                                         </td>
@@ -720,16 +720,16 @@
     <script>
 
         $(document).ready(function () {
-            initMainChangeTable();
-            initChangeLogTable();
+            initMainDeviationTable();
+            initDeviationLogTable();
             initSignatureInputs();
             initSoftMultiSelect();
         });
 
 
-        function initMainChangeTable() {
+        function initMainDeviationTable() {
             const addBtn = document.getElementById('addRowBtn');
-            const tbody = document.getElementById('changesItemsTbody');
+            const tbody = document.getElementById('deviationsItemsTbody');
             if (!addBtn || !tbody) return;
 
             function refreshSerials() {
@@ -754,16 +754,16 @@
                     </button>`;
                 tr.appendChild(tdSr);
 
-                // 2. Change From
+                // 2. Deviation From
                 const tdFrom = document.createElement('td');
                 tdFrom.setAttribute('contenteditable', 'true');
-                tdFrom.setAttribute('data-name', 'ChangeFrom');
+                tdFrom.setAttribute('data-name', 'StandardPractice');
                 tr.appendChild(tdFrom);
 
-                // 3. Change To
+                // 3. Deviation To
                 const tdTo = document.createElement('td');
                 tdTo.setAttribute('contenteditable', 'true');
-                tdTo.setAttribute('data-name', 'ChangeTo');
+                tdTo.setAttribute('data-name', 'Deviation');
                 tr.appendChild(tdTo);
 
                 // 4. Category (NOW A DROPDOWN)
@@ -800,9 +800,9 @@
         }
 
 
-        function initChangeLogTable() {
+        function initDeviationLogTable() {
             const addBtnLog = document.getElementById('addRowBtnLog');
-            const tbodyLog = document.getElementById('changesItemsTbody_Log');
+            const tbodyLog = document.getElementById('deviationsItemsTbody_Log');
             if (!addBtnLog || !tbodyLog) return;
 
             function refreshSerialsLog() {
@@ -1000,10 +1000,10 @@
             updateUI();
         }
 
-        function saveChangeNote() {
+        function saveDeviationNote() {
             Blockloadershow();
             const requiredFields = [
-                { id: 'Description', name: 'Description' },
+                { id: 'DeviationDetails', name: 'Deviation Details' },
                 { id: 'VendorId', name: 'Vendor' }
             ];
 
@@ -1031,11 +1031,11 @@
                 return false;
             }
             $("#Id").val(@Model.Id);
-            var formData = new FormData($('#changeNotw-form')[0]);
+            var formData = new FormData($('#deviationNotw-form')[0]);
 
-            formData.set('ChangeNoteRefNo', $('#ChangeNoteRefNo').val().trim());
+            formData.set('DeviationNoteRefNo', $('#DeviationNoteRefNo').val().trim());
             formData.set('Remarks', $('#remarksEditable').text().trim());
-            formData.set('ChangeNoteCategory', $('#categoryEditable').text().trim());
+            formData.set('DeviationNoteCategory', $('#categoryEditable').text().trim());
             formData.set('FinalQARemarks', $('#finalRemarksQA').text().trim());
 
             var copyToVal = $('input[name="CopyTo"]:checked').map(function() {
@@ -1046,9 +1046,9 @@
 
             formData.delete('groups');
             var groupVal = $('#groupHiddenSelect').val() || [];
-            formData.append('ChangeNoteGroup', groupVal.join(','));
+            formData.append('DeviationNoteGroup', groupVal.join(','));
 
-            $('#changesItemsTbody tr').each(function(index) {
+            $('#deviationsItemsTbody tr').each(function(index) {
                 $(this).find('[data-name]').each(function() {
                     var $td = $(this);
                     var prop = $td.data('name');
@@ -1069,7 +1069,7 @@
                 });
             });
 
-            $('#changesItemsTbody_Log tr').each(function(index) {
+            $('#deviationsItemsTbody_Log tr').each(function(index) {
                 $(this).find('[data-name]').each(function() {
                     var $el = $(this);
                     var prop = $el.data('name');
@@ -1079,7 +1079,7 @@
             });
 
             $.ajax({
-                url: $('#changeNotw-form').attr('action'),
+                url: $('#deviationNotw-form').attr('action'),
                 type: 'POST',
                 data: formData,
                 processData: false,
@@ -1094,7 +1094,7 @@
                             showSuccessAlert("Saved Successfully.");
                         }
                         setTimeout(function () {
-                            window.open('@Url.Action("DeviationNote", "DeviationNote")', '_self');
+                            window.open('@Url.Action("DeviationNote", "DeviationNoteTracker")', '_self');
                         }, 2500);
                     } else {
                         showDangerAlert("Error: " + (response.message || "Unknown error"));
@@ -1112,3 +1112,4 @@
 
 @section HideSidebar { }
 
+ *@

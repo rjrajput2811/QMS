@@ -104,11 +104,14 @@ public class ChangeNoteItemsRepository : SqlTableRepository, IChangeNoteItemsRep
         {
             var result = new OperationResult();
             var items = await _dbContext.ChangeNoteItems.Where(i => i.ChangeNoteId == changeNoteId).ToListAsync();
-            foreach(var item in items)
+            if (items.Count == 0)
+            {
+                result.Success = true;
+            }
+            foreach (var item in items)
             {
                 result = await base.DeletePermanentlyAsync<ChangeNoteItem>(item.Id);
                 if (!result.Success) { return result; }
-
             }
             return result;
         }

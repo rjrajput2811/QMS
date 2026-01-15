@@ -772,9 +772,9 @@
                 items: [
                     {
                         name: 'Deviation Note',
-                        inputUrl: '@Url.Action("DeviationNote", "DeviationNote")',
+                        inputUrl: '@Url.Action("DeviationNote", "DeviationNoteTracker")',
                         outputs: [
-                            { label: 'Output', url: '@Url.Action("DeviationNote", "DeviationNote")', css: 'btn-output' }
+                            { label: 'Output', url: '@Url.Action("DeviationNote", "DeviationNoteTracker")', css: 'btn-output' }
                         ]
                     }
                 ]
@@ -984,14 +984,14 @@
                         name: 'SPM Calculation Sheet: Make',
                         inputUrl: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")',
                         outputs: [
-                            { label: 'Output', url: '@Url.Action("SPMCalucationMake", "SPMCalculationMake")', css: 'btn-output' }
+                            { label: 'Comparison', url: '@Url.Action("SMPComparision", "TrackerOutput")', css: 'btn-output' }
                         ]
                     },
                     {
                         name: 'SPM Calculation Sheet: Buy',
                         inputUrl: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")',
                         outputs: [
-                            { label: 'Output', url: '@Url.Action("SPMCalculationBuyReport", "SPMCalculationBuy")', css: 'btn-output' }
+                            { label: 'Output', url: '@Url.Action("SMPBuyComparision", "TrackerOutput")', css: 'btn-output' }
                         ]
                     }
                 ]

@@ -1,25 +1,48 @@
 ﻿@{
-    ViewData["Title"] = "SMP Comparison";
+    ViewData["Title"] = "SPM Comparison (Make)";
 }
+
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+@* <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> *@
 <script src="~/js/jquery.min.js"></script>
 <script src="~/js/jquery.datatables.js"></script>
 <link href="~/css/pnotify.css" rel="stylesheet" />
 <script src="~/js/pnotify.js"></script>
 <script src="~/js/pnotify.confirm.js"></script>
 <script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
-
+@* <script src="~/lib/bootstrap/dist/js/popupAlert.js"></script> *@
 <script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
 <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
-
+<script src="~/js/xlsx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+@* <link href="~/css/select2.min.css" rel="stylesheet" /> *@
 
 <style>
+    /* Header card */
+    .nav-pills .nav-link {
+        text-align: left;
+        border-radius: 0;
+        border-left: 4px solid transparent;
+        font-weight: 500;
+        width: 100%;
+        padding: 12px;
+        background-color: #fff;
+        color: #333;
+        margin-bottom: 4px;
+    }
+
+        .nav-pills .nav-link.active {
+            background-color: #f4f3f8;
+            border-left: 4px solid #645394;
+            color: #645394;
+            font-weight: bold;
+        }
+
     .form-control {
         padding: 0 10px !important;
         border: 0;
@@ -40,11 +63,6 @@
         outline: none;
     }
 
-    .card .card-body .page-title {
-        color: #4682B4;
-        font-weight: 700;
-    }
-
     .tabulator .tabulator-header .tabulator-col {
         font-size: 14px;
         background-color: #D6E4F0;
@@ -53,10 +71,9 @@
     }
 
     .tabulator-row .tabulator-cell {
-        padding: 8px 8px;
+        padding: 5px 5px;
         font-size: 14px;
-        min-height: 36px;
-        line-height: 18px;
+        height: 35px;
     }
 
     .tabulator-cell:hover {
@@ -84,13 +101,13 @@
 
         .calendar-container:hover {
             background-color: #e3f2fd;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         .calendar-container i.fa-calendar {
             color: #2196f3;
             font-size: 1.2em;
-            padding-left: 6px;
+            padding-left: 20px;
         }
 
         .calendar-container span {
@@ -99,155 +116,298 @@
             font-size: 14px;
         }
 
-    @@keyframes flash-bg {
-        0% {
-            background-color: #fff3cd;
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
+    .month-item {
+        font-size: 14px;
+    }
+
+    .tab-multi-ac {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+        align-items: center;
+        min-height: 30px;
+        padding: 4px;
+        cursor: text;
+    }
+
+        .tab-multi-ac input {
+            border: none;
+            outline: none;
+            flex: 1 0 120px;
+            min-width: 100px;
         }
 
-        100% {
-            background-color: transparent;
-        }
+    .tab-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        padding: 2px 8px;
+        border-radius: 12px;
+        background: #eef1f6;
+        font-size: 12px;
     }
+
+        .tab-tag .tab-x {
+            cursor: pointer;
+            font-weight: 700;
+        }
 
     .row-flash {
         animation: flash-bg 2s ease-out forwards;
     }
 
-    .tabulator-row.row-flash {
-        transition: background-color 2s ease-out;
+    .row-flash1 {
+        animation: flashRow 0.8s ease;
     }
+
+    @@keyframes flashRow {
+        0%, 100% {
+            background-color: transparent;
+        }
+
+        50% {
+            background-color: #d4edda;
+        }
+    }
+
+    .select2-container {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .select2-container--default .select2-selection--single,
+    .select2-container--default .select2-selection--multiple {
+        border: 0 !important;
+        border-bottom: 1px solid #cccccc !important;
+        border-radius: 0 !important;
+        min-height: 34px !important;
+        height: auto !important;
+        padding: 0 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        box-sizing: border-box;
+        background: transparent !important;
+    }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            padding: 0 !important;
+            line-height: 34px !important;
+            color: #6c757d;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 34px !important;
+            top: 0 !important;
+        }
+
+    .select2-container--default .select2-selection--multiple {
+        padding: 2px 10px !important;
+    }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            margin: 0 !important;
+            border: 0 !important;
+            border-radius: 12px;
+            background: #eef1f6;
+            padding: 2px 8px;
+        }
+
+    .select2-container--default.select2-container--focus .select2-selection--single,
+    .select2-container--default.select2-container--focus .select2-selection--multiple {
+        border-bottom: 2px solid #645394 !important;
+        box-shadow: none !important;
+    }
+
 </style>
 
 <div class="content">
-    <div class="card">
+
+    <!-- Header Card -->
+    <div class="card shadow-sm header-card" style="width:100%; margin:0;">
         <div class="card-body d-flex justify-content-between align-items-center">
-
             <div>
-                <b style="font-size: large;color: #4682B4;">SMP Comparison</b>
+                <b class="header-title">SPM Comparison (Make)</b>
             </div>
-
+           
             <div class="col-md-3">
-                <div id="customDateTriggerSMP" class="calendar-container">
-                    <i class="fa fa-calendar"></i>
-                    <span id="dateRangeSMP">Select Date Range</span>
+                <div class="form-group row align-items-center">
+                    <label for="ddlFY" class="col-sm-4 col-form-label text-right">
+                        Financial Year
+                    </label>
+                    <div class="col-sm-4">
+                        <select id="ddlFY" class="form-control" onchange="filterData()">
+                        </select>
+                    </div>
                 </div>
             </div>
 
-            <div class="d-flex">
+            <div>
 
-                <button id="exportSMPButton" type="button"
-                        class="btn btn-outline-danger legitRipple mr-2"
-                        style="width: 140px;font-size:15px">
+                <button id="exportExcelButton" type="button" class="btn btn-outline-danger legitRipple mr-2" style="width: 140px;font-size:15px">
                     <i class="fas fa-file-excel mr-2 fa-1x"></i>Export XL
                 </button>
 
-                <button id="backButton" class="btn btn-outline-primary legitRipple mr-2"
-                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
-
             </div>
 
         </div>
     </div>
 
+    <!-- Period Title + Table -->
+    <div class="card shadow-sm period-card"
+         style="border-radius:8px; border:1px solid #ccc; margin-top:20px; width:100%;">
 
-    <div class="row mt-3">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="chart-container">
-                        <div class="form-group row">
-                            <div id="smp_Table" class="col-12"></div>
-                        </div>
-                    </div>
+        <div class="card-body">
+            <div class="chart-container">
+                <div id="deviation_note_table_wrapper" style="overflow-x:auto;">
+                    <div id="spmMake_table"></div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-
 @section Scripts {
+
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
+    @* <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> *@
+    <script src="~/js/select2.min.js"></script>
 
     <!-- Moment.js and Litepicker -->
     <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
-    <script src="~/js/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
 
     <script>
-        let filterStartSMPDate = moment().startOf('month').format('YYYY-MM-DD');
-        let filterEndSMPDate = moment().endOf('month').format('YYYY-MM-DD');
 
-        $(document).ready(function () {
+        // var tabledata = [];
+        var table = null;
+        let vendorOptions = {};
 
-            $('#dateRangeSMP').text(
-                moment(filterStartSMPDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndSMPDate).format('MMMM D, YYYY')
-            );
+        $(document).ready(function ()
+        {
 
-            const picker = new Litepicker({
-                element: document.getElementById('customDateTriggerSMP'),
-                singleMode: false,
-                format: 'DD-MM-YYYY',
-                numberOfMonths: 2,
-                numberOfColumns: 2,
-                dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
-                plugins: ['ranges'],
-                setup: (picker) => {
-                    picker.on('selected', (start, end) => {
-                        const startMoment = moment(start.getTime());
-                        const endMoment = moment(end.getTime());
+            bindFinancialYears();
 
-                        filterStartSMPDate = startMoment.format('YYYY-MM-DD');
-                        filterEndSMPDate = endMoment.format('YYYY-MM-DD');
+            filterData();
 
-                        $('#dateRangeSMP').text(
-                            `${startMoment.format('MMMM D, YYYY')} - ${endMoment.format('MMMM D, YYYY')}`
-                        );
-                        // hook your API call here if needed, e.g. loadSMPGrid(apiResponse);
-                    });
-
-                    picker.on('clear', () => {
-                        filterStartSMPDate = "";
-                        filterEndSMPDate = "";
-                        $('#dateRangeSMP').text("Select Date Range");
-                        // loadSMPGrid();
-                    });
-                },
-                ranges: {
-                    Today: [moment(), moment()],
-                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                },
-                startDate: moment().startOf('month').format('DD-MM-YYYY'),
-                endDate: moment().endOf('month').format('DD-MM-YYYY')
-            });
-
-            $('#customDateTriggerSMP').on('click', function () {
-                picker.show();
-            });
-
-            // Initial grid load (empty for now)
-            loadSMPGrid(null);
         });
 
-        // Common header menu for column show/hide
+        function getCurrentFYStartYear() {
+            const d = new Date();
+            return (d.getMonth() >= 3) ? d.getFullYear() : d.getFullYear() - 1;
+        }
+
+        function fyText(startYear) {
+            return startYear + "-" + String(startYear + 1).slice(-2);
+        }
+
+        function bindFinancialYears() {
+            const ddl = $("#ddlFY");
+            ddl.empty(); // clear existing options
+
+            ddl.append(`<option value="">Select FY</option>`);
+
+            const startFrom = 2020;
+            const currentFY = getCurrentFYStartYear();
+            const endFY = currentFY + 1; // include upcoming year
+
+            for (let y = startFrom; y <= endFY; y++) {
+                const fy = fyText(y);
+                ddl.append(`<option value="${fy}">${fy}</option>`);
+            }
+
+            // default select current FY
+            ddl.val(fyText(currentFY));
+        }
+
+        function filterData() {
+            Blockloadershow();
+
+            var fy = $("#ddlFY").val();
+
+            // 🔴 Validation: Quarter not selected
+            if (!fy || fy === "0") {
+                showDangerAlert("Please select Financial Year.");
+                $("#ddlFY").focus();
+                return; // stop further execution
+            }
+
+
+            $.ajax({
+                url: '/Service/GetVendor',
+                type: 'GET'
+            }).done(function (vendorData) {
+                //let vendorOptions = {};
+
+                if (Array.isArray(vendorData)) {
+                    vendorOptions = vendorData.reduce((acc, v) => {
+                        acc[v.value] = v.label;
+                        return acc;
+                    }, {});
+                }
+
+                $.ajax({
+                    url: '/SPMCalculationMake/GetById',
+                    type: 'GET',
+                    dataType: 'json',
+                    traditional: true,
+                    data: {
+                        Fy: fy
+                    },
+                    success: function (data) {
+                        if (Array.isArray(data) && data.length > 0) {
+                            renderSPMTable(data);
+                        } else {
+                            showDangerAlert('No Data available.');
+                        }
+                        Blockloaderhide();
+                    },
+                    error: function (xhr, status, error) {
+                        showDangerAlert('Error retrieving data: ' + error);
+                        Blockloaderhide();
+                    }
+                });
+
+            }).fail(function () {
+                Blockloaderhide();
+                showDangerAlert('Failed to load vendor data.');
+            });
+        }
+
         var headerMenu = function () {
-            var menu = [];
-            var columns = this.getColumns();
+            const menu = [];
+            const columns = this.getColumns();
 
-            for (let column of columns) {
-                let icon = document.createElement("i");
-                icon.classList.add("fas");
-                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+            columns.forEach(column => {
+                const icon = document.createElement("i");
+                icon.classList.add("fas", column.isVisible() ? "fa-check-square" : "fa-square");
 
-                let label = document.createElement("span");
-                let title = document.createElement("span");
+                const label = document.createElement("span");
+                const title = document.createElement("span");
                 title.textContent = " " + column.getDefinition().title;
 
                 label.appendChild(icon);
@@ -258,131 +418,184 @@
                     action: function (e) {
                         e.stopPropagation();
                         column.toggle();
-                        if (column.isVisible()) {
-                            icon.classList.remove("fa-square");
-                            icon.classList.add("fa-check-square");
-                        } else {
-                            icon.classList.remove("fa-check-square");
-                            icon.classList.add("fa-square");
-                        }
+                        icon.classList.toggle("fa-check-square", column.isVisible());
+                        icon.classList.toggle("fa-square", !column.isVisible());
                     }
                 });
-            }
+            });
 
             return menu;
         };
 
-        function loadSMPGrid(response) {
-            Blockloadershow();
+        function getFinancialYears() {
+            let today = new Date();
+            let year = today.getFullYear();
+            let month = today.getMonth() + 1; // Jan=0, so +1
 
-            let tabledata = []; // replace with API response later if needed
+            let startYear;
+            if (month < 4) {
+                // Before April → FY belongs to previous year
+                startYear = year - 1;
+            } else {
+                startYear = year;
+            }
 
-            let columns = [
+            // Build last 5 financial years
+            let years = {};
+            for (let i = 0; i < 5; i++) {
+                let sYear = startYear - i;
+                let eYear = sYear + 1;
+                let fy = sYear + "-" + eYear.toString().slice(-2);
+                years[fy] = fy;
+            }
+
+            return years;
+        }
+
+        var financialYears = getFinancialYears();
+
+        function getMonthOptions() {
+            const months = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const yearSuffix = new Date().getFullYear().toString().slice(-2);
+            return months.map(m => `${m} - ${yearSuffix}`); // array of strings
+        }
+
+        function getMonthString() {
+            const months = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+            const today = new Date();
+            const monthName = months[today.getMonth()];
+            const yearSuffix = today.getFullYear().toString().slice(-2);
+            return monthName + " - " + yearSuffix;
+        }
+
+        function getVendorText(val) {
+            const key = (val ?? "").toString().trim();
+            return vendorOptions?.[key] || vendorOptions?.[val] || key; // fallback to value itself
+        }
+
+        function renderSPMTable(response) {
+                let tabledata = [];
+
+            // Utility function to format date to dd/MM/yyyy
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+            }
+
+            // Prepare data
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id : item.id,
+                        Supp_Name : item.supp_Name || "",
+                        Supp_Name_Text: getVendorText(item.supp_Name),
+                        Fy : item.fy || "",
+                        Month : item.month || "",
+                        Ppm_Rating : item.ppm_Rating || 0,
+                        Delivery_Rating : item.delivery_Rating || 0,
+                        Capa_Rating : item.capa_Rating,
+                        Audit_Rating : item.audit_Rating || 0,
+                        Cost_Rating : item.cost_Rating || 0,
+                        Npi_Resp_Rating : item.npi_Resp_Rating || 0,
+                        Rep_Lead_Time_Rating : item.rep_Lead_Time_Rating || 0,
+                        Total : item.total || 0
+                    });
+                });
+            }
+
+            const columns = [
+                { title: "S.No", field: "Sr_No", frozen: true, hozAlign: "center", headerSort: false, headerMenu: headerMenu, width: 80 },
+
+               
+
                 {
                     title: "FY",
-                    field: "FY",
-                    headerFilter: "input",
+                    field: "Fy",
+                    headerFilter: "list",
+                    headerFilterParams: { values: financialYears },
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
+
                 {
                     title: "Month",
                     field: "Month",
-                    headerFilter: "input",
+                    headerFilter: "list",
+                    headerFilterParams: { values: getMonthOptions() },
                     hozAlign: "center",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
                 },
-                {
-                    title: "Vendor",
-                    field: "Vendor",
-                    headerFilter: "input",
-                    hozAlign: "left",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
+
+                 {
+                  title: "Vendor",
+                  field: "Supp_Name_Text",
+                  hozAlign: "left",
+                  headerHozAlign: "center"
                 },
-                {
-                    title: "PPM Rating",
-                    field: "PPMRating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Delivery Rating",
-                    field: "DeliveryRating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "CAPA Rating",
-                    field: "CAPARating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Audit Rating",
-                    field: "AuditRating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Cost Initiative Rating",
-                    field: "CostInitiativeRating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "NPI Response Rating",
-                    field: "NPIResponseRating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Replace Lead Time Rating",
-                    field: "ReplaceLeadTimeRating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Total Rating",
-                    field: "TotalRating",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
+
+                { title: "PPM Rating", headerHozAlign: "center",field: "Ppm_Rating", hozAlign: "center", headerMenu: headerMenu },
+
+                { title: "Delivery Rating", headerHozAlign: "center",field: "Delivery_Rating", hozAlign: "center" , headerMenu: headerMenu },
+
+                { title: "CAPA Rating", headerHozAlign: "center",field: "Capa_Rating", hozAlign: "center", headerMenu: headerMenu  },
+
+                { title: "Audit Rating", headerHozAlign: "center",field: "Audit_Rating", hozAlign: "center", headerMenu: headerMenu   },
+
+                { title: "Cost Initiative Rating", headerHozAlign: "center",field: "Cost_Rating", hozAlign: "center", headerMenu: headerMenu },
+
+                { title: "NPI Response Rating", headerHozAlign: "center", field: "Npi_Resp_Rating", hozAlign: "center", headerMenu: headerMenu },
+
+                { title: "Replace Lead Time Rating", headerHozAlign: "center",field: "Rep_Lead_Time_Rating", hozAlign: "center", headerMenu: headerMenu },
+
+                { title: "Total", headerHozAlign: "center",field: "Total", hozAlign: "center", headerMenu: headerMenu },
+
             ];
 
-            let table = new Tabulator("#smp_Table", {
-                data: tabledata,
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>",
-                columns: columns
-            });
+            // Create once, update after
+            if (!table) {
+                table = new Tabulator("#spmMake_table", {
+                    data: tabledata,
+                    columns: columns,
+                    layout: "fitDataFill",
+                    placeholder: "No data available",
+                    movableColumns: true,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [10, 20, 50, 100],
+                    paginationCounter: "rows",
+                    reactiveData: true,
+                    index: "Id",
+
+                    columnDefaults: {
+                       editor: false,
+                       headerMenu: headerMenu
+                    },
+
+                    tableBuilt: function () {
+                        this.redraw(true);
+                    }
+                });
+
+            } else {
+                table.setColumns(columns);
+                table.replaceData(tabledata);
+                table.redraw(true);
+            }
 
             Blockloaderhide();
         }
+
     </script>
+
 }
 
 @section HideSidebar { }
+

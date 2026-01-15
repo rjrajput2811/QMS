@@ -294,6 +294,7 @@
             if (isNaN(id)) return false;
             return id % 2 !== 0;   // odd ids editable
         }
+
         function mergeRowFormatter(row) {
             const data = row.getData();
 
@@ -344,7 +345,64 @@
             }
         }
 
+        function toNum(v) {
+            if (v === null || v === undefined) return NaN;
+            if (typeof v === "string") v = v.trim();
+            if (v === "") return NaN;
+            v = String(v).replace(/,/g, "");
+            const n = parseFloat(v);
+            return Number.isFinite(n) ? n : NaN;
+        }
 
+        function clamp(v, lo, hi) {
+            return Math.max(lo, Math.min(hi, v));
+        }
+
+        // Excel style: MIN(MAX((Data/Target)*Weightage, 0), Weightage)
+        function calcWeightedScore(rowData) {
+            if (rowData.formula === "Total Weighted Score") return rowData.score;
+
+            const id = Number(rowData.id);
+            if (!Number.isFinite(id) || id % 2 === 0) return rowData.score; // ignore child rows
+
+            const data = toNum(rowData.data);
+            const target = toNum(rowData.target);
+            const weightage = toNum(rowData.weightage);
+
+            if (!Number.isFinite(data) || !Number.isFinite(target) || !Number.isFinite(weightage)) return "";
+            if (target === 0) return "";
+
+            const raw = (data / target) * weightage;
+            const score = clamp(raw, 0, weightage);
+
+            return Math.round(score * 100) / 100; // 2 decimals
+        }
+
+        function recalcTableScores(table) {
+            if (!table) return;
+
+            let total = 0;
+
+            table.getRows().forEach(r => {
+                const d = r.getData();
+
+                if (d.formula === "Total Weighted Score") return;
+
+                const newScore = calcWeightedScore(d);
+
+                if (d.score !== newScore) {
+                    r.update({ score: newScore });
+                }
+
+                const n = toNum(newScore);
+                if (Number.isFinite(n)) total += n;
+            });
+
+            const totalRow = table.getRows().find(r => r.getData().formula === "Total Weighted Score");
+            if (totalRow) {
+                totalRow.update({ score: Math.round(total * 100) / 100 });
+            }
+        }
 
         // =================== DATA ===================
 
@@ -694,7 +752,7 @@
                 title: "Formula",
                 field: "formula",
                 hozAlign: "center",
-                editor: numericOnlyEditor,
+                editor: "input",
                 editable: function (cell) {
                     const value = cell.getValue();
                     // 🔒 Lock only the cell with label "Total Weighted Score"
@@ -703,14 +761,7 @@
                 }
             },
 
-            {
-                title: "Weighted Score",
-                field: "score",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
-                editable: editableWhenOddId,
-                validator: ["numeric"]
-            }
+            { title: "Weighted Score", field: "score", hozAlign: "center", editor: false, editable: false }
         ];
 
         let engagementColumns = [
@@ -777,7 +828,7 @@
                 title: "Formula",
                 field: "formula",
                 hozAlign: "center",
-                editor: numericOnlyEditor,
+                editor: "input",
                 editable: function (cell) {
                     const value = cell.getValue();
                     // 🔒 Lock only the cell with label "Total Weighted Score"
@@ -785,14 +836,8 @@
                     return editableWhenOddId(cell);
                 }
             },
-            {
-                title: "Weighted Score",
-                field: "score",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
-                editable: editableWhenOddId,
-                validator: ["numeric"]
-            }
+
+            { title: "Weighted Score", field: "score", hozAlign: "center", editor: false, editable: false }
         ];
 
         // =================== TABLES ===================
@@ -801,8 +846,7 @@
             data: effectivenessTemplate,
             layout: "fitColumns",
             groupBy: "group",
-            groupHeader: value =>
-                `<span style='font-weight:bold; font-size:14px; color:#000;'>${value}</span>`,
+            groupHeader: value => `<span style='font-weight:bold; font-size:14px; color:#000;'>${value}</span>`,
             groupToggleElement: false,
             groupStartOpen: true,
             movableColumns: false,
@@ -812,19 +856,26 @@
             rowFormatter: mergeRowFormatter,
             cellEdited: function (cell) {
                 const field = cell.getField();
-                if (!["target", "weightage", "formula", "score"].includes(field)) return;
-
-                const data = cell.getRow().getData();
-                const srno = data.SrNo;
-                const value = cell.getValue();
+                const rowData = cell.getRow().getData();
                 const table = cell.getTable();
 
-                table.getRows().forEach(r => {
-                    const d = r.getData();
-                    if (r !== cell.getRow() && d.SrNo === srno) {
-                        r.update({ [field]: value });
-                    }
-                });
+                // Keep your sync logic (same SrNo rows)
+                if (["target", "weightage", "formula"].includes(field)) {
+                    const srno = rowData.SrNo;
+                    const value = cell.getValue();
+
+                    table.getRows().forEach(r => {
+                        const d = r.getData();
+                        if (r !== cell.getRow() && d.SrNo === srno) {
+                            r.update({ [field]: value });
+                        }
+                    });
+                }
+
+                // ✅ Recalculate when drivers change
+                if (["data", "target", "weightage"].includes(field)) {
+                    recalcTableScores(table);
+                }
             }
         });
 
@@ -832,8 +883,7 @@
             data: engagementTemplate,
             layout: "fitColumns",
             groupBy: "group",
-            groupHeader: value =>
-                `<span style='font-weight:bold; font-size:14px; color:#000;'>${value}</span>`,
+            groupHeader: value => `<span style='font-weight:bold; font-size:14px; color:#000;'>${value}</span>`,
             groupToggleElement: false,
             groupStartOpen: true,
             movableColumns: false,
@@ -843,21 +893,32 @@
             rowFormatter: mergeRowFormatter,
             cellEdited: function (cell) {
                 const field = cell.getField();
-                if (!["target", "weightage", "formula", "score"].includes(field)) return;
-
-                const data = cell.getRow().getData();
-                const srno = data.SrNo;
-                const value = cell.getValue();
+                const rowData = cell.getRow().getData();
                 const table = cell.getTable();
 
-                table.getRows().forEach(r => {
-                    const d = r.getData();
-                    if (r !== cell.getRow() && d.SrNo === srno) {
-                        r.update({ [field]: value });
-                    }
-                });
+                // Keep your sync logic (same SrNo rows)
+                if (["target", "weightage", "formula"].includes(field)) {
+                    const srno = rowData.SrNo;
+                    const value = cell.getValue();
+
+                    table.getRows().forEach(r => {
+                        const d = r.getData();
+                        if (r !== cell.getRow() && d.SrNo === srno) {
+                            r.update({ [field]: value });
+                        }
+                    });
+                }
+
+                // ✅ Recalculate when drivers change
+                if (["data", "target", "weightage"].includes(field)) {
+                    recalcTableScores(table);
+                }
             }
         });
+
+        // ✅ Initial calculation after load
+        recalcTableScores(effectivenessTable);
+        recalcTableScores(engagementTable);
     }
 
     function getRowById(rows, id) {
@@ -865,6 +926,7 @@
     }
 
     function saveSixSigma() {
+        debugger
 
         const requiredHeaderFields = [
             { id: "Fy", name: "FY" },

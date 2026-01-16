@@ -186,6 +186,104 @@ function renderCOPQTable(response) {
             };
             table.addRow(newRow, false);
         });
+
+        // Export to Excel on button click
+        document.getElementById("compExportButton").addEventListener("click", function () {
+            // Get only visible data from Tabulator (respects filters, sorting, pagination)
+            var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
+
+            // Get visible columns only
+            var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action");
+
+            // Prepare headers
+            var headers = visibleColumns.map(col => col.getDefinition().title);
+
+            // Prepare data rows
+            var rows = visibleData.map(row => {
+                return visibleColumns.map(col => {
+                    var field = col.getField();
+                    return row[field] !== undefined ? row[field] : "";
+                });
+            });
+
+            // Create date range text
+            var dateRangeText = "";
+            if (filterStartDate && filterEndDate) {
+                dateRangeText = `Date Range: ${moment(filterStartDate).format('DD-MMM-YYYY')} to ${moment(filterEndDate).format('DD-MMM-YYYY')}`;
+            } else if (filterStartDate) {
+                dateRangeText = `Date From: ${moment(filterStartDate).format('DD-MMM-YYYY')}`;
+            } else if (filterEndDate) {
+                dateRangeText = `Date To: ${moment(filterEndDate).format('DD-MMM-YYYY')}`;
+            } else {
+                dateRangeText = "Date Range: All Dates";
+            }
+
+            // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
+            var exportData = [
+                [dateRangeText], // Row 1: Date range
+                [],              // Row 2: Empty row
+                headers,         // Row 3: Headers
+                ...rows          // Row 4+: Data
+            ];
+
+            // Create worksheet
+            var ws = XLSX.utils.aoa_to_sheet(exportData);
+
+            // Merge cells for date range (A1 to last column)
+            var mergeRange = { s: { r: 0, c: 0 }, e: { r: 0, c: headers.length - 1 } };
+            if (!ws['!merges']) ws['!merges'] = [];
+            ws['!merges'].push(mergeRange);
+
+            // Style date range row (A1)
+            ws['A1'].s = {
+                font: { bold: true, sz: 12 },
+                fill: { fgColor: { rgb: "4472C4" } },
+                alignment: { horizontal: "center", vertical: "center" },
+                border: {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                }
+            };
+
+            // Style header row (row 3, index 2)
+            headers.forEach((header, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 2 }); // row 2 (0-indexed)
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "D3D3D3" } },
+                    alignment: { horizontal: "center" },
+                    border: {
+                        top: { style: "thin" },
+                        bottom: { style: "thin" },
+                        left: { style: "thin" },
+                        right: { style: "thin" }
+                    }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 12) }));
+            ws['!cols'] = columnWidths;
+
+            // Freeze header row (row 3, after date range and empty row)
+            ws['!freeze'] = { xSplit: 0, ySplit: 3 };
+
+            // Set row heights
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 25 }; // Date range row height
+            ws['!rows'][1] = { hpt: 10 };  // Empty row height
+            ws['!rows'][2] = { hpt: 20 };  // Header row height
+
+            // Create workbook and download
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "ComplainDump");
+
+            var fileName = `ComplainDump_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        });
     }
 
     Blockloaderhide();

@@ -5,32 +5,32 @@ using QMS.Core.Models;
 using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
 
-namespace QMS.Core.Repositories.ChangeNoteImplementationItemRepository;
+namespace QMS.Core.Repositories.DeviationNoteImplementationItemRepository;
 
-public class ChangeNoteImplementationItemRepository : SqlTableRepository, IChangeNoteImplementationItemRepository
+public class DeviationNoteImplementationItemRepository : SqlTableRepository, IDeviationNoteImplementationItemRepository
 {
     private new readonly QMSDbContext _dbContext;
     private readonly ISystemLogService _systemLogService;
 
-    public ChangeNoteImplementationItemRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
+    public DeviationNoteImplementationItemRepository(QMSDbContext dbContext, ISystemLogService systemLogService) : base(dbContext)
     {
         _dbContext = dbContext;
         _systemLogService = systemLogService;
     }
 
-    public async Task<List<ChangeNoteImplementationItemViewModel>> GetChangeNoteImplementationItemsDetailsAsync(int changeNoteId)
+    public async Task<List<DeviationNoteImplementationItemViewModel>> GetDeviationNoteImplementationItemsDetailsAsync(int DeviationNoteId)
     {
         try
         {
-            var parameters = new[] { new SqlParameter("@ChangeNoteId", changeNoteId) };
-            var sql = @"EXEC sp_Get_ChangeNoteImplementationItems @ChangeNoteId";
+            var parameters = new[] { new SqlParameter("@DeviationNoteId", DeviationNoteId) };
+            var sql = @"EXEC sp_Get_DeviationNoteImplementationItem @DeviationNoteId";
 
-            var result = await Task.Run(() => _dbContext.ChangeNoteImplementationItems.FromSqlRaw(sql, parameters)
+            var result = await Task.Run(() => _dbContext.DeviationNoteImplementationItems.FromSqlRaw(sql, parameters)
                 .AsEnumerable()
-                .Select(x => new ChangeNoteImplementationItemViewModel
+                .Select(x => new DeviationNoteImplementationItemViewModel
                 {
                     Id = x.Id,
-                    ChangeNoteId = x.ChangeNoteId,
+                    DeviationNoteId = x.DeviationNoteId,
                     ActionPlanned = x.ActionPlanned,
                     WhoWillDo = x.WhoWillDo,
                     ProposedCutOffDate = x.ProposedCutOffDate,
@@ -47,13 +47,13 @@ public class ChangeNoteImplementationItemRepository : SqlTableRepository, IChang
         }
     }
 
-    public async Task<OperationResult> InsertChangeNoteImplementationItemAsync(ChangeNoteImplementationItemViewModel model)
+    public async Task<OperationResult> InsertDeviationNoteImplementationItemAsync(DeviationNoteImplementationItemViewModel model)
     {
         try
         {
             var parameters = new[]
             {
-                new SqlParameter("@ChangeNoteId", model.ChangeNoteId),
+                new SqlParameter("@DeviationNoteId", model.DeviationNoteId),
                 new SqlParameter("@ActionPlanned", model.ActionPlanned ?? (object)DBNull.Value),
                 new SqlParameter("@WhoWillDo", model.WhoWillDo ?? (object)DBNull.Value),
                 new SqlParameter("@ProposedCutOffDate", model.ProposedCutOffDate ?? (object)DBNull.Value),
@@ -61,7 +61,7 @@ public class ChangeNoteImplementationItemRepository : SqlTableRepository, IChang
             };
 
             await _dbContext.Database.ExecuteSqlRawAsync(
-                "EXEC sp_Insert_ChangeNoteImplementationItem @ChangeNoteId, @ActionPlanned, @WhoWillDo, @ProposedCutOffDate, @ActualDate",
+                "EXEC sp_Insert_DeviationNoteImplementationItem @DeviationNoteId, @ActionPlanned, @WhoWillDo, @ProposedCutOffDate, @ActualDate",
                 parameters
             );
 
@@ -74,7 +74,7 @@ public class ChangeNoteImplementationItemRepository : SqlTableRepository, IChang
         }
     }
 
-    public async Task<OperationResult> UpdateChangeNoteImplementationItemAsync(ChangeNoteImplementationItemViewModel model)
+    public async Task<OperationResult> UpdateDeviationNoteImplementationItemAsync(DeviationNoteImplementationItemViewModel model)
     {
         try
         {
@@ -88,7 +88,7 @@ public class ChangeNoteImplementationItemRepository : SqlTableRepository, IChang
             };
 
             await _dbContext.Database.ExecuteSqlRawAsync(
-                "EXEC sp_Update_ChangeNoteImplementationItem @Id, @ActionPlanned, @WhoWillDo, @ProposedCutOffDate, @ActualDate",
+                "EXEC sp_Update_DeviationNoteImplementationItem @Id, @ActionPlanned, @WhoWillDo, @ProposedCutOffDate, @ActualDate",
                 parameters
             );
 
@@ -101,19 +101,19 @@ public class ChangeNoteImplementationItemRepository : SqlTableRepository, IChang
         }
     }
 
-    public async Task<OperationResult> DeleteChangeNoteImplementationItemAsync(int changeNoteId)
+    public async Task<OperationResult> DeleteDeviationNoteImplementationItemAsync(int DeviationNoteId)
     {
         try
         {
             var result = new OperationResult();
-            var items = await _dbContext.ChangeNoteImplementationItems.Where(i => i.ChangeNoteId == changeNoteId).ToListAsync();
+            var items = await _dbContext.DeviationNoteImplementationItems.Where(i => i.DeviationNoteId == DeviationNoteId).ToListAsync();
             if (items.Count == 0)
             {
                 result.Success = true;
             }
             foreach (var item in items)
             {
-                result = await base.DeletePermanentlyAsync<ChangeNoteImplementationItem>(item.Id);
+                result = await base.DeletePermanentlyAsync<DeviationNoteImplementationItem>(item.Id);
                 if (!result.Success) { return result; }
             }
             return result;

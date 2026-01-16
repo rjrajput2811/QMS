@@ -23,6 +23,10 @@ namespace QMS.Controllers
         {
             return View();
         }
+        public IActionResult SPMCertificate()
+        {
+            return View();
+        }
 
         [HttpGet]
         public async Task<JsonResult> GetAll()
@@ -30,6 +34,7 @@ namespace QMS.Controllers
             var list = await _spmRepository.GetListAsync();
             return Json(list);
         }
+        
 
         [HttpGet]
         public async Task<JsonResult> GetById(string Fy, List<string> Quater)

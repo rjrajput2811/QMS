@@ -72,6 +72,9 @@ namespace QMS.Core.DatabaseContext
         public DbSet<ChangeNote> ChangeNotes { get; set; }
         public DbSet<ChangeNoteItem> ChangeNoteItems { get; set; }
         public DbSet<ChangeNoteImplementationItem> ChangeNoteImplementationItems { get; set; }
+        public DbSet<DeviationNote> DeviationNotes { get; set; }
+        public DbSet<DeviationNoteItem> DeviationNoteItems { get; set; }
+        public DbSet<DeviationNoteImplementationItem> DeviationNoteImplementationItems { get; set; }
         public DbSet<SPM_Make> SPM_Make { get; set; }
         public DbSet<SPM_Buy> SPM_Buy { get; set; }
 

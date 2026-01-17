@@ -820,8 +820,8 @@
                 items: [
                     {
                         name: 'Temperature Rise Test (TRT)',
-                        inputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")',
-                        outputUrl: '@Url.Action("TemperatureRiseTest", "ProductValidation")'
+                        inputUrl: '@Url.Action("TemperatureRiseTestOfLuminaire", "ProductValidation")',
+                        outputUrl: '@Url.Action("TemperatureRiseTestOfLuminaire", "ProductValidation")'
                     }
                 ]
             },
@@ -832,8 +832,8 @@
                 items: [
                     {
                         name: 'Photometry',
-                        inputUrl: '@Url.Action("Photometry", "ProductValidation")',
-                        outputUrl: '@Url.Action("Photometry", "ProductValidation")'
+                        inputUrl: '@Url.Action("PhotometryTestReport", "ProductValidation")',
+                        outputUrl: '@Url.Action("PhotometryTestReport", "ProductValidation")'
                     }
                 ]
             },
@@ -844,8 +844,8 @@
                 items: [
                     {
                         name: 'Installation Trial',
-                        inputUrl: '@Url.Action("InstallationTrial", "ProductValidation")',
-                        outputUrl: '@Url.Action("InstallationTrial", "ProductValidation")'
+                        inputUrl: '@Url.Action("InstallationTrialReport", "ProductValidation")',
+                        outputUrl: '@Url.Action("InstallationTrialReport", "ProductValidation")'
                     }
                 ]
             },
@@ -860,7 +860,116 @@
                         outputUrl: '@Url.Action("DropTestReport", "ProductValidation")'
                     }
                 ]
-            }
+            },
+                    {
+            id: 'Impact-test',
+            name: 'Impact Test Report ( IK )',
+            icon: '🔨',
+            items: [
+                {
+                    name: 'Impact Test Report ( IK )',
+                    inputUrl: '@Url.Action("impactTest", "ProductValidation")',
+                    outputUrl: '@Url.Action("impactTest", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'Ingress-Protection',
+            name: 'Ingress Protection (IP) Test Report',
+            icon: '💧',
+            items: [
+                {
+                    name: 'Ingress Protection (IP) Test Report',
+                    inputUrl: '@Url.Action("IngressProtetction", "ProductValidation")',
+                    outputUrl: '@Url.Action("IngressProtetction", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'Legal-Regulatory',
+            name: 'Legal/ Regulatory Requirement and Documents verification',
+            icon: '⚖️',
+            items: [
+                {
+                    name: 'Legal/ Regulatory Requirement and Documents verification',
+                    inputUrl: '@Url.Action("RegulatoryRequirements", "ProductValidation")',
+                    outputUrl: '@Url.Action("RegulatoryRequirements", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'Glow-WireTest',
+            name: 'Glow Wire Test Report',
+            icon: '🔥',
+            items: [
+                {
+                    name: 'Glow Wire Test Report',
+                    inputUrl: '@Url.Action("GlowWireTestReport", "ProductValidation")',
+                    outputUrl: '@Url.Action("GlowWireTestReport", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'Hydraulic-Test',
+            name: 'Hydraulic Test for Flame Proof',
+            icon: '🚰',
+            items: [
+                {
+                    name: 'Hydraulic Test for Flame Proof',
+                    inputUrl: '@Url.Action("HydraulicTestReport", "ProductValidation")',
+                    outputUrl: '@Url.Action("HydraulicTestReport", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'General-Observation',
+            name: 'General Observation / OPEN POINTS',
+            icon: '👁️',
+            items: [
+                {
+                    name: 'General Observation / OPEN POINTS',
+                    inputUrl: '@Url.Action("GeneralObservation", "ProductValidation")',
+                    outputUrl: '@Url.Action("GeneralObservation", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'Needle-Report',
+            name: 'Needle Flame Test Report',
+            icon: '🔬',
+            items: [
+                {
+                    name: 'Needle Flame Test Report',
+                    inputUrl: '@Url.Action("NeedleFlameTestReport", "ProductValidation")',
+                    outputUrl: '@Url.Action("NeedleFlameTestReport", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'MainValidationReports',
+            name: 'Main Validation Reports',
+            icon: '📋',
+            items: [
+                {
+                    name: 'Main Validation Reports',
+                    inputUrl: '@Url.Action("ValidationReport", "ProductValidation")',
+                    outputUrl: '@Url.Action("ValidationReport", "ProductValidation")'
+                }
+            ]
+        },
+        {
+            id: 'ValidationClosureReport',
+            name: 'Validation Closure Report',
+            icon: '✅',
+            items: [
+                {
+                    name: 'General Observation / OPEN POINTS',
+                    inputUrl: '@Url.Action("OpenPointClosureReport", "ProductValidation")',
+                    outputUrl: '@Url.Action("OpenPointClosureReport", "ProductValidation")'
+                }
+            ]
+        }
+
         ];
 
         const trackerData = {

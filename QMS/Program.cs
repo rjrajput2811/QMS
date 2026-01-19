@@ -36,7 +36,10 @@ using QMS.Core.Repositories.RCAReportRepository;
 using QMS.Core.Repositories.RMTCDetailsRepository;
 using QMS.Core.Repositories.SixSigmaIndicesRepo;
 using QMS.Core.Repositories.SixSigmaIndicesRepository;
+using QMS.Core.Repositories.SPMBuyRepository;
+using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Repositories.SPMReportRepository;
+using QMS.Core.Repositories.SurgeTestReportRepository;
 using QMS.Core.Repositories.ThirdPartyCertRepository;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Repositories.ThirdPartyTestRepository;
@@ -46,8 +49,6 @@ using QMS.Core.Repositories.VendorRepository;
 using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
-using QMS.Core.Repositories.SPMMakeRepository;
-using QMS.Core.Repositories.SPMBuyRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -106,6 +107,7 @@ builder.Services.AddTransient<IChangeNoteImplementationItemRepository, ChangeNot
 builder.Services.AddTransient<IChangeNoteService, ChangeNoteService>();
 builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
 builder.Services.AddScoped<ISPMBuyRepository, SPMBuyRepository>();
+builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

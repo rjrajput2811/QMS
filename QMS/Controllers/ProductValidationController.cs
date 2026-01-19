@@ -1,15 +1,14 @@
 ﻿using ClosedXML.Excel;
 using ClosedXML.Excel.Drawings;
-
 using Microsoft.AspNetCore.Mvc;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
+using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ProductValidationRepo;
-using QMS.Core.Repositories.ElectricalPerformanceRepo;
+using QMS.Core.Repositories.SurgeTestReportRepository;
 using System.Drawing;
 using System.Threading.Tasks;
-
 namespace QMS.Controllers;
 
 public class ProductValidationController : Controller
@@ -18,17 +17,19 @@ public class ProductValidationController : Controller
     private readonly IElectricalPerformanceRepository _electricalPerformanceRepository;
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly IElectricalProtectionRepository _electricalProtectionRepository;
-
+    private readonly ISurgeTestReportRepository _surgeTestRepository;
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
         IElectricalPerformanceRepository electricalPerformanceRepository,
         IWebHostEnvironment hostEnvironment,
-        IElectricalProtectionRepository electricalProtectionRepository)
+        IElectricalProtectionRepository electricalProtectionRepository,
+        ISurgeTestReportRepository surgeTestRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
         _hostEnvironment = hostEnvironment;
         _electricalProtectionRepository = electricalProtectionRepository;
+        _surgeTestRepository = surgeTestRepository;
     }
 
 
@@ -147,7 +148,6 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-
     public async Task<ActionResult> GetElectricalProtectionListAsync()
     {
         var result = await _electricalProtectionRepository.GetElectricalProtectionsAsync();
@@ -234,10 +234,6 @@ public class ProductValidationController : Controller
             return Json(result);
         }
     }
-
-
-
-
     public async Task<ActionResult> DeleteElectricalProtectionAsync(int Id)
     {
         var result = await _electricalProtectionRepository.DeleteElectricalProtectionAsync(Id);
@@ -668,8 +664,6 @@ public class ProductValidationController : Controller
             return Json(new { success = false, message = ex.Message });
         }
     }
-
-
 
     public async Task<ActionResult> ExportPhyCheckToExcelAsync(int Id)
     {
@@ -1127,20 +1121,68 @@ public class ProductValidationController : Controller
         }
     }
 
-    
-    #region SuregTestReport
-    public IActionResult SurgeTestReportDetails()
-    {
 
-        return View();
-    }
-    public IActionResult SuregTestReport()
+    #region SurgeTestReport
+
+    public IActionResult SurgeTestReport()
     {
         return View();
     }
+    public async Task<IActionResult> SurgeTestReportDetails(int Id)
+    {
 
+        var model = new SurgeTestReportViewModel();
+        if (Id > 0)
+        {
+            model = await _surgeTestRepository.GetSurgeTestReportByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
 
+    public async Task<ActionResult> GetSurgeTestReportList()
+    {
+        var result = await _surgeTestRepository.GetSurgeTestReportAsync();
+        return Json(result);
+    }
 
+    [HttpPost]
+    public async Task<ActionResult> InsertUpdateSurgeTestReport(SurgeTestReportViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors)
+                            .Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+        if (model.Id > 0)
+        {
+            // Update
+            model.UpdatedBy = userId;
+            model.UpdatedOn = DateTime.Now;
+        }
+        else
+        {
+            // Insert
+            model.AddedBy = userId;
+            model.AddedOn = DateTime.Now;
+        }
+
+        var result = await _surgeTestRepository.InsertUpdateSurgeTestReportAsync(model);
+        return Json(result);
+    }
+
+    public async Task<ActionResult> DeleteSurgeTestReport(int Id)
+    {
+        var result = await _surgeTestRepository.DeleteSurgeTestReportAsync(Id);
+        return Json(result);
+    }
 
     #endregion
 

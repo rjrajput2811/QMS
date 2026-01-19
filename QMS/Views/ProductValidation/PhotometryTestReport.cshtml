@@ -2,6 +2,11 @@
     ViewData["Title"] = "Photometry Test Report";
 }
 
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
+
 <style>
     .header-card {
         border-radius: 8px;
@@ -29,11 +34,33 @@
     .mr-2 {
         margin-right: 8px;
     }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 35px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem;
+    }
 </style>
 
 <div class="content">
-
-    <div class="card shadow-sm mb-3 header-card">
+    <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
                 <b class="header-title">Photometry Test Report</b>
@@ -41,20 +68,30 @@
 
             <div>
 
-                <button id="addPhotometryButton"
-                        type="button"
-                        class="btn btn-outline-success legitRipple mr-2 header-btn"
+                <button id="addPhotometryButton" type="button" class="btn btn-outline-success legitRipple mr-2 header-btn"
                         onclick="location.href='@Url.Action("PhotometryTestReportDetails", "ProductValidation")'">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
 
-                <button id="backButton"
-                        type="button"
-                        class="btn btn-outline-primary header-btn"
+                <button id="backButton" type="button" class="btn btn-outline-primary header-btn"
                         onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
 
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div id="rmtc_table_wrapper" style="overflow-x: auto;">
+                            <div id="Photometry_table"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

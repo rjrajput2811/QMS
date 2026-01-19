@@ -1,4 +1,6 @@
-﻿@{
+﻿@model QMS.Core.Models.InstallationTrialViewModel
+
+@{
     ViewData["Title"] = "Installation Trial Report";
 }
 
@@ -251,256 +253,276 @@
 
 
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body">
+                <form id="installation_form" method="post" asp-action="InsertUpdateInstallationTrail" asp-controller="ProductValidation">
+                    <div class="card-body">
+
+                        <div class="table-responsive">
+                            <table class="header-table">
+                                <colgroup>
+                                    <col style="width:33%;">
+                                    <col style="width:34%;">
+                                    <col style="width:33%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Report No:</span><em class="req">*</em>
+                                            @* <input type="text" name="ReportNo" class="inline-input" placeholder="Enter Report Number" required /> *@
+                                            @Html.TextBoxFor(m => m.ReportNo, new { @class = "inline-input form-control", placeholder = "Enter Report Number", required = "required"})
+                                        </td>
 
 
-                    <div class="table-responsive">
-                        <table class="header-table">
-                            <colgroup>
-                                <col style="width:33%;">
-                                <col style="width:34%;">
-                                <col style="width:33%;">
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Report No:</span><em class="req">*</em>
-                                        <input type="text" name="ReportNo" class="inline-input" placeholder="Enter Report Number" required />
-                                    </td>
+                                        <td>
+                                            <span class="field-label">Date:</span><em class="req">*</em>
+                                            @* <input type="date" name="ReportDate" class="inline-date" placeholder="Select Date" required /> *@
+                                            @Html.TextBoxFor(m => m.ReportDate, "{0:dd/MM/yyyy}", new { @class = "inline-date", placeholder = "Select Date", @readonly = "readonly" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Product Cat Ref:</span><em class="req">*</em>
+                                            @* <input type="text" name="ProductCatRef" class="inline-input" placeholder="Enter Product Reference" required /> *@
+                                            @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "inline-input form-control", placeholder = "Enter Product Reference", required = "required" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Batch Code:</span>
+                                            @* <input type="text" name="BatchCode" class="inline-input" placeholder="Enter Batch Code" /> *@
+                                            @Html.TextBoxFor(m => m.BatchCode, new { @class = "inline-input form-control", placeholder = "Enter Batch Code" })
 
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Sample Qty:</span>
+                                            @* <input type="text" name="SampleQty" class="inline-input" placeholder="Enter Quantity" /> *@
+                                            @Html.TextBoxFor(m => m.SampleQty, new { @class = "inline-input form-control", placeholder = "Enter Quantity" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Product Description:</span><em class="req">*</em>
+                                            @* <input type="text" name="ProductDescription" class="inline-input" placeholder="Enter Product Description" required /> *@
+                                            @Html.TextBoxFor(m => m.ProductDescription, new { @class = "inline-input form-control", placeholder = "Enter Product Description", required = "required" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">PKD:</span>
+                                            @* <input type="text" name="PKD" class="inline-input" placeholder="Enter PKD" /> *@
+                                            @Html.TextBoxFor(m => m.PKD, new { @class = "inline-input form-control", placeholder = "Enter PKD" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Installation Location:</span><em class="req">*</em>
+                                            <input type="text" name="InstallLocation" class="inline-input" placeholder="Enter Location" required />
+                                            @* @Html.TextBoxFor(m => m.InstallLocation, new { @class = "inline-input form-control", placeholder = "Enter Location", required = "required" }) *@
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                                    <td>
-                                        <span class="field-label">Date:</span><em class="req">*</em>
-                                        <input type="date" name="ReportDate" class="inline-date" placeholder="Select Date" required />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Product Cat Ref:</span><em class="req">*</em>
-                                        <input type="text" name="ProductCatRef" class="inline-input" placeholder="Enter Product Reference" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Batch Code:</span>
-                                        <input type="text" name="BatchCode" class="inline-input" placeholder="Enter Batch Code" />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Sample Qty:</span>
-                                        <input type="text" name="SampleQty" class="inline-input" placeholder="Enter Quantity" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Product Description:</span><em class="req">*</em>
-                                        <input type="text" name="ProductDescription" class="inline-input" placeholder="Enter Product Description" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">PKD:</span>
-                                        <input type="text" name="PKD" class="inline-input" placeholder="Enter PKD" />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Installation Location:</span><em class="req">*</em>
-                                        <input type="text" name="InstallLocation" class="inline-input" placeholder="Enter Location" required />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                        <!-- Parameters Table -->
+                        <div class="table-responsive">
+                            <table class="pv-table looklikeshot">
+                                <colgroup>
+                                    <col class="serial" />
+                                    <col class="param" />
+                                    <col class="sample" />
+                                    <col class="result" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Serial No.</th>
+                                        <th>PARAMETERS</th>
+                                        <th>SAMPLE DETAILS</th>
+                                        <th class="result-header" style="color:#d00;">Result - Pass/ Fail/ Not Applicable/ Pending</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td contenteditable="true">1</td>
+                                        <td contenteditable="true">Product Category</td>
+                                        <td contenteditable="true"></td>
+                                        <td>
+                                            <select class="result-select">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                                <option value="Not Applicable">Not Applicable</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true">2</td>
+                                        <td contenteditable="true">Installation Sheet</td>
+                                        <td contenteditable="true"></td>
+                                        <td>
+                                            <select class="result-select">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                                <option value="Not Applicable">Not Applicable</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true">3</td>
+                                        <td contenteditable="true">Mounting Mechanism</td>
+                                        <td contenteditable="true"></td>
+                                        <td>
+                                            <select class="result-select">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                                <option value="Not Applicable">Not Applicable</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true">4</td>
+                                        <td contenteditable="true">Duration of Test</td>
+                                        <td contenteditable="true"></td>
+                                        <td>
+                                            <select class="result-select">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                                <option value="Not Applicable">Not Applicable</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true">5</td>
+                                        <td contenteditable="true">Installation with 4x Load</td>
+                                        <td contenteditable="true"></td>
+                                        <td>
+                                            <select class="result-select">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                                <option value="Not Applicable">Not Applicable</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true">6</td>
+                                        <td contenteditable="true">Installation with Sand Bag Load</td>
+                                        <td contenteditable="true"></td>
+                                        <td>
+                                            <select class="result-select">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                                <option value="Not Applicable">Not Applicable</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true">7</td>
+                                        <td contenteditable="true">Installation with Sand Bag Load</td>
+                                        <td contenteditable="true"></td>
+                                        <td>
+                                            <select class="result-select">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                                <option value="Not Applicable">Not Applicable</option>
+                                                <option value="Pending">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <!-- Parameters Table -->
-                    <div class="table-responsive">
-                        <table class="pv-table looklikeshot">
-                            <colgroup>
-                                <col class="serial" />
-                                <col class="param" />
-                                <col class="sample" />
-                                <col class="result" />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Serial No.</th>
-                                    <th>PARAMETERS</th>
-                                    <th>SAMPLE DETAILS</th>
-                                    <th class="result-header" style="color:#d00;">Result - Pass/ Fail/ Not Applicable/ Pending</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td contenteditable="true">1</td>
-                                    <td contenteditable="true">Product Category</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">2</td>
-                                    <td contenteditable="true">Installation Sheet</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">3</td>
-                                    <td contenteditable="true">Mounting Mechanism</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">4</td>
-                                    <td contenteditable="true">Duration of Test</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">5</td>
-                                    <td contenteditable="true">Installation with 4x Load</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">6</td>
-                                    <td contenteditable="true">Installation with Sand Bag Load</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">7</td>
-                                    <td contenteditable="true">Installation with Sand Bag Load</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Photo Table (same width, no extra card-body wrappers) -->
-                    <div class="table-responsive">
-                        <table class="photo-table" style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
-                            <thead>
-                                <tr>
-                                    <th colspan="2" class="photo-head" style="height:100px;">
-                                        <div class="photo-header-content">
+                        <!-- Photo Table (same width, no extra card-body wrappers) -->
+                        <div class="table-responsive">
+                            <table class="photo-table" style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="2" class="photo-head" style="height:40px;">
+                                            @* <div class="photo-header-content">
                                             <span class="photo-text"></span>
                                             <input type="file" id="photoUpload" accept="image/*" />
-                                        </div>
-                                    </th>
-                                </tr>
-                                </tr>
+                                        </div> *@
+                                            Photo
+                                        </th>
+                                    </tr>
 
-                                <tr>
-                                    <th style="border:1px solid #000;">With Load</th>
-                                    <th style="border:1px solid #000;">Without Load</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="border:1px solid #000; padding:10px;">
-                                        <textarea rows="7" placeholder="Enter details here..."
-                                                  style="width:100%; border:none; resize:none; outline:none; padding:8px; font-size:14px; background:transparent; min-height:180px;"></textarea>
-                                    </td>
-                                    <td style="border:1px solid #000; padding:10px;">
-                                        <textarea rows="7" placeholder="Enter details here..."
-                                                  style="width:100%; border:none; resize:none; outline:none; padding:8px; font-size:14px; background:transparent; min-height:180px;"></textarea>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                    <tr>
+                                        <th style="border:1px solid #000;">With Load</th>
+                                        <th style="border:1px solid #000;">Without Load</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="border:1px solid #000; padding:10px;height:150px;">
+                                            @* <textarea rows="7" placeholder="Enter details here..."
+                                                  style="width:100%; border:none; resize:none; outline:none; padding:8px; font-size:14px; background:transparent; min-height:180px;"></textarea> *@
+                                            <div class="photo-header-content">
+                                                <span class="photo-text"></span>
+                                                <input type="file" id="photoUpload" accept="image/*" />
+                                            </div>
+                                        </td>
+                                        <td style="border:1px solid #000; padding:10px;height:150px;">
+                                            @* <textarea rows="7" placeholder="Enter details here..."
+                                                  style="width:100%; border:none; resize:none; outline:none; padding:8px; font-size:14px; background:transparent; min-height:180px;"></textarea> *@
+                                            <div class="photo-header-content">
+                                                <span class="photo-text"></span>
+                                                <input type="file" id="photoUpload" accept="image/*" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Result (overall) -->
+                        <div class="table-responsive">
+                            <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
+                                <thead>
+                                    <tr>
+                                        <th style="color:#d00; font-weight:700; text-align:left; background:#fff; border:1px solid #000; padding:15px;">
+                                            <div style="display:flex; align-items:center; gap:15px;">
+                                                <span>Result - Pass / Fail / NA / Pending</span>
+                                                <select class="result-select" style="width:200px;">
+                                                    <option value="">Select</option>
+                                                    <option>Pass</option>
+                                                    <option>Fail</option>
+                                                    <option>NA</option>
+                                                    <option>Pending</option>
+                                                </select>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+
+                        <!-- Checked By / Verified By -->
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:50%; border:1px solid #000; padding:12px;">
+                                            <label style="font-weight:600;">Checked By:</label>
+                                            @* <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" /> *@
+                                            @Html.TextBoxFor(m => m.CheckedBy, new { @class = "inline-input form-control", placeholder = "Enter name", style = "border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" })
+                                        </td>
+                                        <td style="width:50%; border:1px solid #000; padding:12px;">
+                                            <label style="font-weight:600;">Verified By:</label>
+                                            @* <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" /> *@
+                                            @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "inline-input form-control", placeholder = "Enter name", style = "border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" })
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
-
-                    <!-- Result (overall) -->
-                    <div class="table-responsive">
-                        <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
-                            <thead>
-                                <tr>
-                                    <th style="color:#d00; font-weight:700; text-align:left; background:#fff; border:1px solid #000; padding:15px;">
-                                        <div style="display:flex; align-items:center; gap:15px;">
-                                            <span>Result - Pass / Fail / NA / Pending</span>
-                                            <select class="result-select" style="width:200px;">
-                                                <option value="">Select</option>
-                                                <option>Pass</option>
-                                                <option>Fail</option>
-                                                <option>NA</option>
-                                                <option>Pending</option>
-                                            </select>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-
-                    <!-- Checked By / Verified By -->
-                    <div class="table-responsive" style="margin-top:0px;">
-                        <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
-                            <tbody>
-                                <tr>
-                                    <td style="width:50%; border:1px solid #000; padding:12px;">
-                                        <label style="font-weight:600;">Checked By:</label>
-                                        <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" />
-                                    </td>
-                                    <td style="width:50%; border:1px solid #000; padding:12px;">
-                                        <label style="font-weight:600;">Verified By:</label>
-                                        <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </div>
+                </form>
             </div>
         </div>
 

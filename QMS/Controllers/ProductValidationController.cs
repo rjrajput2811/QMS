@@ -9,6 +9,7 @@ using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using System.Drawing;
 using System.Threading.Tasks;
+using QMS.Core.Repositories.InstallationTrialRepository;
 
 namespace QMS.Controllers;
 
@@ -18,17 +19,19 @@ public class ProductValidationController : Controller
     private readonly IElectricalPerformanceRepository _electricalPerformanceRepository;
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly IElectricalProtectionRepository _electricalProtectionRepository;
+    private readonly IInstallationTrialRepository _installationTrialRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
         IElectricalPerformanceRepository electricalPerformanceRepository,
         IWebHostEnvironment hostEnvironment,
-        IElectricalProtectionRepository electricalProtectionRepository)
+        IElectricalProtectionRepository electricalProtectionRepository,IInstallationTrialRepository installationTrialRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
         _hostEnvironment = hostEnvironment;
         _electricalProtectionRepository = electricalProtectionRepository;
+        _installationTrialRepository = installationTrialRepository;
     }
 
 
@@ -1175,12 +1178,61 @@ public class ProductValidationController : Controller
 
         return View();
     }
-    public IActionResult InstallationTrialReportDetails()
+
+    //public IActionResult InstallationTrialReportDetails()
+    //{
+    //    return View();
+    //}
+
+    public async Task<ActionResult> GetInstallationTrailAsync()
     {
-        return View();
+        var result = await _installationTrialRepository.GetInstallationTrailAsync();
+        return Json(result);
     }
 
+    public async Task<IActionResult> InstallationTrialReportDetails(int Id)
+    {
+        var model = new InstallationTrialViewModel();
+        if (Id > 0)
+        {
+            model = await _installationTrialRepository.GetInstallationTrailByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
 
+    public async Task<ActionResult> InsertUpdateInstallationTrailAsync(InstallationTrialViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _installationTrialRepository.UpdateInstallationTrailAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _installationTrialRepository.InsertInstallationTrailAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DeleteInstallationTrailAsync(int Id)
+    {
+        var result = await _installationTrialRepository.DeleteInstallationTrailAsync(Id);
+        return Json(result);
+    }
 
     #endregion
     #region IngressProtection

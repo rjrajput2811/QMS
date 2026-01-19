@@ -259,6 +259,81 @@ function renderIndentTable(response) {
             };
             tableIndent.addRow(newRow, false);
         });
+
+        // Export to Excel on button click
+        document.getElementById("indExportButton").addEventListener("click", function () {
+            // Get only visible data from Tabulator (respects filters, sorting, pagination)
+            var visibleData = tableIndent.getData("active"); // "active" gets only visible/filtered rows
+
+            // Get visible columns only
+            var visibleColumns = tableIndent.getColumns().filter(col => col.isVisible() && col.getField() !== "Action");
+
+            // Prepare headers
+            var headers = visibleColumns.map(col => col.getDefinition().title);
+
+            // Prepare data rows
+            var rows = visibleData.map(row => {
+                return visibleColumns.map(col => {
+                    var field = col.getField();
+                    return row[field] !== undefined ? row[field] : "";
+                });
+            });
+
+            // Create date range text
+            var dateRangeText = "";
+            if (filterStartDateIndent && filterEndDateIndent) {
+                dateRangeText = `Date Range: ${moment(filterStartDateIndent).format('DD-MMM-YYYY')} to ${moment(filterEndDateIndent).format('DD-MMM-YYYY')}`;
+            } else if (filterStartDateIndent) {
+                dateRangeText = `Date From: ${moment(filterStartDateIndent).format('DD-MMM-YYYY')}`;
+            } else if (filterEndDateIndent) {
+                dateRangeText = `Date To: ${moment(filterEndDateIndent).format('DD-MMM-YYYY')}`;
+            } else {
+                dateRangeText = "Date Range: All Dates";
+            }
+
+            // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
+            var exportData = [
+                [dateRangeText], // Row 1: Date range
+                [],              // Row 2: Empty row
+                headers,         // Row 3: Headers
+                ...rows          // Row 4+: Data
+            ];
+
+
+            // Create worksheet
+            var ws = XLSX.utils.aoa_to_sheet(exportData);
+
+            // Style header row (bold)
+            headers.forEach((header, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "D3D3D3" } },
+                    alignment: { horizontal: "center" }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
+            ws['!cols'] = columnWidths;
+
+            // Freeze first row
+            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+            // Set row heights
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 25 }; // Date range row height
+            ws['!rows'][1] = { hpt: 10 };  // Empty row height
+            ws['!rows'][2] = { hpt: 20 };  // Header row height
+
+            // Create workbook and download
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "IndentDump");
+
+            var fileName = `IndentDump_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+        });
     }
 
     Blockloaderhide();

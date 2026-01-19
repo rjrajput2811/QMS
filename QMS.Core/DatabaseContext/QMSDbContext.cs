@@ -52,6 +52,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<InternalTypeTestDetail> InternalTypeTestDetails { get; set; }
         public DbSet<RippleTestReport> RippleTestReports { get; set; }
         public DbSet<SurgeTestReport> SurgeTestReports { get; set; }
+        public DbSet<SurgeTestReportDetails> SurgeTestReportDetails { get; set; }
         public DbSet<TemperatureRiseTest> TemperatureRiseTests { get; set; }
         public DbSet<Photometry> Photometries { get; set; }
         public DbSet<InstallationTrial> InstallationTrials { get; set; }

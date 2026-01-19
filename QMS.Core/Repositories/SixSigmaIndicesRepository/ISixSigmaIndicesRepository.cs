@@ -11,5 +11,6 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepo
         Task<OperationResult> InsertSixSigmaIndicesAsync(SixSigmaIndicesViewModel model);
         Task<OperationResult> UpdateSixSigmaIndicesAsync(SixSigmaIndicesViewModel model);
         Task<OperationResult> DeleteSixSigmaIndicesAsync(int id);
+        byte[] Build(string templatePath, SixSigmaIndicesViewModel m, out string fileName);
     }
 }

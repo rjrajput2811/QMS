@@ -4,7 +4,7 @@ namespace QMS.Core.Models
 {
     public class SixSigmaIndicesViewModel
     {
-        public int Id { get; set; }                
+        public int Id { get; set; }
         public bool Deleted { get; set; }
         public string? Fy { get; set; }
         public string? Pc { get; set; }
@@ -102,6 +102,15 @@ namespace QMS.Core.Models
         public double? Proj_Data_Pc_Dmaic { get; set; }
         public double? Proj_Data_Pc_Turbo { get; set; }
         public double? Proj_Data_Pc_Planned { get; set; }
+
+        public double? Proj_Num_Target { get; set; }
+        public double? Proj_Num_Weightage { get; set; }
+        public string? Proj_Num_Formula { get; set; }
+        public double? Proj_Num_Weighted_Score { get; set; }
+        public double? Proj_No_Weighted_Score { get; set; }
+        public string? Proj_No_Formula { get; set; }
+        public double? Proj_No_Weightage { get; set; }
+        public double? Proj_No_Target { get; set; }
 
 
         public double? Eff_Total_Weighted_Score { get; set; }

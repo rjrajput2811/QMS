@@ -768,7 +768,7 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
             SetText(ws, ROW_CUST_TGT, 6, m.Cust_Formula_Tgt);
 
             SetNum(ws, ROW_CUST_YTD, 3, m.Cust_Data_Pc_Close);
-            SetNum(ws, ROW_CUST_YTD, 3, m.Cust_Data_Pc_Total);
+            SetNum(ws, ROW_CUST_YTD_TWO, 3, m.Cust_Data_Pc_Total);
             SetNum(ws, ROW_CUST_YTD, 4, m.Cust_Target_Ytd);
             SetNum(ws, ROW_CUST_YTD, 5, m.Cust_Weightage_Ytd);
             SetText(ws, ROW_CUST_YTD, 6, m.Cust_Formula_Ytd);
@@ -805,9 +805,15 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
 
             SetNum(ws, ROW_PROJ, 3, m.Proj_Data_Pc_Close);
             SetNum(ws, ROW_PROJ_TWO, 3, m.Proj_Data_Pc_Dmaic);
-            SetNum(ws, ROW_PROJ, 4, m.proj);
-            SetNum(ws, ROW_PROJ, 5, m.Proj_Data_Pc_Close);
-            SetNum(ws, ROW_PROJ, 6, m.Proj_Data_Pc_Close);
+            SetNum(ws, ROW_PROJ, 4, m.Proj_Num_Target);
+            SetNum(ws, ROW_PROJ, 5, m.Proj_Num_Weightage);
+            SetText(ws, ROW_PROJ, 6, m.Proj_Num_Formula);
+
+            SetNum(ws, ROW_PROJ_NO, 3, m.Proj_Data_Pc_Close);
+            SetNum(ws, ROW_PROJ_NO_TWO, 3, m.Proj_Data_Pc_Dmaic);
+            SetNum(ws, ROW_PROJ_NO, 4, m.Proj_No_Target);
+            SetNum(ws, ROW_PROJ_NO, 5, m.Proj_No_Weightage);
+            SetText(ws, ROW_PROJ_NO, 6, m.Proj_No_Formula);
         }
 
 

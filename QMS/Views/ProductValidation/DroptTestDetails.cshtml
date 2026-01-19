@@ -1,135 +1,669 @@
-﻿@{
+@{
     ViewData["Title"] = "Drop Test Report";
 }
 
-<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
-<script src="~/js/tabulator.min.js"></script>
-    <style>
-        :root {
-            --bg: #ffffff;
-            --text: #111111;
-            --muted: #666666;
-            --border: #dcdcdc;
-            --stripe: #f7f7f7;
+<style>
+
+    .underline-input {
+        border: 0;
+        border-bottom: 1.5px solid #666;
+        border-radius: 0;
+        background: transparent;
+        width: 50%;
+        font-size: 15px;
+        padding: 2px 6px;
+        outline: none;
+        box-shadow: none;
+        vertical-align: middle;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+        .underline-input:focus {
+            border-bottom: 1.5px solid #4682B4;
         }
 
-        * {
-            box-sizing: border-box;
+    .ce-field {
+        width: 100%;
+        min-height: 28px;
+        border-bottom: 1px solid #333;
+        padding: 6px 8px;
+        font-size: 15px;
+        line-height: 1.4;
+        outline: none;
+        display: block;
+    }
+
+        .ce-field:focus {
+            border-bottom: 1px solid #007bff;
+            background-color: #f9f9f9;
         }
 
-        body {
-            margin: 0;
-            padding: 24px;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.4;
+    .req {
+        color: #d00;
+        font-style: normal;
+        margin-left: 2px;
+    }
+
+    td {
+        white-space: nowrap;
+        padding: 8px 10px;
+        vertical-align: middle;
+    }
+
+    b {
+        font-size: 15px;
+        color: #000;
+    }
+
+    .card {
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        background: #fff;
+    }
+
+    .header-title {
+        font-size: x-large;
+        color: #4682B4;
+        font-weight: 600;
+    }
+
+    .header-btn {
+        width: 120px;
+        font-size: 15px;
+        border-radius: 6px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .header-btn:hover {
+            transform: scale(1.05);
         }
 
-        h1 {
-            margin: 0 0 16px 0;
-            font-weight: 600;
-            font-size: 20px;
+    .result-cell {
+        font-weight: 700;
+        color: red;
+        padding: 12px 10px;
+        vertical-align: middle;
+        background: #fff;
+        font-size: 14px;
+    }
+
+    .result-dropdown {
+        margin-left: 10px;
+        width: 140px;
+        padding: 6px 25px 6px 10px;
+        border: none;
+        border-bottom: 1.5px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #fff;
+        font-size: 14px;
+        color: #000;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 20 20' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.486 4.484-4.486L16 8.548l-6 6-6-6z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease-in-out;
+    }
+
+        .result-dropdown:focus {
+            outline: none;
+            border-bottom-color: #4a90e2;
+            box-shadow: 0 2px 3px rgba(70,130,180,0.25);
         }
 
-        .table-wrap {
-            width: 100%;
-            overflow: auto;
-            border: 1px solid var(--border);
-            border-radius: 12px;
+    .form-control {
+        margin-left: 10px;
+        width: 140px;
+        padding: 3px 22px 3px 10px;
+        border: none;
+        border-bottom: 1.5px solid #cbd5e1;
+        border-radius: 6px;
+        background-color: #fff;
+        font-size: 13px;
+        color: #000;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 20 20' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.486 4.484-4.486L16 8.548l-6 6-6-6z'/></svg>");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 12px;
+        cursor: pointer;
+        transition: all 0.25s ease-in-out;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-bottom-color: #4a90e2;
+            box-shadow: 0 2px 3px rgba(70, 130, 180, 0.25);
+        }
+
+        .form-control:hover {
+            border-bottom-color: #93b4d8;
+        }
+
+        .form-control option {
             background: #fff;
+            color: #000;
         }
 
-        table.data-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 720px;
+    .chooseFileBtn {
+        padding: 4px 10px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        font-size: 13px;
+        color: #000;
+        margin-bottom: 6px;
+        transition: all 0.2s ease-in-out;
+    }
+
+        .chooseFileBtn:hover {
+            background-color: #e9ecef;
+            border-color: #bbb;
         }
 
-            table.data-table thead th {
-                position: sticky;
-                top: 0;
-                background: #fafafa;
-                color: #222;
-                font-weight: 600;
-                text-align: left;
-                border-bottom: 1px solid var(--border);
-                padding: 10px 12px;
-                white-space: nowrap;
-            }
-
-            table.data-table tbody td {
-                border-bottom: 1px solid var(--border);
-                padding: 10px 12px;
-                vertical-align: top;
-            }
-
-            table.data-table tbody tr:nth-child(even) {
-                background: var(--stripe);
-            }
-
-        .meta {
-            margin-bottom: 12px;
-            color: var(--muted);
-            font-size: 12px;
+        .chooseFileBtn:focus {
+            outline: none;
+            border-color: #4a90e2;
+            box-shadow: 0 0 3px rgba(70, 130, 180, 0.3);
         }
-    </style>
-<div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-    <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
 
-        <!-- Title -->
-        <div>
-            <b style="font-size:x-large; color:#4682B4;">
-                Drop Test Report
-            </b>
-        </div>
+    table.table-bordered th, table.table-bordered td {
+        border: 1px solid #000 !important;
+        vertical-align: middle;
+        padding: 8px;
+    }
 
-        <!-- Buttons -->
-        <div>
-            <button id="saveDropTestButton"
-                    type="button"
-                    class="btn btn-outline-success legitRipple mr-2"
-                    onclick="saveDropTest()"
-                    style="width:120px; font-size:15px;">
-                <i class="fas fa-save mr-1"></i>Save
-            </button>
+    table.table-bordered thead th {
+        background-color: #f7f8fa !important;
+        font-weight: 600;
+        color: #000;
+        text-align: center;
+        vertical-align: middle;
+    }
 
-            <a href='@Url.Action("DropTestReport", "ProductValidation")'
-               class="btn btn-outline-primary"
-               style="width:120px; font-size:15px;">
-                <i class="fas fa-arrow-left"></i> BACK
-            </a>
+    table.table-bordered {
+        border-collapse: collapse;
+        font-size: 13px;
+        width: 100%;
+        table-layout: fixed;
+        word-wrap: break-word;
+    }
+
+    .info-table {
+        font-size: 14px;
+    }
+
+    .muted {
+        color: #666;
+        font-size: 13px;
+    }
+
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 12px;
+        border-radius: 4px;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border-color: #28a745;
+        color: #fff;
+    }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+        }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: #fff;
+    }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+        }
+</style>
+
+<div class="container-fluid" style="padding:20px;">
+    <div class="row">
+        <div class="col-12">
+
+            <!-- Header Card -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b class="header-title">Drop Test Report</b>
+                    </div>
+                    <div>
+                        <button id="saveDropTestButton"
+                                type="button"
+                                class="btn btn-outline-success legitRipple mr-2 header-btn"
+                                onclick="saveDropTest()">
+                            <i class="fas fa-save mr-1"></i>Save
+                        </button>
+                        <a href='@Url.Action("DropTestReport", "ProductValidation")'
+                           class="btn btn-outline-primary header-btn">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Card -->
+            <div class="card shadow-sm">
+                <div class="card-body" style="padding:25px;">
+
+                    <!-- Title and Report Details -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered info-table">
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align:center; font-size:18px; font-weight:700; background-color:#f7f8fa;">
+                                        DROP TEST REPORT
+                                    </td>
+                                    <td style="white-space:normal;">
+                                        <b>Report No:</b>
+                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="reportNo" />
+                                    </td>
+                                    <td style="white-space:normal;">
+                                        <b>Date:</b>
+                                        <input type="date" class="underline-input" style="width:60%; margin-left:8px;" id="reportDate" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="6" style="white-space:normal;">
+                                        <b>PRODUCT Cat Ref:</b>
+                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="productCatRef" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="6" style="white-space:normal;">
+                                        <b>PRODUCT Description:</b>
+                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="productDescription" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="6" style="white-space:normal;">
+                                        <b>Case Lot:</b>
+                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="caseLot" />
+                                    </td>
+                                </tr>
+
+                                <!-- Criteria Section -->
+                                <tr>
+                                    <td colspan="6" style="background-color:#f7f8fa; font-weight:700;">
+                                        CRITERIA FOR DROP TEST
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Dimension Of Packing Box:</b><br />
+                                        <div class="mt-2">
+                                            <input type="text" placeholder="L (cm)" class="underline-input" style="width:30%; margin-right:5px;" id="dimensionL" />
+                                            <input type="text" placeholder="W (cm)" class="underline-input" style="width:30%; margin-right:5px;" id="dimensionW" />
+                                            <input type="text" placeholder="H (cm)" class="underline-input" style="width:30%;" id="dimensionH" />
+                                        </div>
+                                    </td>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Master Carton:</b>
+                                        <input type="text" class="underline-input" style="width:65%; margin-left:8px;" id="masterCarton" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Inner Padding Dimension:</b>
+                                        <input type="text" class="underline-input" style="width:55%; margin-left:8px;" id="innerPaddingDimension" />
+                                    </td>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Inner Carton:</b>
+                                        <input type="text" class="underline-input" style="width:65%; margin-left:8px;" id="innerCarton" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Gross Weight (Kg):</b>
+                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="grossWeight" />
+                                    </td>
+                                    <td colspan="3" rowspan="2"></td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Height for test (As per IS 9000-7-3:1979):</b>
+                                        <input type="text" class="underline-input" style="width:40%; margin-left:8px;" id="heightTest" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Glow Test:</b>
+                                        <input type="text" class="underline-input" style="width:70%; margin-left:8px;" id="glowTest" />
+                                    </td>
+                                    <td colspan="3" style="white-space:normal;">
+                                        <b>Product must Glow post Drop/Roll Test</b>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Test Details Table -->
+                    <div class="table-responsive mt-3">
+                        <div class="mb-2 text-right">
+                            <button type="button" class="btn btn-sm btn-success" onclick="addTestRow()" style="font-size:13px;">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                        </div>
+                        <table class="table table-bordered" id="testTable">
+                            <thead>
+                                <tr>
+                                    <th style="width:8%;">Sr. No.</th>
+                                    <th style="width:15%;">Test</th>
+                                    <th style="width:30%;">Parameter / Specification</th>
+                                    <th style="width:20%;">Acceptance Criteria</th>
+                                    <th style="width:17%;">Observations</th>
+                                    <th style="width:10%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="testTableBody">
+                                <tr>
+                                    <td contenteditable="true" style="text-align:center;">1</td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true" style="white-space:normal;">
+                                      
+                                    </td>
+                                    <td contenteditable="true"></td>
+                                    <td contenteditable="true"></td>
+                                    <td style="text-align:center;">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteTestRow(this)" title="Delete Row">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Photographs Section -->
+                    <div class="table-responsive mt-3">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="background-color:#f7f8fa; font-weight:700; text-align:center;">
+                                        PHOTOGRAPHS (Before and After)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width:50%; vertical-align:top; padding:18px;">
+                                        <b>Before Test:</b><br /><br />
+                                        <div id="photoContainerBefore" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
+                                            <div id="photoSpaceBefore">
+                                                <div style="font-size:18px; font-weight:600;">Space For Photo</div>
+                                                <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
+                                            </div>
+                                            <img id="photoPreviewBefore" style="max-width:100%; max-height:100%; display:none;" />
+                                        </div>
+                                        <div class="mt-2">
+                                            <button type="button" id="chooseFileBtnBefore" class="chooseFileBtn">Choose file</button>
+                                            <input type="file" id="photoInputBefore" accept="image/*" style="display:none" />
+                                            <span id="fileNameBefore">No file chosen</span>
+                                        </div>
+                                    </td>
+
+                                    <td style="width:50%; vertical-align:top; padding:18px;">
+                                        <b>After Test:</b><br /><br />
+                                        <div id="photoContainerAfter" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
+                                            <div id="photoSpaceAfter">
+                                                <div style="font-size:18px; font-weight:600;">Space For Photo</div>
+                                                <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
+                                            </div>
+                                            <img id="photoPreviewAfter" style="max-width:100%; max-height:100%; display:none;" />
+                                        </div>
+                                        <div class="mt-2">
+                                            <button type="button" id="chooseFileBtnAfter" class="chooseFileBtn">Choose file</button>
+                                            <input type="file" id="photoInputAfter" accept="image/*" style="display:none" />
+                                            <span id="fileNameAfter">No file chosen</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Remark Section -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td style="white-space:normal;">
+                                        <b>Remark:</b><br /><br />
+                                        <textarea id="remark" style="width:100%; min-height:80px; border:1px solid #ccc; padding:8px; font-size:14px; border-radius:4px;" placeholder="Enter remarks here..."></textarea>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Signature Section -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <b>Tested By:</b>
+                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="testedBy" />
+                                    </td>
+                                    <td>
+                                        <b>Approved By:</b>
+                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="approvedBy" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
-   
-    <div class="table-wrap">
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Column 1</th>
-                    <th>Column 2</th>
-                    <th>Column 3</th>
-                    <th>Column 4</th>
-                    <!-- Add or rename columns as per your sheet -->
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Sample 1</td>
-                    <td>Value A</td>
-                    <td>Pass</td>
-                    <td>Notes...</td>
-                </tr>
-                <tr>
-                    <td>Sample 2</td>
-                    <td>Value B</td>
-                    <td>Fail</td>
-                    <td>Observation...</td>
-                </tr>
-                <!-- Add more rows dynamically or paste data here -->
-            </tbody>
-        </table>
-    </div>
+
+@section Scripts {
+    <script>
+
+        $(document).ready(function () {
+            initPhotoSelect();
+            setTodayDate();
+        });
+
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportDate').value = today;
+        }
+
+        function initPhotoSelect() {
+            // Before Photo
+            initSinglePhoto('chooseFileBtnBefore', 'photoInputBefore', 'fileNameBefore', 'photoPreviewBefore', 'photoSpaceBefore');
+            
+            // After Photo
+            initSinglePhoto('chooseFileBtnAfter', 'photoInputAfter', 'fileNameAfter', 'photoPreviewAfter', 'photoSpaceAfter');
+        }
+
+        function initSinglePhoto(btnId, inputId, fileNameId, previewId, spaceId) {
+            const chooseBtn = document.getElementById(btnId);
+            const fileInput = document.getElementById(inputId);
+            const fileNameEl = document.getElementById(fileNameId);
+            const preview = document.getElementById(previewId);
+            const photoSpace = document.getElementById(spaceId);
+
+            if (!chooseBtn || !fileInput) return;
+
+            chooseBtn.addEventListener('click', function () {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+
+                if (!file) {
+                    fileNameEl.textContent = "No file chosen";
+                    preview.style.display = "none";
+                    photoSpace.style.display = "block";
+                    return;
+                }
+
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("File is too large. Max 5MB.");
+                    fileInput.value = "";
+                    return;
+                }
+
+                fileNameEl.textContent = file.name;
+
+                if (file.type.startsWith("image/")) {
+                    const reader = new FileReader();
+                    reader.onload = function (ev) {
+                        preview.src = ev.target.result;
+                        preview.style.display = "block";
+                        photoSpace.style.display = "none";
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        function saveDropTest() {
+            // Collect all form data
+            const formData = {
+                reportNo: document.getElementById('reportNo').value,
+                reportDate: document.getElementById('reportDate').value,
+                productCatRef: document.getElementById('productCatRef').value,
+                productDescription: document.getElementById('productDescription').value,
+                caseLot: document.getElementById('caseLot').value,
+                dimensionL: document.getElementById('dimensionL').value,
+                dimensionW: document.getElementById('dimensionW').value,
+                dimensionH: document.getElementById('dimensionH').value,
+                masterCarton: document.getElementById('masterCarton').value,
+                innerPaddingDimension: document.getElementById('innerPaddingDimension').value,
+                innerCarton: document.getElementById('innerCarton').value,
+                grossWeight: document.getElementById('grossWeight').value,
+                heightTest: document.getElementById('heightTest').value,
+                glowTest: document.getElementById('glowTest').value,
+                remark: document.getElementById('remark').value,
+                testedBy: document.getElementById('testedBy').value,
+                approvedBy: document.getElementById('approvedBy').value,
+                // Add image data if needed
+                photoBeforeSrc: document.getElementById('photoPreviewBefore').src,
+                photoAfterSrc: document.getElementById('photoPreviewAfter').src,
+                // Collect test table data
+                testRows: collectTestTableData()
+            };
+
+            console.log('Form Data:', formData);
+
+            // TODO: Send formData to server via AJAX
+            $.ajax({
+                url: '@Url.Action("SaveDropTestReport", "ProductValidation")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    alert('Drop Test Report saved successfully!');
+                    // Optionally redirect or update UI
+                },
+                error: function (xhr, status, error) {
+                    alert('Error saving report: ' + error);
+                }
+            });
+        }
+
+        function addTestRow() {
+            const tbody = document.getElementById('testTableBody');
+            const rowCount = tbody.getElementsByTagName('tr').length;
+            const newRowNumber = rowCount + 1;
+
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td contenteditable="true" style="text-align:center;">${newRowNumber}</td>
+                <td contenteditable="true"></td>
+                <td contenteditable="true" style="white-space:normal;"></td>
+                <td contenteditable="true" style="white-space:normal;"></td>
+                <td contenteditable="true"></td>
+                <td style="text-align:center;">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteTestRow(this)" title="Delete Row">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(newRow);
+            updateRowNumbers();
+        }
+
+        function deleteTestRow(button) {
+            const row = button.closest('tr');
+            const tbody = document.getElementById('testTableBody');
+            
+            // Prevent deleting if only one row remains
+            if (tbody.getElementsByTagName('tr').length <= 1) {
+                alert('At least one row is required.');
+                return;
+            }
+
+            if (confirm('Are you sure you want to delete this row?')) {
+                row.remove();
+                updateRowNumbers();
+            }
+        }
+
+        function updateRowNumbers() {
+            const tbody = document.getElementById('testTableBody');
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const firstCell = rows[i].getElementsByTagName('td')[0];
+                firstCell.textContent = (i + 1);
+            }
+        }
+
+        function collectTestTableData() {
+            const tbody = document.getElementById('testTableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            const testData = [];
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                testData.push({
+                    srNo: cells[0].textContent.trim(),
+                    test: cells[1].textContent.trim(),
+                    parameter: cells[2].textContent.trim(),
+                    acceptanceCriteria: cells[3].textContent.trim(),
+                    observations: cells[4].textContent.trim()
+                });
+            }
+
+            return testData;
+        }
+
+    </script>
+}
 
 @section HideSidebar { }

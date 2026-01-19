@@ -361,5 +361,3 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
-/QMS.Core/QMS.Core.csproj
-/QMS.Core/QMS.Core.csproj

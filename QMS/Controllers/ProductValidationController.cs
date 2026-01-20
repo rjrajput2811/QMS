@@ -35,10 +35,9 @@ public class ProductValidationController : Controller
         IElectricalProtectionRepository electricalProtectionRepository,
         ISurgeTestReportRepository surgeTestRepository ,
         IPhotometryTestRepository photometryTestRepository,
-        IImpactTestRepository impactTestRepository)
-        IWebHostEnvironment hostEnvironment, ISystemLogService systemLogService,
-        IElectricalProtectionRepository electricalProtectionRepository,IInstallationTrialRepository installationTrialRepository,
-        ISurgeTestReportRepository surgeTestRepository)
+        IImpactTestRepository impactTestRepository,
+         ISystemLogService systemLogService,
+        IInstallationTrialRepository installationTrialRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;

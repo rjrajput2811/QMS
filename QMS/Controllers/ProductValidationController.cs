@@ -10,6 +10,7 @@ using QMS.Core.Repositories.SurgeTestReportRepository;
 using System.Drawing;
 using System.Threading.Tasks;
 using QMS.Core.Repositories.InstallationTrialRepository;
+using QMS.Core.Services.SystemLogs;
 
 namespace QMS.Controllers;
 
@@ -21,13 +22,13 @@ public class ProductValidationController : Controller
     private readonly IElectricalProtectionRepository _electricalProtectionRepository;
     private readonly ISurgeTestReportRepository _surgeTestRepository;
     private readonly IInstallationTrialRepository _installationTrialRepository;
+    private readonly ISystemLogService _systemLogService;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
         IElectricalPerformanceRepository electricalPerformanceRepository,
-        IWebHostEnvironment hostEnvironment,
-        IElectricalProtectionRepository electricalProtectionRepository,IInstallationTrialRepository installationTrialRepository)
-        IElectricalProtectionRepository electricalProtectionRepository,
+        IWebHostEnvironment hostEnvironment, ISystemLogService systemLogService,
+        IElectricalProtectionRepository electricalProtectionRepository,IInstallationTrialRepository installationTrialRepository,
         ISurgeTestReportRepository surgeTestRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
@@ -36,6 +37,7 @@ public class ProductValidationController : Controller
         _electricalProtectionRepository = electricalProtectionRepository;
         _installationTrialRepository = installationTrialRepository;
         _surgeTestRepository = surgeTestRepository;
+        _systemLogService = systemLogService;
     }
 
 
@@ -146,6 +148,8 @@ public class ProductValidationController : Controller
             return Json(result);
         }
     }
+
+    
 
     public async Task<ActionResult> DeletePhysicalCheckAndVisualInspectionAsync(int Id)
     {
@@ -1229,9 +1233,9 @@ public class ProductValidationController : Controller
     //    return View();
     //}
 
-    public async Task<ActionResult> GetInstallationTrailAsync()
+    public async Task<ActionResult> GetInstallationTrailAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _installationTrialRepository.GetInstallationTrailAsync();
+        var result = await _installationTrialRepository.GetInstallationTrailAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -1249,29 +1253,293 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public async Task<ActionResult> InsertUpdateInstallationTrailAsync(InstallationTrialViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
-            return Json(new { Success = false, Errors = errors });
-        }
+    //[HttpPost]
+    //public async Task<ActionResult> InsertUpdateInstallationTrailAsync(InstallationTrialViewModel model)
+    //{
+    //    try
+    //    {
+    //        if (model == null)
+    //            return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
 
-        if (model.Id > 0)
+    //        if (!ModelState.IsValid)
+    //        {
+    //            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+    //            return Json(new { Success = false, Errors = errors });
+    //        }
+
+    //        // =============================
+    //        // UPDATE
+    //        // =============================
+    //        if (model.Id > 0)
+    //        {
+    //            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+    //            model.UpdatedOn = DateTime.Now;
+
+    //            // Save uploaded images (if any) into /InstallationTrial_Attach/{Id}/
+    //            if (model.Photo_WithLoadFile != null && model.Photo_WithLoadFile.Length > 0)
+    //            {
+    //                model.Photo_WithLoad = await SaveInstallationTrialImageAsync(
+    //                    model.Photo_WithLoadFile, "WithLoad", model.Id);
+    //            }
+
+    //            if (model.Photo_WithoutLoadFile != null && model.Photo_WithoutLoadFile.Length > 0)
+    //            {
+    //                model.Photo_WithoutLoad = await SaveInstallationTrialImageAsync(
+    //                    model.Photo_WithoutLoadFile, "WithoutLoad", model.Id);
+    //            }
+
+    //            var result = await _installationTrialRepository.UpdateInstallationTrailAsync(model);
+    //            return Json(result);
+    //        }
+
+    //        // =============================
+    //        // INSERT
+    //        // =============================
+    //        model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+    //        model.AddedOn = DateTime.Now;
+
+    //        // 1) Insert first to get NEW ID
+    //        var insertResult = await _installationTrialRepository.InsertInstallationTrailAsync(model);
+
+    //        if (insertResult == null)
+    //            return Json(new { Success = false, Message = "Insert failed." });
+
+    //        // 2) Get newly generated Id from insertResult
+    //        int newId = 0;
+    //        try
+    //        {
+    //            var idProp = insertResult.GetType().GetProperty("Id");
+    //            if (idProp != null)
+    //                newId = Convert.ToInt32(idProp.GetValue(insertResult));
+    //        }
+    //        catch { /* ignore */ }
+
+    //        if (newId <= 0)
+    //        {
+    //            // If your repo doesn't return Id, you MUST return it, otherwise cannot create Id folder.
+    //            return Json(new { Success = false, Message = "Insert succeeded but new Id not returned from repository." });
+    //        }
+
+    //        model.Id = newId;
+
+    //        // 3) Save images now (if any)
+    //        bool anyImageSaved = false;
+
+    //        if (model.Photo_WithLoadFile != null && model.Photo_WithLoadFile.Length > 0)
+    //        {
+    //            model.Photo_WithLoad = await SaveInstallationTrialImageAsync(
+    //                model.Photo_WithLoadFile, "WithLoad", model.Id);
+    //            anyImageSaved = true;
+    //        }
+
+    //        if (model.Photo_WithoutLoadFile != null && model.Photo_WithoutLoadFile.Length > 0)
+    //        {
+    //            model.Photo_WithoutLoad = await SaveInstallationTrialImageAsync(
+    //                model.Photo_WithoutLoadFile, "WithoutLoad", model.Id);
+    //            anyImageSaved = true;
+    //        }
+
+    //        // 4) Update DB with image paths (only if saved)
+    //        if (anyImageSaved)
+    //        {
+    //            model.UpdatedBy = model.AddedBy;
+    //            model.UpdatedOn = DateTime.Now;
+
+    //            await _installationTrialRepository.UpdateInstallationTrailAsync(model);
+    //        }
+
+    //        return Json(insertResult);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return Json(new
+    //        {
+    //            Success = false,
+    //            Errors = new[] { "Failed to save Installation Trial detail." },
+    //            Exception = ex.Message
+    //        });
+    //    }
+    //}
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateInstallationTrailAsync(InstallationTrialViewModel model)
+    {
+        try
         {
-            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
-            model.UpdatedOn = DateTime.Now;
-            var result = await _installationTrialRepository.UpdateInstallationTrailAsync(model);
-            return Json(result);
+            if (model == null)
+            {
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+            }
+
+            // ---- Save uploaded images to folder and set string paths ----
+            if (model.Photo_WithLoadFile != null && model.Photo_WithLoadFile.Length > 0)
+            {
+                model.Photo_WithLoad = await SaveImageAsync(
+                    model.Photo_WithLoadFile, "WithLoad", model.ReportNo);
+            }
+
+            if (model.Photo_WithoutLoadFile != null && model.Photo_WithoutLoadFile.Length > 0)
+            {
+                model.Photo_WithoutLoad = await SaveImageAsync(
+                    model.Photo_WithoutLoadFile, "WithoutLoad", model.ReportNo);
+            }
+           
+            // ------------------------------------------------------------
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                // UPDATE: exclude same Id record
+                exists = await _installationTrialRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                // INSERT: check if complaint already used anywhere
+                exists = await _installationTrialRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            var user = HttpContext.Session.GetString("FullName") ?? "System";
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+                model.UpdatedOn = DateTime.Now;
+
+                result = await _installationTrialRepository.UpdateInstallationTrailAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Installation Trail Detail updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+                model.AddedOn = DateTime.Now;
+
+                result = await _installationTrialRepository.InsertInstallationTrailAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Installation Trail Detail created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message
+            });
         }
-        else
+        catch (Exception ex)
         {
-            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
-            model.AddedOn = DateTime.Now;
-            var result = await _installationTrialRepository.InsertInstallationTrailAsync(model);
-            return Json(result);
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save installation trail detail." },
+                Exception = ex.Message
+            });
         }
     }
+
+    private async Task<string> SaveImageAsync(IFormFile file, string prefix, string complaintNo)
+    {
+        if (file == null || file.Length == 0)
+            return string.Empty;
+
+        // Make complaint no safe for folder/file name
+        var safeComplaintNo = (complaintNo ?? string.Empty)
+            .Replace(" ", "_")
+            .Replace("/", "_")
+            .Replace("\\", "_")
+            .Replace(":", "_");
+
+        // Physical folder path: wwwroot/CAReport_Attach/{ComplaintNo}
+        var folderPhysical = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "InstallationTrial_Attach",
+            safeComplaintNo
+        );
+
+        if (!Directory.Exists(folderPhysical))
+            Directory.CreateDirectory(folderPhysical);
+
+        var ext = Path.GetExtension(file.FileName);
+        if (string.IsNullOrWhiteSpace(ext))
+            ext = ".jpg";
+
+        var fileName = $"{safeComplaintNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+        var fullPath = Path.Combine(folderPhysical, fileName);
+
+        using (var stream = new FileStream(fullPath, FileMode.Create))
+        {
+            await file.CopyToAsync(stream);
+        }
+
+        
+        var relativeForDb = $"/InstallationTrial_Attach/{safeComplaintNo}/{fileName}";
+
+        return relativeForDb;
+    }
+
+    //private async Task<string> SaveInstallationTrialImageAsync(IFormFile file, string prefix, int installationTrialId)
+    //{
+    //    if (file == null || file.Length == 0)
+    //        return string.Empty;
+
+    //    // Folder: wwwroot/InstallationTrial_Attach/{Id}
+    //    var folderPhysical = Path.Combine(
+    //        Directory.GetCurrentDirectory(),
+    //        "wwwroot",
+    //        "InstallationTrial_Attach",
+    //        installationTrialId.ToString()
+    //    );
+
+    //    if (!Directory.Exists(folderPhysical))
+    //        Directory.CreateDirectory(folderPhysical);
+
+    //    var ext = Path.GetExtension(file.FileName);
+    //    if (string.IsNullOrWhiteSpace(ext))
+    //        ext = ".jpg";
+
+    //    var fileName = $"{installationTrialId}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+    //    var fullPath = Path.Combine(folderPhysical, fileName);
+
+    //    using (var stream = new FileStream(fullPath, FileMode.Create))
+    //    {
+    //        await file.CopyToAsync(stream);
+    //    }
+
+    //    // Return browser path for DB
+    //    return $"/InstallationTrial_Attach/{installationTrialId}/{fileName}";
+    //}
+
 
     public async Task<ActionResult> DeleteInstallationTrailAsync(int Id)
     {

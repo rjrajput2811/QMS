@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core.DatabaseContext;
@@ -25,21 +26,22 @@ namespace QMS.Core.Repositories.InstallationTrialRepository
             _systemLogService = systemLogService;
         }
 
-        public async Task<List<InstallationTrialViewModel>> GetInstallationTrailAsync()
+        public async Task<List<InstallationTrialViewModel>> GetInstallationTrailAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
                 var parameters = new[]
                 {
-                new SqlParameter("@Id", SqlDbType.Int)
-                {
-                    Value = 0
-                }
-            };
+                    new SqlParameter("@Id", SqlDbType.Int) { Value = 0 }
+                };
 
-                var sql = @"EXEC sp_Get_InstallationTrial";
+                // ✅ Pass parameter to SP properly
+                var sql = @"EXEC sp_Get_InstallationTrial @Id";
 
-                var result = await Task.Run(() => _dbContext.InstallationTrials.FromSqlRaw(sql, parameters)
+                // ✅ Run query normally (no Task.Run)
+                var query = _dbContext.InstallationTrials
+                    .FromSqlRaw(sql, parameters)
+                    .AsNoTracking()
                     .AsEnumerable()
                     .Select(x => new InstallationTrialViewModel
                     {
@@ -52,20 +54,42 @@ namespace QMS.Core.Repositories.InstallationTrialRepository
                         SampleQty = x.SampleQty,
                         CheckedBy = x.CheckedBy,
                         VerifiedBy = x.VerifiedBy,
-                        AddedBy = x.AddedBy
+                        AddedBy = x.AddedBy,
+                        UpdatedBy = x.UpdatedBy,
+                        AddedOn = x.AddedOn,
+                        UpdatedOn = x.UpdatedOn
                     })
-                    .ToList());
+                    .ToList();
 
-                foreach (var rec in result)
+                // ✅ Date filter (use AddedOn or ReportDate as you need)
+                if (startDate.HasValue && endDate.HasValue)
                 {
-                    rec.User = await _dbContext.User.Where(i => i.Id == rec.AddedBy).Select(x => x.Name).FirstOrDefaultAsync();
+                    var s = startDate.Value.Date;
+                    var e = endDate.Value.Date;
+
+                    query = query
+                        .Where(d => d.AddedOn.Date >= s && d.AddedOn.Date <= e)
+                        .ToList();
                 }
 
-                return result;
+                // ✅ Avoid N+1: fetch user names once
+                var userIds = query.Select(x => x.AddedBy).Distinct().ToList();
+
+                var userMap = await _dbContext.User
+                    .AsNoTracking()
+                    .Where(u => userIds.Contains(u.Id))
+                    .ToDictionaryAsync(u => u.Id, u => u.Name);
+
+                foreach (var rec in query)
+                {
+                    rec.User = userMap.TryGetValue(rec.AddedBy, out var name) ? name : "";
+                }
+
+                return query;
             }
             catch (Exception ex)
             {
-                _systemLogService.WriteLog(ex.Message);
+                _systemLogService.WriteLog(ex.ToString());
                 throw;
             }
         }
@@ -199,7 +223,7 @@ namespace QMS.Core.Repositories.InstallationTrialRepository
             }
         }
 
-        public async Task<OperationResult> UpdateInstallationTrialAsync(InstallationTrialViewModel model)
+        public async Task<OperationResult> UpdateInstallationTrailAsync(InstallationTrialViewModel model)
         {
             try
             {
@@ -283,6 +307,44 @@ namespace QMS.Core.Repositories.InstallationTrialRepository
             {
                 var result = await base.DeleteAsync<InstallationTrial>(Id);
                 return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.InstallationTrials
+                    .Where(x => x.Deleted == false && x.ReportNo == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.InstallationTrials
+                        .Where(x => x.Deleted == false &&
+                               x.ReportNo == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
             }
             catch (Exception ex)
             {

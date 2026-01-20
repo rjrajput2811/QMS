@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -41,5 +42,8 @@ namespace QMS.Core.Models
         public DateTime? UpdatedOn { get; set; }
         public string? User { get; set; }
         public bool Deleted { get; set; }
+
+        public IFormFile? Photo_WithLoadFile { get; set; }
+        public IFormFile? Photo_WithoutLoadFile { get; set; }
     }
 }

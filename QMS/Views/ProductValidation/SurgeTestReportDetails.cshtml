@@ -211,8 +211,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                     TABLE / BORDER BASE
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                     TABLE / BORDER BASE
+                                                                                                                                                                                                                                                  ============================*/
     /* Use this class on your surge tables (with/without SPD) */
     .surge-table {
         width: 100%;
@@ -253,8 +253,8 @@
     }
 
     /* ===========================
-                                                                                                                                                                                                                                     EDITABLE CELLS
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                     EDITABLE CELLS
+                                                                                                                                                                                                                                                  ============================*/
     .editable-cell,
     td[contenteditable="true"] {
         background-color: #fff;
@@ -276,8 +276,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                     RESULT ROW (BOTTOM)
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                     RESULT ROW (BOTTOM)
+                                                                                                                                                                                                                                                  ============================*/
     /* Apply this to the <tr> of your final result row */
     .result-row {
         font-weight: 700;
@@ -327,8 +327,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                     UTILITIES (optional)
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                     UTILITIES (optional)
+                                                                                                                                                                                                                                                  ============================*/
     .text-center {
         text-align: center;
     }
@@ -927,7 +927,48 @@
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
     <script>
+        let searchTimeout;
 
+        $(document).ready(function () {
+            initPhotoPreviews();
+
+                const inputElement = $("#BISsear_Code");
+                if (inputElement.length) {
+                    // Attach the keydown event handler
+                        inputElement.on('input', function (event) {
+                        handleBisSearch(event);
+                    });
+                }
+        });
+
+          function setupPreview(inputId, imgId) {
+            const inp = document.getElementById(inputId);
+            const img = document.getElementById(imgId);
+
+            if (!inp || !img) return;
+
+            inp.addEventListener('change', () => {
+                const file = inp.files && inp.files[0];
+
+                if (!file) {
+                    img.src = '';
+                    img.style.display = 'none';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function initPhotoPreviews() {
+            setupPreview('photoUpload1', 'preview1');           
+        }
                     function insertSurgeTest() {
 
                     Blockloadershow();

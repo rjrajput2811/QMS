@@ -1165,9 +1165,9 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public async Task<ActionResult> GetSurgeTestReportList()
+    public async Task<ActionResult> GetSurgeTestReportList(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _surgeTestRepository.GetSurgeTestReportAsync();
+        var result = await _surgeTestRepository.GetSurgeTestReportAsync(startDate, endDate);
         return Json(result);
     }
 

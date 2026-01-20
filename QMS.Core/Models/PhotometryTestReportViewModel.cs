@@ -1,0 +1,124 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace QMS.Core.Models
+{
+    public class PhotometryTestReportViewModel
+    {
+        public int Id { get; set; }
+        public string? ProductCatRef { get; set; }
+        public string? ProductDescription { get; set; }
+        public string? ReportNo { get; set; }
+        public string? DriverDetails { get; set; }
+        public string? LedDetails { get; set; }
+        public DateTime? ReportDate { get; set; }
+        public string? Sphere_InputWattage_Spec { get; set; }
+        public decimal? Sphere_InputWattage_Sample1 { get; set; }
+        public decimal? Sphere_InputWattage_Sample2 { get; set; }
+        public decimal? Sphere_InputWattage_Sample3 { get; set; }
+        public decimal? Sphere_InputWattage_Sample4 { get; set; }
+        public decimal? Sphere_InputWattage_Sample5 { get; set; }
+        public string? Sphere_InputWattage_Result { get; set; }
+        public string? Sphere_LuminousFlux_Spec { get; set; }
+        public decimal? Sphere_LuminousFlux_Sample1 { get; set; }
+        public decimal? Sphere_LuminousFlux_Sample2 { get; set; }
+        public decimal? Sphere_LuminousFlux_Sample3 { get; set; }
+        public decimal? Sphere_LuminousFlux_Sample4 { get; set; }
+        public decimal? Sphere_LuminousFlux_Sample5 { get; set; }
+        public string? Sphere_LuminousFlux_Result { get; set; }
+        public string? Sphere_CCT_Spec { get; set; }
+        public decimal? Sphere_CCT_Sample1 { get; set; }
+        public decimal? Sphere_CCT_Sample2 { get; set; }
+        public decimal? Sphere_CCT_Sample3 { get; set; }
+        public decimal? Sphere_CCT_Sample4 { get; set; }
+        public decimal? Sphere_CCT_Sample5 { get; set; }
+        public string? Sphere_CCT_Result { get; set; }
+        public string? Sphere_CRI_Spec { get; set; }
+        public decimal? Sphere_CRI_Sample1 { get; set; }
+        public decimal? Sphere_CRI_Sample2 { get; set; }
+        public decimal? Sphere_CRI_Sample3 { get; set; }
+        public decimal? Sphere_CRI_Sample4 { get; set; }
+        public decimal? Sphere_CRI_Sample5 { get; set; }
+        public string? Sphere_CRI_Result { get; set; }
+        public string? Sphere_SystemEfficacy_Spec { get; set; }
+        public decimal? Sphere_SystemEfficacy_Sample1 { get; set; }
+        public decimal? Sphere_SystemEfficacy_Sample2 { get; set; }
+        public decimal? Sphere_SystemEfficacy_Sample3 { get; set; }
+        public decimal? Sphere_SystemEfficacy_Sample4 { get; set; }
+        public decimal? Sphere_SystemEfficacy_Sample5 { get; set; }
+        public string? Sphere_SystemEfficacy_Result { get; set; }
+        public string? Gonio_InputWattage_Spec { get; set; }
+        public decimal? Gonio_InputWattage_Sample1 { get; set; }
+        public decimal? Gonio_InputWattage_Sample2 { get; set; }
+        public decimal? Gonio_InputWattage_Sample3 { get; set; }
+        public decimal? Gonio_InputWattage_Sample4 { get; set; }
+        public decimal? Gonio_InputWattage_Sample5 { get; set; }
+        public string? Gonio_InputWattage_Result { get; set; }
+        public string? Gonio_LuminousFlux_Spec { get; set; }
+        public decimal? Gonio_LuminousFlux_Sample1 { get; set; }
+        public decimal? Gonio_LuminousFlux_Sample2 { get; set; }
+        public decimal? Gonio_LuminousFlux_Sample3 { get; set; }
+        public decimal? Gonio_LuminousFlux_Sample4 { get; set; }
+        public decimal? Gonio_LuminousFlux_Sample5 { get; set; }
+        public string? Gonio_LuminousFlux_Result { get; set; }
+        public string? Gonio_CCT_Spec { get; set; }
+        public decimal? Gonio_CCT_Sample1 { get; set; }
+        public decimal? Gonio_CCT_Sample2 { get; set; }
+        public decimal? Gonio_CCT_Sample3 { get; set; }
+        public decimal? Gonio_CCT_Sample4 { get; set; }
+        public decimal? Gonio_CCT_Sample5 { get; set; }
+        public string? Gonio_CCT_Result { get; set; }
+        public string? Gonio_CRI_Spec { get; set; }
+        public decimal? Gonio_CRI_Sample1 { get; set; }
+        public decimal? Gonio_CRI_Sample2 { get; set; }
+        public decimal? Gonio_CRI_Sample3 { get; set; }
+        public decimal? Gonio_CRI_Sample4 { get; set; }
+        public decimal? Gonio_CRI_Sample5 { get; set; }
+        public string? Gonio_CRI_Result { get; set; }
+        public string? Gonio_SystemEfficacy_Spec { get; set; }
+        public decimal? Gonio_SystemEfficacy_Sample1 { get; set; }
+        public decimal? Gonio_SystemEfficacy_Sample2 { get; set; }
+        public decimal? Gonio_SystemEfficacy_Sample3 { get; set; }
+        public decimal? Gonio_SystemEfficacy_Sample4 { get; set; }
+        public decimal? Gonio_SystemEfficacy_Sample5 { get; set; }
+        public string? Gonio_SystemEfficacy_Result { get; set; }
+        public string? Gonio_UGR_Spec { get; set; }
+        public decimal? Gonio_UGR_Sample1 { get; set; }
+        public decimal? Gonio_UGR_Sample2 { get; set; }
+        public decimal? Gonio_UGR_Sample3 { get; set; }
+        public decimal? Gonio_UGR_Sample4 { get; set; }
+        public decimal? Gonio_UGR_Sample5 { get; set; }
+        public string? Gonio_UGR_Result { get; set; }
+        public string? Gonio_Distribution_Spec { get; set; }
+        public string? Gonio_Distribution_Sample1 { get; set; }
+        public string? Gonio_Distribution_Sample2 { get; set; }
+        public string? Gonio_Distribution_Sample3 { get; set; }
+        public string? Gonio_Distribution_Sample4 { get; set; }
+        public string? Gonio_Distribution_Sample5 { get; set; }
+        public string? Gonio_Distribution_Result { get; set; }
+        public string? Gonio_NABL79_Spec { get; set; }
+        public string? Gonio_NABL79_Sample1 { get; set; }
+        public string? Gonio_NABL79_Sample2 { get; set; }
+        public string? Gonio_NABL79_Sample3 { get; set; }
+        public string? Gonio_NABL79_Sample4 { get; set; }
+        public string? Gonio_NABL79_Sample5 { get; set; }
+        public string? Gonio_NABL79_Result { get; set; }
+        public string? Gonio_NABL79_Other_Spec { get; set; }
+        public string? Gonio_NABL79_Other_Sample1 { get; set; }
+        public string? Gonio_NABL79_Other_Sample2 { get; set; }
+        public string? Gonio_NABL79_Other_Sample3 { get; set; }
+        public string? Gonio_NABL79_Other_Sample4 { get; set; }
+        public string? Gonio_NABL79_Other_Sample5 { get; set; }
+        public string? Gonio_NABL79_Other_Result { get; set; }
+        public string? TestedBy { get; set; }
+        public string? VerifiedBy { get; set; }
+        public int AddedBy { get; set; }
+        public DateTime AddedOn { get; set; }
+        public int? UpdatedBy { get; set; }
+        public DateTime? UpdatedOn { get; set; }
+        public string? User { get; set; }
+    }
+}

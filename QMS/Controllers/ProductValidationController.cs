@@ -5,6 +5,8 @@ using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
+using QMS.Core.Repositories.ImpactTestRepository;
+using QMS.Core.Repositories.PhotometryRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.SurgeTestReportRepository;
 using System.Drawing;
@@ -21,15 +23,21 @@ public class ProductValidationController : Controller
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly IElectricalProtectionRepository _electricalProtectionRepository;
     private readonly ISurgeTestReportRepository _surgeTestRepository;
+    private readonly IPhotometryTestRepository _photometryTestRepository;
+    private readonly IImpactTestRepository _impactTestRepository;
     private readonly IInstallationTrialRepository _installationTrialRepository;
     private readonly ISystemLogService _systemLogService;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
         IElectricalPerformanceRepository electricalPerformanceRepository,
-        IWebHostEnvironment hostEnvironment, ISystemLogService systemLogService,
-        IElectricalProtectionRepository electricalProtectionRepository,IInstallationTrialRepository installationTrialRepository,
-        ISurgeTestReportRepository surgeTestRepository)
+        IWebHostEnvironment hostEnvironment,
+        IElectricalProtectionRepository electricalProtectionRepository,
+        ISurgeTestReportRepository surgeTestRepository ,
+        IPhotometryTestRepository photometryTestRepository,
+        IImpactTestRepository impactTestRepository,
+        ISystemLogService systemLogService,
+        IInstallationTrialRepository installationTrialRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
@@ -37,8 +45,11 @@ public class ProductValidationController : Controller
         _electricalProtectionRepository = electricalProtectionRepository;
         _installationTrialRepository = installationTrialRepository;
         _surgeTestRepository = surgeTestRepository;
+        _photometryTestRepository = photometryTestRepository;
+        _impactTestRepository = impactTestRepository;
         _systemLogService = systemLogService;
     }
+
 
 
     public IActionResult Index()
@@ -76,6 +87,7 @@ public class ProductValidationController : Controller
         }
         return View(model);
     }
+
     public async Task<IActionResult> ElectricalProtectionDetails(int Id)
     {
         var model = new ElectricalProtectionViewModel();
@@ -1211,12 +1223,56 @@ public class ProductValidationController : Controller
     #region PhotometryTestReport 
     public IActionResult PhotometryTestReport()
     {
-
         return View();
     }
-    public IActionResult PhotometryTestReportDetails()
+    public async Task<ActionResult> PhotometryTestReportDetails(int Id)
     {
-        return View();
+        var model = new PhotometryTestReportViewModel();
+        if (Id > 0)
+        {
+            model = await _photometryTestRepository.GetPhotometryTestReportByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> InsertUpdatePhotometryTestAsync(PhotometryTestReportViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _photometryTestRepository.UpdatePhotometryTestReportAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _photometryTestRepository.InsertPhotometryTestReportAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> GetPhotometryTestReportAsync()
+    {
+        var result = await _photometryTestRepository.GetPhotometryTestReportAsync();
+        return Json(result);
+    }
+
+    public async Task<ActionResult> DeletePhotometryTestAsync(int Id)
+    {
+        var result = await _photometryTestRepository.DeletePhotometryTestAsync(Id);
+        return Json(result);
     }
 
     #endregion
@@ -1554,9 +1610,54 @@ public class ProductValidationController : Controller
     {
         return View();
     }
-    public IActionResult impactTestDetails()
+    public async Task<ActionResult> impactTestDetails(int Id)
     {
-        return View();
+        var model = new ImpactTestViewModel();
+        if (Id > 0)
+        {
+            model = await _impactTestRepository.GetImpactTestReportByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> GetImpactTestReportAsync()
+    {
+        var result = await _impactTestRepository.GetImpactTestReportAsync();
+        return Json(result);
+    }
+
+    public async Task<ActionResult> InsertUpdateImpactTestAsync(ImpactTestViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _impactTestRepository.UpdateImpactTestReportAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _impactTestRepository.InsertImpactTestReportAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DeleteImpactTestAsync(int Id)
+    {
+        var result = await _impactTestRepository.DeleteImpactTestAsync(Id);
+        return Json(result);
     }
 
     #endregion

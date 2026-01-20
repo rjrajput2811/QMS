@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,9 @@ public class RippleTestReportViewModel
     public decimal? RMSValue { get; set; }
     public string? Calculation { get; set; }
     public decimal? RipplePercentage { get; set; }
+    public List<IFormFile>? RippleTestFileAttachedFile { get; set; }
+    public string? RippleTestFileAttachedPath { get; set; }
+    public string? RemainingImages { get; set; }
     public string? Result { get; set; }
     public string? TestedBy { get; set; }
     public string? VerifiedBy { get; set; }

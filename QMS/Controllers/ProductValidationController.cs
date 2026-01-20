@@ -89,6 +89,12 @@ public class ProductValidationController : Controller
         return View();
     }
 
+    public async Task<ActionResult> GetElectricalPerformanceList()
+    {
+        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync();
+        return Json(result);
+    }
+
     public async Task<IActionResult> ElectricalPerformanceDetails(int Id)
     {
         var model = new ElectricalPerformanceViewModel();
@@ -104,6 +110,41 @@ public class ProductValidationController : Controller
         }
 
         return View(model);
+    }
+
+
+    [HttpPost]
+    public async Task<ActionResult> InsertUpdateElectricalPerformanceDetails(ElectricalPerformanceViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                          .Select(e => e.ErrorMessage)
+                                          .ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _electricalPerformanceRepository.UpdateElectricalPerformancesAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _electricalPerformanceRepository.InsertElectricalPerformancesAsync(model);
+            return Json(result);
+        }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> DeleteElectricalPerformance(int id)
+    {
+        var result = await _electricalPerformanceRepository.DeleteElectricalPerformancesAsync(id);
+        return Json(result);
     }
 
     public IActionResult RippleTestReport()
@@ -1127,7 +1168,8 @@ public class ProductValidationController : Controller
         }
     }
 
-    
+
+
     #region SuregTestReport
     public IActionResult SurgeTestReportDetails()
     {

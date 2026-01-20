@@ -10,22 +10,25 @@ namespace QMS.Core.DatabaseContext
         public DbSet<Users> User { get; set; }
         public DbSet<UserRoles> UserRole { get; set; }
         public DbSet<Vendor> Vendor { get; set; }
+
+        // Keyless / Projection sets (ViewModels / SP results)
         public DbSet<VendorResViewModel> Vendor_List { get; set; }
         public DbSet<ProductCodeDetailViewModel> ProductCode { get; set; }
+        public DbSet<CertificationDetailViewModel> CertificationDetailViewModel { get; set; }
+        public DbSet<ThirdPartyTestReportViewModel> ThirdPartyTestReportViewModels { get; set; }
+        public DbSet<VenBISCertificateViewModel> venBISCertificateViewModels { get; set; }
+
         public DbSet<CertificateMaster> CertificateMaster { get; set; }
         public DbSet<ThirdPartyInspection> ThirdPartyInspections { get; set; }
-        public DbSet<InspectionResult> InspectionResults { get; set; }
         public DbSet<CertificationDetail> CertificationDetails { get; set; }
         public DbSet<ThirdPartyCertificateMaster> ThirdPartyCertificateMasters { get; set; }
         public DbSet<ThirdPartyTestReport> ThirdPartyTestReports { get; set; }
-        public DbSet<CertificationDetailViewModel> CertificationDetailViewModel { get; set; }
-        public DbSet<ThirdPartyTestReportViewModel> ThirdPartyTestReportViewModels { get; set; }
+
         public DbSet<BisProject_Tracker> BisProject_Tracker { get; set; }
         public DbSet<NatProject_BIS> NatProject_BIS { get; set; }
         public DbSet<Payment_Tracker> PaymentTracker { get; set; }
         public DbSet<Lab_Payment> Lab_Payment { get; set; }
         public DbSet<NPITracker> NPITracker { get; set; }
-        public DbSet<VenBISCertificateViewModel> venBISCertificateViewModels { get; set; }
         public DbSet<VenBISCertificate> VenBISCertificates { get; set; }
         public DbSet<CSOTracker> CSOTracker { get; set; }
         public DbSet<PDITracker> PDITracker { get; set; }
@@ -34,6 +37,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<ImprovementTracker> ImprovementTracker { get; set; }
         public DbSet<Kaizen_Tracker> Kaizen_Tracker { get; set; }
         public DbSet<SPMReport> SPMReports { get; set; }
+
         public DbSet<ThirdPartyTesting> ThirdPartyTesting { get; set; }
         public DbSet<Purpose_TPT> PurposeTPT { get; set; }
         public DbSet<ProjectInit_TPT> ProjectInitTPT { get; set; }
@@ -45,8 +49,13 @@ namespace QMS.Core.DatabaseContext
         public DbSet<RM_TC_Tracker> RM_TC_Tracker { get; set; }
         public DbSet<CSAT_Comment> CSAT_Comment { get; set; }
         public DbSet<CSAT_Summary> CSAT_Summary { get; set; }
+
         public DbSet<PhysicalCheckAndVisualInspection> PhysicalCheckAndVisualInspections { get; set; }
+
+        // ✅ Electrical Performance (Parent + Child)
         public DbSet<ElectricalPerformance> ElectricalPerformances { get; set; }
+        public DbSet<ElectricalPerDetails> ElectricalPerDetails { get; set; }
+
         public DbSet<ElectricalProtection> ElectricalProtections { get; set; }
         public DbSet<InternalTypeTest> InternalTypeTests { get; set; }
         public DbSet<InternalTypeTestDetail> InternalTypeTestDetails { get; set; }
@@ -75,8 +84,6 @@ namespace QMS.Core.DatabaseContext
         public DbSet<SPM_Make> SPM_Make { get; set; }
         public DbSet<SPM_Buy> SPM_Buy { get; set; }
 
-
-
         //// ------- Service -------- ////
         public DbSet<ComplaintDump_Service> COPQComplaintDump { get; set; }
         public DbSet<FailedRecord_Log> FailedRecord_Log { get; set; }
@@ -89,10 +96,9 @@ namespace QMS.Core.DatabaseContext
         public DbSet<RLT_Tracking_Service> RLTTrac { get; set; }
         public DbSet<ContractorDetail_Service> ContractorDetails { get; set; }
         public DbSet<DocumentDetail> Doc_Detail { get; set; }
-
         //// ------- Service -------- ////
 
-        //// ------- Supply Chain Managment -------- ////
+        //// ------- Supply Chain Management -------- ////
         public DbSet<Open_Po> OpenPo { get; set; }
         public DbSet<Open_Po_Log> OpenPo_Log { get; set; }
         public DbSet<Opne_Po_DeliverySchedule> Opne_Po_Deliveries { get; set; }
@@ -100,10 +106,9 @@ namespace QMS.Core.DatabaseContext
         public DbSet<So_DeliverySchedule> So_Deliveries { get; set; }
         public DbSet<PC_Calendar_SCM> PC_Calendar { get; set; }
         public DbSet<MTAMaster_SCM> MTAMaster { get; set; }
+        //// ------- Supply Chain Management -------- ////
 
-
-
-        /////// ------- Supply Chain Managment -------- ////
+        // Keyless type used for SP projections
         public class InspectionResult
         {
             public int InspectionID { get; set; }
@@ -113,16 +118,53 @@ namespace QMS.Core.DatabaseContext
         {
             base.OnModelCreating(modelBuilder);
 
-            // Mark InspectionResult as keyless
+            // ---------------------------
+            // Keyless mappings (ViewModels / SP results)
+            // ---------------------------
             modelBuilder.Entity<InspectionResult>().HasNoKey();
-            modelBuilder.Entity<CertificationDetailViewModel>().HasNoKey(); // ← Add this
+
+            modelBuilder.Entity<CertificationDetailViewModel>().HasNoKey();
+            modelBuilder.Entity<VendorResViewModel>().HasNoKey();
+            modelBuilder.Entity<ProductCodeDetailViewModel>().HasNoKey();
+            modelBuilder.Entity<ThirdPartyTestReportViewModel>().HasNoKey();
+            modelBuilder.Entity<VenBISCertificateViewModel>().HasNoKey();
+
+            // ---------------------------
+            // Electrical Performance Parent/Child mapping
+            // ---------------------------
+            modelBuilder.Entity<ElectricalPerformance>(entity =>
+            {
+                // Table name is already set by [Table] attribute, but OK to keep:
+                entity.ToTable("tbl_ElectricalPerformance");
+                entity.HasKey(x => x.Id);
+
+                entity.HasMany(x => x.Details)
+                      .WithOne(x => x.ElectricalPerformance)
+                      .HasForeignKey(x => x.ElId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ElectricalPerDetails>(entity =>
+            {
+                entity.ToTable("tbl_ElectricalPerDetails");
+                entity.HasKey(x => x.Id);
+
+                entity.Property(x => x.ConditionType).HasMaxLength(50);
+
+                entity.HasIndex(x => new { x.ElId, x.SampleNo, x.ConditionType, x.RowNo });
+            });
+
+            // ---------------------------
             // Seed roles
+            // ---------------------------
             modelBuilder.Entity<UserRoles>().HasData(
                 new UserRoles { Id = 1, RoleName = "Admin" },
                 new UserRoles { Id = 2, RoleName = "Manager" }
             );
 
+            // ---------------------------
             // Seed default admin user
+            // ---------------------------
             modelBuilder.Entity<Users>().HasData(
                 new Users
                 {

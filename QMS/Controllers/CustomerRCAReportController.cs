@@ -173,6 +173,15 @@ namespace QMS.Controllers
                         0
                     );
                 }
+
+                if (exists)
+                {
+                    return Json(new
+                    {
+                        Success = false,
+                        Errors = new[] { $"Duplicate RCA Complaint No '{model.Complaint_No}' already exists." }
+                    });
+                }
                 //bool exists = await _rCAReportRepository.CheckDuplicate(model.Complaint_No!.Trim(), 0);
                 //if (exists)
                 //{

@@ -215,6 +215,15 @@ namespace QMS.Controllers
                     );
                 }
 
+                if (exists)
+                {
+                    return Json(new
+                    {
+                        Success = false,
+                        Errors = new[] { $"Duplicate CA Complaint No '{model.Complaint_No}' already exists." }
+                    });
+                }
+
                 var user = HttpContext.Session.GetString("FullName") ?? "System";
                 OperationResult result;
 

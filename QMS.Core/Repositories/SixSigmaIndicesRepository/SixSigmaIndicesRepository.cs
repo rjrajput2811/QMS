@@ -6,6 +6,10 @@ using QMS.Core.DatabaseContext;
 using QMS.Core.Services.SystemLogs;
 using QMS.Core.Repositories.Shared;
 using QMS.Core.Repositories.SixSigmaIndicesRepo;
+using ClosedXML.Excel;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
+
 
 namespace QMS.Core.Repositories.SixSigmaIndicesRepository
 {
@@ -40,12 +44,12 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
         {
             try
             {
-                
+
                 var result = await _dbContext.SixSigmaIndices
                     .FromSqlRaw("EXEC sp_Get_Six_Sigma_Indices")
                     .ToListAsync();
 
-             
+
                 return result.Select(x => new SixSigmaIndicesViewModel
                 {
                     Id = x.Id,
@@ -151,6 +155,16 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     Proj_Data_Pc_Turbo = x.Proj_Data_Pc_Turbo,
                     Proj_Data_Pc_Planned = x.Proj_Data_Pc_Planned,
 
+                    Proj_Num_Target = x.Proj_Num_Target,
+                    Proj_Num_Weightage = x.Proj_Num_Weightage,
+                    Proj_Num_Formula = x.Proj_Num_Formula,
+                    Proj_Num_Weighted_Score = x.Proj_Num_Weighted_Score,
+                    Proj_No_Weighted_Score = x.Proj_No_Weighted_Score,
+                    Proj_No_Formula = x.Proj_No_Formula,
+                    Proj_No_Weightage = x.Proj_No_Weightage,
+                    Proj_No_Target = x.Proj_No_Target,
+
+
                     Eff_Total_Weighted_Score = x.Eff_Total_Weighted_Score,
                     Eff_Total_Sum = x.Eff_Total_Sum,
 
@@ -168,18 +182,16 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
         }
 
 
-
-
         public async Task<SixSigmaIndicesViewModel?> GetSixSigmaIndicesByIdAsync(int id)
         {
             try
             {
                 var parameters = new[]
                 {
-            new SqlParameter("@Id", id)
+            new SqlParameter("@Six_Sig_EngId", id)
         };
 
-                var sql = @"sp_Get_Six_Sigma_Indices_ById @Id";
+                var sql = @"sp_Get_Six_Sigma_Indices_ById @Six_Sig_EngId";
 
                 var result = await Task.Run(() => _dbContext.SixSigmaIndices
                     .FromSqlRaw(sql, parameters)
@@ -291,6 +303,15 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                         Proj_Data_Pc_Turbo = x.Proj_Data_Pc_Turbo,
                         Proj_Data_Pc_Planned = x.Proj_Data_Pc_Planned,
 
+                        Proj_Num_Target = x.Proj_Num_Target,
+                        Proj_Num_Weightage = x.Proj_Num_Weightage,
+                        Proj_Num_Formula = x.Proj_Num_Formula,
+                        Proj_Num_Weighted_Score = x.Proj_Num_Weighted_Score,
+                        Proj_No_Weighted_Score = x.Proj_No_Weighted_Score,
+                        Proj_No_Formula = x.Proj_No_Formula,
+                        Proj_No_Weightage = x.Proj_No_Weightage,
+                        Proj_No_Target = x.Proj_No_Target,
+
                         Eff_Total_Weighted_Score = x.Eff_Total_Weighted_Score,
                         Eff_Total_Sum = x.Eff_Total_Sum
                     })
@@ -331,7 +352,7 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     new SqlParameter("@Six_Sigma_Formula", (object?)model.Six_Sigma_Formula ?? DBNull.Value),
                     new SqlParameter("@Six_Sigma_Weighted_Score", (object?)model.Six_Sigma_Weighted_Score ?? DBNull.Value),
 
-           
+
                     new SqlParameter("@Review_Data_Pc_Proj_Review", (object?)model.Review_Data_Pc_Proj_Review ?? DBNull.Value),
                     new SqlParameter("@Review_Data_Pc_Proj_Running", (object?)model.Review_Data_Pc_Proj_Running ?? DBNull.Value),
                     new SqlParameter("@Review_Target", (object?)model.Review_Target ?? DBNull.Value),
@@ -339,7 +360,7 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     new SqlParameter("@Review_Formula", (object?)model.Review_Formula ?? DBNull.Value),
                     new SqlParameter("@Review_Weighted_Score", (object?)model.Review_Weighted_Score ?? DBNull.Value),
 
-             
+
                     new SqlParameter("@Market_Data_Pc_Cap_Cso", (object?)model.Market_Data_Pc_Cap_Cso ?? DBNull.Value),
                     new SqlParameter("@Market_Data_Pc_Tar_Cso", (object?)model.Market_Data_Pc_Tar_Cso ?? DBNull.Value),
                     new SqlParameter("@Market_Target", (object?)model.Market_Target ?? DBNull.Value),
@@ -363,7 +384,7 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     new SqlParameter("@Eng_Total_Weighted_Score", (object?)model.Eng_Total_Weighted_Score ?? DBNull.Value),
                     new SqlParameter("@Eng_Total_Sum", (object?)model.Eng_Total_Sum ?? DBNull.Value),
 
-                   
+
                     new SqlParameter("@Cust_Data_Pc_Ot", (object?)model.Cust_Data_Pc_Ot ?? DBNull.Value),
                     new SqlParameter("@Cust_Data_Pc_As", (object?)model.Cust_Data_Pc_As ?? DBNull.Value),
                     new SqlParameter("@Cust_Data_Pc_Close", (object?)model.Cust_Data_Pc_Close ?? DBNull.Value),
@@ -379,7 +400,7 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     new SqlParameter("@Cust_Formula_Ytd", (object?)model.Cust_Formula_Ytd ?? DBNull.Value),
                     new SqlParameter("@Cust_Weighted_Score_Ytd", (object?)model.Cust_Weighted_Score_Ytd ?? DBNull.Value),
 
-     
+
                     new SqlParameter("@Proc_Data_Pc_Npd", (object?)model.Proc_Data_Pc_Npd ?? DBNull.Value),
                     new SqlParameter("@Proc_Data_Pc_Ann", (object?)model.Proc_Data_Pc_Ann ?? DBNull.Value),
                     new SqlParameter("@Proc_Target", (object?)model.Proc_Target ?? DBNull.Value),
@@ -402,7 +423,7 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     new SqlParameter("@Save_Formula", (object?)model.Save_Formula ?? DBNull.Value),
                     new SqlParameter("@Save_Weighted_Score", (object?)model.Save_Weighted_Score ?? DBNull.Value),
 
-               
+
                     new SqlParameter("@Out_Data_Pc_Sigma", (object?)model.Out_Data_Pc_Sigma ?? DBNull.Value),
                     new SqlParameter("@Out_Data_Pc_As", (object?)model.Out_Data_Pc_As ?? DBNull.Value),
                     new SqlParameter("@Out_Target", (object?)model.Out_Target ?? DBNull.Value),
@@ -410,7 +431,7 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     new SqlParameter("@Out_Formula", (object?)model.Out_Formula ?? DBNull.Value),
                     new SqlParameter("@Out_Weighted_Score", (object?)model.Out_Weighted_Score ?? DBNull.Value),
 
-                
+
                     new SqlParameter("@Spm_Data_Pc_Spm", (object?)model.Spm_Data_Pc_Spm ?? DBNull.Value),
                     new SqlParameter("@Spm_Data_Pc_As", (object?)model.Spm_Data_Pc_As ?? DBNull.Value),
                     new SqlParameter("@Spm_Target", (object?)model.Spm_Target ?? DBNull.Value),
@@ -425,6 +446,17 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
 
                     new SqlParameter("@Eff_Total_Weighted_Score", (object?)model.Eff_Total_Weighted_Score ?? DBNull.Value),
                     new SqlParameter("@Eff_Total_Sum", (object?)model.Eff_Total_Sum ?? DBNull.Value),
+
+                    new SqlParameter("@Proj_Num_Target", (object?)model.Proj_Data_Pc_Close ?? DBNull.Value),
+                    new SqlParameter("@Proj_Num_Weightage", (object?)model.Proj_Data_Pc_Dmaic ?? DBNull.Value),
+                    new SqlParameter("@Proj_Num_Formula", (object?)model.Proj_Data_Pc_Turbo ?? DBNull.Value),
+                    new SqlParameter("@Proj_Num_Weighted_Score",(object?)model.Proj_Data_Pc_Planned ?? DBNull.Value),
+
+                    new SqlParameter("@Proj_No_Weighted_Score", (object?)model.Proj_Data_Pc_Close ?? DBNull.Value),
+                    new SqlParameter("@Proj_No_Formula", (object?)model.Proj_Data_Pc_Dmaic ?? DBNull.Value),
+                    new SqlParameter("@Proj_No_Weightage", (object?)model.Proj_Data_Pc_Turbo ?? DBNull.Value),
+                    new SqlParameter("@Proj_No_Target", (object?)model.Proj_Data_Pc_Planned ?? DBNull.Value),
+
 
                     new SqlParameter("@CreatedBy", (object?)model.CreatedBy ?? DBNull.Value),
 
@@ -450,7 +482,8 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                     "@Out_Data_Pc_Sigma, @Out_Data_Pc_As, @Out_Target, @Out_Weightage, @Out_Formula, @Out_Weighted_Score, " +
                     "@Spm_Data_Pc_Spm, @Spm_Data_Pc_As, @Spm_Target, @Spm_Weightage, @Spm_Formula, @Spm_Weighted_Score, " +
                     "@Proj_Data_Pc_Close, @Proj_Data_Pc_Dmaic, @Proj_Data_Pc_Turbo, @Proj_Data_Pc_Planned, " +
-                    "@Eff_Total_Weighted_Score, @Eff_Total_Sum, " +
+                    "@Eff_Total_Weighted_Score, @Eff_Total_Sum,@Proj_Num_Target,@Proj_Num_Weightage,@Proj_Num_Formula,@Proj_Num_Weighted_Score," +
+                    "@Proj_No_Weighted_Score,@Proj_No_Formula,@Proj_No_Weightage,@Proj_No_Target," +
                     "@CreatedBy, @NewId OUTPUT",
                     parameters
                 );
@@ -589,6 +622,16 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
             new SqlParameter("@Eff_Total_Weighted_Score", DbValue(model.Eff_Total_Weighted_Score)),
             new SqlParameter("@Eff_Total_Sum", DbValue(model.Eff_Total_Sum)),
 
+            new SqlParameter("@Proj_Num_Target", (object?)model.Proj_Data_Pc_Close ?? DBNull.Value),
+            new SqlParameter("@Proj_Num_Weightage", (object?)model.Proj_Data_Pc_Dmaic ?? DBNull.Value),
+            new SqlParameter("@Proj_Num_Formula", (object?)model.Proj_Data_Pc_Turbo ?? DBNull.Value),
+            new SqlParameter("@Proj_Num_Weighted_Score",(object?)model.Proj_Data_Pc_Planned ?? DBNull.Value),
+
+            new SqlParameter("@Proj_No_Weighted_Score", (object?)model.Proj_Data_Pc_Close ?? DBNull.Value),
+            new SqlParameter("@Proj_No_Formula", (object?)model.Proj_Data_Pc_Dmaic ?? DBNull.Value),
+            new SqlParameter("@Proj_No_Weightage", (object?)model.Proj_Data_Pc_Turbo ?? DBNull.Value),
+            new SqlParameter("@Proj_No_Target", (object?)model.Proj_Data_Pc_Planned ?? DBNull.Value),
+
             // fixed: this should be model.UpdatedBy, not model
             new SqlParameter("@UpdatedBy", DbValue(model.UpdatedBy))
         };
@@ -605,6 +648,172 @@ namespace QMS.Core.Repositories.SixSigmaIndicesRepository
                 // you can also log ex.ToString() if you want stack trace
                 return new OperationResult { Success = false, Message = ex.Message };
             }
+        }
+
+        public byte[] Build(string templatePath, SixSigmaIndicesViewModel m, out string fileName)
+        {
+            using var wb = new XLWorkbook(templatePath);
+            var wsEng = wb.Worksheet("Eng");
+            var wsEff = wb.Worksheet("Eff");
+
+            wsEng.Cell("A1").Value =
+                $"Six Sigma Indices Report - Segment : Engagement , FY : {m.Fy} , PC : {m.Pc} , Location : {m.Location}";
+
+            wsEff.Cell("A1").Value =
+                $"Six Sigma Indices Report - Segment : Effectiveness , FY : {m.Fy} , PC : {m.Pc} , Location : {m.Location}";
+
+            // TODO: FillEng/FillEff mapping (same as before)
+            FillEng(wsEng, m);
+            FillEff(wsEff, m);
+
+            using var ms = new MemoryStream();
+            wb.SaveAs(ms);
+
+            fileName = $"SixSigmaIndices_{m.Fy}_{m.Pc}_Id_{m.Id}.xlsx";
+            return ms.ToArray();
+        }
+
+        private static void SetNum(IXLWorksheet ws, int row, int col, double? val)
+        {
+            if (val.HasValue) ws.Cell(row, col).Value = val.Value;
+            else ws.Cell(row, col).Clear(XLClearOptions.Contents);
+        }
+
+        private static void SetText(IXLWorksheet ws, int row, int col, string? val)
+        {
+            if (!string.IsNullOrWhiteSpace(val)) ws.Cell(row, col).Value = val;
+            else ws.Cell(row, col).Clear(XLClearOptions.Contents);
+        }
+
+        // IMPORTANT: Adjust row numbers to match your template exactly.
+        // Columns assumption: C=Data, D=Target, E=Weightage, F=FormulaText
+        private static void FillEng(IXLWorksheet ws, SixSigmaIndicesViewModel m)
+        {
+            const int ROW_LEAN = 5;
+            const int ROW_LEAN_TWO = 6;
+            const int ROW_SIXSIGMA = 8;
+            const int ROW_SIXSIGMA_TWO = 9;
+            const int ROW_REVIEW = 14;
+            const int ROW_REVIEW_TWO = 15;
+            const int ROW_MARKET = 17;
+            const int ROW_MARKET_TWO = 18;
+            const int ROW_BKPT_YTD = 20;
+            const int ROW_BKPT_YTD_TWO = 21;
+            const int ROW_BKPT_MFG = 22;
+            const int ROW_BKPT_MFG_TWO = 23;
+
+            SetNum(ws, ROW_LEAN, 3, m.Lean_Data_Pc_No_People);
+            SetNum(ws, ROW_LEAN_TWO, 3, m.Lean_Data_Pc_Total_People);
+            SetNum(ws, ROW_LEAN, 4, m.Lean_Target);
+            SetNum(ws, ROW_LEAN, 5, m.Lean_Weightage);
+            SetText(ws, ROW_LEAN, 6, m.Lean_Formula);
+            SetText(ws, ROW_LEAN, 7, m.Lean_Weighted_Score.ToString());
+
+            SetNum(ws, ROW_SIXSIGMA, 3, m.Six_Sigma_Data_Pc_Proj);
+            SetNum(ws, ROW_SIXSIGMA_TWO, 3, m.Six_Sigma_Data_Pc_Ann);
+            SetNum(ws, ROW_SIXSIGMA, 4, m.Six_Sigma_Target);
+            SetNum(ws, ROW_SIXSIGMA, 5, m.Six_Sigma__Weightage);
+            SetText(ws, ROW_SIXSIGMA, 6, m.Six_Sigma_Formula);
+
+            SetNum(ws, ROW_REVIEW, 3, m.Review_Data_Pc_Proj_Review);
+            SetNum(ws, ROW_REVIEW_TWO, 3, m.Review_Data_Pc_Proj_Running);
+            SetNum(ws, ROW_REVIEW, 4, m.Review_Target);
+            SetNum(ws, ROW_REVIEW, 5, m.Review_Weightage);
+            SetText(ws, ROW_REVIEW, 6, m.Review_Formula);
+
+            SetNum(ws, ROW_MARKET, 3, m.Market_Data_Pc_Cap_Cso);
+            SetNum(ws, ROW_MARKET_TWO, 3, m.Market_Data_Pc_Tar_Cso);
+            SetNum(ws, ROW_MARKET, 4, m.Market_Target);
+            SetNum(ws, ROW_MARKET, 5, m.Market_Weightage);
+            SetText(ws, ROW_MARKET, 6, m.Market_Formula);
+
+            SetNum(ws, ROW_BKPT_YTD, 3, m.Bkpt_Data_Pc_Ytd);
+            SetNum(ws, ROW_BKPT_YTD_TWO, 3, m.Bkpt_Data_Pc_Ann_Ytd);
+            SetNum(ws, ROW_BKPT_YTD, 4, m.Bkpt_Target_Ytd);
+            SetNum(ws, ROW_BKPT_YTD, 5, m.Bkpt_Weightage_Ytd);
+            SetText(ws, ROW_BKPT_YTD, 6, m.Bkpt_Formula_Ytd);
+
+            SetNum(ws, ROW_BKPT_MFG, 3, m.Bkpt_Data_Pc_Mfg);
+            SetNum(ws, ROW_BKPT_MFG_TWO, 3, m.Bkpt_Data_Pc_Ann_Mfg);
+            SetNum(ws, ROW_BKPT_MFG, 4, m.Bkpt_Target_Mfg);
+            SetNum(ws, ROW_BKPT_MFG, 5, m.Bkpt_Weightage_Mfg);
+            SetText(ws, ROW_BKPT_MFG, 6, m.Bkpt_Formula_Mfg);
+        }
+
+        private static void FillEff(IXLWorksheet ws, SixSigmaIndicesViewModel m)
+        {
+            const int ROW_CUST_TGT = 5;
+            const int ROW_CUST_TGT_TWO = 6;
+            const int ROW_CUST_YTD = 7;
+            const int ROW_CUST_YTD_TWO = 8;
+            const int ROW_PROC = 10;
+            const int ROW_PROC_TWO = 11;
+            const int ROW_KEY = 13;
+            const int ROW_KEY_TWO = 14;
+            const int ROW_SAVE = 16;
+            const int ROW_SAVE_TWO = 17;
+            const int ROW_OUT = 19;
+            const int ROW_OUT_TWO = 20;
+            const int ROW_SPM = 22;
+            const int ROW_SPM_TWO = 23;
+            const int ROW_PROJ = 28;
+            const int ROW_PROJ_TWO = 29;
+            const int ROW_PROJ_NO = 30;
+            const int ROW_PROJ_NO_TWO = 31;
+
+            SetNum(ws, ROW_CUST_TGT, 3, m.Cust_Data_Pc_Ot);
+            SetNum(ws, ROW_CUST_TGT_TWO, 3, m.Cust_Data_Pc_As);
+            SetNum(ws, ROW_CUST_TGT, 4, m.Cust_Target_Tgt);
+            SetNum(ws, ROW_CUST_TGT, 5, m.Cust_Weightage_Tgt);
+            SetText(ws, ROW_CUST_TGT, 6, m.Cust_Formula_Tgt);
+
+            SetNum(ws, ROW_CUST_YTD, 3, m.Cust_Data_Pc_Close);
+            SetNum(ws, ROW_CUST_YTD_TWO, 3, m.Cust_Data_Pc_Total);
+            SetNum(ws, ROW_CUST_YTD, 4, m.Cust_Target_Ytd);
+            SetNum(ws, ROW_CUST_YTD, 5, m.Cust_Weightage_Ytd);
+            SetText(ws, ROW_CUST_YTD, 6, m.Cust_Formula_Ytd);
+
+            SetNum(ws, ROW_PROC, 3, m.Proc_Data_Pc_Npd);
+            SetNum(ws, ROW_PROC_TWO, 3, m.Proc_Data_Pc_Ann);
+            SetNum(ws, ROW_PROC, 4, m.Proc_Target);
+            SetNum(ws, ROW_PROC, 5, m.Proc_Weightage);
+            SetText(ws, ROW_PROC, 6, m.Proc_Formula);
+
+            SetNum(ws, ROW_KEY, 3, m.Key_Data_Pc_Cust);
+            SetNum(ws, ROW_KEY_TWO, 3, m.Key_Data_Pc_Ann);
+            SetNum(ws, ROW_KEY, 4, m.Key_Target);
+            SetNum(ws, ROW_KEY, 5, m.Key_Weightage);
+            SetText(ws, ROW_KEY, 6, m.Key_Formula);
+
+            SetNum(ws, ROW_SAVE, 3, m.Save_Data_Pc_Actu);
+            SetNum(ws, ROW_SAVE_TWO, 3, m.Save_Data_Pc_Ann);
+            SetNum(ws, ROW_SAVE, 4, m.Save_Target);
+            SetNum(ws, ROW_SAVE, 5, m.Save_Weightage);
+            SetText(ws, ROW_SAVE, 6, m.Save_Formula);
+
+            SetNum(ws, ROW_OUT, 3, m.Out_Data_Pc_Sigma);
+            SetNum(ws, ROW_OUT_TWO, 3, m.Out_Data_Pc_As);
+            SetNum(ws, ROW_OUT, 4, m.Out_Target);
+            SetNum(ws, ROW_OUT, 5, m.Out_Weightage);
+            SetText(ws, ROW_OUT, 6, m.Out_Formula);
+
+            SetNum(ws, ROW_SPM, 3, m.Spm_Data_Pc_Spm);
+            SetNum(ws, ROW_SPM_TWO, 3, m.Spm_Data_Pc_As);
+            SetNum(ws, ROW_SPM, 4, m.Spm_Target);
+            SetNum(ws, ROW_SPM, 5, m.Spm_Weightage);
+            SetText(ws, ROW_SPM, 6, m.Spm_Formula);
+
+            SetNum(ws, ROW_PROJ, 3, m.Proj_Data_Pc_Close);
+            SetNum(ws, ROW_PROJ_TWO, 3, m.Proj_Data_Pc_Dmaic);
+            SetNum(ws, ROW_PROJ, 4, m.Proj_Num_Target);
+            SetNum(ws, ROW_PROJ, 5, m.Proj_Num_Weightage);
+            SetText(ws, ROW_PROJ, 6, m.Proj_Num_Formula);
+
+            SetNum(ws, ROW_PROJ_NO, 3, m.Proj_Data_Pc_Close);
+            SetNum(ws, ROW_PROJ_NO_TWO, 3, m.Proj_Data_Pc_Dmaic);
+            SetNum(ws, ROW_PROJ_NO, 4, m.Proj_No_Target);
+            SetNum(ws, ROW_PROJ_NO, 5, m.Proj_No_Weightage);
+            SetText(ws, ROW_PROJ_NO, 6, m.Proj_No_Formula);
         }
 
 

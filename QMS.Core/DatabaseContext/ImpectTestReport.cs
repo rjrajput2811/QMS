@@ -66,7 +66,7 @@ public class ImpectTestReport : SqlTable
     public string? ApplicableTest_IK06 { get; set; }
     public string? ApplicableTest_IK07 { get; set; }
     public string? ApplicableTest_IK08 { get; set; }
-    public string? Applicable_IK09 { get; set; }
+    public string? ApplicableTest_IK09 { get; set; }
     public string? ApplicableTest_IK10 { get; set; }
     public string? Observation_DamageObserved { get; set; }
     public string? Observation_LivePartsAccessibility { get; set; }

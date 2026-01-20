@@ -522,7 +522,7 @@
                 "July", "August", "September", "October", "November", "December"
             ];
             const yearSuffix = new Date().getFullYear().toString().slice(-2);
-            return months.map(m => `${m} - ${yearSuffix}`); // array of strings
+            return months.map(m => `${m}`); // array of strings
         }
 
         function getMonthString() {
@@ -533,7 +533,7 @@
             const today = new Date();
             const monthName = months[today.getMonth()];
             const yearSuffix = today.getFullYear().toString().slice(-2);
-            return monthName + " - " + yearSuffix;
+            return monthName;
         }
 
 
@@ -1564,6 +1564,10 @@
                 fields += " - Supplier Name" + "<br>";
             }
 
+            if (rowData.Fy == '' || rowData.Fy == null || rowData.Fy == undefined) {
+                fields += " - Fy" + "<br>";
+            }
+
             if (fields != "") {
                 errorMsg = "Please fill following mandatory field(s):" + "<br><br>" + fields;
             }
@@ -1650,7 +1654,7 @@
                             loadData?.();
                         }
 
-                        showSuccessAlert(data.message || "Saved.");
+                        // showSuccessAlert(data.message || "Saved.");
 
                     } else {
                         let errorMessg = "";

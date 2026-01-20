@@ -2,22 +2,168 @@
 
 @model ElectricalPerformanceViewModel
 
+ 
 @{
-    ViewData["Title"] = "Electrical  Performance Details";
+    ViewData["Title"] = "Electrical Performance";
+
+    int samples = 5;
+    int rowsPerCondition = 9;
+
+    string before = "Before Soaking";
+    string after = "After 2 hrs Soaking";
+
+    var dbRows = Model.Details ?? new List<ElectricalPerDetailsViewModal>();
+    var rows = new List<ElectricalPerDetailsViewModal>();
+
+    // Always create fixed rows (90 rows)
+    for (int s = 1; s <= samples; s++)
+    {
+        foreach (var c in new[] { before, after })
+        {
+            for (int r = 1; r <= rowsPerCondition; r++)
+            {
+                var existing = dbRows.FirstOrDefault(x =>
+                    x.SampleNo == s &&
+                    x.ConditionType == c &&
+                    x.RowNo == r
+                );
+
+                rows.Add(existing ?? new ElectricalPerDetailsViewModal
+                {
+                    ElId = Model.Id,
+                    SampleNo = s,
+                    ConditionType = c,
+                    RowNo = r
+                });
+            }
+        }
+    }
 }
+
+
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
 <script src="~/js/jquery.min.js"></script>
 <script src="~/js/jquery.datatables.js"></script>
-<link href="~/css/pnotify.css" rel="stylesheet" />
-<script src="~/js/pnotify.js"></script>
-<script src="~/js/pnotify.confirm.js"></script>
+
 <script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/noty.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
 <script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
+<script type="text/javascript">
+    
+
+    const ROWS_PER_SECTION = 9;     // keep 9 by default
+    const SAMPLE_COUNT = 5;         // keep 5 by default
+    const COND_BEFORE = "Before Soaking";
+    const COND_AFTER  = "After 2 hrs Soaking";
+
+    // Your Edit Id
+    const EL_ID = parseInt("@(Model?.Id ?? 0)", 10) || 0;
+
+
+    function saveElectricalPerformance() {
+
+        // ================= HEADER =================
+        var idVal = $('#Id').val();
+        idVal = idVal ? parseInt(idVal) : 0;
+
+        var model = {
+            Id: idVal,   // VERY IMPORTANT
+            ProductCatRef: $('#ProductCatRef').val(),
+            ProductDescription: $('#ProductDescription').val(),
+            ReportNo: $('#ReportNo').val(),
+            ReportDate: $('#ReportDate').val(),
+
+            LightSourceDetails: $('#LightSourceDetails').val(),
+            DriverDetails: $('#DriverDetails').val(),
+            PCBDetails: $('#PCBDetails').val(),
+            LEDCombinations: $('#LEDCombinations').val(),
+            BatchCode: $('#BatchCode').val(),
+            SensorDetails: $('#SensorDetails').val(),
+            LampDetails: $('#LampDetails').val(),
+            PKD: $('#PKD').val(),
+
+            OverallResult: $('#OverallResult').val(),
+            TestedByName: $('#TestedByName').val(),
+            VerifiedByName: $('#VerifiedByName').val(),
+
+            ElectricalDetails: ""
+        };
+
+        // ================= TABLE LOOP =================
+        var rows = [];
+        var map = {};
+
+        $('input[name^="Details["]').each(function () {
+
+            var name = $(this).attr('name'); // Details[0].Vac
+            var match = name.match(/Details\[(\d+)\]\.(.+)/);
+            if (!match) return;
+
+            var index = match[1];
+            var field = match[2];
+            var value = $(this).val() || '';
+
+            if (!map[index]) map[index] = {};
+            map[index][field] = value;
+        });
+
+        Object.keys(map).sort(function (a, b) {
+            return a - b;
+        }).forEach(function (i) {
+
+            var d = map[i];
+
+            var row =
+                (d.SampleNo || '') + '^' +
+                (d.ConditionType || '') + '^' +
+                (d.RowNo || '') + '^' +
+
+                (d.Vac || '') + '^' +
+                (d.IacA || '') + '^' +
+                (d.Wac || '') + '^' +
+                (d.PF || '') + '^' +
+                (d.ATHD || '') + '^' +
+
+                (d.Vdc || '') + '^' +
+                (d.IdcA || '') + '^' +
+                (d.Wdc || '') + '^' +
+                (d.Eff || '') + '^' +
+                (d.NoLoadV || '') + '^' +
+                (d.StartV || '') + '^' +
+
+                (d.Result || '');
+
+            rows.push(row);
+        });
+
+        model.ElectricalDetails = rows.join('~');
+
+        // ================= AJAX =================
+        $.ajax({
+            url: '/ProductValidation/InsertUpdateElectricalPerformanceDetails',
+            type: 'POST',
+            data: model,
+            success: function (res) {
+                if (model.Id > 0) {
+                    alert('Updated successfully');
+                } else {
+                    alert('Inserted successfully');
+                }
+            },
+            error: function (err) {
+                console.error(err);
+                alert('Error while saving');
+            }
+        });
+    }
+
+</script>
+
 
 
 <style>
@@ -167,7 +313,6 @@
         display: grid;
         grid-template-columns: 2fr 4fr 2fr 4fr; /* Label | Input | Label | Input */
         border-top: 1px solid #000;
-       
     }
 
         .row-grid:first-child {
@@ -213,16 +358,14 @@
 
     /* Responsive: stack to 1 label + 1 input per line */
     @@media (max-width: 992px) {
-        .row-grid
+        .row-grid {
+            grid-template-columns: 2fr 4fr;
+        }
 
-    {
-        grid-template-columns: 2fr 4fr;
-    }
-
-    .row-grid .cell:nth-child(3) {
-        border-left: 0;
-    }
-    /* start new pair cleanly */
+            .row-grid .cell:nth-child(3) {
+                border-left: 0;
+            }
+        /* start new pair cleanly */
     }
 
     table.report {
@@ -259,7 +402,7 @@
         white-space: nowrap;
     }
 
-/*     Column widths  */
+    /*     Column widths  */
 
     .w-sample {
         width: 80px;
@@ -270,7 +413,7 @@
     }
 
     .w-result {
-        width: 130px;
+        width: 150px;
     }
 
     .w-narrow {
@@ -278,1444 +421,306 @@
     }
 
     /* Row labels
-    .label {
-        font-weight: 600;
-        text-align: center;
-        color: #4b5563;
-    }
+        .label {
+            font-weight: 600;
+            text-align: center;
+            color: #4b5563;
+        }
 
-    /* Zebra striping for readability */
+        /* Zebra striping for readability */
     tbody tr:nth-child(even) td {
         background: #fafbff;
     }
 
     /* Optional: make borders slightly darker on print */
     @@media print {
-        .report th, .report td
-
-    {
-        border: 1px solid #000;
-    }
-
+        .report th, .report td {
+            border: 1px solid #000;
+        }
     }
 
 </style>
 
 <div class="content">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="text-right">
-                        <div style="padding-bottom:10px;">
-                            <button id="addEelectPerButton" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="" >
-                                <i class="fas fa-save mr-1"></i>Save
-                            </button>
-                            <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("ElectricalPerformance", "ProductValidation")'" >
-                                <i class="fas fa-times-circle"></i>Back
-                            </button>
-                        </div>
-                    </div>
-
-
-                    <form id="ElectricalPer-form" method="post" asp-action="InsertUpdateElectricalPerformanceDetails" asp-controller="ProductValidation">
-                   @*      @Html.HiddenFor(m => m.Id) *@
-
-                        <div class="sheet">
-                            <!-- Row 1 -->
-                            <div class="row-grid">
-                                <div class="cell">
-                                    <label>Product Cat Ref :</label>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control" })
-                                    </div>
-                                </div>
-
-                                <div class="cell">
-                                    <label>Product Description :</label>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.ProductDescription, new { @class = "form-control" })
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Row 2 -->
-                            <div class="row-grid">
-                                <div class="cell">
-                                    <label>Report No.:</label><em>*</em>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.ReportNo, new { @class = "form-control" })
-                                    </div>
-                                </div>
-
-                                <div class="cell">
-                                    <label>Date :</label>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.ReportDate, "{0:dd/MM/yyyy}", new { @class = "form-control", @readonly = "readonly" })
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Row 3 -->
-                            <div class="row-grid">
-                                <div class="cell">
-                                    <label>Light Source Details :</label><em>*</em>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.LightSourceDetails, new { @class = "form-control" })
-                                    </div>
-                                </div>
-
-                                <div class="cell">
-                                    <label>Driver Details &amp; Qty :</label>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.DriverDetails, new { @class = "form-control" })
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Row 4 -->
-                            <div class="row-grid">
-                                <div class="cell">
-                                    <label>PCB Details &amp; Qty :</label><em>*</em>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.PCBDetails, new { @class = "form-control" })
-                                    </div>
-                                </div>
-
-                                <div class="cell">
-                                    <label>LED Combinations:</label>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.LEDCombinations, new { @class = "form-control" })
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Row 5 -->
-                            <div class="row-grid">
-                                <div class="cell">
-                                    <label>Sensor Details &amp; Qty :</label><em>*</em>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.SensorDetails, new { @class = "form-control" })
-                                    </div>
-                                </div>
-
-                                <div class="cell">
-                                    <label>Batch Code:</label>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.BatchCode, new { @class = "form-control" })
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Row 6 -->
-                            <div class="row-grid">
-                                <div class="cell">
-                                    <label>Lamp Details</label>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.LampDetails, new { @class = "form-control" })
-                                    </div>
-                                </div>
-
-                                <div class="cell">
-                                    <label>PKD-</label><em>*</em>
-                                </div>
-                                <div class="cell">
-                                    <div class="input-wrap">
-                                        @Html.TextBoxFor(m => m.PKD, new { @class = "form-control" })
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                      
-                    </form>
-
-
-                    <div class="row" style="padding-top:10px;">
-            <div class="col-12">
-                <table class="report" aria-label="Electrical Parameters Test Sheet">
-                    <colgroup>
-                        <col class="w-sample">
-                        <col class="w-params">
-                        <!-- input (6) -->
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <!-- output (6) -->
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <col class="w-narrow">
-                        <!-- result -->
-                        <col class="w-result">
-                    </colgroup>
-
-                    <thead>
-                        <tr>
-                            <th rowspan="2">Sample No</th>
-                            <th rowspan="2">Electrical Parameters</th>
-
-                            <!-- INPUT group -->
-                            <th class="group" colspan="6">INPUT Parameter</th>
-
-                            <!-- OUTPUT group -->
-                            <th class="group" colspan="6">OUTPUT Parameter</th>
-
-                            <th class="red" rowspan="2">Result - Pass/ Fail</th>
-                        </tr>
-                        <tr>
-                            <!-- INPUT leaf headers -->
-                            <th>Vac</th>
-                            <th>Iac (A)</th>
-                            <th>Wac</th>
-                            <th>PF</th>
-                            <th>ATHD (%)</th>
-                            <th>Vdc</th>
-
-                            <!-- OUTPUT leaf headers -->
-                            <th>Vdc</th>
-                            <th>Idc (A)</th>
-                            <th>Wdc</th>
-                            <th>Efficiency (%)</th>
-                            <th>No load voltage (Vdc)</th>
-                            <th>Starting voltage (Vac)</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
-                        <tr>
-                            <td rowspan="12" class="label">1</td>
-                            <td rowspan="6" class="label">Before soaking</td>
-
-                            <!-- empty data cells row 1 -->
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        
-                        </tr>
-                        <!-- five more empty rows under "Before soaking" -->
-                        <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-
-                        <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
-                        <tr>
-                            <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                        <tr>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                            <td><input type="text" class="form-control text-center"></td>
-                        </tr>
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2">Sample No</th>
-                                        <th rowspan="2">Electrical Parameters</th>
-
-                                        <!-- INPUT group -->
-                                        <th class="group" colspan="6">INPUT Parameter</th>
-
-                                        <!-- OUTPUT group -->
-                                        <th class="group" colspan="6">OUTPUT Parameter</th>
-
-                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
-                                    </tr>
-                                    <tr>
-                                        <!-- INPUT leaf headers -->
-                                        <th>Vac</th>
-                                        <th>Iac (A)</th>
-                                        <th>Wac</th>
-                                        <th>PF</th>
-                                        <th>ATHD (%)</th>
-                                        <th>Vdc</th>
-
-                                        <!-- OUTPUT leaf headers -->
-                                        <th>Vdc</th>
-                                        <th>Idc (A)</th>
-                                        <th>Wdc</th>
-                                        <th>Efficiency (%)</th>
-                                        <th>No load voltage (Vdc)</th>
-                                        <th>Starting voltage (Vac)</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="12" class="label">2</td>
-                                        <td rowspan="6" class="label">Before soaking</td>
-
-                                        <!-- empty data cells row 1 -->
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <!-- five more empty rows under "Before soaking" -->
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-
-                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2">Sample No</th>
-                                        <th rowspan="2">Electrical Parameters</th>
-
-                                        <!-- INPUT group -->
-                                        <th class="group" colspan="6">INPUT Parameter</th>
-
-                                        <!-- OUTPUT group -->
-                                        <th class="group" colspan="6">OUTPUT Parameter</th>
-
-                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
-                                    </tr>
-                                    <tr>
-                                        <!-- INPUT leaf headers -->
-                                        <th>Vac</th>
-                                        <th>Iac (A)</th>
-                                        <th>Wac</th>
-                                        <th>PF</th>
-                                        <th>ATHD (%)</th>
-                                        <th>Vdc</th>
-
-                                        <!-- OUTPUT leaf headers -->
-                                        <th>Vdc</th>
-                                        <th>Idc (A)</th>
-                                        <th>Wdc</th>
-                                        <th>Efficiency (%)</th>
-                                        <th>No load voltage (Vdc)</th>
-                                        <th>Starting voltage (Vac)</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="12" class="label">3</td>
-                                        <td rowspan="6" class="label">Before soaking</td>
-
-                                        <!-- empty data cells row 1 -->
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <!-- five more empty rows under "Before soaking" -->
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-
-                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2">Sample No</th>
-                                        <th rowspan="2">Electrical Parameters</th>
-
-                                        <!-- INPUT group -->
-                                        <th class="group" colspan="6">INPUT Parameter</th>
-
-                                        <!-- OUTPUT group -->
-                                        <th class="group" colspan="6">OUTPUT Parameter</th>
-
-                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
-                                    </tr>
-                                    <tr>
-                                        <!-- INPUT leaf headers -->
-                                        <th>Vac</th>
-                                        <th>Iac (A)</th>
-                                        <th>Wac</th>
-                                        <th>PF</th>
-                                        <th>ATHD (%)</th>
-                                        <th>Vdc</th>
-
-                                        <!-- OUTPUT leaf headers -->
-                                        <th>Vdc</th>
-                                        <th>Idc (A)</th>
-                                        <th>Wdc</th>
-                                        <th>Efficiency (%)</th>
-                                        <th>No load voltage (Vdc)</th>
-                                        <th>Starting voltage (Vac)</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="12" class="label">4</td>
-                                        <td rowspan="6" class="label">Before soaking</td>
-
-                                        <!-- empty data cells row 1 -->
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <!-- five more empty rows under "Before soaking" -->
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-
-                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                <thead>
-                                    <tr>
-                                        <th rowspan="2">Sample No</th>
-                                        <th rowspan="2">Electrical Parameters</th>
-
-                                        <!-- INPUT group -->
-                                        <th class="group" colspan="6">INPUT Parameter</th>
-
-                                        <!-- OUTPUT group -->
-                                        <th class="group" colspan="6">OUTPUT Parameter</th>
-
-                                        <th class="red" rowspan="2">Result - Pass/ Fail</th>
-                                    </tr>
-                                    <tr>
-                                        <!-- INPUT leaf headers -->
-                                        <th>Vac</th>
-                                        <th>Iac (A)</th>
-                                        <th>Wac</th>
-                                        <th>PF</th>
-                                        <th>ATHD (%)</th>
-                                        <th>Vdc</th>
-
-                                        <!-- OUTPUT leaf headers -->
-                                        <th>Vdc</th>
-                                        <th>Idc (A)</th>
-                                        <th>Wdc</th>
-                                        <th>Efficiency (%)</th>
-                                        <th>No load voltage (Vdc)</th>
-                                        <th>Starting voltage (Vac)</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    <!-- ===== SAMPLE #1 : BEFORE SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="12" class="label">5</td>
-                                        <td rowspan="6" class="label">Before soaking</td>
-
-                                        <!-- empty data cells row 1 -->
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <!-- five more empty rows under "Before soaking" -->
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-
-                                    <!-- ===== SAMPLE #1 : AFTER 2 HRS SOAKING ===== -->
-                                    <tr>
-                                        <td rowspan="6" class="label">After 2 hrs Soaking</td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-                                    <tr>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                        <td><input type="text" class="form-control text-center"></td>
-                                    </tr>
-
-                        <!-- ===== Duplicate the above 12-row block for Sample #2, #3, ... if needed ===== -->
-                    </tbody>
-                </table>
+    <div class="card">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <b style="font-size: large; color: #4682B4;">Electrical Performance</b>
             </div>
-       
+            <div>
+                <button type="button" class="btn btn-outline-success" onclick="saveElectricalPerformance()">
+                    <i class="fas fa-save mr-2"></i> Save
+                </button>
+                <button id="backButton" class="btn btn-outline-primary" type="button"
+                        onclick="location.href='@Url.Action("ElectricalPerformance", "ProductValidation")'">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
             </div>
-       </div>
-  <div class="card-body">
-            <div class="row form-group align-items-center mb-2">
-                <div class="col-3 pe-3 align-items-center">
-                    <label class="me-3"><b>Tested By</b></label><em>*</em>
-                    @Html.TextBoxFor(m => m.TestedByName, new { @class = "form-control" })
-                </div>
-                <div class="col-3 pe-3 align-items-center">
-                    <label class="me-3"><b>Verified By</b></label>
-                    @Html.TextBoxFor(m => m.VerifiedByName, new { @class = "form-control" })
-                </div>
-                </div>
-            </div>
+        </div>
     </div>
-    </div>
-</div>
 
-</div>
+    @* ✅ Use your exact action/controller name here *@
+@using (Html.BeginForm("InsertUpdateElectricalPerformanceDetails", "ProductValidation", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+
+    <div class="card">
+        <div class="card-body">
+
+            <!-- ================= HEADER FIELDS ================= -->
+
+			<div class="row-grid">
+				<div class="cell"><label>Product Cat Ref :</label></div>
+				<div class="cell">@Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control" })</div>
+
+				<div class="cell"><label>Product Description :</label></div>
+				<div class="cell">@Html.TextBoxFor(m => m.ProductDescription, new { @class = "form-control" })</div>
+			</div>
 
 
 
-@section Scripts {
-  
-   
- @*  <script> 
-        function insertUpdatePhyCheck() {
-            Blockloadershow();
-            const requiredFields = [
-                { id: 'Report_No', name: 'Report No' },
-                { id: 'Project_Name', name: 'Customer/Project Name' },
-                { id: 'Quantity', name: 'Quantity' }
-            ];
+            <div class="row-grid">
+                <div class="cell"><label>Report No :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.ReportNo, new { @class = "form-control" })</div>
 
-            let isValid = true;
-            let missingFields = [];
+                <div class="cell"><label>Report Date :</label></div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+                </div>
+            </div>
 
-            requiredFields.forEach(field => {
-                const element = $('#' + field.id);
-                const value = element.val();
 
-                if (!value) {
-                    isValid = false;
-                    missingFields.push(field.name);
-                }
-                else if (field.id === 'Quantity') {
-                    const quantity = Number(value.trim());
 
-                    if (quantity === 0) {
-                        isValid = false;
-                        missingFields.push(field.name + " (cannot be 0)");
-                    }
-                }
-            });
+            <div class="row-grid">
+                <div class="cell"><label>Light Source Details :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.LightSourceDetails, new { @class = "form-control" })</div>
 
-            if (!isValid) {
-                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
-                const alertMessage = `
-                        <p>Please fill out the following required field(s):</p>
-                        <ul>${missingFieldsList}</ul>
-                    `;
-                showDangerAlert(alertMessage);
-                Blockloaderhide();
-                return false;
-            }
+                <div class="cell"><label>Driver Details :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.DriverDetails, new { @class = "form-control" })</div>
+            </div>
 
-            $("#Id").val(@Model.Id);
+            <div class="row-grid">
+                <div class="cell"><label>PCB Details :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.PCBDetails, new { @class = "form-control" })</div>
 
-            const form = $('#physicalCheck-form')[0];
-            const formData = new FormData(form);
+                <div class="cell"><label>LED Combinations :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.LEDCombinations, new { @class = "form-control" })</div>
+            </div>
 
-            $('#observationTable [contenteditable="true"]').each(function() {
-                const dataName = $(this).data('name');
-                const content = $(this).text().trim();
+            <div class="row-grid">
+                <div class="cell"><label>Sensor Details :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.SensorDetails, new { @class = "form-control" })</div>
 
-                if (dataName) {
-                    formData.append(dataName, content);
-                }
-            });
+                <div class="cell"><label>Batch Code :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.BatchCode, new { @class = "form-control" })</div>
+            </div>
 
-            $.ajax({
-                url: $('#physicalCheck-form').attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    Blockloaderhide();
-                    if (!response.success) {
-                        var errorMessg = "";
-                        if (response.errors != undefined) {
-                            for (var error of response.errors) {
-                                errorMessg += error + "\n";
-                            }
-                            if (errorMessg != "") {
-                                showDangerAlert(errorMessg);
-                            }
-                        }
-                        else {
-                            showDangerAlert(response.message);
-                        }
-                        return false;
-                    }
-                    else {
-                        if ($("#Id").val() > 0) {
-                            showSuccessAlert("Updated Successfully.");
-                        }
-                        else {
-                            showSuccessAlert("Saved Successfully.");
-                        }
-                        setTimeout(function () {
-                            window.open('@Url.Action("PhysicalCheckAndVisualInspection", "ProductValidation")', '_self');
-                        }, 2500);
-                    }
-                },
-                error: function (xhr, status, error) {
-                    Blockloaderhide();
-                    showDangerAlert('Error saving data: ' + error);
-                }
-            });
-        }
-    </script> *@
+            <div class="row-grid">
+                <div class="cell"><label>Lamp Details :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.LampDetails, new { @class = "form-control" })</div>
+
+                <div class="cell"><label>PKD :</label></div>
+                <div class="cell">@Html.TextBoxFor(m => m.PKD, new { @class = "form-control" })</div>
+            </div>
+
+            <!-- ================= REPORT TABLE ================= -->
+            <div class="row mt-3">
+                <div class="col-12">
+
+                        <table class="table table-bordered">
+@*                             <thead>
+                                <tr>
+                                    <th rowspan="2">Sample</th>
+                                    <th rowspan="2">Condition</th>
+                                    <th colspan="5">INPUT</th>
+                                    <th colspan="6">OUTPUT</th>
+                                    <th rowspan="2">Result</th>
+                                </tr>
+                                <tr>
+                                    <th>Vac</th>
+                                    <th>Iac</th>
+                                    <th>Wac</th>
+                                    <th>PF</th>
+                                    <th>ATHD</th>
+                                    <th>Vdc</th>
+                                    <th>Idc</th>
+                                    <th>Wdc</th>
+                                    <th>Eff</th>
+                                    <th>NoLoad</th>
+                                    <th>StartV</th>
+                                </tr>
+                            </thead> *@
+
+                            <tbody>
+                                @{
+                                    int i = 0;
+
+                                    for (int s = 1; s <= samples; s++)
+                                    {
+                                        int sampleRowSpan = rowsPerCondition * 2;
+
+                                        <!-- REPEATED HEADER FOR EACH SAMPLE -->
+                                        <tr class="table-secondary">
+                                            <th rowspan="2">Sample</th>
+                                            <th rowspan="2">Condition</th>
+                                            <th colspan="5">INPUT</th>
+                                            <th colspan="6">OUTPUT</th>
+                                            <th rowspan="2">Result</th>
+                                        </tr>
+                                        <tr class="table-secondary">
+                                            <th>Vac</th>
+                                            <th>Iac</th>
+                                            <th>Wac</th>
+                                            <th>PF</th>
+                                            <th>ATHD</th>
+                                            <th>Vdc</th>
+                                            <th>Idc</th>
+                                            <th>Wdc</th>
+                                            <th>Eff</th>
+                                            <th>NoLoad</th>
+                                            <th>StartV</th>
+                                        </tr>
+
+                                        <!-- FIRST ROW (Before) -->
+                                        <tr>
+                                            <td rowspan="@sampleRowSpan">@s</td>
+                                            <td rowspan="@rowsPerCondition">@before</td>
+
+                                            @Html.Hidden($"Details[{i}].ElId", rows[i].ElId)
+                                            @Html.Hidden($"Details[{i}].SampleNo", rows[i].SampleNo)
+                                            @Html.Hidden($"Details[{i}].ConditionType", rows[i].ConditionType)
+                                            @Html.Hidden($"Details[{i}].RowNo", rows[i].RowNo)
+
+                                            <td><input name="Details[@i].Vac" class="form-control" value="@rows[i].Vac" /></td>
+                                            <td><input name="Details[@i].IacA" class="form-control" value="@rows[i].IacA" /></td>
+                                            <td><input name="Details[@i].Wac" class="form-control" value="@rows[i].Wac" /></td>
+                                            <td><input name="Details[@i].PF" class="form-control" value="@rows[i].PF" /></td>
+                                            <td><input name="Details[@i].ATHD" class="form-control" value="@rows[i].ATHD" /></td>
+
+                                            <td><input name="Details[@i].Vdc" class="form-control" value="@rows[i].Vdc" /></td>
+                                            <td><input name="Details[@i].IdcA" class="form-control" value="@rows[i].IdcA" /></td>
+                                            <td><input name="Details[@i].Wdc" class="form-control" value="@rows[i].Wdc" /></td>
+                                            <td><input name="Details[@i].Eff" class="form-control" value="@rows[i].Eff" /></td>
+                                            <td><input name="Details[@i].NoLoadV" class="form-control" value="@rows[i].NoLoadV" /></td>
+                                            <td><input name="Details[@i].StartV" class="form-control" value="@rows[i].StartV" /></td>
+
+                                            <td><input name="Details[@i].Result" class="form-control" value="@rows[i].Result" /></td>
+                                        </tr>
+
+                                        i++;
+
+                                        <!-- Remaining rows (Before) -->
+                                        for (int r = 2; r <= rowsPerCondition; r++)
+                                        {
+                                            <tr>
+                                                @Html.Hidden($"Details[{i}].ElId", rows[i].ElId)
+                                                @Html.Hidden($"Details[{i}].SampleNo", rows[i].SampleNo)
+                                                @Html.Hidden($"Details[{i}].ConditionType", rows[i].ConditionType)
+                                                @Html.Hidden($"Details[{i}].RowNo", rows[i].RowNo)
+
+                                                <td><input name="Details[@i].Vac" class="form-control" value="@rows[i].Vac" /></td>
+                                                <td><input name="Details[@i].IacA" class="form-control" value="@rows[i].IacA" /></td>
+                                                <td><input name="Details[@i].Wac" class="form-control" value="@rows[i].Wac" /></td>
+                                                <td><input name="Details[@i].PF" class="form-control" value="@rows[i].PF" /></td>
+                                                <td><input name="Details[@i].ATHD" class="form-control" value="@rows[i].ATHD" /></td>
+
+                                                <td><input name="Details[@i].Vdc" class="form-control" value="@rows[i].Vdc" /></td>
+                                                <td><input name="Details[@i].IdcA" class="form-control" value="@rows[i].IdcA" /></td>
+                                                <td><input name="Details[@i].Wdc" class="form-control" value="@rows[i].Wdc" /></td>
+                                                <td><input name="Details[@i].Eff" class="form-control" value="@rows[i].Eff" /></td>
+                                                <td><input name="Details[@i].NoLoadV" class="form-control" value="@rows[i].NoLoadV" /></td>
+                                                <td><input name="Details[@i].StartV" class="form-control" value="@rows[i].StartV" /></td>
+
+                                                <td><input name="Details[@i].Result" class="form-control" value="@rows[i].Result" /></td>
+                                            </tr>
+                                            i++;
+                                        }
+
+                                        <!-- FIRST ROW (After) -->
+                                        <tr>
+                                            <td rowspan="@rowsPerCondition">@after</td>
+
+                                            @Html.Hidden($"Details[{i}].ElId", rows[i].ElId)
+                                            @Html.Hidden($"Details[{i}].SampleNo", rows[i].SampleNo)
+                                            @Html.Hidden($"Details[{i}].ConditionType", rows[i].ConditionType)
+                                            @Html.Hidden($"Details[{i}].RowNo", rows[i].RowNo)
+
+                                            <td><input name="Details[@i].Vac" class="form-control" value="@rows[i].Vac" /></td>
+                                            <td><input name="Details[@i].IacA" class="form-control" value="@rows[i].IacA" /></td>
+                                            <td><input name="Details[@i].Wac" class="form-control" value="@rows[i].Wac" /></td>
+                                            <td><input name="Details[@i].PF" class="form-control" value="@rows[i].PF" /></td>
+                                            <td><input name="Details[@i].ATHD" class="form-control" value="@rows[i].ATHD" /></td>
+
+                                            <td><input name="Details[@i].Vdc" class="form-control" value="@rows[i].Vdc" /></td>
+                                            <td><input name="Details[@i].IdcA" class="form-control" value="@rows[i].IdcA" /></td>
+                                            <td><input name="Details[@i].Wdc" class="form-control" value="@rows[i].Wdc" /></td>
+                                            <td><input name="Details[@i].Eff" class="form-control" value="@rows[i].Eff" /></td>
+                                            <td><input name="Details[@i].NoLoadV" class="form-control" value="@rows[i].NoLoadV" /></td>
+                                            <td><input name="Details[@i].StartV" class="form-control" value="@rows[i].StartV" /></td>
+
+                                            <td><input name="Details[@i].Result" class="form-control" value="@rows[i].Result" /></td>
+                                        </tr>
+
+                                        i++;
+
+                                        <!-- Remaining rows (After) -->
+                                        for (int r = 2; r <= rowsPerCondition; r++)
+                                        {
+                                            <tr>
+                                                @Html.Hidden($"Details[{i}].ElId", rows[i].ElId)
+                                                @Html.Hidden($"Details[{i}].SampleNo", rows[i].SampleNo)
+                                                @Html.Hidden($"Details[{i}].ConditionType", rows[i].ConditionType)
+                                                @Html.Hidden($"Details[{i}].RowNo", rows[i].RowNo)
+
+                                                <td><input name="Details[@i].Vac" class="form-control" value="@rows[i].Vac" /></td>
+                                                <td><input name="Details[@i].IacA" class="form-control" value="@rows[i].IacA" /></td>
+                                                <td><input name="Details[@i].Wac" class="form-control" value="@rows[i].Wac" /></td>
+                                                <td><input name="Details[@i].PF" class="form-control" value="@rows[i].PF" /></td>
+                                                <td><input name="Details[@i].ATHD" class="form-control" value="@rows[i].ATHD" /></td>
+
+                                                <td><input name="Details[@i].Vdc" class="form-control" value="@rows[i].Vdc" /></td>
+                                                <td><input name="Details[@i].IdcA" class="form-control" value="@rows[i].IdcA" /></td>
+                                                <td><input name="Details[@i].Wdc" class="form-control" value="@rows[i].Wdc" /></td>
+                                                <td><input name="Details[@i].Eff" class="form-control" value="@rows[i].Eff" /></td>
+                                                <td><input name="Details[@i].NoLoadV" class="form-control" value="@rows[i].NoLoadV" /></td>
+                                                <td><input name="Details[@i].StartV" class="form-control" value="@rows[i].StartV" /></td>
+
+                                                <td><input name="Details[@i].Result" class="form-control" value="@rows[i].Result" /></td>
+                                            </tr>
+                                            i++;
+                                        }
+                                    }
+                                }
+                            </tbody>
+                        </table>
+
+
+                </div>
+                </div>
+
+                <!-- ================= FOOTER ================= -->
+                <div class="row-grid mt-3">
+                    <div class="cell"><label>Overall Result :</label></div>
+                    <div class="cell">@Html.TextBoxFor(m => m.OverallResult, new { @class = "form-control" })</div>
+
+                    <div class="cell"><label>Tested By :</label></div>
+                    <div class="cell">@Html.TextBoxFor(m => m.TestedByName, new { @class = "form-control" })</div>
+                </div>
+
+                <div class="row-grid">
+                    <div class="cell"><label>Verified By :</label></div>
+                    <div class="cell">@Html.TextBoxFor(m => m.VerifiedByName, new { @class = "form-control" })</div>
+                </div>
+
+
+
+            </div>
+        </div>
+
 }
+</div>
+
+
 
 @section HideSidebar { }

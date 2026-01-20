@@ -1,6 +1,26 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model SurgeTestReportViewModel
+
+@{
     ViewData["Title"] = "SurgeTestReport";
 }
+
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
 
@@ -191,8 +211,8 @@
         }
 
     /* ===========================
-                     TABLE / BORDER BASE
-                  ============================*/
+                                                                                                                                                                                                                                     TABLE / BORDER BASE
+                                                                                                                                                                                                                                  ============================*/
     /* Use this class on your surge tables (with/without SPD) */
     .surge-table {
         width: 100%;
@@ -233,8 +253,8 @@
     }
 
     /* ===========================
-                     EDITABLE CELLS
-                  ============================*/
+                                                                                                                                                                                                                                     EDITABLE CELLS
+                                                                                                                                                                                                                                  ============================*/
     .editable-cell,
     td[contenteditable="true"] {
         background-color: #fff;
@@ -256,8 +276,8 @@
         }
 
     /* ===========================
-                     RESULT ROW (BOTTOM)
-                  ============================*/
+                                                                                                                                                                                                                                     RESULT ROW (BOTTOM)
+                                                                                                                                                                                                                                  ============================*/
     /* Apply this to the <tr> of your final result row */
     .result-row {
         font-weight: 700;
@@ -307,8 +327,8 @@
         }
 
     /* ===========================
-                     UTILITIES (optional)
-                  ============================*/
+                                                                                                                                                                                                                                     UTILITIES (optional)
+                                                                                                                                                                                                                                  ============================*/
     .text-center {
         text-align: center;
     }
@@ -413,18 +433,14 @@
                     </div>
 
                     <div>
-                        <button id="addSurgeButton"
-                                type="button"
-                                class="btn btn-outline-success legitRipple mr-2"
-                                onclick="insertSurgeTest()"
-                                style="width:120px; font-size:15px;">
+                        <button id="addSurgeButton" type="button" class="btn btn-outline-success legitRipple mr-2"
+                                onclick="insertSurgeTest()" style="width:120px; font-size:15px;">
                             <i class="fas fa-save mr-1"></i>Save
                         </button>
 
-                        <a href='@Url.Action("SuregTestReport", "ProductValidation")'
-                           class="btn btn-outline-primary"
-                           style="width:120px; font-size:15px;">
-                            <i class="fas fa-arrow-left"></i> BACK
+                        <a href='@Url.Action("SurgeTestReport", "ProductValidation")'
+                           class="btn btn-outline-primary" style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> Back
                         </a>
                     </div>
                 </div>
@@ -434,541 +450,599 @@
             <!-- Body -->
             <div class="card shadow-sm">
                 <div class="card-body">
-                    <div class="table-responsive">
-
-                        <!-- Product Information -->
-                        <table class="table table-bordered" style="width:100%;">
-                            <tbody>
-                                <tr>
-                                    <!-- Row 1 -->
-                                    <td>
-                                        <b>Report Date :</b> <em>*</em>
-                                        <input type="text"
-                                               name="ReportDate"
-                                               class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="dd-mm-yyyy"
-                                               pattern="\d{2}-\d{2}-\d{4}"
-                                               title="Enter date as dd-mm-yyyy"
-                                               required />
-                                    </td>
+                    <form id="surgeTest-form" method="post" asp-action="InsertUpdateSurgeTestReport" asp-controller="ProductValidation">
+                        <div class="table-responsive">
+                            @Html.HiddenFor(m => m.Id)
+                            <!-- Product Information -->
+                            <table class="table table-bordered" style="width:100%;">
+                                <tbody>
+                                    <tr>
+                                        <!-- Row 1 -->
+                                        <td>
+                                            <b>Report Date :</b> <em>*</em>
+                                            @Html.TextBoxFor(m => m.ReportDate,"{0:yyyy-MM-dd}", new {
+                                            @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",
+                                                                                        placeholder = "dd-mm-yyyy",title = "Enter date as dd-mm-yyyy",
+                                                                                        required = "required",type = "date"})
+                                        </td>
 
 
-                                    <td>
-                                        <b>Report No. :</b> <em>*</em>
-                                        <input type="text" name="ReportNo" inputmode="numeric" pattern="\d*"
-                                               class="form-control d-inline-block" style="width:60%; font-size:13px;"
-                                               placeholder="Enter Report No" required />
-                                    </td>
+                                        <td>
+                                            <b>Report No. :</b> <em>*</em>
+                                            @Html.TextBoxFor(m => m.ReportNo, new {
+                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",
+                                                                                        placeholder = "Enter Report No", required = "required",type = "text"})
+                                        </td>
 
-                                    <td>
-                                        <b>Batch Code :</b> <em>*</em>
-                                        <input type="text" name="BatchCode" class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="Enter Batch Code" required />
-                                    </td>
-                                </tr>
+                                        <td>
+                                            <b>Batch Code :</b> <em>*</em>
+                                            @Html.TextBoxFor(m=>m.BatchCode , new{
+                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Batch Code",
+                                                                                        required = "required" , type = "text"})
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <!-- Row 2 -->
-                                    <td>
-                                        <b>Product Cat Ref :</b> <em>*</em>
-                                        <input type="text" name="ProductCatRef" class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="Enter Product Ref" required />
-                                    </td>
+                                    <tr>
+                                        <!-- Row 2 -->
+                                        <td>
+                                            <b>Product Cat Ref :</b> <em>*</em>
+                                            @Html.TextBoxFor(m=>m.ProductCatRef , new{
+                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Product Ref",
+                                                                                        required = "required" , type = "text"})
+                                        </td>
 
-                                    <td>
-                                        <b>Product Description :</b> <em>*</em>
-                                        <input type="text" name="ProductDescription" class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="Enter Description" required />
-                                    </td>
+                                        <td>
+                                            <b>Product Description :</b> <em>*</em>
+                                            @Html.TextBoxFor(m=>m.ProductDescription , new{
+                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Description",
+                                                                                        required = "required" , type = "text"})
+                                        </td>
 
-                                    <td>
-                                        <b>Driver Code :</b> <em>*</em>
-                                        <input type="text" name="DriverCode" class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="Enter Driver Code" required />
-                                    </td>
-                                </tr>
+                                        <td>
+                                            <b>Driver Code :</b> <em>*</em>
+                                            @Html.TextBoxFor(m=>m.DriverCode , new{
+                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Driver Code",
+                                                                                        required = "required" , type = "text" })
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <!-- Row 3 -->
-                                    <td>
-                                        <b>SPD Code :</b> <em>*</em>
-                                        <input type="text" name="SPDCode" class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="Enter SPD Code" required />
-                                    </td>
+                                    <tr>
+                                        <!-- Row 3 -->
+                                        <td>
+                                            <b>SPD Code :</b> <em>*</em>
+                                            @Html.TextBoxFor(m=>m.SPDCode , new
+                                                                                        {
+                                                @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter SPD Code",
+                                                                                        required = "required" , type = "text"
+                                                                                        })
+                                        </td>
 
-                                    <td>
-                                        <b>LED Configuration :</b> <em>*</em>
-                                        <input type="text" name="LEDConfiguration" class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="Enter LED Configuration" required />
-                                    </td>
+                                        <td>
+                                            <b>LED Configuration :</b> <em>*</em>
+                                            @Html.TextBoxFor(m=>m.LEDConfiguration , new
+                                                                                        {
+                                                @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter LED Configuration",
+                                                                                        required = "required" , type = "text"
+                                                                                        })
+                                        </td>
 
-                                    <td>
-                                        <b>PKD Code :</b> <em>*</em>
-                                        <input type="text" name="PKDCode" class="form-control d-inline-block"
-                                               style="width:60%; font-size:13px;"
-                                               placeholder="Enter PKD Code" required />
-                                    </td>
-                                </tr>
-
-
-                                <tr class="no-divider">
-                                    <td colspan="3">
-                                        <b>Reference Standard for Testing :</b>
-                                        <input type="text" name="ReferenceStandard"
-                                               class="form-control d-inline-block"
-                                               style="width:50%; font-size:13px;"
-                                               placeholder="Enter Standard (e.g. IEC 61000)" required />
-                                    </td>
-                                </tr>
-
-                                <tr class="no-divider-next">
-                                    <td colspan="3">
-                                        <b>Acceptance Norm :</b>
-                                        <input type="text" name="AcceptanceNorm"
-                                               class="form-control d-inline-block"
-                                               style="width:50%; font-size:13px;"
-                                               placeholder="Enter Norm (e.g. As per TDS)" required />
-                                    </td>
-                                </tr>
-
-                            </tbody>
-                        </table>
+                                        <td>
+                                            <b>PKD Code :</b> <em>*</em>
+                                            @Html.TextBoxFor(m=>m.PKDCode , new
+                                                                                        {
+                                                @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter PKD Code",
+                                                                                        required = "required" , type = "text"
+                                                                                        })
+                                        </td>
+                                    </tr>
 
 
+                                    <tr class="no-divider">
+                                        <td colspan="3">
+                                            <b>Reference Standard for Testing :</b>
+                                            @Html.TextBoxFor(m=>m.ReferenceStandard , new
+                                                                                        {
+                                                @class = "form-control d-inline-block",style = "width:50%; font-size:13px;",placeholder = "Enter Standard (e.g. IEC 61000)",
+                                                                                        required = "required" , type = "text"
+                                                                                        })
+                                        </td>
+                                    </tr>
 
-                        <hr style="border:1px solid #000; margin:30px 0;" />
+                                    <tr class="no-divider-next">
+                                        <td colspan="3">
+                                            <b>Acceptance Norm :</b>
+                                            @Html.TextBoxFor(m=>m.AcceptanceNorm , new
+                                                                                        {
+                                                @class = "form-control d-inline-block",style = "width:50%; font-size:13px;",placeholder = "Enter Norm (e.g. As per TDS)",
+                                                                                        required = "required" , type = "text"
+                                                                                        })
+                                        </td>
+                                    </tr>
 
-                        <!-- Surge Driver without SPD -->
-                        <h5 class="text-center mb-3 mt-4" style="font-weight:bold; text-decoration:underline;">Surge Driver without SPD</h5>
-                        <table class="table-surge">
-                            <colgroup>
-                                <col span="15" />
-                            </colgroup>
+                                </tbody>
+                            </table>
 
-                            <thead>
-                                <!-- 🔹 First Header Row -->
-                                <tr>
-                                    <th colspan="7" style="text-align:left; padding-left:8px;">
-                                        <span class="hdr-title">Time between each surge –</span>
-                                        <span class="hdr-value" style="font-weight:600; margin-left:6px;">60 Sec</span>
-                                    </th>
-                                    <th colspan="7" style="text-align:left; padding-left:8px;">
-                                        <span class="hdr-title">No of Cycles –</span>
-                                        <span class="hdr-value" style="font-weight:600; margin-left:6px;">5</span>
-                                    </th>
-                                    <th style="text-align:center;">Observation</th>
-                                </tr>
+                            <hr style="border:1px solid #000; margin:30px 0;" />
 
-                                <!-- 🔹 Second Header Row -->
-                                <tr>
-                                    <th rowspan="2">Voltage (kV)</th>
-                                    <th>Mode</th>
-                                    <th colspan="4">Line - Neutral (L-N) DM</th>
-                                    <th colspan="4">Line - Earth (L-E) CM</th>
-                                    <th colspan="4">Neutral - Earth (N-E) CM</th>
-                                    <th rowspan="2"></th>
-                                </tr>
+                            <!-- Surge Driver without SPD -->
+                            <h5 class="text-center mb-3 mt-4" style="font-weight:bold; text-decoration:underline;">Surge Driver without SPD</h5>
+                            <table class="table-surge">
+                                <colgroup>
+                                    <col span="15" />
+                                </colgroup>
 
-                                <!-- 🔹 Third Header Row -->
-                                <tr>
-                                    <th>Phase Angle</th>
-                                    <th>±90°</th>
-                                    <th>±180°</th>
-                                    <th>±270°</th>
-                                    <th>±0°</th>
+                                <thead>
+                                    <!-- 🔹 First Header Row -->
+                                    <tr>
+                                        <th colspan="7" style="text-align:left; padding-left:8px;">
+                                            <span class="hdr-title">Time between each surge –</span>
+                                            <span class="hdr-value" style="font-weight:600; margin-left:6px;">60 Sec</span>
+                                        </th>
+                                        <th colspan="7" style="text-align:left; padding-left:8px;">
+                                            <span class="hdr-title">No of Cycles –</span>
+                                            <span class="hdr-value" style="font-weight:600; margin-left:6px;">5</span>
+                                        </th>
+                                        <th style="text-align:center;">Observation</th>
+                                    </tr>
 
-                                    <th>±90°</th>
-                                    <th>±180°</th>
-                                    <th>±270°</th>
-                                    <th>±0°</th>
+                                    <!-- 🔹 Second Header Row -->
+                                    <tr>
+                                        <th rowspan="2">Voltage (kV)</th>
+                                        <th>Mode</th>
+                                        <th colspan="4">Line - Neutral (L-N) DM</th>
+                                        <th colspan="4">Line - Earth (L-E) CM</th>
+                                        <th colspan="4">Neutral - Earth (N-E) CM</th>
+                                        <th rowspan="2"></th>
+                                    </tr>
 
-                                    <th>±90°</th>
-                                    <th>±180°</th>
-                                    <th>±270°</th>
-                                    <th>±0°</th>
-                                </tr>
-                            </thead>
+                                    <!-- 🔹 Third Header Row -->
+                                    <tr>
+                                        <th>Phase Angle</th>
+                                        <th>±90°</th>
+                                        <th>±180°</th>
+                                        <th>±270°</th>
+                                        <th>±0°</th>
 
-                            <tbody>
-                                <!-- Editable Rows -->
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
+                                        <th>±90°</th>
+                                        <th>±180°</th>
+                                        <th>±270°</th>
+                                        <th>±0°</th>
 
-                                <!-- Final Result Row -->
-                                <tr style="font-weight:bold; font-size:15px;">
-                                    <td colspan="5">
-                                        <label for="spd_result" style="color:red; margin-right:8px;">Result:</label>
-                                        <select id="spd_result" class="clean-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                        </select>
-                                    </td>
-                                    <td colspan="5">
-                                        <label for="spd_status" style="color:red; margin-right:8px;">SPD:</label>
-                                        <select id="spd_status" class="clean-select">
-                                            <option value="">Select</option>
-                                            <option value="OK">OK</option>
-                                            <option value="Not OK">Not OK</option>
-                                        </select>
-                                    </td>
-                                    <td colspan="5">
-                                        <label for="spd_driver_led" style="color:red; margin-right:8px;">Driver / LED PCB:</label>
-                                        <select id="spd_driver_led" class="clean-select">
-                                            <option value="">Select</option>
-                                            <option value="OK">OK</option>
-                                            <option value="Not OK">Not OK</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                        <th>±90°</th>
+                                        <th>±180°</th>
+                                        <th>±270°</th>
+                                        <th>±0°</th>
+                                    </tr>
+                                </thead>
 
-                        <hr style="border:1px solid #000; margin:30px 0;" />
+                                <tbody>
+                                    @for (int i = 0; i < 6; i++)
+                                    {
+                                        var detail = Model.DetailRows[i];
 
-                        <!-- Surge with SPD -->
-                        <h5 class="text-center mb-3" style="font-weight:bold; text-decoration:underline;">Surge with SPD</h5>
+                                        <tr>
+                                            <td contenteditable="true" data-name="Voltage_KV" data-index="@i">@detail.Voltage_KV</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].Voltage_KV)
 
-                        <table class="table-surge">
-                            <colgroup>
-                                <col span="15" />
-                            </colgroup>
+                                            <td contenteditable="true" data-name="Mode" data-index="@i">@detail.Mode</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].Mode)
 
-                            <thead>
-                                <!-- 🔹 First Header Row -->
-                                <tr>
-                                    <th colspan="7" style="text-align:left; padding-left:8px;">
-                                        <span class="hdr-title">Time between each surge –</span>
-                                        <span class="hdr-value" style="font-weight:600; margin-left:6px;">60 Sec</span>
-                                    </th>
-                                    <th colspan="7" style="text-align:left; padding-left:8px;">
-                                        <span class="hdr-title">No of Cycles –</span>
-                                        <span class="hdr-value" style="font-weight:600; margin-left:6px;">5</span>
-                                    </th>
-                                    <th style="text-align:center;">Observation</th>
-                                </tr>
+                                            <td contenteditable="true" data-name="L_N_DM_90" data-index="@i">@detail.L_N_DM_90</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_N_DM_90)
 
-                                <!-- 🔹 Second Header Row -->
-                                <tr>
-                                    <th rowspan="2">Voltage (kV)</th>
-                                    <th>Mode</th>
-                                    <th colspan="4">Line - Neutral (L-N) DM</th>
-                                    <th colspan="4">Line - Earth (L-E) CM</th>
-                                    <th colspan="4">Neutral - Earth (N-E) CM</th>
-                                    <th rowspan="2"></th>
-                                </tr>
+                                            <td contenteditable="true" data-name="L_N_DM_180" data-index="@i">@detail.L_N_DM_180</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_N_DM_180)
 
-                                <!-- 🔹 Third Header Row -->
-                                <tr>
-                                    <th>Phase Angle</th>
-                                    <th>±90°</th>
-                                    <th>±180°</th>
-                                    <th>±270°</th>
-                                    <th>±0°</th>
+                                            <td contenteditable="true" data-name="L_N_DM_270" data-index="@i">@detail.L_N_DM_270</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_N_DM_270)
 
-                                    <th>±90°</th>
-                                    <th>±180°</th>
-                                    <th>±270°</th>
-                                    <th>±0°</th>
+                                            <td contenteditable="true" data-name="L_N_DM_0" data-index="@i">@detail.L_N_DM_0</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_N_DM_0)
 
-                                    <th>±90°</th>
-                                    <th>±180°</th>
-                                    <th>±270°</th>
-                                    <th>±0°</th>
-                                </tr>
-                            </thead>
+                                            <td contenteditable="true" data-name="L_E_CM_90" data-index="@i">@detail.L_E_CM_90</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_E_CM_90)
 
-                            <tbody>
-                                <!-- Editable Rows -->
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
+                                            <td contenteditable="true" data-name="L_E_CM_180" data-index="@i">@detail.L_E_CM_180</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_E_CM_180)
 
-                                <!-- Final Result Row -->
-                                <tr style="font-weight:bold; font-size:15px;">
-                                    <td colspan="5">
-                                        <label for="spd_result" style="color:red; margin-right:8px;">Result:</label>
-                                        <select id="spd_result" class="clean-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                        </select>
-                                    </td>
-                                    <td colspan="5">
-                                        <label for="spd_status" style="color:red; margin-right:8px;">SPD:</label>
-                                        <select id="spd_status" class="clean-select">
-                                            <option value="">Select</option>
-                                            <option value="OK">OK</option>
-                                            <option value="Not OK">Not OK</option>
-                                        </select>
-                                    </td>
-                                    <td colspan="5">
-                                        <label for="spd_driver_led" style="color:red; margin-right:8px;">Driver / LED PCB:</label>
-                                        <select id="spd_driver_led" class="clean-select">
-                                            <option value="">Select</option>
-                                            <option value="OK">OK</option>
-                                            <option value="Not OK">Not OK</option>
-                                        </select>
+                                            <td contenteditable="true" data-name="L_E_CM_270" data-index="@i">@detail.L_E_CM_270</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_E_CM_270)
+
+                                            <td contenteditable="true" data-name="L_E_CM_0" data-index="@i">@detail.L_E_CM_0</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].L_E_CM_0)
+
+                                            <td contenteditable="true" data-name="N_E_CM_90" data-index="@i">@detail.N_E_CM_90</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].N_E_CM_90)
+
+                                            <td contenteditable="true" data-name="N_E_CM_180" data-index="@i">@detail.N_E_CM_180</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].N_E_CM_180)
+
+                                            <td contenteditable="true" data-name="N_E_CM_270" data-index="@i">@detail.N_E_CM_270</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].N_E_CM_270)
+
+                                            <td contenteditable="true" data-name="N_E_CM_0" data-index="@i">@detail.N_E_CM_0</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].N_E_CM_0)
+
+                                            <td contenteditable="true" data-name="Observation" data-index="@i">@detail.Observation</td>
+                                            @Html.HiddenFor(m => m.DetailRows[i].Observation)
+
+                                            @Html.HiddenFor(m => m.DetailRows[i].RowNo)
+                                            @Html.HiddenFor(m => m.DetailRows[i].TestType)
+                                            @Html.HiddenFor(m => m.DetailRows[i].IsResult) <!-- FIX -->
+                                        </tr>
+                                    }
+                                    @{
+                                        int b = 6;
+                                    }
+
+                                    <tr style="font-weight:bold; font-size:15px;">
+                                        <td colspan="5">
+                                            <label style="color:red;">Result:</label>
+                                            @Html.DropDownListFor(m => m.DetailRows[b].PassFail,
+                                            new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" }
+                                                                                        }, new { @class = "clean-select" })
+                                        </td>
+
+                                        <td colspan="5">
+                                            <label style="color:red;">SPD:</label>
+                                            @Html.DropDownListFor(m => m.DetailRows[b].SPD_OK,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" }
+                                                                                        }, new { @class = "clean-select" })
+                                        </td>
+
+                                        <td colspan="5">
+                                            <label style="color:red;">Driver / LED PCB:</label>
+                                            @Html.DropDownListFor(m => m.DetailRows[b].Driver_LED_PCB_OK,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" }
+                                                                                        }, new { @class = "clean-select" })
+                                        </td>
+
+                                        @Html.HiddenFor(m => m.DetailRows[b].RowNo)
+                                        @Html.HiddenFor(m => m.DetailRows[b].TestType)
+                                        @Html.HiddenFor(m => m.DetailRows[b].IsResult) <!-- FIX -->
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <hr style="border:1px solid #000; margin:30px 0;" />
+
+                            <!-- Surge with SPD -->
+                            <h5 class="text-center mb-3" style="font-weight:bold; text-decoration:underline;">Surge with SPD</h5>
+
+                            <table class="table-surge">
+                                <colgroup>
+                                    <col span="15" />
+                                </colgroup>
+
+                                <thead>
+                                    <!-- 🔹 First Header Row -->
+                                    <tr>
+                                        <th colspan="7" style="text-align:left; padding-left:8px;">
+                                            <span class="hdr-title">Time between each surge –</span>
+                                            <span class="hdr-value" style="font-weight:600; margin-left:6px;">60 Sec</span>
+                                        </th>
+                                        <th colspan="7" style="text-align:left; padding-left:8px;">
+                                            <span class="hdr-title">No of Cycles –</span>
+                                            <span class="hdr-value" style="font-weight:600; margin-left:6px;">5</span>
+                                        </th>
+                                        <th style="text-align:center;">Observation</th>
+                                    </tr>
+
+                                    <!-- 🔹 Second Header Row -->
+                                    <tr>
+                                        <th rowspan="2">Voltage (kV)</th>
+                                        <th>Mode</th>
+                                        <th colspan="4">Line - Neutral (L-N) DM</th>
+                                        <th colspan="4">Line - Earth (L-E) CM</th>
+                                        <th colspan="4">Neutral - Earth (N-E) CM</th>
+                                        <th rowspan="2"></th>
+                                    </tr>
+
+                                    <!-- 🔹 Third Header Row -->
+                                    <tr>
+                                        <th>Phase Angle</th>
+                                        <th>±90°</th>
+                                        <th>±180°</th>
+                                        <th>±270°</th>
+                                        <th>±0°</th>
+
+                                        <th>±90°</th>
+                                        <th>±180°</th>
+                                        <th>±270°</th>
+                                        <th>±0°</th>
+
+                                        <th>±90°</th>
+                                        <th>±180°</th>
+                                        <th>±270°</th>
+                                        <th>±0°</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int j = 7; j < 13; j++)
+                                    {
+                                        var row = Model.DetailRows[j];
+
+                                        <tr>
+                                            <td contenteditable="true" data-name="Voltage_KV" data-index="@j">@row.Voltage_KV</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].Voltage_KV)
+
+                                            <td contenteditable="true" data-name="Mode" data-index="@j">@row.Mode</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].Mode)
+
+                                            <td contenteditable="true" data-name="L_N_DM_90" data-index="@j">@row.L_N_DM_90</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_N_DM_90)
+
+                                            <td contenteditable="true" data-name="L_N_DM_180" data-index="@j">@row.L_N_DM_180</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_N_DM_180)
+
+                                            <td contenteditable="true" data-name="L_N_DM_270" data-index="@j">@row.L_N_DM_270</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_N_DM_270)
+
+                                            <td contenteditable="true" data-name="L_N_DM_0" data-index="@j">@row.L_N_DM_0</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_N_DM_0)
+
+                                            <td contenteditable="true" data-name="L_E_CM_90" data-index="@j">@row.L_E_CM_90</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_E_CM_90)
+
+                                            <td contenteditable="true" data-name="L_E_CM_180" data-index="@j">@row.L_E_CM_180</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_E_CM_180)
+
+                                            <td contenteditable="true" data-name="L_E_CM_270" data-index="@j">@row.L_E_CM_270</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_E_CM_270)
+
+                                            <td contenteditable="true" data-name="L_E_CM_0" data-index="@j">@row.L_E_CM_0</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].L_E_CM_0)
+
+                                            <td contenteditable="true" data-name="N_E_CM_90" data-index="@j">@row.N_E_CM_90</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].N_E_CM_90)
+
+                                            <td contenteditable="true" data-name="N_E_CM_180" data-index="@j">@row.N_E_CM_180</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].N_E_CM_180)
+
+                                            <td contenteditable="true" data-name="N_E_CM_270" data-index="@j">@row.N_E_CM_270</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].N_E_CM_270)
+
+                                            <td contenteditable="true" data-name="N_E_CM_0" data-index="@j">@row.N_E_CM_0</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].N_E_CM_0)
+
+                                            <td contenteditable="true" data-name="Observation" data-index="@j">@row.Observation</td>
+                                            @Html.HiddenFor(m => m.DetailRows[j].Observation)
+
+                                            @Html.HiddenFor(m => m.DetailRows[j].RowNo)
+                                            @Html.HiddenFor(m => m.DetailRows[j].TestType)
+                                            @Html.HiddenFor(m => m.DetailRows[j].IsResult) <!-- FIX -->
+                                        </tr>
+                                    }
+
+                                    @{
+                                        int k = 13;
+                                    }
+
+                                    <tr style="font-weight:bold; font-size:15px;">
+                                        <td colspan="5">
+                                            <label style="color:red;">Result:</label>
+                                            @Html.DropDownListFor(m => m.DetailRows[k].PassFail,
+                                            new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" }
+                                                                                        },
+                                                                                        new { @class = "clean-select" })
+                                        </td>
+
+                                        <td colspan="5">
+                                            <label style="color:red;">SPD:</label>
+                                            @Html.DropDownListFor(m => m.DetailRows[k].SPD_OK,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" }
+                                                                                        },
+                                                                                        new { @class = "clean-select" })
+                                        </td>
+
+                                        <td colspan="5">
+                                            <label style="color:red;">Driver / LED PCB:</label>
+                                            @Html.DropDownListFor(m => m.DetailRows[k].Driver_LED_PCB_OK,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" }
+                                                                                        },
+                                                                                        new { @class = "clean-select" })
+                                        </td>
+
+                                        @Html.HiddenFor(m => m.DetailRows[k].RowNo)
+                                        @Html.HiddenFor(m => m.DetailRows[k].TestType)
+                                        @Html.HiddenFor(m => m.DetailRows[k].IsResult) <!-- FIX -->
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <hr style="border:1px solid #000; margin:30px 0;" />
+
+                            <!-- Photo + Verification -->
+                            <table class="table table-bordered" style="width:100%;">
+                                <tr style="height:150px;">
+                                    <td colspan="2" class="text-center align-middle" style="font-weight:bold;">
+                                        <label for="photoUpload"
+                                               style="display:block; color:#000; font-weight:bold; margin-bottom:10px;">
+                                            Space for Photo :
+                                        </label>
+
+                                        <div style="display:flex; justify-content:center; align-items:center;">
+                                            <input type="file"
+                                                   id="photoUpload"
+                                                   name="photoUpload"
+                                                   accept="image/*"
+                                                   class="form-control"
+                                                   style="width:auto; background-color:#f5f7fa; border:none; border-bottom:2px solid #d0d7e6; border-radius:6px; font-size:14px; padding:4px 6px; text-align:center;" />
+                                        </div>
                                     </td>
                                 </tr>
-                            </tbody>
-                        </table>
+                                <tr>
+                                    <td style="width:50%; font-weight:bold;">
+                                        Checked By:&nbsp;
+                                        @Html.TextBoxFor(m => m.CheckedBy, new {
+                                                                                @class = "form-control d-inline-block",style = "width:70%; font-weight:normal;",
+                                                                                placeholder = "Enter name", type = "text"})
+                                    </td>
 
+                                    <td style="width:50%; font-weight:bold;">
+                                        Verified By:&nbsp;
+                                        @Html.TextBoxFor(m => m.VerifiedBy, new {
+                                                                                @class = "form-control d-inline-block",style = "width:70%; font-weight:normal;",
+                                                                                placeholder = "Enter name", type = "text"})
+                                    </td>
+                                </tr>
+                            </table>
 
-
-                        <hr style="border:1px solid #000; margin:30px 0;" />
-
-                        <!-- Photo + Verification -->
-                        <table class="table table-bordered" style="width:100%;">
-                            <tr style="height:150px;">
-                                <td colspan="2" class="text-center align-middle" style="font-weight:bold;">
-                                    <label for="photoUpload"
-                                           style="display:block; color:#000; font-weight:bold; margin-bottom:10px;">
-                                        Space for Photo :
-                                    </label>
-
-                                    <div style="display:flex; justify-content:center; align-items:center;">
-                                        <input type="file"
-                                               id="photoUpload"
-                                               name="photoUpload"
-                                               accept="image/*"
-                                               class="form-control"
-                                               style="width:auto; background-color:#f5f7fa; border:none; border-bottom:2px solid #d0d7e6; border-radius:6px; font-size:14px; padding:4px 6px; text-align:center;" />
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="width:50%; font-weight:bold;">
-                                    Checked By:&nbsp;
-                                    <input type="text"
-                                           name="checkedBy"
-                                           class="form-control d-inline-block same-input"
-                                           style="width:70%; font-weight:normal;"
-                                           placeholder="Enter name" />
-                                </td>
-
-                                <td style="width:50%; font-weight:bold;">
-                                    Verified By:&nbsp;
-                                    <input type="text"
-                                           name="verifiedBy"
-                                           class="form-control d-inline-block same-input"
-                                           style="width:70%; font-weight:normal;"
-                                           placeholder="Enter name" />
-                                </td>
-                            </tr>
-                        </table>
-
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+
+    <script>
+
+                    function insertSurgeTest() {
+
+                    Blockloadershow();
+
+                           $('td[contenteditable="true"]').each(function () {
+            var value = $(this).text().trim();
+            var fieldName = $(this).data('name'); // e.g. Voltage_KV
+
+            if (fieldName !== undefined) {
+                // Find the closest hidden input for the same field
+                var hiddenInput = $(this).closest('tr').find('input[name$=".' + fieldName + '"]');
+
+                if (hiddenInput.length > 0) {
+                    hiddenInput.val(value);
+                }
+            }
+        });
+
+                    const requiredFields = [
+                        { name: 'ReportDate', label: 'Report Date' },
+                        { name: 'ReportNo', label: 'Report No' },
+                        { name: 'BatchCode', label: 'Batch Code' },
+                        { name: 'ProductCatRef', label: 'Product Cat Ref' },
+                        { name: 'ProductDescription', label: 'Product Description' },
+                        { name: 'DriverCode', label: 'Driver Code' },
+                        { name: 'SPDCode', label: 'SPD Code' },
+                        { name: 'LEDConfiguration', label: 'LED Configuration' },
+                        { name: 'PKDCode', label: 'PKD Code' }
+
+                    ];
+
+                    let isValid = true;
+                    let missingFields = [];
+
+                    requiredFields.forEach(field => {
+                       const value = $(`[name="${field.name}"]`).val();
+
+                        if (!value || value.trim() === '') {
+                            isValid = false;
+                            missingFields.push(field.name);
+                        }
+                    });
+
+                    if (!isValid) {
+                        const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                        const alertMessage = `
+                                <p>Please fill out the following required field(s):</p>
+                                <ul>${missingFieldsList}</ul>
+                            `;
+                        showDangerAlert(alertMessage);
+                        Blockloaderhide();
+                        return false;
+                    }
+                    $("#Id").val(@Model.Id);
+                   const form = $('#surgeTest-form')[0];
+                    const formData = new FormData(form);
+
+                    // $('#surgeTest-form [contenteditable="true"]').each(function () {
+
+                    //     const dataName = $(this).data('name');
+                    //     const content = $(this).text().trim();
+
+                    //     if (dataName) {
+                    //         formData.append(dataName, content);
+                    //     }
+
+                    // });
+
+                    $.ajax({
+                        url: $('#surgeTest-form').attr('action'),
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function (response) {
+                            Blockloaderhide();
+
+                            if (!response.success) {
+                                 var errorMessg = "";
+                    if (response.errors != undefined) {
+                        for (var error of response.errors) {
+                            errorMessg += error + "\n";
+                        }
+                        if (errorMessg != "") {
+                            showDangerAlert(errorMessg);
+                        }
+                    }
+                    else {
+                        showDangerAlert(response.message);
+                    }
+                    return false;
+                }
+
+                else {
+                    if ($("#Id").val() > 0) {
+                        showSuccessAlert("Updated Successfully.");
+                    }
+                    else {
+                        showSuccessAlert("Saved Successfully.");
+                    }
+                    setTimeout(function () {
+                        window.open('@Url.Action("SurgeTestReport", "ProductValidation")', '_self');
+                    }, 2500);
+                }
+
+                  },
+                        error: function (xhr, status, error) {
+                            Blockloaderhide();
+                            showDangerAlert("Error saving data: " + error);
+                        }
+                    });
+                }
+
+
+    </script>
+}
 
 @section HideSidebar { }

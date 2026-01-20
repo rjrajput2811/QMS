@@ -1,6 +1,27 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model PhotometryTestReportViewModel
+
+
+@{
     ViewData["Title"] = "Photometry Test Report";
 }
+
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
     .req {
@@ -216,6 +237,11 @@
         padding: 0 !important;
         margin: 0 !important;
     }
+
+    em {
+        color: red;
+        font-style: normal;
+    }
 </style>
 
 <div class="content">
@@ -234,18 +260,15 @@
 
                     <!-- Buttons -->
                     <div>
-                        <button id="savePhotometryButton"
-                                type="button"
-                                class="btn btn-outline-success legitRipple mr-2"
-                                onclick="savePhotometryTest()"
+                        <button id="savePhotometryButton" type="button"
+                                class="btn btn-outline-success legitRipple mr-2" onclick="savePhotometryTest()"
                                 style="width:120px; font-size:15px;">
                             <i class="fas fa-save mr-1"></i>Save
                         </button>
 
                         <a href='@Url.Action("PhotometryTestReport", "ProductValidation")'
-                           class="btn btn-outline-primary"
-                           style="width:120px; font-size:15px;">
-                            <i class="fas fa-arrow-left"></i> BACK
+                           class="btn btn-outline-primary" style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> Back
                         </a>
                     </div>
                 </div>
@@ -253,333 +276,546 @@
 
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <!-- FIRST TABLE (HEADER) -->
-                        <table class="header-table">
-                            <colgroup>
-                                <col style="width:33%;" />
-                                <col style="width:34%;" />
-                                <col style="width:33%;" />
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Product Cat Ref :</span><em class="req">*</em>
-                                        <input type="text" name="ProductCatRef" class="inline-input"
-                                               placeholder="Enter Product Reference" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Product Description :</span><em class="req">*</em>
-                                        <input type="text" name="ProductDescription" class="inline-input"
-                                               placeholder="Enter Product Description" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Report No. :</span><em class="req">*</em>
-                                        <input type="text" name="ReportNo" class="inline-input"
-                                               placeholder="Enter Report Number" required />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Driver :</span><em class="req">*</em>
-                                        <input type="text" name="Driver" class="inline-input"
-                                               placeholder="Enter Driver Details" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">LED Details :</span><em class="req">*</em>
-                                        <input type="text" name="LEDDetails" class="inline-input"
-                                               placeholder="Enter LED Details" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Date :</span><em class="req">*</em>
-                                        <input type="date" name="ReportDate" class="inline-date"
-                                               placeholder="Select Date" required />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <form id="PhotometryTest-form" method="post" asp-action="InsertUpdatePhotometryTest" asp-controller="ProductValidation">
+                        <div class="table-responsive">
+                            <!-- FIRST TABLE (HEADER) -->
+                            <table class="header-table">
+                                <colgroup>
+                                    <col style="width:33%;" />
+                                    <col style="width:34%;" />
+                                    <col style="width:33%;" />
+                                </colgroup>
+                                @Html.HiddenFor(m => m.Id)
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Product Cat Ref :</span><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.ProductCatRef, new {@class = "inline-input",
+                                            placeholder = "Enter Product Reference",required = "required",type = "text"})
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Product Description :</span><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.ProductDescription, new {@class = "inline-input",
+                                                                                        placeholder = "Enter Product Description",required = "required",type = "text"})
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Report No. :</span><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.ReportNo, new {@class = "inline-input",
+                                                                                        placeholder = "Enter Report Number",required = "required",type = "text"})
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Driver :</span><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.DriverDetails, new {@class = "inline-input",
+                                                                                        placeholder = "Enter Driver Details",required = "required",type = "text"})
+                                        </td>
+                                        <td>
+                                            <span class="field-label">LED Details :</span><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.LedDetails, new {@class = "inline-input",
+                                                                                        placeholder = "Enter LED Details",required = "required",type = "text"})
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Date :</span><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new { @class = "inline-date", placeholder = "dd-mm-yyyy" ,required = "required",type = "date" })
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                        <!-- SECOND TABLE (ATTACHED DIRECTLY UNDER, SAME WIDTH, SHARED BORDER) -->
-                        <table class="pv-table">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2" style="width:10%"></th>
-                                    <th rowspan="2" style="width:22%">Parameter</th>
-                                    <th rowspan="2" style="width:18%">Specification</th>
-                                    <th colspan="5" class="subhead">Measured Values</th>
-                                    <th rowspan="2" style="width:18%" class="result-header">
-                                        Result ( Pass / Fail / Not Applicable )
-                                    </th>
-                                </tr>
-                                <tr>
-                                    <th style="width:8%">Sample-1</th>
-                                    <th style="width:8%">Sample-2</th>
-                                    <th style="width:8%">Sample-3</th>
-                                    <th style="width:8%">Sample-4</th>
-                                    <th style="width:8%">Sample-5</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td class="group-cell" rowspan="5">with<br />Sphere</td>
-                                    <td contenteditable="true">Input Wattage (W)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">Luminous Flux (lm)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">CCT (K)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">CRI</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">System Efficacy (lm/W)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
+                            <!-- SECOND TABLE (ATTACHED DIRECTLY UNDER, SAME WIDTH, SHARED BORDER) -->
+                            <table class="pv-table" id="Photometry_table" name="Photometry_table">
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2" style="width:10%"></th>
+                                        <th rowspan="2" style="width:22%">Parameter</th>
+                                        <th rowspan="2" style="width:18%">Specification</th>
+                                        <th colspan="5" class="subhead">Measured Values</th>
+                                        <th rowspan="2" style="width:18%" class="result-header">
+                                            Result ( Pass / Fail / Not Applicable )
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:8%">Sample-1</th>
+                                        <th style="width:8%">Sample-2</th>
+                                        <th style="width:8%">Sample-3</th>
+                                        <th style="width:8%">Sample-4</th>
+                                        <th style="width:8%">Sample-5</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="group-cell" rowspan="5">with<br />Sphere</td>
+                                        <td contenteditable="true" readyonly>Input Wattage (W)</td>
+                                        <td contenteditable="true" data-name="Sphere_InputWattage_Spec">
+                                            @Model.Sphere_InputWattage_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_InputWattage_Sample1">
+                                            @Model.Sphere_InputWattage_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_InputWattage_Sample2">
+                                            @Model.Sphere_InputWattage_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_InputWattage_Sample3">
+                                            @Model.Sphere_InputWattage_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_InputWattage_Sample4">
+                                            @Model.Sphere_InputWattage_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_InputWattage_Sample5">
+                                            @Model.Sphere_InputWattage_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Sphere_InputWattage_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>Luminous Flux (lm)</td>
+                                        <td contenteditable="true" data-name="Sphere_LuminousFlux_Spec">
+                                            @Model.Sphere_LuminousFlux_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_LuminousFlux_Sample1">
+                                            @Model.Sphere_LuminousFlux_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_LuminousFlux_Sample2">
+                                            @Model.Sphere_LuminousFlux_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_LuminousFlux_Sample3">
+                                            @Model.Sphere_LuminousFlux_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_LuminousFlux_Sample4">
+                                            @Model.Sphere_LuminousFlux_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_LuminousFlux_Sample5">
+                                            @Model.Sphere_LuminousFlux_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Sphere_LuminousFlux_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>CCT (K)</td>
+                                        <td contenteditable="true" data-name="Sphere_CCT_Spec">
+                                            @Model.Sphere_CCT_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CCT_Sample1">
+                                            @Model.Sphere_CCT_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CCT_Sample2">
+                                            @Model.Sphere_CCT_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CCT_Sample3">
+                                            @Model.Sphere_CCT_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CCT_Sample4">
+                                            @Model.Sphere_CCT_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CCT_Sample5">
+                                            @Model.Sphere_CCT_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Sphere_CCT_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>CRI</td>
+                                        <td contenteditable="true" data-name="Sphere_CRI_Spec">
+                                            @Model.Sphere_CRI_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CRI_Sample1">
+                                            @Model.Sphere_CRI_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CRI_Sample2">
+                                            @Model.Sphere_CRI_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CRI_Sample3">
+                                            @Model.Sphere_CRI_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CRI_Sample4">
+                                            @Model.Sphere_CRI_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_CRI_Sample5">
+                                            @Model.Sphere_CRI_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Sphere_CRI_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>System Efficiency (lm/W)</td>
+                                        <td contenteditable="true" data-name="Sphere_SystemEfficacy_Spec">
+                                            @Model.Sphere_SystemEfficacy_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_SystemEfficacy_Sample1">
+                                            @Model.Sphere_SystemEfficacy_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_SystemEfficacy_Sample2">
+                                            @Model.Sphere_SystemEfficacy_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_SystemEfficacy_Sample3">
+                                            @Model.Sphere_SystemEfficacy_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_SystemEfficacy_Sample4">
+                                            @Model.Sphere_SystemEfficacy_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Sphere_SystemEfficacy_Sample5">
+                                            @Model.Sphere_SystemEfficacy_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Sphere_SystemEfficacy_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="group-cell" rowspan="9">With<br />Gonio</td>
+                                        <td contenteditable="true" readyonly>Input Wattage (W)</td>
+                                        <td contenteditable="true" data-name="Gonio_InputWattage_Spec">
+                                            @Model.Gonio_InputWattage_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_InputWattage_Sample1">
+                                            @Model.Gonio_InputWattage_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_InputWattage_Sample2">
+                                            @Model.Gonio_InputWattage_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_InputWattage_Sample3">
+                                            @Model.Gonio_InputWattage_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_InputWattage_Sample4">
+                                            @Model.Gonio_InputWattage_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_InputWattage_Sample5">
+                                            @Model.Gonio_InputWattage_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_InputWattage_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>Luminous Flux (lm)</td>
+                                        <td contenteditable="true" data-name="Gonio_LuminousFlux_Spec">
+                                            @Model.Gonio_LuminousFlux_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_LuminousFlux_Sample1">
+                                            @Model.Gonio_LuminousFlux_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_LuminousFlux_Sample2">
+                                            @Model.Gonio_LuminousFlux_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_LuminousFlux_Sample3">
+                                            @Model.Gonio_LuminousFlux_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_LuminousFlux_Sample4">
+                                            @Model.Gonio_LuminousFlux_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_LuminousFlux_Sample5">
+                                            @Model.Gonio_LuminousFlux_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_LuminousFlux_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>CCT (K)</td>
+                                        <td contenteditable="true" data-name="Gonio_CCT_Spec">
+                                            @Model.Gonio_CCT_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CCT_Sample1">
+                                            @Model.Gonio_CCT_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CCT_Sample2">
+                                            @Model.Gonio_CCT_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CCT_Sample3">
+                                            @Model.Gonio_CCT_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CCT_Sample4">
+                                            @Model.Gonio_CCT_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CCT_Sample5">
+                                            @Model.Gonio_CCT_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_CCT_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>CRI</td>
+                                        <td contenteditable="true" data-name="Gonio_CRI_Spec">
+                                            @Model.Gonio_CRI_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CRI_Sample1">
+                                            @Model.Gonio_CRI_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CRI_Sample2">
+                                            @Model.Gonio_CRI_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CRI_Sample3">
+                                            @Model.Gonio_CRI_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CRI_Sample4">
+                                            @Model.Gonio_CRI_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_CRI_Sample5">
+                                            @Model.Gonio_CRI_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_CRI_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>System Efficiency (lm/W)</td>
+                                        <td contenteditable="true" data-name="Gonio_SystemEfficacy_Spec">
+                                            @Model.Gonio_SystemEfficacy_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_SystemEfficacy_Sample1">
+                                            @Model.Gonio_SystemEfficacy_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_SystemEfficacy_Sample2">
+                                            @Model.Gonio_SystemEfficacy_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_SystemEfficacy_Sample3">
+                                            @Model.Gonio_SystemEfficacy_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_SystemEfficacy_Sample4">
+                                            @Model.Gonio_SystemEfficacy_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_SystemEfficacy_Sample5">
+                                            @Model.Gonio_SystemEfficacy_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_SystemEfficacy_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>UGR Value</td>
+                                        <td contenteditable="true" data-name="Gonio_UGR_Spec">
+                                            @Model.Gonio_UGR_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_UGR_Sample1">
+                                            @Model.Gonio_UGR_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_UGR_Sample2">
+                                            @Model.Gonio_UGR_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_UGR_Sample3">
+                                            @Model.Gonio_UGR_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_UGR_Sample4">
+                                            @Model.Gonio_UGR_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_UGR_Sample5">
+                                            @Model.Gonio_UGR_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_UGR_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>Distribution</td>
+                                        <td contenteditable="true" data-name="Gonio_Distribution_Spec">
+                                            @Model.Gonio_Distribution_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_Distribution_Sample1">
+                                            @Model.Gonio_Distribution_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_Distribution_Sample2">
+                                            @Model.Gonio_Distribution_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_Distribution_Sample3">
+                                            @Model.Gonio_Distribution_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_Distribution_Sample4">
+                                            @Model.Gonio_Distribution_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_Distribution_Sample5">
+                                            @Model.Gonio_Distribution_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_Distribution_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>NABL 79 Report</td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Spec">
+                                            @Model.Gonio_NABL79_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Sample1"
+                                            @Model.Gonio_NABL79_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Sample2">
+                                            @Model.Gonio_NABL79_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Sample3">
+                                            @Model.Gonio_NABL79_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Sample4">
+                                            @Model.Gonio_NABL79_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Sample5">
+                                            @Model.Gonio_NABL79_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_NABL79_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="true" readyonly>NABL 79 Report of Other Cat Ref as per PPS</td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Other_Spec">
+                                            @Model.Gonio_NABL79_Other_Spec
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Other_Sample1">
+                                            @Model.Gonio_NABL79_Other_Sample1
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Other_Sample2">
+                                            @Model.Gonio_NABL79_Other_Sample2
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Other_Sample3">
+                                            @Model.Gonio_NABL79_Other_Sample3
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Other_Sample4">
+                                            @Model.Gonio_NABL79_Other_Sample4
+                                        </td>
+                                        <td contenteditable="true" data-name="Gonio_NABL79_Other_Sample5">
+                                            @Model.Gonio_NABL79_Other_Sample5
+                                        </td>
+                                        <td style="padding:10px;">
+                                            @Html.DropDownListFor(m => m.Gonio_NABL79_Other_Result,
+                                                                                        new List<SelectListItem>
+                                                                                        {
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="Pass", Value="Pass" },
+                                                                                        new SelectListItem { Text="Fail", Value="Fail" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" }
+                                                                                        },
+                                                                                        new { @class = "pretty-select" })
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td class="group-cell" rowspan="9">With<br />Gonio</td>
-                                    <td contenteditable="true">Input Wattage (W)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">Luminous Flux (lm)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">CCT (K)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">CRI</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">System Efficacy (lm/W)</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">UGR Value</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">Distribution</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">NABL 79 Report</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">NABL 79 Report of Other Cat Ref as per PPS</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="padding:10px;">
-                                        <select class="pretty-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                        </select>
-                                    </td>
-                                </tr>
+                                    <tr class="spacer-row">
+                                        <td colspan="12"></td>
+                                    </tr>
 
-                                <tr class="spacer-row">
-                                    <td colspan="12"></td>
-                                </tr>
+                                    <tr class="sign-row">
+                                        <td colspan="4" style="font-weight:bold; border:1px solid #000;">
+                                            Tested By:&nbsp;
+                                            @Html.TextBoxFor(m => m.TestedBy, new {
+                                                                                        @class = "same-input",type = "text" ,name = "checkedBy"})
+                                        </td>
+                                        <td colspan="5" style="font-weight:bold; border:1px solid #000;">
+                                            Verified By:&nbsp;
+                                            @Html.TextBoxFor(m => m.VerifiedBy, new {
+                                                                                        @class = "same-input",type = "text" ,name = "verifiedBy"})
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
 
-                                <tr class="sign-row">
-                                    <td colspan="4" style="font-weight:bold; border:1px solid #000;">
-                                        Tested By:&nbsp;
-                                        <input type="text" name="checkedBy" class="same-input" placeholder="" />
-                                    </td>
-                                    <td colspan="5" style="font-weight:bold; border:1px solid #000;">
-                                        Verified By:&nbsp;
-                                        <input type="text" name="verifiedBy" class="same-input" placeholder="" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
 
@@ -587,4 +823,104 @@
     </div>
 </div>
 
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+
+    <script>
+
+        function savePhotometryTest() {
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'ProductCatRef', name: 'Product Cat Ref' },
+                { id: 'ProductDescription', name: 'Product Description' },
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'DriverDetails', name: 'Driver Details' },
+                { id: 'LedDetails', name: 'LED Details' },
+                { id: 'ReportDate', name: 'Report Date' }
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }              
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#PhotometryTest-form')[0];
+            const formData = new FormData(form);
+
+            $('#Photometry_table [contenteditable="true"]').each(function() {
+                const dataName = $(this).data('name');
+                const content = $(this).text().trim();
+
+                if (dataName) {
+                    formData.append(dataName, content);
+                }
+            });
+
+            $.ajax({
+                url: $('#PhotometryTest-form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+                    if (!response.success) {
+                        var errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg != "") {
+                                showDangerAlert(errorMessg);
+                            }
+                        }
+                        else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    }
+                    else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("PhotometryTestReport", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script>
+}
 @section HideSidebar { }

@@ -104,6 +104,14 @@ namespace QMS.Core.DatabaseContext
         public double? Proj_Data_Pc_Dmaic { get; set; }
         public double? Proj_Data_Pc_Turbo { get; set; }
         public double? Proj_Data_Pc_Planned { get; set; }
+        public double? Proj_Num_Target { get; set; }
+        public double? Proj_Num_Weightage { get; set; }
+        public string? Proj_Num_Formula { get; set; }
+        public double? Proj_Num_Weighted_Score { get; set; }
+        public double? Proj_No_Weighted_Score { get; set; }
+        public string? Proj_No_Formula { get; set; }
+        public double? Proj_No_Weightage { get; set; }
+        public double? Proj_No_Target { get; set; }
         public double? Eff_Total_Weighted_Score { get; set; }
         public double? Eff_Total_Sum { get; set; }
         public string? CreatedBy { get; set; }

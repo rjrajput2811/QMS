@@ -26,6 +26,7 @@ using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepository;
 using QMS.Core.Repositories.FIFOTrackerRepository;
+using QMS.Core.Repositories.ImpactTestRepository;
 using QMS.Core.Repositories.ImprTrackerRepository;
 using QMS.Core.Repositories.InternalTypeTestRepo;
 using QMS.Core.Repositories.KaizenTrackerRepository;
@@ -34,12 +35,16 @@ using QMS.Core.Repositories.OpenPoRepository;
 using QMS.Core.Repositories.PaymentTrackerRepository;
 using QMS.Core.Repositories.PDIAuthSignRepository;
 using QMS.Core.Repositories.PDITrackerRepository;
+using QMS.Core.Repositories.PhotometryRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.RCAReportRepository;
 using QMS.Core.Repositories.RMTCDetailsRepository;
 using QMS.Core.Repositories.SixSigmaIndicesRepo;
 using QMS.Core.Repositories.SixSigmaIndicesRepository;
+using QMS.Core.Repositories.SPMBuyRepository;
+using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Repositories.SPMReportRepository;
+using QMS.Core.Repositories.SurgeTestReportRepository;
 using QMS.Core.Repositories.ThirdPartyCertRepository;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Repositories.ThirdPartyTestRepository;
@@ -53,6 +58,7 @@ using System.Data;
 using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Repositories.SPMBuyRepository;
 using QMS.Core.Repositories.RippleTestReportRepo;
+using QMS.Core.Repositories.InstallationTrialRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -116,6 +122,11 @@ builder.Services.AddTransient<IDeviationNoteService, DeviationNoteService>();
 builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
 builder.Services.AddScoped<ISPMBuyRepository, SPMBuyRepository>();
 builder.Services.AddTransient<IRippleTestReportRepository, RippleTestReportRepository>();
+builder.Services.AddScoped<IInstallationTrialRepository, InstallationTrialRepository>();
+builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportRepository>();
+builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();
+builder.Services.AddTransient<IImpactTestRepository, ImpactTestRepository>();
+
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 

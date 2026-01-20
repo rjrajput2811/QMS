@@ -6,10 +6,13 @@ namespace QMS.Controllers
     public class SEEIndicesController : Controller
     {
         private readonly ISixSigmaIndicesRepository _sixSigmaIndicesRepository;
+        private readonly IWebHostEnvironment _env;
 
-        public SEEIndicesController(ISixSigmaIndicesRepository sixSigmaIndicesRepository)
+
+        public SEEIndicesController(ISixSigmaIndicesRepository sixSigmaIndicesRepository,IWebHostEnvironment env)
         {
             _sixSigmaIndicesRepository = sixSigmaIndicesRepository;
+            _env = env;
         }
 
         // LOAD VIEW
@@ -96,5 +99,25 @@ namespace QMS.Controllers
             var result = await _sixSigmaIndicesRepository.DeleteSixSigmaIndicesAsync(id);
             return Json(result);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> ExportSixSigmaIndicesToExcel(int id)
+        {
+            var model = await _sixSigmaIndicesRepository.GetSixSigmaIndicesByIdAsync(id);
+            if (model == null) return NotFound("Record not found.");
+
+            // ✅ Put template path + exists check in Controller (as you want)
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "53.SEE Indices Format.xlsx");
+
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("Excel template not found at: " + templatePath);
+
+            var bytes = _sixSigmaIndicesRepository.Build(templatePath, model, out var fileName);
+
+            return File(bytes,
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
     }
+
 }

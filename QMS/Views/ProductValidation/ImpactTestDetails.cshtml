@@ -1,10 +1,13 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model ImpactTestViewModel
+@{
     ViewData["Title"] = "Impact Test (Pendulum type)";
 }
 
 
 <style>
-    
+
     .underline-input {
         border: 0;
         border-bottom: 1.5px solid #666;
@@ -46,7 +49,7 @@
     }
 
     td {
-        white-space: nowrap;
+        white-space: unset;
         padding: 8px 10px;
         vertical-align: middle;
     }
@@ -177,8 +180,6 @@
             box-shadow: 0 0 3px rgba(70, 130, 180, 0.3);
         }
 
-
-    /* Make both tables identical width and layout-fixed so they match exactly */
     table.table-bordered th, table.table-bordered td {
         border: 1px solid #000 !important;
         vertical-align: middle;
@@ -198,12 +199,10 @@
         border-collapse: collapse;
         font-size: 13px;
         width: 100%;
-        table-layout: fixed; /* <- fixed layout makes widths consistent */
-        word-wrap: break-word; /* <- allow wrapping inside fixed cells */
+        table-layout: fixed;
+        word-wrap: break-word;     
     }
 
-
-    /* narrower font for the first info table, keep sizes consistent */
     .info-table {
         font-size: 14px;
     }
@@ -216,87 +215,84 @@
     .text-left {
         text-align: left;
     }
+
+    em {
+        color: red;
+        font-style: normal;
+    }
 </style>
 
 
-    <div class="content">
-        <div class="row">
-            <div class="col-12">
+<div class="content">
+    <div class="row">
+        <div class="col-12">
 
-                <!-- Page Title -->
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body d-flex justify-content-between align-items-center py-3">
+            <!-- Page Title -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-body d-flex justify-content-between align-items-center py-3">
+                    <div>
+                        <b style="font-size:large; color:#4682B4;">Impact Test (Pendulum type)</b>
+                    </div>
+                    <div>
+                        <button id="addImpactButton" type="button" class="btn btn-outline-success"
+                                onclick="insertImpactTest()" style="width:120px; font-size:15px;">
+                            <i class="fas fa-save mr-1"></i> Save
+                        </button>
 
-                        <div>
-                            <b style="font-size:large; color:#4682B4;">Impact Test (Pendulum type)</b>
-                        </div>
-
-                        <div>
-                            <button id="addImpactButton"
-                                    type="button"
-                                    class="btn btn-outline-success"
-                                    onclick="insertImpactTest()"
-                                    style="width:120px; font-size:15px;">
-                                <i class="fas fa-save mr-1"></i> Save
-                            </button>
-
-                            <a href='@Url.Action("Impacttest", "ProductValidation")'
-                               class="btn btn-outline-primary"
-                               style="width:120px; font-size:15px;">
-                                <i class="fas fa-arrow-left"></i> BACK
-                            </a>
-                        </div>
-
+                        <a href='@Url.Action("Impacttest", "ProductValidation")'
+                           class="btn btn-outline-primary" style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> Back
+                        </a>
                     </div>
                 </div>
+            </div>
 
 
-                
-                <div class="card shadow-sm mb-3" style="border:1.5px solid #000;">
-                    <div class="card-body" style="padding:18px 20px;">
-
-                        
+            <div class="card shadow-sm mb-3" style="border:1.5px solid #000;">
+                <div class="card-body" style="padding:18px 20px;">
+                    <form id="ImpactTest-form" method="post" asp-action="InsertUpdateImpactTest" asp-controller="ProductValidation">
+                        @Html.HiddenFor(m => m.Id)
                         <div class="table-responsive">
                             <table class="table table-bordered">
-
                                 <tbody>
                                     <tr>
-                                        <td colspan="2">
-                                            <b>Customer / Project Name :</b>
-                                            <input type="text" class="underline-input" style="width:60%; margin-left:10px;" />
+                                        <td colspan="4">
+                                            <b>Customer / Project Name :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.CustomerProjectName, new { @class = "underline-input",style="width:60%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
 
-                                        <td colspan="2">
-                                            <b>Report No :</b>
-                                            <input type="text" class="underline-input" style="width:60%; margin-left:10px;" />
-                                        </td>
+                                        
                                     </tr>
 
                                     <tr>
-                                        <td colspan="2"></td>
                                         <td colspan="2">
-                                            <b>Date :</b>
-                                            <input type="text" class="underline-input" style="width:60%; margin-left:10px;" />
+                                            <b>Report No :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.ReportNo, new { @class = "underline-input",style="width:60%; margin-left:10px;" , type="text" , required = "required"})
+                                        </td>
+
+                                        <td colspan="2">
+                                            <b>Date :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new { @class = "underline-input", type="date" , style="width:20%; margin-left:10px;" ,required = "required" , placeholder = "dd-mm-yyyy" })
                                         </td>
                                     </tr>
 
-                               
+
                                     <tr>
                                         <td>
-                                            <b>Product Cat Ref :</b>
-                                            <input type="text" class="underline-input" style="width:65%; margin-left:10px;" />
+                                            <b>Product Cat Ref :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "underline-input",style="width:58%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
                                         <td>
-                                            <b>Product Description :</b>
-                                            <input type="text" class="underline-input" style="width:65%; margin-left:10px;" />
+                                            <b>Product Description :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.ProductDescription, new { @class = "underline-input",style="width:50%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
                                         <td>
-                                            <b>Batch Code :</b>
-                                            <input type="text" class="underline-input" style="width:50%; margin-left:10px;" />
+                                            <b>Batch Code :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.BatchCode, new { @class = "underline-input",style="width:50%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
                                         <td>
-                                            <b>Quantity :</b>
-                                            <input type="text" class="underline-input" style="width:50%; margin-left:10px;" />
+                                            <b>Quantity :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.Quantity, new { @class = "underline-input",style="width:50%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
                                     </tr>
 
@@ -305,9 +301,7 @@
                             </table>
                         </div>
 
-
-                    
-                        <div class="table-responsive" style="margin-top:0;">
+                        <div class="table-responsive" style="margin-top:0;" id="tbl_ImpactSpec">
                             <table class="table table-bordered text-center">
 
                                 <thead>
@@ -331,74 +325,183 @@
 
                                 <tbody>
                                     <tr>
-                                        <td contenteditable="true">Weight (kg)</td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
+                                        <td rowspan="2" contenteditable="true">Weight (kg)</td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK01">
+                                            @Model.Weight_kg_IK01
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK02">
+                                            @Model.Weight_kg_IK02
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK03">
+                                            @Model.Weight_kg_IK03
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK04">
+                                            @Model.Weight_kg_IK04
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK05">
+                                            @Model.Weight_kg_IK05
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK06">
+                                            @Model.Weight_kg_IK06
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK07">
+                                            @Model.Weight_kg_IK07
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK08">
+                                            @Model.Weight_kg_IK08
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK09">
+                                            @Model.Weight_kg_IK09
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_kg_IK10">
+                                            @Model.Weight_kg_IK10
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <!-- Row 2 : Material -->
+                                        <td contenteditable="true" data-name="Weight_Material_IK01">
+                                            @Model.Weight_Material_IK01
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK02">
+                                            @Model.Weight_Material_IK02
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK03">
+                                            @Model.Weight_Material_IK03
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK04">
+                                            @Model.Weight_Material_IK04
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK05">
+                                            @Model.Weight_Material_IK05
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK06">
+                                            @Model.Weight_Material_IK06
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK07">
+                                            @Model.Weight_Material_IK07
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK08">
+                                            @Model.Weight_Material_IK08
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK09">
+                                            @Model.Weight_Material_IK09
+                                        </td>
+                                        <td contenteditable="true" data-name="Weight_Material_IK10">
+                                            @Model.Weight_Material_IK10
+                                        </td>
                                     </tr>
 
                                     <tr>
                                         <td contenteditable="true">Distance (cm)</td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK01">
+                                            @Model.Distance_cm_IK01
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK02">
+                                            @Model.Distance_cm_IK02
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK03">
+                                            @Model.Distance_cm_IK03
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK04">
+                                            @Model.Distance_cm_IK04
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK05">
+                                            @Model.Distance_cm_IK05
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK06">
+                                            @Model.Distance_cm_IK06
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK07">
+                                            @Model.Distance_cm_IK07
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK08">
+                                            @Model.Distance_cm_IK08
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK09">
+                                            @Model.Distance_cm_IK09
+                                        </td>
+                                        <td contenteditable="true" data-name="Distance_cm_IK10">
+                                            @Model.Distance_cm_IK10
+                                        </td>
                                     </tr>
 
                                     <tr>
                                         <td contenteditable="true">Impact Energy (joules)</td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK01">
+                                            @Model.ImpactEnergy_joules_IK01
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK02">
+                                            @Model.ImpactEnergy_joules_IK02
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK03">
+                                            @Model.ImpactEnergy_joules_IK03
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK04">
+                                            @Model.ImpactEnergy_joules_IK04
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK05">
+                                            @Model.ImpactEnergy_joules_IK05
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK06">
+                                            @Model.ImpactEnergy_joules_IK06
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK07">
+                                            @Model.ImpactEnergy_joules_IK07
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK08">
+                                            @Model.ImpactEnergy_joules_IK08
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK09">
+                                            @Model.ImpactEnergy_joules_IK09
+                                        </td>
+                                        <td contenteditable="true" data-name="ImpactEnergy_joules_IK10">
+                                            @Model.ImpactEnergy_joules_IK10
+                                        </td>
                                     </tr>
 
                                     <tr>
                                         <td contenteditable="true">Applicable Test</td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
-                                        <td contenteditable="true"></td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK01">
+                                            @Model.ApplicableTest_IK01
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK02">
+                                            @Model.ApplicableTest_IK02
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK03">
+                                            @Model.ApplicableTest_IK03
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK04">
+                                            @Model.ApplicableTest_IK04
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK05">
+                                            @Model.ApplicableTest_IK05
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK06">
+                                            @Model.ApplicableTest_IK06
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK07">
+                                            @Model.ApplicableTest_IK07
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK08">
+                                            @Model.ApplicableTest_IK08
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK09">
+                                            @Model.ApplicableTest_IK09
+                                        </td>
+                                        <td contenteditable="true" data-name="ApplicableTest_IK10">
+                                            @Model.ApplicableTest_IK10
+                                        </td>
                                     </tr>
                                 </tbody>
 
                             </table>
                         </div>
 
-
-                       
                         <div class="table-responsive" style="margin-top:0;">
                             <table class="table table-bordered">
-
                                 <tbody>
                                     <tr>
-
-                                     
                                         <td style="width:50%; vertical-align:top; padding:18px;">
 
                                             <b>Observation :</b><br /><br />
@@ -406,34 +509,37 @@
                                             <div class="row mb-2">
                                                 <div class="col-7">1. Damage observed</div>
                                                 <div class="col-5">
-                                                    <select class="form-control" id="damageObserved">
-                                                        <option value="">Select</option>
-                                                        <option value="yes">YES</option>
-                                                        <option value="no">NO</option>
-                                                    </select>
+                                                    @Html.DropDownListFor(m => m.Observation_DamageObserved,
+                                                    new List<SelectListItem>{
+                                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                                        new SelectListItem { Text="YES", Value="yes" },
+                                                                                                        new SelectListItem { Text="NO", Value="no" }
+                                                                                                        }, new { @class = "form-control" })
                                                 </div>
                                             </div>
 
                                             <div class="row mb-2">
                                                 <div class="col-7">2. Live parts accessibility</div>
                                                 <div class="col-5">
-                                                    <select class="form-control" id="liveParts">
-                                                        <option value="">Select</option>
-                                                        <option value="yes">YES</option>
-                                                        <option value="no">NO</option>
-                                                    </select>
+                                                    @Html.DropDownListFor(m => m.Observation_LivePartsAccessibility,
+                                                                                                        new List<SelectListItem>{
+                                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                                        new SelectListItem { Text="YES", Value="yes" },
+                                                                                                        new SelectListItem { Text="NO", Value="no" }
+                                                                                                        }, new { @class = "form-control" })
                                                 </div>
                                             </div>
 
                                             <div class="row mt-3">
-                                                <div class="col-4"><b style="color:red;">Test Result:</b></div>
-                                                <div class="col-8">
-                                                    <select class="form-control" id="testResult">
-                                                        <option value="">Select</option>
-                                                        <option value="pass">Pass</option>
-                                                        <option value="fail">Fail</option>
-                                                        <option value="n/a">Not Applicable</option>
-                                                    </select>
+                                                <div class="col-7"><b style="color:red;">Test Result:</b></div>
+                                                <div class="col-5">
+                                                    @Html.DropDownListFor(m => m.TestResult,
+                                                                                                        new List<SelectListItem>{
+                                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                                        new SelectListItem { Text="Pass", Value="pass" },
+                                                                                                        new SelectListItem { Text="Fail", Value="fail" },
+                                                                                                        new SelectListItem { Text="Not Applicable", Value="n/a" }
+                                                                                                        }, new { @class = "form-control" })
                                                 </div>
                                             </div>
 
@@ -464,41 +570,143 @@
                             </table>
                         </div>
 
-
-                   
                         <div class="table-responsive">
                             <table class="table table-bordered">
                                 <tbody>
                                     <tr>
                                         <td>
                                             <b>Tested By:</b>
-                                            <input type="text" class="underline-input" style="width:60%; margin-left:8px;" />
+                                            @Html.TextBoxFor(m => m.TestedBy, new { @class = "underline-input",style="width:60%; margin-left:8px;" , type="text"})
                                         </td>
                                         <td>
                                             <b>Verified By:</b>
-                                            <input type="text" class="underline-input" style="width:60%; margin-left:8px;" />
+                                            @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "underline-input",style="width:60%; margin-left:10px;" , type="text"})
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-
-                    </div> 
-                </div> 
-
+                    </form>
+                </div>
             </div>
+
         </div>
     </div>
+</div>
 
 
 @section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
     <script>
 
         $(document).ready(function () {
             initPhotoSelect();
             initPhotoChange();
         });
-       
+
+         function insertImpactTest() {
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'CustomerProjectName', name: 'Customer / Project Name' },
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ReportDate', name: 'Report Date' },
+                { id: 'ProductCatRef', name: 'Product Cat Ref' },
+                { id: 'ProductDescription', name: 'Product Description' },
+                { id: 'BatchCode', name: 'Batch Code' },
+                { id: 'Quantity', name: 'Quantity' }
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }
+                else if (field.id === 'Quantity') {
+                    const quantity = Number(value.trim());
+
+                    if (quantity === 0) {
+                        isValid = false;
+                        missingFields.push(field.name + " (cannot be 0)");
+                    }
+                }
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#ImpactTest-form')[0];
+            const formData = new FormData(form);
+
+            $('#tbl_ImpactSpec [contenteditable="true"]').each(function() {
+                const dataName = $(this).data('name');
+                const content = $(this).text().trim();
+
+                if (dataName) {
+                    formData.append(dataName, content);
+                }
+            });
+
+            $.ajax({
+                url: $('#ImpactTest-form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+                    if (!response.success) {
+                        var errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg != "") {
+                                showDangerAlert(errorMessg);
+                            }
+                        }
+                        else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    }
+                    else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("impactTest", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+
         function initPhotoSelect() {
             const chooseBtn = document.getElementById('chooseFileBtn');
             const fileInput = document.getElementById('photoInput');
@@ -510,7 +718,6 @@
             });
         }
 
-        
         function initPhotoChange() {
             const fileInput = document.getElementById('photoInput');
             const fileNameEl = document.getElementById('fileName');
@@ -522,7 +729,7 @@
             fileInput.addEventListener('change', function (e) {
                 const file = e.target.files[0];
 
-               
+
                 if (!file) {
                     fileNameEl.textContent = "No file chosen";
                     preview.style.display = "none";
@@ -530,17 +737,17 @@
                     return;
                 }
 
-               
+
                 if (file.size > 5 * 1024 * 1024) {
                     alert("File is too large. Max 5MB.");
                     fileInput.value = "";
                     return;
                 }
 
-               
+
                 fileNameEl.textContent = file.name;
 
-               
+
                 if (file.type.startsWith("image/")) {
                     const reader = new FileReader();
                     reader.onload = function (ev) {
@@ -552,8 +759,6 @@
                 }
             });
         }
-
-     
 
     </script>
 }

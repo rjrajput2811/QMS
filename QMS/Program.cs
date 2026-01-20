@@ -26,6 +26,7 @@ using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepository;
 using QMS.Core.Repositories.FIFOTrackerRepository;
+using QMS.Core.Repositories.ImpactTestRepository;
 using QMS.Core.Repositories.ImprTrackerRepository;
 using QMS.Core.Repositories.InternalTypeTestRepo;
 using QMS.Core.Repositories.KaizenTrackerRepository;
@@ -34,6 +35,7 @@ using QMS.Core.Repositories.OpenPoRepository;
 using QMS.Core.Repositories.PaymentTrackerRepository;
 using QMS.Core.Repositories.PDIAuthSignRepository;
 using QMS.Core.Repositories.PDITrackerRepository;
+using QMS.Core.Repositories.PhotometryRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.RCAReportRepository;
 using QMS.Core.Repositories.RMTCDetailsRepository;
@@ -53,6 +55,7 @@ using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.DeviationNoteService;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -116,6 +119,8 @@ builder.Services.AddTransient<IDeviationNoteService, DeviationNoteService>();
 builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
 builder.Services.AddScoped<ISPMBuyRepository, SPMBuyRepository>();
 builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportRepository>();
+builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();
+builder.Services.AddTransient<IImpactTestRepository, ImpactTestRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

@@ -1,4 +1,5 @@
 ﻿using QMS.Core.DatabaseContext.Shared;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QMS.Core.DatabaseContext;

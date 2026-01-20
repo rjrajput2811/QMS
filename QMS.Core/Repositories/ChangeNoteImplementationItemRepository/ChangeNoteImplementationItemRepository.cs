@@ -107,11 +107,14 @@ public class ChangeNoteImplementationItemRepository : SqlTableRepository, IChang
         {
             var result = new OperationResult();
             var items = await _dbContext.ChangeNoteImplementationItems.Where(i => i.ChangeNoteId == changeNoteId).ToListAsync();
+            if (items.Count == 0)
+            {
+                result.Success = true;
+            }
             foreach (var item in items)
             {
                 result = await base.DeletePermanentlyAsync<ChangeNoteImplementationItem>(item.Id);
                 if (!result.Success) { return result; }
-
             }
             return result;
         }

@@ -9,60 +9,49 @@
         padding-left: 12px;
     }
 
-
     /* parent row → remove bottom border for merged columns */
-    .tabulator-row.merge-parent
-    .tabulator-cell.tabulator-field-target,
-    .tabulator-row.merge-parent
-    .tabulator-cell.tabulator-field-weightage,
-    .tabulator-row.merge-parent
-    .tabulator-cell.tabulator-field-formula,
-    .tabulator-row.merge-parent
-    .tabulator-cell.tabulator-field-score {
+    .tabulator-row.merge-parent .tabulator-cell.tabulator-field-target,
+    .tabulator-row.merge-parent .tabulator-cell.tabulator-field-weightage,
+    .tabulator-row.merge-parent .tabulator-cell.tabulator-field-formula,
+    .tabulator-row.merge-parent .tabulator-cell.tabulator-field-score {
         border-bottom-color: transparent !important;
     }
 
     /* child row → remove top border (and hide any text) for merged columns */
-    .tabulator-row.merge-child
-    .tabulator-cell.tabulator-field-target,
-    .tabulator-row.merge-child
-    .tabulator-cell.tabulator-field-weightage,
-    .tabulator-row.merge-child
-    .tabulator-cell.tabulator-field-formula,
-    .tabulator-row.merge-child
-    .tabulator-cell.tabulator-field-score {
+    .tabulator-row.merge-child .tabulator-cell.tabulator-field-target,
+    .tabulator-row.merge-child .tabulator-cell.tabulator-field-weightage,
+    .tabulator-row.merge-child .tabulator-cell.tabulator-field-formula,
+    .tabulator-row.merge-child .tabulator-cell.tabulator-field-score {
         border-top-color: transparent !important;
         color: transparent;
     }
 
+    .nav-tabs .nav-link {
+        border: none;
+        border-radius: 0;
+        margin-right: 6px;
+        margin-bottom: -2px;
+        color: #333;
+        background: transparent;
+        font-weight: 500;
+        font-size: 14px;
+        padding: 8px 20px;
+        transition: color .2s ease-in-out;
+    }
 
-       
-        .nav-tabs .nav-link {
-            border: none;
-            border-radius: 0;
-            margin-right: 6px;
-            margin-bottom: -2px;
-            color: #333;
-            background: transparent;
-            font-weight: 500;
-            font-size: 14px;
-            padding: 8px 20px;
-            transition: color .2s ease-in-out;
+        .nav-tabs .nav-link:hover {
+            color: #000;
         }
 
-            .nav-tabs .nav-link:hover {
-                color: #000;
-            }
-
-            .nav-tabs .nav-link.active {
-                color: #000 !important;
-                font-weight: 700 !important;
-                background: #fff;
-                border: 3px solid #0c83ff;
-                border-bottom-color: #fff;
-                border-radius: 8px 8px 0 0;
-                font-size: 15px !important;
-            }
+        .nav-tabs .nav-link.active {
+            color: #000 !important;
+            font-weight: 700 !important;
+            background: #fff;
+            border: 3px solid #0c83ff;
+            border-bottom-color: #fff;
+            border-radius: 8px 8px 0 0;
+            font-size: 15px !important;
+        }
 
     .header-select {
         appearance: none;
@@ -188,7 +177,6 @@
     </div>
 </div>
 
-
 @Html.HiddenFor(m => m.Id)
 <div class="row">
     <div class="col-12">
@@ -238,7 +226,6 @@
 
                 </div>
 
-
                 <!-- TABS + TABLES INSIDE SAME CARD -->
                 <ul class="nav nav-tabs custom-tabs" id="sixSigmaTabs" role="tablist">
                     <li class="nav-item">
@@ -274,8 +261,10 @@
         </div>
     </div>
 </div>
+
 <script src="~/js/tabulator.min.js"></script>
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+
 <script>
     let effectivenessTable;
     let engagementTable;
@@ -287,18 +276,218 @@
             throw new Error("Tabulator not loaded");
         }
 
+        // =================== UTILITY FUNCTIONS ===================
+
+        function safeValue(val) {
+            if (val === null || val === undefined) return "";
+            if (typeof val === "string") {
+                const v = val.trim();
+                if (v === "" || v.toLowerCase() === "null") return "";
+                return v;
+            }
+            return val;
+        }
+
         function editableWhenOddId(cell) {
             const rowData = cell.getRow().getData();
             const id = Number(rowData.id);
-
             if (isNaN(id)) return false;
-            return id % 2 !== 0;   // odd ids editable
+            return id % 2 !== 0;
         }
+
+        function toNum(v) {
+            if (v === null || v === undefined) return NaN;
+            if (typeof v === "string") v = v.trim();
+            if (v === "" || v === "null") return NaN;
+            v = String(v).replace(/,/g, "");
+            const n = parseFloat(v);
+            return Number.isFinite(n) ? n : NaN;
+        }
+
+        function clamp(v, lo, hi) {
+            return Math.max(lo, Math.min(hi, v));
+        }
+
+        function getModelValue(val) {
+            if (val === null || val === undefined || val === "null" || val === "") {
+                return "";
+            }
+            return val;
+        }
+
+        // =================== EXCEL FORMULA EVALUATOR ===================
+
+        function sanitizeFormula(formula) {
+            const allowedPattern = /^[CDEcde0-9\s+\-*/().,<>=!&|]+$/;
+            const cleaned = formula.replace(/\b(IF|AND|OR|MIN|MAX|if|and|or|min|max)\b/g, '');
+
+            if (!allowedPattern.test(cleaned)) {
+                throw new Error("Formula contains disallowed characters");
+            }
+
+            return formula;
+        }
+
+        function evaluateExcelFormula(formula, C, D, E) {
+            if (!formula || formula.trim() === "" || formula === "null") {
+                return null; // Return null to trigger fallback
+            }
+
+            try {
+                let normalized = formula
+                    .replace(/C\d+/gi, 'C')
+                    .replace(/D\d+/gi, 'D')
+                    .replace(/E\d+/gi, 'E');
+
+                normalized = sanitizeFormula(normalized);
+
+                // Handle Excel comparison operators
+                normalized = normalized.replace(/<>/g, '!=');
+                normalized = normalized.replace(/([^<>!])=/g, '$1==');
+                normalized = normalized.replace(/===/g, '==');
+
+                const safeEval = new Function(
+                    'C', 'D', 'E',
+                    'IF', 'AND', 'OR', 'MIN', 'MAX',
+                    `
+                    "use strict";
+                    try {
+                        return (${normalized});
+                    } catch (e) {
+                        throw new Error("Formula execution failed: " + e.message);
+                    }
+                    `
+                );
+
+                const IF = (condition, valueIfTrue, valueIfFalse) => {
+                    return condition ? valueIfTrue : valueIfFalse;
+                };
+
+                const AND = (...args) => {
+                    return args.every(arg => arg === true || arg === 1);
+                };
+
+                const OR = (...args) => {
+                    return args.some(arg => arg === true || arg === 1);
+                };
+
+                const MIN = (...args) => {
+                    return Math.min(...args);
+                };
+
+                const MAX = (...args) => {
+                    return Math.max(...args);
+                };
+
+                const result = safeEval(C, D, E, IF, AND, OR, MIN, MAX);
+
+                if (typeof result === 'number' && Number.isFinite(result)) {
+                    return Math.round(result * 100) / 100;
+                }
+
+                return result;
+
+            } catch (error) {
+                console.error("Formula evaluation error:", error.message, "| Formula:", formula);
+                return null; // Return null to trigger fallback
+            }
+        }
+
+        // =================== WEIGHTED SCORE CALCULATION ===================
+
+        function calcWeightedScore(rowData) {
+            // Summary row - don't calculate here
+            if (rowData.score_formula === "Total Weighted Score") {
+                return rowData.score || "";
+            }
+
+            const id = Number(rowData.id);
+
+            // Only calculate for parent rows (odd IDs)
+            if (!Number.isFinite(id) || id % 2 === 0) {
+                return ""; // Child rows always empty
+            }
+
+            const C = toNum(rowData.data);      // Data for PC
+            const D = toNum(rowData.target);    // Target
+            const E = toNum(rowData.weightage); // Weightage
+
+            // Validate inputs
+            if (!Number.isFinite(C) || !Number.isFinite(D) || !Number.isFinite(E)) {
+                return "";
+            }
+
+            // Avoid division by zero
+            if (D === 0) {
+                return "";
+            }
+
+            // CHANGED: Try to use formula, but always fallback if null/empty/invalid
+            let result = null;
+
+            if (rowData.score_formula && rowData.score_formula.trim() !== "" && rowData.score_formula !== "null") {
+                result = evaluateExcelFormula(rowData.score_formula, C, D, E);
+            }
+
+            // If formula evaluation failed or returned null, use fallback
+            if (result === null || result === "" || !Number.isFinite(result)) {
+                // Fallback: MIN(MAX((C/D)*E, 0), E)
+                const raw = (C / D) * E;
+                const score = clamp(raw, 0, E);
+                return Math.round(score * 100) / 100;
+            }
+
+            return result;
+        }
+
+        function recalcTableScores(table) {
+            if (!table) return;
+
+            let total = 0;
+            let hasCalculation = false;
+
+            table.getRows().forEach(r => {
+                const d = r.getData();
+
+                // Skip summary row
+                if (d.formula === "Total Weighted Score") {
+                    return;
+                }
+
+                // Calculate for all parent rows (odd id), regardless of formula presence
+                const id = Number(d.id);
+                if (!Number.isFinite(id) || id % 2 === 0) {
+                    return; // Skip child rows
+                }
+
+                const newScore = calcWeightedScore(d);
+
+                // Update row if score changed
+                if (d.score !== newScore) {
+                    r.update({ score: newScore }, true);
+                }
+
+                // Add to total if valid number
+                const n = toNum(newScore);
+                if (Number.isFinite(n)) {
+                    total += n;
+                    hasCalculation = true;
+                }
+            });
+
+            // Update Total Weighted Score row
+            const totalRow = table.getRows().find(r => r.getData().formula === "Total Weighted Score");
+            if (totalRow) {
+                const roundedTotal = hasCalculation ? Math.round(total * 100) / 100 : "";
+                totalRow.update({ score: roundedTotal }, true);
+            }
+        }
+
+        // =================== ROW FORMATTER ===================
 
         function mergeRowFormatter(row) {
             const data = row.getData();
 
-            // ====== Merge normal double-line rows ======
             if (data.mergeWithPrev) {
                 const prevRow = row.getPrevRow();
                 if (!prevRow) return;
@@ -320,362 +509,35 @@
                 });
             }
 
-            // ====== Special CASE for "Total Weighted Score" ======
             if (data.formula === "Total Weighted Score") {
-
-                // Only affect target & weightage (NOT score)
                 ["target", "weightage"].forEach(field => {
                     const cell = row.getCell(field);
                     if (cell) {
                         const el = cell.getElement();
-                        el.innerHTML = "";              // no text
-                        el.style.borderLeft = "none";   // remove vertical lines
-                        el.style.borderRight = "none";  // keep top/bottom lines only
+                        el.innerHTML = "";
+                        el.style.borderLeft = "none";
+                        el.style.borderRight = "none";
                     }
                 });
 
-                // Style the Formula cell (but DO NOT touch its right border now)
                 const formulaCell = row.getCell("formula");
                 if (formulaCell) {
                     const el = formulaCell.getElement();
                     el.style.textAlign = "center";
                     el.style.fontWeight = "bold";
-                    // el.style.borderRight = "none";   // <-- removed so SCORE column stays intact
                 }
             }
         }
 
-        function toNum(v) {
-            if (v === null || v === undefined) return NaN;
-            if (typeof v === "string") v = v.trim();
-            if (v === "") return NaN;
-            v = String(v).replace(/,/g, "");
-            const n = parseFloat(v);
-            return Number.isFinite(n) ? n : NaN;
-        }
-
-        function clamp(v, lo, hi) {
-            return Math.max(lo, Math.min(hi, v));
-        }
-
-        // Excel style: MIN(MAX((Data/Target)*Weightage, 0), Weightage)
-        function calcWeightedScore(rowData) {
-            if (rowData.formula === "Total Weighted Score") return rowData.score;
-
-            const id = Number(rowData.id);
-            if (!Number.isFinite(id) || id % 2 === 0) return rowData.score; // ignore child rows
-
-            const data = toNum(rowData.data);
-            const target = toNum(rowData.target);
-            const weightage = toNum(rowData.weightage);
-
-            if (!Number.isFinite(data) || !Number.isFinite(target) || !Number.isFinite(weightage)) return "";
-            if (target === 0) return "";
-
-            const raw = (data / target) * weightage;
-            const score = clamp(raw, 0, weightage);
-
-            return Math.round(score * 100) / 100; // 2 decimals
-        }
-
-        function recalcTableScores(table) {
-            if (!table) return;
-
-            let total = 0;
-
-            table.getRows().forEach(r => {
-                const d = r.getData();
-
-                if (d.formula === "Total Weighted Score") return;
-
-                const newScore = calcWeightedScore(d);
-
-                if (d.score !== newScore) {
-                    r.update({ score: newScore });
-                }
-
-                const n = toNum(newScore);
-                if (Number.isFinite(n)) total += n;
-            });
-
-            const totalRow = table.getRows().find(r => r.getData().formula === "Total Weighted Score");
-            if (totalRow) {
-                totalRow.update({ score: Math.round(total * 100) / 100 });
-            }
-        }
-
-        // =================== DATA ===================
-
-        var effectivenessTemplate = [
-
-            // SR 1
-            {
-                id: 1, SrNo: 1, group: "Business factor 1 - Customer impact",
-                attribute: "OTIF (AS IS - Curr.level) / As IS - Tgt",
-                data: "@(Model?.Cust_Data_Pc_Ot)", target: "@(Model?.Cust_Target_Tgt)",
-                weightage: "@(Model?.Cust_Weightage_Tgt)", formula: "@(Model?.Cust_Formula_Tgt)",
-                score: "@(Model?.Cust_Weighted_Score_Tgt)", mergeWithPrev: false
-            },
-
-            {
-                id: 2, SrNo: 1, group: "Business factor 1 - Customer impact",
-                attribute: "AS IS",
-                data: "@(Model?.Cust_Data_Pc_As)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            // SR 2
-            {
-                id: 3, SrNo: 2, group: "Business factor 1 - Customer impact",
-                attribute: "Closed A Class CSO’s closed in <= 45 days - YTD",
-                data: "@(Model?.Cust_Data_Pc_Close)", target: "@(Model?.Cust_Target_Ytd)",
-                weightage: "@(Model?.Cust_Weightage_Ytd)", formula: "@(Model?.Cust_Formula_Ytd)",
-                score: "@(Model?.Cust_Weighted_Score_Ytd)", mergeWithPrev: false
-            },
-            {
-                id: 4, SrNo: 2, group: "Business factor 1 - Customer impact",
-                attribute: "Total A Class CSO logged in YTD",
-                data: "@(Model?.Cust_Data_Pc_Total)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            // SR 3 - Process Improvement
-            {
-                id: 5, SrNo: 3, group: "Business factor 2 - Process Improvement",
-                attribute: "No of NPDs launched on time, within budget and Qty",
-                data: "@(Model?.Proc_Data_Pc_Npd)", target: "@(Model?.Proc_Target)",
-                weightage: "@(Model?.Proc_Weightage)", formula: "@(Model?.Proc_Formula)",
-                score: "@(Model?.Proc_Weighted_Score)", mergeWithPrev: false
-            },
-            {
-                id: 6, SrNo: 3, group: "Business factor 2 - Process Improvement",
-                attribute: "Annual Target",
-                data: "@(Model?.Proc_Data_Pc_Ann)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            // SR 4 — Key Result Areas
-            {
-                id: 7, SrNo: 4, group: "Business factor 3 - Key Result areas",
-                attribute: "Customer Satisfaction index (Net Promoter Score)",
-                data: "@(Model?.Key_Data_Pc_Cust)", target: "@(Model?.Key_Target)",
-                weightage: "@(Model?.Key_Weightage)", formula: "@(Model?.Key_Formula)",
-                score: "@(Model?.Key_Weighted_Score)", mergeWithPrev: false
-            },
-            {
-                id: 8, SrNo: 4, group: "Business factor 3 - Key Result areas",
-                attribute: "Annual Target",
-                data: "@(Model?.Key_Data_Pc_Ann)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            // SR 5 — Savings
-            {
-                id: 9, SrNo: 5, group: "Business factor 4 - Savings",
-                attribute: "Actual savings realised in C&I YTD",
-                data: "@(Model?.Save_Data_Pc_Actu)", target: "@(Model?.Save_Target)",
-                weightage: "@(Model?.Save_Weightage)", formula: "@(Model?.Save_Formula)",
-                score: "@(Model?.Save_Weighted_Score)", mergeWithPrev: false
-            },
-            {
-                id: 10, SrNo: 5, group: "Business factor 4 - Savings",
-                attribute: "Annual Target",
-                data: "@(Model?.Save_Data_Pc_Ann)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            // SR 6 — Outgoing Quality
-            {
-                id: 11, SrNo: 6, group: "Business factor 5 - Out going product quality",
-                attribute: "Sigma level of outgoing product",
-                data: "@(Model?.Out_Data_Pc_Sigma)", target: "@(Model?.Out_Target)",
-                weightage: "@(Model?.Out_Weightage)", formula: "@(Model?.Out_Formula)",
-                score: "@(Model?.Out_Weighted_Score)", mergeWithPrev: false
-            },
-            {
-                id: 12, SrNo: 6, group: "Business factor 5 - Out going product quality",
-                attribute: "AS IS",
-                data: "@(Model?.Out_Data_Pc_As)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            // SR 7 — SPM
-            {
-                id: 13, SrNo: 7, group: "Business factor 6 - SPM Rating",
-                attribute: "SPM Scores >= 3 stars",
-                data: "@(Model?.Spm_Data_Pc_Spm)", target: "@(Model?.Spm_Target)",
-                weightage: "@(Model?.Spm_Weightage)", formula: "@(Model?.Spm_Formula)",
-                score: "@(Model?.Spm_Weighted_Score)", mergeWithPrev: false
-            },
-            {
-                id: 14, SrNo: 7, group: "Business factor 6 - SPM Rating",
-                attribute: "AS IS",
-                data: "@(Model?.Spm_Data_Pc_As)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            // SR 8 — Project Closure (no scoring)
-            {
-                id: 15, SrNo: 8, group: "Business factor 7 - Project Closure",
-                attribute: "Projects closed this year", data: "@(Model?.Proj_Data_Pc_Close)",
-                target: "", weightage: "", formula: "", score: "", mergeWithPrev: false
-            },
-            {
-                id: 16, SrNo: 8, group: "Business factor 7 - Project Closure",
-                attribute: "Projects initiated + CF from last year", data: "@(Model?.Proj_Data_Pc_Dmaic)",
-                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
-            },
-            {
-                id: 17, SrNo: 9, group: "Business factor 7 - Project Closure",
-                attribute: "Turbo projects closed", data: "@(Model?.Proj_Data_Pc_Turbo)",
-                target: "", weightage: "", formula: "", score: "", mergeWithPrev: false
-            },
-            {
-                id: 18, SrNo: 9, group: "Business factor 7 - Project Closure",
-                attribute: "Projects planned", data: "@(Model?.Proj_Data_Pc_Planned)",
-                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
-            },
-
-            // SR 9 — SUMMARY
-            {
-                id: 19, SrNo: 9, group: "Weighted Score Summary",
-                attribute: "Weighted Score Target",
-                data: "@(Model?.Eff_Total_Sum)", target: "", weightage: "",
-                formula: "Total Weighted Score", score: "@(Model?.Eff_Total_Weighted_Score)",
-                mergeWithPrev: false
-            }
-        ];
-
-        var engagementTemplate = [
-
-            {
-                id: 1, SrNo: 1, group: "Lean Engagement",
-                attribute: "No Of People engaged in Turbo and Ideas generation",
-                data: "@(Model?.Lean_Data_Pc_No_People)", target: "@(Model?.Lean_Target)",
-                weightage: "@(Model?.Lean_Weightage)", formula: "@(Model?.Lean_Formula)",
-                score: "@(Model?.Lean_Weighted_Score)", mergeWithPrev: false
-            },
-
-            {
-                id: 2, SrNo: 1, group: "Lean Engagement",
-                attribute: "Total no of people in the location including permanent employees at vendor location",
-                data: "@(Model?.Lean_Data_Pc_Total_People)", target: "", weightage: "",
-                formula: "", score: "", mergeWithPrev: true
-            },
-
-            {
-                id: 3, SrNo: 2, group: "Six Sigma Engagement -(Tools & Projects)",
-                attribute: "Project Engagement",
-                data: "@(Model?.Six_Sigma_Data_Pc_Proj)", target: "@(Model?.Six_Sigma_Target)",
-                weightage: "@(Model?.Six_Sigma__Weightage)", formula: "@(Model?.Six_Sigma_Formula)",
-                score: "@(Model?.Six_Sigma_Weighted_Score)", mergeWithPrev: false
-            },
-
-            {
-                id: 4, SrNo: 2, group: "Six Sigma Engagement -(Tools & Projects)",
-                attribute: "Annual Target",
-                data: "@(Model?.Six_Sigma_Data_Pc_Ann)", target: "", weightage: "", formula: "",
-                score: "", mergeWithPrev: true
-            },
-
-            {
-                id: 5, SrNo: 3, group: "SPM Review Plan vs. actual",
-                attribute: "No of Vendors audited actually",
-                data: "@(Model?.Review_Data_Pc_Proj_Review)", target: "@(Model?.Review_Target)",
-                weightage: "@(Model?.Review_Weightage)", formula: "@(Model?.Review_Formula)",
-                score: "@(Model?.Review_Weighted_Score)", mergeWithPrev: false
-            },
-
-            {
-                id: 6, SrNo: 3, group: "SPM Review Plan vs. actual",
-                attribute: "No of Vendors covered in the Annual Audit Plan (Make and Buy)",
-                data: "@(Model?.Review_Data_Pc_Proj_Running)", target: "", weightage: "",
-                formula: "", score: "", mergeWithPrev: true
-            },
-
-            // Sr No 4 — Review Engagement
-            {
-                id: 7, SrNo: 4, group: "Review Engagement-All running & closed projects",
-                attribute: "Number of projects reviewed by the champion every PC",
-                data: "@(Model?.Review_Data_Pc_Proj_Review)", target: "", weightage: "",
-                formula: "", score: "", mergeWithPrev: false
-            },
-
-            {
-                id: 8, SrNo: 4, group: "Review Engagement-All running & closed projects",
-                attribute: "Number of projects running",
-                data: "@(Model?.Review_Data_Pc_Proj_Running)", target: "", weightage: "",
-                formula: "", score: "", mergeWithPrev: true
-            },
-
-            // Sr No 5 — Market Engagement
-            {
-                id: 9, SrNo: 5, group: "Market Engagement- Visits with CSO'S",
-                attribute: "CSO captured during Market Visits and Site Audits",
-                data: "@(Model?.Market_Data_Pc_Cap_Cso)", target: "@(Model?.Market_Target)",
-                weightage: "@(Model?.Market_Weightage)", formula: "@(Model?.Market_Formula)",
-                score: "@(Model?.Market_Weighted_Score)", mergeWithPrev: false
-            },
-
-            {
-                id: 10, SrNo: 5, group: "Market Engagement- Visits with CSO'S",
-                attribute: "Target no of CSO",
-                data: "@(Model?.Market_Data_Pc_Tar_Cso)", target: "", weightage: "",
-                formula: "", score: "", mergeWithPrev: true
-            },
-
-            // Sr No 6 — BKPT YTD
-            {
-                id: 11, SrNo: 6, group: "BKPT - Generation & Replication of Ideas",
-                attribute: "Number of Ideas generated till the PC (YTD)",
-                data: "@(Model?.Bkpt_Data_Pc_Ytd)", target: "@(Model?.Bkpt_Target_Ytd)",
-                weightage: "@(Model?.Bkpt_Weightage_Ytd)", formula: "@(Model?.Bkpt_Formula_Ytd)",
-                score: "@(Model?.Bkpt_Weighted_Score_Ytd)", mergeWithPrev: false
-            },
-
-            {
-                id: 12, SrNo: 6, group: "BKPT - Generation & Replication of Ideas",
-                attribute: "Annual Target",
-                data: "@(Model?.Bkpt_Data_Pc_Ann_Ytd)", target: "", weightage: "",
-                formula: "", score: "", mergeWithPrev: true
-            },
-
-            // Sr No 7 — BKPT MFG
-            {
-                id: 13, SrNo: 7, group: "BKPT - Generation & Replication of Ideas",
-                attribute: "MFG: Number of Ideas replicated from competition/industry",
-                data: "@(Model?.Bkpt_Data_Pc_Mfg)", target: "@(Model?.Bkpt_Target_Mfg)",
-                weightage: "@(Model?.Bkpt_Weightage_Mfg)", formula: "@(Model?.Bkpt_Formula_Mfg)",
-                score: "@(Model?.Bkpt_Weighted_Score_Mfg)", mergeWithPrev: false
-            },
-
-            {
-                id: 14, SrNo: 7, group: "BKPT - Generation & Replication of Ideas",
-                attribute: "Annual Target",
-                data: "@(Model?.Bkpt_Data_Pc_Ann_Mfg)", target: "", weightage: "",
-                formula: "", score: "", mergeWithPrev: true
-            },
-
-            // Sr No 8 — Summary
-            {
-                id: 15, SrNo: 8, group: "Weighted Score Summary",
-                attribute: "Weighted Score Target",
-                data: "@(Model?.Eng_Total_Sum)", target: "", weightage: "",
-                formula: "Total Weighted Score", score: "@(Model?.Eng_Total_Weighted_Score)",
-                mergeWithPrev: false
-            }
-        ];
-
-        // =================== COLUMNS ===================
+        // =================== CUSTOM EDITOR ===================
 
         function numericOnlyEditor(cell, onRendered, success, cancel) {
             var input = document.createElement("input");
-            input.type = "text";                 // no arrows
+            input.type = "text";
             input.value = cell.getValue() ?? "";
 
-            // block alphabets in real time
             input.addEventListener("input", function () {
-                this.value = this.value.replace(/[^0-9.]/g, "");  // allow digits + dot
+                this.value = this.value.replace(/[^0-9.\-]/g, "");
             });
 
             input.addEventListener("blur", () => success(input.value));
@@ -685,162 +547,435 @@
                 if (e.key === "Escape") cancel();
             });
 
+            onRendered(function () {
+                input.focus();
+                input.select();
+            });
+
             return input;
         }
 
+        // =================== DATA TEMPLATES ===================
+
+
+        var effectivenessTemplate = [
+            // SR 1 - Customer Impact (Cap: 10)
+            {
+                id: 1, SrNo: 1, group: "Business factor 1 - Customer impact",
+                attribute: "OTIF (AS IS - Curr.level) / As IS - Tgt",
+                data: safeValue("@(Model?.Cust_Data_Pc_Ot)"),
+                target: safeValue("@(Model?.Cust_Target_Tgt)"),
+                weightage: safeValue("@(Model?.Cust_Weightage_Tgt)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 2, SrNo: 1, group: "Business factor 1 - Customer impact",
+                attribute: "AS IS",
+                data: safeValue("@(Model?.Cust_Data_Pc_As)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 2 - Customer Impact (Cap: 15)
+            {
+                id: 3, SrNo: 2, group: "Business factor 1 - Customer impact",
+                attribute: "Closed A Class CSO's closed in <= 45 days - YTD",
+                data: safeValue("@(Model?.Cust_Data_Pc_Close)"),
+                target: safeValue("@(Model?.Cust_Target_Ytd)"),
+                weightage: safeValue("@(Model?.Cust_Weightage_Ytd)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<15),((C/D)*E),IF(((C/D)*E)<0,0,15))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 4, SrNo: 2, group: "Business factor 1 - Customer impact",
+                attribute: "Total A Class CSO logged in YTD",
+                data: safeValue("@(Model?.Cust_Data_Pc_Total)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 3 - Process Improvement (Cap: 10)
+            {
+                id: 5, SrNo: 3, group: "Business factor 2 - Process Improvement",
+                attribute: "No of NPDs launched on time, within budget and Qty",
+                data: safeValue("@(Model?.Proc_Data_Pc_Npd)"),
+                target: safeValue("@(Model?.Proc_Target)"),
+                weightage: safeValue("@(Model?.Proc_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 6, SrNo: 3, group: "Business factor 2 - Process Improvement",
+                attribute: "Annual Target",
+                data: safeValue("@(Model?.Proc_Data_Pc_Ann)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 4 - Key Result Areas (Cap: 10)
+            {
+                id: 7, SrNo: 4, group: "Business factor 3 - Key Result areas",
+                attribute: "Customer Satisfaction index (Net Promoter Score)",
+                data: safeValue("@(Model?.Key_Data_Pc_Cust)"),
+                target: safeValue("@(Model?.Key_Target)"),
+                weightage: safeValue("@(Model?.Key_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 8, SrNo: 4, group: "Business factor 3 - Key Result areas",
+                attribute: "Annual Target",
+                data: safeValue("@(Model?.Key_Data_Pc_Ann)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 5 - Savings (Cap: 10)
+            {
+                id: 9, SrNo: 5, group: "Business factor 4 - Savings",
+                attribute: "Actual savings realised in C&I YTD",
+                data: safeValue("@(Model?.Save_Data_Pc_Actu)"),
+                target: safeValue("@(Model?.Save_Target)"),
+                weightage: safeValue("@(Model?.Save_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 10, SrNo: 5, group: "Business factor 4 - Savings",
+                attribute: "Annual Target",
+                data: safeValue("@(Model?.Save_Data_Pc_Ann)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 6 - Outgoing Quality (Cap: 15)
+            {
+                id: 11, SrNo: 6, group: "Business factor 5 - Out going product quality",
+                attribute: "Sigma level of outgoing product",
+                data: safeValue("@(Model?.Out_Data_Pc_Sigma)"),
+                target: safeValue("@(Model?.Out_Target)"),
+                weightage: safeValue("@(Model?.Out_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<15),((C/D)*E),IF(((C/D)*E)<0,0,15))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 12, SrNo: 6, group: "Business factor 5 - Out going product quality",
+                attribute: "AS IS",
+                data: safeValue("@(Model?.Out_Data_Pc_As)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 7 - SPM Rating (Cap: 10)
+            {
+                id: 13, SrNo: 7, group: "Business factor 6 - SPM Rating",
+                attribute: "SPM Scores >= 3 stars",
+                data: safeValue("@(Model?.Spm_Data_Pc_Spm)"),
+                target: safeValue("@(Model?.Spm_Target)"),
+                weightage: safeValue("@(Model?.Spm_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 14, SrNo: 7, group: "Business factor 6 - SPM Rating",
+                attribute: "AS IS",
+                data: safeValue("@(Model?.Spm_Data_Pc_As)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 8-9 - Project Closure (No scoring)
+            {
+                id: 15, SrNo: 8, group: "Business factor 7 - Project Closure",
+                attribute: "Projects closed this year",
+                data: safeValue("@(Model?.Proj_Data_Pc_Close)"),
+                target: safeValue("@(Model?.Proj_Num_Target)"),
+                weightage: safeValue("@(Model?.Proj_Num_Weightage)"),
+                formula: "", 
+                score_formula: "IF(AND(((C28/D28)*E28)>=0,((C28/D28)*E28)<10),((C28/D28)*E28),IF(((C28/D28)*E28)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            
+            {
+                id: 16, SrNo: 8, group: "Business factor 7 - Project Closure",
+                attribute: "Projects initiated + CF from last year",
+                data: safeValue("@(Model?.Proj_Data_Pc_Dmaic)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+             {
+                id: 17, SrNo: 9, group: "Business factor 7 - Project Closure",
+                attribute: "Turbo projects closed",
+                data: safeValue("@(Model?.Proj_Data_Pc_Turbo)"),
+                target: safeValue("@(Model?.Proj_No_Target)"),
+                weightage: safeValue("@(Model?.Proj_No_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C30/D30)*E30)>=0,((C30/D30)*E30)<10),((C30/D30)*E30),IF(((C30/D30)*E30)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 18, SrNo: 9, group: "Business factor 7 - Project Closure",
+                attribute: "Projects planned",
+                data: safeValue("@(Model?.Proj_Data_Pc_Planned)"),
+                target: "",
+                weightage: "",
+                formula: "",
+                score_formula: "",
+                score: "", mergeWithPrev: true
+            },
+
+            // SR 10 - Summary
+            {
+                id: 19, SrNo: 10, group: "Weighted Score Summary",
+                attribute: "Weighted Score Target",
+                data: "", target: "", weightage: "",
+                formula: "Total Weighted Score", score: "", mergeWithPrev: false
+            }
+        ];
+
+        var engagementTemplate = [
+            // SR 1 - Lean Engagement (Cap: 15)
+            {
+                id: 1, SrNo: 1, group: "Lean Engagement",
+                attribute: "No Of People engaged in Turbo and Ideas generation",
+                data: safeValue("@(Model?.Lean_Data_Pc_No_People)"),
+                target: safeValue("@(Model?.Lean_Target)"),
+                weightage: safeValue("@(Model?.Lean_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<15),((C/D)*E),IF(((C/D)*E)<0,0,15))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 2, SrNo: 1, group: "Lean Engagement",
+                attribute: "Total no of people in the location including permanent employees at vendor location",
+                data: safeValue("@(Model?.Lean_Data_Pc_Total_People)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 2 - Six Sigma Engagement (Cap: 10)
+            {
+                id: 3, SrNo: 2, group: "Six Sigma Engagement -(Tools & Projects)",
+                attribute: "Project Engagement",
+                data: safeValue("@(Model?.Six_Sigma_Data_Pc_Proj)"),
+                target: safeValue("@(Model?.Six_Sigma_Target)"),
+                weightage: safeValue("@(Model?.Six_Sigma__Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 4, SrNo: 2, group: "Six Sigma Engagement -(Tools & Projects)",
+                attribute: "Annual Target",
+                data: safeValue("@(Model?.Six_Sigma_Data_Pc_Ann)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 3 - SPM Review Plan (Cap: 20)
+            {
+                id: 5, SrNo: 3, group: "SPM Review Plan vs. actual",
+                attribute: "No of Vendors audited actually",
+                data: safeValue("@(Model?.Review_Data_Pc_Proj_Review)"),
+                target: safeValue("@(Model?.Review_Target)"),
+                weightage: safeValue("@(Model?.Review_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<20),((C/D)*E),IF(((C/D)*E)<0,0,20))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 6, SrNo: 3, group: "SPM Review Plan vs. actual",
+                attribute: "No of Vendors covered in the Annual Audit Plan (Make and Buy)",
+                data: safeValue("@(Model?.Review_Data_Pc_Proj_Review)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 4 - Review Engagement (No scoring)
+            {
+                id: 7, SrNo: 4, group: "Review Engagement-All running & closed projects",
+                attribute: "Number of projects reviewed by the champion every PC",
+                data: safeValue("@(Model?.Review_Data_Pc_Proj_Review)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: false
+            },
+            {
+                id: 8, SrNo: 4, group: "Review Engagement-All running & closed projects",
+                attribute: "Number of projects running",
+                data: safeValue("@(Model?.Review_Data_Pc_Proj_Running)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 5 - Market Engagement (Cap: 20)
+            {
+                id: 9, SrNo: 5, group: "Market Engagement- Visits with CSO'S",
+                attribute: "CSO captured during Market Visits and Site Audits",
+                data: safeValue("@(Model?.Market_Data_Pc_Cap_Cso)"),
+                target: safeValue("@(Model?.Market_Target)"),
+                weightage: safeValue("@(Model?.Market_Weightage)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<20),((C/D)*E),IF(((C/D)*E)<0,0,20))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 10, SrNo: 5, group: "Market Engagement- Visits with CSO'S",
+                attribute: "Target no of CSO",
+                data: safeValue("@(Model?.Market_Data_Pc_Tar_Cso)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 6 - BKPT YTD (Cap: 10)
+            {
+                id: 11, SrNo: 6, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "Number of Ideas generated till the PC (YTD)",
+                data: safeValue("@(Model?.Bkpt_Data_Pc_Ytd)"),
+                target: safeValue("@(Model?.Bkpt_Target_Ytd)"),
+                weightage: safeValue("@(Model?.Bkpt_Weightage_Ytd)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 12, SrNo: 6, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "Annual Target",
+                data: safeValue("@(Model?.Bkpt_Data_Pc_Ann_Ytd)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 7 - BKPT MFG (Cap: 10)
+            {
+                id: 13, SrNo: 7, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "MFG: Number of Ideas replicated from competition/industry",
+                data: safeValue("@(Model?.Bkpt_Data_Pc_Mfg)"),
+                target: safeValue("@(Model?.Bkpt_Target_Mfg)"),
+                weightage: safeValue("@(Model?.Bkpt_Weightage_Mfg)"),
+                formula: "",
+                score_formula: "IF(AND(((C/D)*E)>=0,((C/D)*E)<10),((C/D)*E),IF(((C/D)*E)<0,0,10))",
+                score: "", mergeWithPrev: false
+            },
+            {
+                id: 14, SrNo: 7, group: "BKPT - Generation & Replication of Ideas",
+                attribute: "Annual Target",
+                data: safeValue("@(Model?.Bkpt_Data_Pc_Ann_Mfg)"),
+                target: "", weightage: "", formula: "", score: "", mergeWithPrev: true
+            },
+
+            // SR 8 - Summary
+            {
+                id: 15, SrNo: 8, group: "Weighted Score Summary",
+                attribute: "Weighted Score Target",
+                data: "100", target: "", weightage: "",
+                formula: "Total Weighted Score", score: "", mergeWithPrev: false
+            }
+        ];
+
+        // =================== COLUMNS ===================
+
         let effectivenessColumns = [
             {
-                title: "Sr No.",
-                field: "SrNo",
-                width: 80,
-                hozAlign: "center",
-                headerHozAlign: "center",
-                editor: false,
+                title: "Sr No.", field: "SrNo", width: 80, hozAlign: "center",
+                headerHozAlign: "center", editor: false,
                 formatter: function (cell) {
                     const data = cell.getRow().getData();
-                    const el = cell.getElement();
-
                     if (data.mergeWithPrev) {
-                        el.style.borderTop = "none";
+                        cell.getElement().style.borderTop = "none";
                         return "";
                     }
                     return data.SrNo;
                 }
             },
             {
-                title: "Attribute",
-                field: "attribute",
-                hozAlign: "left",
-                widthGrow: 2,
-                formatter: "textarea"
-            },
-
-            {
-                title: "Data for PC",
-                field: "data",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
-                validator: ["numeric"]
+                title: "Attribute", field: "attribute", hozAlign: "left",
+                widthGrow: 2, formatter: "textarea"
             },
             {
-                title: "Target",
-                field: "target",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
+                title: "Data for PC", field: "data", hozAlign: "center",
+                editor: numericOnlyEditor, validator: ["numeric"]
+            },
+            {
+                title: "Target", field: "target", hozAlign: "center",
+                editor: numericOnlyEditor, validator: ["numeric"],
                 editable: function (cell) {
                     const rowData = cell.getRow().getData();
                     if (rowData.formula === "Total Weighted Score") return false;
                     return editableWhenOddId(cell);
-                },
-
-                validator: ["numeric"]
+                }
             },
             {
-                title: "Weightage",
-                field: "weightage",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
+                title: "Weightage", field: "weightage", hozAlign: "center",
+                editor: numericOnlyEditor, validator: ["numeric"],
                 editable: function (cell) {
                     const rowData = cell.getRow().getData();
                     if (rowData.formula === "Total Weighted Score") return false;
                     return editableWhenOddId(cell);
-                },
-
-                validator: ["numeric"]
+                }
             },
             {
-                title: "Formula",
-                field: "formula",
-                hozAlign: "center",
+                title: "Formula", field: "formula", hozAlign: "center",
                 editor: "input",
                 editable: function (cell) {
                     const value = cell.getValue();
-                    // 🔒 Lock only the cell with label "Total Weighted Score"
                     if (value === "Total Weighted Score") return false;
                     return editableWhenOddId(cell);
                 }
             },
-
-            { title: "Weighted Score", field: "score", hozAlign: "center", editor: false, editable: false }
+            {
+                title: "Weighted Score", field: "score", hozAlign: "center",
+                editor: false, editable: false
+            }
         ];
 
         let engagementColumns = [
             {
-                title: "Sr No.",
-                field: "SrNo",
-                width: 80,
-                hozAlign: "center",
-                headerHozAlign: "center",
-                editor: false,
+                title: "Sr No.", field: "SrNo", width: 80, hozAlign: "center",
+                headerHozAlign: "center", editor: false,
                 formatter: function (cell) {
                     const data = cell.getRow().getData();
-                    const el = cell.getElement();
-
                     if (data.mergeWithPrev) {
-                        el.style.borderTop = "none";
+                        cell.getElement().style.borderTop = "none";
                         return "";
                     }
                     return data.SrNo;
                 }
             },
             {
-                title: "Attribute",
-                field: "attribute",
-                hozAlign: "left",
-                widthGrow: 2,
-                formatter: "textarea"
-            },
-
-            {
-                title: "Data for PC",
-                field: "data",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
-                validator: ["numeric"]
+                title: "Attribute", field: "attribute", hozAlign: "left",
+                widthGrow: 2, formatter: "textarea"
             },
             {
-                title: "Target",
-                field: "target",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
+                title: "Data for PC", field: "data", hozAlign: "center",
+                editor: numericOnlyEditor, validator: ["numeric"]
+            },
+            {
+                title: "Target", field: "target", hozAlign: "center",
+                editor: numericOnlyEditor, validator: ["numeric"],
                 editable: function (cell) {
                     const rowData = cell.getRow().getData();
                     if (rowData.formula === "Total Weighted Score") return false;
                     return editableWhenOddId(cell);
-                },
-
-                validator: ["numeric"]
+                }
             },
             {
-                title: "Weightage",
-                field: "weightage",
-                hozAlign: "center",
-                editor: numericOnlyEditor,
+                title: "Weightage", field: "weightage", hozAlign: "center",
+                editor: numericOnlyEditor, validator: ["numeric"],
                 editable: function (cell) {
                     const rowData = cell.getRow().getData();
                     if (rowData.formula === "Total Weighted Score") return false;
                     return editableWhenOddId(cell);
-                },
-
-                validator: ["numeric"]
+                }
             },
             {
-                title: "Formula",
-                field: "formula",
-                hozAlign: "center",
+                title: "Formula", field: "formula", hozAlign: "center",
                 editor: "input",
                 editable: function (cell) {
                     const value = cell.getValue();
-                    // 🔒 Lock only the cell with label "Total Weighted Score"
                     if (value === "Total Weighted Score") return false;
                     return editableWhenOddId(cell);
                 }
             },
-
-            { title: "Weighted Score", field: "score", hozAlign: "center", editor: false, editable: false }
+            {
+                title: "Weighted Score", field: "score", hozAlign: "center",
+                editor: false, editable: false
+            }
         ];
 
-        // =================== TABLES ===================
+        // =================== INITIALIZE TABLES ===================
 
         effectivenessTable = new Tabulator("#sixSigmaTableEffectiveness", {
             data: effectivenessTemplate,
@@ -859,7 +994,6 @@
                 const rowData = cell.getRow().getData();
                 const table = cell.getTable();
 
-                // Keep your sync logic (same SrNo rows)
                 if (["target", "weightage", "formula"].includes(field)) {
                     const srno = rowData.SrNo;
                     const value = cell.getValue();
@@ -867,15 +1001,37 @@
                     table.getRows().forEach(r => {
                         const d = r.getData();
                         if (r !== cell.getRow() && d.SrNo === srno) {
-                            r.update({ [field]: value });
+                            r.update({ [field]: value }, true);
                         }
                     });
                 }
 
-                // ✅ Recalculate when drivers change
-                if (["data", "target", "weightage"].includes(field)) {
+                if (["data", "target", "weightage", "formula"].includes(field)) {
                     recalcTableScores(table);
                 }
+            }
+        });
+
+        effectivenessTable.on("cellEdited", function (cell) {
+         debugger
+         const field = cell.getField();
+            const rowData = cell.getRow().getData();
+            const table = cell.getTable();
+
+            if (["target", "weightage", "formula"].includes(field)) {
+                const srno = rowData.SrNo;
+                const value = cell.getValue();
+
+                table.getRows().forEach(r => {
+                    const d = r.getData();
+                    if (r !== cell.getRow() && d.SrNo === srno) {
+                        r.update({ [field]: value }, true);
+                    }
+                });
+            }
+
+            if (["data", "target", "weightage", "formula"].includes(field)) {
+                recalcTableScores(table);
             }
         });
 
@@ -896,7 +1052,6 @@
                 const rowData = cell.getRow().getData();
                 const table = cell.getTable();
 
-                // Keep your sync logic (same SrNo rows)
                 if (["target", "weightage", "formula"].includes(field)) {
                     const srno = rowData.SrNo;
                     const value = cell.getValue();
@@ -904,30 +1059,56 @@
                     table.getRows().forEach(r => {
                         const d = r.getData();
                         if (r !== cell.getRow() && d.SrNo === srno) {
-                            r.update({ [field]: value });
+                            r.update({ [field]: value }, true);
                         }
                     });
                 }
 
-                // ✅ Recalculate when drivers change
-                if (["data", "target", "weightage"].includes(field)) {
+                if (["data", "target", "weightage", "formula"].includes(field)) {
                     recalcTableScores(table);
                 }
             }
         });
 
-        // ✅ Initial calculation after load
-        recalcTableScores(effectivenessTable);
-        recalcTableScores(engagementTable);
+        engagementTable.on("cellEdited", function (cell) {
+            debugger
+             const field = cell.getField();
+                const rowData = cell.getRow().getData();
+                const table = cell.getTable();
+
+                if (["target", "weightage", "formula"].includes(field)) {
+                    const srno = rowData.SrNo;
+                    const value = cell.getValue();
+
+                    table.getRows().forEach(r => {
+                        const d = r.getData();
+                        if (r !== cell.getRow() && d.SrNo === srno) {
+                            r.update({ [field]: value }, true);
+                        }
+                    });
+                }
+
+                if (["data", "target", "weightage", "formula"].includes(field)) {
+                    recalcTableScores(table);
+                }
+        });
+
+        // Initial calculation
+        setTimeout(function() {
+            console.log("Starting initial calculation...");
+            recalcTableScores(effectivenessTable);
+            recalcTableScores(engagementTable);
+            console.log("Initial calculation complete.");
+        }, 500);
     }
+
+    // =================== SAVE FUNCTION (same as before) ===================
 
     function getRowById(rows, id) {
         return rows.find(r => r.id === id) || {};
     }
 
     function saveSixSigma() {
-        debugger
-
         const requiredHeaderFields = [
             { id: "Fy", name: "FY" },
             { id: "Pc", name: "PC" },
@@ -946,9 +1127,9 @@
         if (missingHeaderFields.length > 0) {
             const listHTML = missingHeaderFields.map(f => `<li>${f}</li>`).join("");
             showDangerAlert(`
-                    <p>Please fill out the following required field(s):</p>
-                    <ul>${listHTML}</ul>
-                `);
+                <p>Please fill out the following required field(s):</p>
+                <ul>${listHTML}</ul>
+            `);
             return false;
         }
 
@@ -961,7 +1142,6 @@
 
         const model = {};
 
-        // ---------- EFFECTIVENESS ----------
         const e1 = getRowById(eff, 1);
         const e2 = getRowById(eff, 2);
         const e3 = getRowById(eff, 3);
@@ -987,66 +1167,58 @@
         model.Cust_Weightage_Tgt = e1.weightage;
         model.Cust_Formula_Tgt = e1.formula;
         model.Cust_Weighted_Score_Tgt = e1.score;
-
         model.Cust_Data_Pc_As = e2.data;
-
         model.Cust_Data_Pc_Close = e3.data;
         model.Cust_Target_Ytd = e3.target;
         model.Cust_Weightage_Ytd = e3.weightage;
         model.Cust_Formula_Ytd = e3.formula;
         model.Cust_Weighted_Score_Ytd = e3.score;
-
         model.Cust_Data_Pc_Total = e4.data;
-
         model.Proc_Data_Pc_Npd = e5.data;
         model.Proc_Target = e5.target;
         model.Proc_Weightage = e5.weightage;
         model.Proc_Formula = e5.formula;
         model.Proc_Weighted_Score = e5.score;
-
         model.Proc_Data_Pc_Ann = e6.data;
-
         model.Key_Data_Pc_Cust = e7.data;
         model.Key_Target = e7.target;
         model.Key_Weightage = e7.weightage;
         model.Key_Formula = e7.formula;
         model.Key_Weighted_Score = e7.score;
-
         model.Key_Data_Pc_Ann = e8.data;
-
         model.Save_Data_Pc_Actu = e9.data;
         model.Save_Target = e9.target;
         model.Save_Weightage = e9.weightage;
         model.Save_Formula = e9.formula;
         model.Save_Weighted_Score = e9.score;
-
         model.Save_Data_Pc_Ann = e10.data;
-
         model.Out_Data_Pc_Sigma = e11.data;
         model.Out_Target = e11.target;
         model.Out_Weightage = e11.weightage;
         model.Out_Formula = e11.formula;
         model.Out_Weighted_Score = e11.score;
-
         model.Out_Data_Pc_As = e12.data;
-
         model.Spm_Data_Pc_Spm = e13.data;
         model.Spm_Target = e13.target;
         model.Spm_Weightage = e13.weightage;
         model.Spm_Formula = e13.formula;
         model.Spm_Weighted_Score = e13.score;
-
         model.Spm_Data_Pc_As = e14.data;
-
         model.Proj_Data_Pc_Close = e15.data;
+        model.Proj_Num_Target = e15.target;
+        model.Proj_Num_Weightage = e15.weightage;
+        model.Proj_Num_Formula = e15.formula;
+        model.Proj_Num_Weighted_Score = e15.score;
         model.Proj_Data_Pc_Dmaic = e16.data;
-        model.Proj_Data_Pc_Turbo = e17.data;
+        model.Proj_No_Weighted_Score = e17.data;
+        model.Proj_No_Target = e17.target;
+        model.Proj_No_Weightage = e17.weightage;
+        model.Proj_No_Formula = e17.formula;
+        model.Proj_Data_Pc_Turbo = e17.score;
         model.Proj_Data_Pc_Planned = e18.data;
-
         model.Eff_Total_Sum = e19.data;
         model.Eff_Total_Weighted_Score = e19.score;
 
-        // ---------- ENGAGEMENT ----------
         const g1 = getRowById(eng, 1);
         const g2 = getRowById(eng, 2);
         const g3 = getRowById(eng, 3);
@@ -1069,42 +1241,38 @@
         model.Lean_Formula = g1.formula;
         model.Lean_Weighted_Score = g1.score;
         model.Lean_Data_Pc_Total_People = g2.data;
-
         model.Six_Sigma_Data_Pc_Proj = g3.data;
         model.Six_Sigma_Target = g3.target;
         model.Six_Sigma__Weightage = g3.weightage;
         model.Six_Sigma_Formula = g3.formula;
         model.Six_Sigma_Weighted_Score = g3.score;
         model.Six_Sigma_Data_Pc_Ann = g4.data;
-
         model.Review_Data_Pc_Proj_Review = g5.data;
         model.Review_Target = g5.target;
         model.Review_Weightage = g5.weightage;
         model.Review_Formula = g5.formula;
-        model.Review_Weighted_Score = g5.score;
+        model.Spm_Review_Weighted_Score = g5.score;
         model.Review_Data_Pc_Proj_Running = g6.data;
-
+        model.Review_Data_Pc_Proj_Review = g7.data;
+        model.Review_Data_Pc_Proj_Running = g8.data;
         model.Market_Data_Pc_Cap_Cso = g9.data;
         model.Market_Target = g9.target;
-        model.Market_Weightage = g9.weightage;
+        model.Market_Weightage = g9.weightage; 
         model.Market_Formula = g9.formula;
         model.Market_Weighted_Score = g9.score;
         model.Market_Data_Pc_Tar_Cso = g10.data;
-
         model.Bkpt_Data_Pc_Ytd = g11.data;
         model.Bkpt_Target_Ytd = g11.target;
         model.Bkpt_Weightage_Ytd = g11.weightage;
         model.Bkpt_Formula_Ytd = g11.formula;
         model.Bkpt_Weighted_Score_Ytd = g11.score;
         model.Bkpt_Data_Pc_Ann_Ytd = g12.data;
-
         model.Bkpt_Data_Pc_Mfg = g13.data;
         model.Bkpt_Target_Mfg = g13.target;
         model.Bkpt_Weightage_Mfg = g13.weightage;
         model.Bkpt_Formula_Mfg = g13.formula;
         model.Bkpt_Weighted_Score_Mfg = g13.score;
         model.Bkpt_Data_Pc_Ann_Mfg = g14.data;
-
         model.Eng_Total_Sum = g15.data;
         model.Eng_Total_Weighted_Score = g15.score;
 
@@ -1187,8 +1355,5 @@
         });
     });
 </script>
-
-
-
 
 @section HideSidebar { }

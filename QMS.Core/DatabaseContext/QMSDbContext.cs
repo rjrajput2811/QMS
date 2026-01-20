@@ -61,6 +61,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<InternalTypeTestDetail> InternalTypeTestDetails { get; set; }
         public DbSet<RippleTestReport> RippleTestReports { get; set; }
         public DbSet<SurgeTestReport> SurgeTestReports { get; set; }
+        public DbSet<SurgeTestReportDetails> SurgeTestReportDetails { get; set; }
         public DbSet<TemperatureRiseTest> TemperatureRiseTests { get; set; }
         public DbSet<Photometry> Photometries { get; set; }
         public DbSet<InstallationTrial> InstallationTrials { get; set; }
@@ -81,6 +82,9 @@ namespace QMS.Core.DatabaseContext
         public DbSet<ChangeNote> ChangeNotes { get; set; }
         public DbSet<ChangeNoteItem> ChangeNoteItems { get; set; }
         public DbSet<ChangeNoteImplementationItem> ChangeNoteImplementationItems { get; set; }
+        public DbSet<DeviationNote> DeviationNotes { get; set; }
+        public DbSet<DeviationNoteItem> DeviationNoteItems { get; set; }
+        public DbSet<DeviationNoteImplementationItem> DeviationNoteImplementationItems { get; set; }
         public DbSet<SPM_Make> SPM_Make { get; set; }
         public DbSet<SPM_Buy> SPM_Buy { get; set; }
 

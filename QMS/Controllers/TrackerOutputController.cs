@@ -61,6 +61,10 @@ namespace QMS.Controllers
         {
             return View();
         }
+        public IActionResult SPMBuyReport()
+        {
+            return View();
+        }
         public IActionResult BISProkectTracker()
         {
             return View();

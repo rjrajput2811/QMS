@@ -1,6 +1,5 @@
 ﻿using iText.IO.Font.Constants;
 using iText.IO.Image;
-using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -370,7 +369,7 @@ public class ChangeNoteController : Controller
                 return File(stream.ToArray(), "application/pdf", $"ChangeNote_{model.DocumentNo}.pdf");
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             throw ex;
         }

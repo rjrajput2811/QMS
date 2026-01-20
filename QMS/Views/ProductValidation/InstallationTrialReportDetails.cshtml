@@ -1,4 +1,6 @@
-﻿@{
+﻿@model QMS.Core.Models.InstallationTrialViewModel
+
+@{
     ViewData["Title"] = "Installation Trial Report";
 }
 
@@ -251,259 +253,446 @@
 
 
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body">
+                <form id="installation_form" method="post" asp-action="InsertUpdateInstallationTrail" asp-controller="ProductValidation" enctype="multipart/form-data">
+                    <div class="card-body">
+                        @Html.HiddenFor(m => m.Id)
+                        <div class="table-responsive">
+                            <table class="header-table">
+                                <colgroup>
+                                    <col style="width:42%;">
+                                    <col style="width:30%;">
+                                    <col style="width:28%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Report No:</span><em class="req">*</em>
+                                            @* <input type="text" name="ReportNo" class="inline-input" placeholder="Enter Report Number" required /> *@
+                                            @Html.TextBoxFor(m => m.ReportNo, new { @class = "inline-input form-control", placeholder = "Enter Report Number", required = "required"})
+                                        </td>
 
+                                        <td>
+                                            <span class="field-label">Date:</span><em class="req">*</em>
+                                            @* <input type="date" name="ReportDate" class="inline-date" placeholder="Select Date" required /> *@
+                                            @* @Html.TextBoxFor(m => m.ReportDate, "{0:dd/MM/yyyy}", new { @class = "inline-date", placeholder = "Select Date", @readonly = "readonly" }) *@
+                                            @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new
+                                            {
+                                                    @class = "inline-date d-inline-block",
+                                                style = "width:60%; font-size:13px;",
+                                                placeholder = "dd-mm-yyyy",
+                                                title = "Enter date as dd-mm-yyyy",
+                                                required = "required",
+                                                type = "date"
+                                            })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Product Cat Ref:</span><em class="req">*</em>
+                                            @* <input type="text" name="ProductCatRef" class="inline-input" placeholder="Enter Product Reference" required /> *@
+                                            @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "inline-input form-control", placeholder = "Enter Product Reference", required = "required" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Batch Code:</span>
+                                            @* <input type="text" name="BatchCode" class="inline-input" placeholder="Enter Batch Code" /> *@
+                                            @Html.TextBoxFor(m => m.BatchCode, new { @class = "inline-input form-control", placeholder = "Enter Batch Code" })
 
-                    <div class="table-responsive">
-                        <table class="header-table">
-                            <colgroup>
-                                <col style="width:33%;">
-                                <col style="width:34%;">
-                                <col style="width:33%;">
-                            </colgroup>
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Report No:</span><em class="req">*</em>
-                                        <input type="text" name="ReportNo" class="inline-input" placeholder="Enter Report Number" required />
-                                    </td>
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Sample Qty:</span>
+                                            @* <input type="text" name="SampleQty" class="inline-input" placeholder="Enter Quantity" /> *@
+                                            @Html.TextBoxFor(m => m.SampleQty, new { @class = "inline-input form-control", placeholder = "Enter Quantity" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span class="field-label">Product Description:</span><em class="req">*</em>
+                                            @* <input type="text" name="ProductDescription" class="inline-input" placeholder="Enter Product Description" required /> *@
+                                            @Html.TextBoxFor(m => m.ProductDescription, new { @class = "inline-input form-control", placeholder = "Enter Product Description", required = "required" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">PKD:</span>
+                                            @* <input type="text" name="PKD" class="inline-input" placeholder="Enter PKD" /> *@
+                                            @Html.TextBoxFor(m => m.PKD, new { @class = "inline-input form-control", placeholder = "Enter PKD" })
+                                        </td>
+                                        <td>
+                                            <span class="field-label">Installation Location:</span><em class="req">*</em>
+                                            <input type="text" name="InstallLocation" class="inline-input" placeholder="Enter Location" required />
+                                            @* @Html.TextBoxFor(m => m.InstallLocation, new { @class = "inline-input form-control", placeholder = "Enter Location", required = "required" }) *@
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
+                        <!-- Parameters Table -->
+                        <div class="table-responsive">
+                            <table class="pv-table looklikeshot" id="parameterTable">
+                                <colgroup>
+                                    <col class="serial" />
+                                    <col class="param" />
+                                    <col class="sample" />
+                                    <col class="result" />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Serial No.</th>
+                                        <th>PARAMETERS</th>
+                                        <th>SAMPLE DETAILS</th>
+                                        <th class="result-header" style="color:#d00;">Result - Pass/ Fail/ Not Applicable/ Pending</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td contenteditable="false">1</td>
+                                        <td contenteditable="false">Product Category</td>
+                                        <td contenteditable="true" data-name="ProductCategory_SampleDetails">@Model.ProductCategory_SampleDetails</td>
+                                        <td>
+                                            <select class="result-select" data-name="ProductCategory_Result">
+                                                <option value="">Select</option>
+                                                <option value="Pass" selected="@(Model.ProductCategory_Result == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.ProductCategory_Result == "Fail")">Fail</option>
+                                                <option value="Not Applicable" selected="@(Model.ProductCategory_Result == "Not Applicable")">Not Applicable</option>
+                                                <option value="Pending" selected="@(Model.ProductCategory_Result == "Pending")">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="false">2</td>
+                                        <td contenteditable="false">Installation Sheet</td>
+                                        <td contenteditable="true" data-name="InstallationSheet_SampleDetails">@Model.InstallationSheet_SampleDetails</td>
+                                        <td>
+                                            <select class="result-select" data-name="InstallationSheet_Result">
+                                                <option value="">Select</option>
+                                                <option value="Pass" selected="@(Model.InstallationSheet_Result == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.InstallationSheet_Result == "Fail")">Fail</option>
+                                                <option value="Not Applicable" selected="@(Model.InstallationSheet_Result == "Not Applicable")">Not Applicable</option>
+                                                <option value="Pending" selected="@(Model.InstallationSheet_Result == "Pending")">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="false">3</td>
+                                        <td contenteditable="false">Mounting Mechanism</td>
+                                        <td contenteditable="true" data-name="MountingMechanism_SampleDetails">@Model.MountingMechanism_SampleDetails</td>
+                                        <td>
+                                            <select class="result-select" data-name="MountingMechanism_Result">
+                                                <option value="">Select</option>
+                                                <option value="Pass" selected="@(Model.MountingMechanism_Result == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.MountingMechanism_Result == "Fail")">Fail</option>
+                                                <option value="Not Applicable" selected="@(Model.MountingMechanism_Result == "Not Applicable")">Not Applicable</option>
+                                                <option value="Pending" selected="@(Model.MountingMechanism_Result == "Pending")">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="false">4</td>
+                                        <td contenteditable="false">Duration of Test</td>
+                                        <td contenteditable="true" data-name="DurationOfTest_SampleDetails">@Model.DurationOfTest_SampleDetails</td>
+                                        <td>
+                                            <select class="result-select" data-name="DurationOfTest_Result">
+                                                <option value="">Select</option>
+                                                <option value="Pass" selected="@(Model.DurationOfTest_Result == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.DurationOfTest_Result == "Fail")">Fail</option>
+                                                <option value="Not Applicable" selected="@(Model.DurationOfTest_Result == "Not Applicable")">Not Applicable</option>
+                                                <option value="Pending" selected="@(Model.DurationOfTest_Result == "Pending")">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="false">5</td>
+                                        <td contenteditable="false">Installation with 4x Load</td>
+                                        <td contenteditable="true" data-name="InstallationWith4xLoad_SampleDetails">@Model.InstallationWith4xLoad_SampleDetails</td>
+                                        <td>
+                                            <select class="result-select" data-name="InstallationWith4xLoad_Result">
+                                                <option value="">Select</option>
+                                                <option value="Pass" selected="@(Model.InstallationWith4xLoad_Result == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.InstallationWith4xLoad_Result == "Fail")">Fail</option>
+                                                <option value="Not Applicable" selected="@(Model.InstallationWith4xLoad_Result == "Not Applicable")">Not Applicable</option>
+                                                <option value="Pending" selected="@(Model.InstallationWith4xLoad_Result == "Pending")">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="false">6</td>
+                                        <td contenteditable="false">Installation with Sand Bag Load</td>
+                                        <td contenteditable="true" data-name="InstallationWithSandBagLoad_SampleDetails">@Model.InstallationWithSandBagLoad_SampleDetails</td>
+                                        <td>
+                                            <select class="result-select" data-name="InstallationWithSandBagLoad_Result">
+                                                <option value="">Select</option>
+                                                <option value="Pass" selected="@(Model.InstallationWithSandBagLoad_Result == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.InstallationWithSandBagLoad_Result == "Fail")">Fail</option>
+                                                <option value="Not Applicable" selected="@(Model.InstallationWithSandBagLoad_Result == "Not Applicable")">Not Applicable</option>
+                                                <option value="Pending" selected="@(Model.InstallationWithSandBagLoad_Result == "Pending")">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td contenteditable="false">7</td>
+                                        <td contenteditable="false">Installation with Sand Bag Load</td>
+                                        <td contenteditable="true" data-name="InstallationWithSandBagLoad2_SampleDetails">@Model.InstallationWithSandBagLoad2_SampleDetails</td>
+                                        <td>
+                                            <select class="result-select" data-name="InstallationWithSandBagLoad2_Result">
+                                                <option value="">Select</option>
+                                                <option value="Pass" selected="@(Model.InstallationWithSandBagLoad2_Result == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.InstallationWithSandBagLoad2_Result == "Fail")">Fail</option>
+                                                <option value="Not Applicable" selected="@(Model.InstallationWithSandBagLoad2_Result == "Not Applicable")">Not Applicable</option>
+                                                <option value="Pending" selected="@(Model.InstallationWithSandBagLoad2_Result == "Pending")">Pending</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                                    <td>
-                                        <span class="field-label">Date:</span><em class="req">*</em>
-                                        <input type="date" name="ReportDate" class="inline-date" placeholder="Select Date" required />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Product Cat Ref:</span><em class="req">*</em>
-                                        <input type="text" name="ProductCatRef" class="inline-input" placeholder="Enter Product Reference" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Batch Code:</span>
-                                        <input type="text" name="BatchCode" class="inline-input" placeholder="Enter Batch Code" />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Sample Qty:</span>
-                                        <input type="text" name="SampleQty" class="inline-input" placeholder="Enter Quantity" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span class="field-label">Product Description:</span><em class="req">*</em>
-                                        <input type="text" name="ProductDescription" class="inline-input" placeholder="Enter Product Description" required />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">PKD:</span>
-                                        <input type="text" name="PKD" class="inline-input" placeholder="Enter PKD" />
-                                    </td>
-                                    <td>
-                                        <span class="field-label">Installation Location:</span><em class="req">*</em>
-                                        <input type="text" name="InstallLocation" class="inline-input" placeholder="Enter Location" required />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Parameters Table -->
-                    <div class="table-responsive">
-                        <table class="pv-table looklikeshot">
-                            <colgroup>
-                                <col class="serial" />
-                                <col class="param" />
-                                <col class="sample" />
-                                <col class="result" />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Serial No.</th>
-                                    <th>PARAMETERS</th>
-                                    <th>SAMPLE DETAILS</th>
-                                    <th class="result-header" style="color:#d00;">Result - Pass/ Fail/ Not Applicable/ Pending</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td contenteditable="true">1</td>
-                                    <td contenteditable="true">Product Category</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">2</td>
-                                    <td contenteditable="true">Installation Sheet</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">3</td>
-                                    <td contenteditable="true">Mounting Mechanism</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">4</td>
-                                    <td contenteditable="true">Duration of Test</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">5</td>
-                                    <td contenteditable="true">Installation with 4x Load</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">6</td>
-                                    <td contenteditable="true">Installation with Sand Bag Load</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td contenteditable="true">7</td>
-                                    <td contenteditable="true">Installation with Sand Bag Load</td>
-                                    <td contenteditable="true"></td>
-                                    <td>
-                                        <select class="result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                            <option value="Not Applicable">Not Applicable</option>
-                                            <option value="Pending">Pending</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Photo Table (same width, no extra card-body wrappers) -->
-                    <div class="table-responsive">
-                        <table class="photo-table" style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
-                            <thead>
-                                <tr>
-                                    <th colspan="2" class="photo-head" style="height:100px;">
-                                        <div class="photo-header-content">
+                        <!-- Photo Table (same width, no extra card-body wrappers) -->
+                        <div class="table-responsive">
+                            <table class="photo-table" style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
+                                <thead>
+                                    <tr>
+                                        <th colspan="2" class="photo-head" style="height:40px;">
+                                            @* <div class="photo-header-content">
                                             <span class="photo-text"></span>
                                             <input type="file" id="photoUpload" accept="image/*" />
-                                        </div>
-                                    </th>
-                                </tr>
-                                </tr>
+                                        </div> *@
+                                            Photo
+                                        </th>
+                                    </tr>
 
-                                <tr>
-                                    <th style="border:1px solid #000;">With Load</th>
-                                    <th style="border:1px solid #000;">Without Load</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td style="border:1px solid #000; padding:10px;">
-                                        <textarea rows="7" placeholder="Enter details here..."
-                                                  style="width:100%; border:none; resize:none; outline:none; padding:8px; font-size:14px; background:transparent; min-height:180px;"></textarea>
-                                    </td>
-                                    <td style="border:1px solid #000; padding:10px;">
-                                        <textarea rows="7" placeholder="Enter details here..."
-                                                  style="width:100%; border:none; resize:none; outline:none; padding:8px; font-size:14px; background:transparent; min-height:180px;"></textarea>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                    <tr>
+                                        <th style="border:1px solid #000;">With Load</th>
+                                        <th style="border:1px solid #000;">Without Load</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="border:1px solid #000; padding:10px;height:180px;">
+                                            <div class="photo-header-content">
+                                            @Html.HiddenFor(m => m.Photo_WithLoad)
+                                                <span class="photo-text"></span>
+                                                <input type="file" id="photoUpload1" accept="image/*" name="Photo_WithLoadFile" style="display:block; margin:0 auto;" />
+                                                <img id="preview1" alt="Photo 1" src="@Model?.Photo_WithLoad"
+                                                @(string.IsNullOrEmpty(Model?.Photo_WithLoad) ? "display:none;" : "display:block;")
+                                                     style="margin-top:6px; max-width:85%; max-height:110px;border:1px solid #aaa; border-radius:5px;">
+                                            </div>
+                                        </td>
+                                        <td style="border:1px solid #000; padding:10px;height:150px;">
+                                            <div class="photo-header-content">
+                                            @Html.HiddenFor(m => m.Photo_WithoutLoad)
+                                                <span class="photo-text"></span>
+                                                <input type="file" id="photoUpload2" accept="image/*" name="Photo_WithoutLoadFile" style="display:block; margin:0 auto;" />
+                                                <img id="preview2" alt="Photo 2" src="@Model?.Photo_WithoutLoad"
+                                                @(string.IsNullOrEmpty(Model?.Photo_WithoutLoad) ? "display:none;" : "display:block;")
+                                                     style="margin-top:6px; max-width:85%; max-height:110px; border:1px solid #aaa; border-radius:5px;">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Result (overall) -->
+                        <div class="table-responsive">
+                            <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
+                                <thead>
+                                    <tr>
+                                        <th style="color:#d00; font-weight:700; text-align:left; background:#fff; border:1px solid #000; padding:15px;">
+                                            <div style="display:flex; align-items:center; gap:15px;">
+                                                <span>Result - Pass / Fail / NA / Pending</span>
+                                                <select class="result-select" style="width:200px;" data-name="OverallResult">
+                                                    <option value="" selected="@(Model.OverallResult == "")">Select</option>
+                                                    <option value="Pass" selected="@(Model.OverallResult == "Pass")">Pass</option>
+                                                    <option value="Fail" selected="@(Model.OverallResult == "Fail")">Fail</option>
+                                                    <option value="NA" selected="@(Model.OverallResult == "NA")">NA</option>
+                                                    <option value="Pending" selected="@(Model.OverallResult == "Pending")">Pending</option>
+                                                </select>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+
+                        <!-- Checked By / Verified By -->
+                        <div class="table-responsive" style="margin-top:0px;">
+                            <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:50%; border:1px solid #000; padding:12px;">
+                                            <label style="font-weight:600;">Checked By:</label>
+                                            @* <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" /> *@
+                                            @Html.TextBoxFor(m => m.CheckedBy, new { @class = "inline-input form-control", placeholder = "Enter name", style = "border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" })
+                                        </td>
+                                        <td style="width:50%; border:1px solid #000; padding:12px;">
+                                            <label style="font-weight:600;">Verified By:</label>
+                                            @* <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" /> *@
+                                            @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "inline-input form-control", placeholder = "Enter name", style = "border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" })
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
                     </div>
-
-                    <!-- Result (overall) -->
-                    <div class="table-responsive">
-                        <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
-                            <thead>
-                                <tr>
-                                    <th style="color:#d00; font-weight:700; text-align:left; background:#fff; border:1px solid #000; padding:15px;">
-                                        <div style="display:flex; align-items:center; gap:15px;">
-                                            <span>Result - Pass / Fail / NA / Pending</span>
-                                            <select class="result-select" style="width:200px;">
-                                                <option value="">Select</option>
-                                                <option>Pass</option>
-                                                <option>Fail</option>
-                                                <option>NA</option>
-                                                <option>Pending</option>
-                                            </select>
-                                        </div>
-                                    </th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-
-                    <!-- Checked By / Verified By -->
-                    <div class="table-responsive" style="margin-top:0px;">
-                        <table style="width:100%; border-collapse:collapse; table-layout:fixed; font-size:14px;">
-                            <tbody>
-                                <tr>
-                                    <td style="width:50%; border:1px solid #000; padding:12px;">
-                                        <label style="font-weight:600;">Checked By:</label>
-                                        <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" />
-                                    </td>
-                                    <td style="width:50%; border:1px solid #000; padding:12px;">
-                                        <label style="font-weight:600;">Verified By:</label>
-                                        <input type="text" style="border:none; border-bottom:1.5px solid #000; width:70%; outline:none; background:transparent; margin-left:6px; font-size:14px;" placeholder="Enter name" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </div>
+                </form>
             </div>
         </div>
 
     </div>
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+
+    <script>
+        let searchTimeout;
+
+        $(document).ready(function () {
+            initPhotoPreviews();
+
+                const inputElement = $("#BISsear_Code");
+                if (inputElement.length) {
+                    // Attach the keydown event handler
+                        inputElement.on('input', function (event) {
+                        handleBisSearch(event);
+                    });
+                }
+        });
+
+        function setupPreview(inputId, imgId) {
+            const inp = document.getElementById(inputId);
+            const img = document.getElementById(imgId);
+
+            if (!inp || !img) return;
+
+            inp.addEventListener('change', () => {
+                const file = inp.files && inp.files[0];
+
+                if (!file) {
+                    img.src = '';
+                    img.style.display = 'none';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = e => {
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function initPhotoPreviews() {
+            setupPreview('photoUpload1', 'preview1');
+            setupPreview('photoUpload2', 'preview2');
+        }
+
+        function saveInstallationTrial() {
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+                { id: 'ProductDescription', name: 'Product Description' }
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }
+                else if (field.id === 'SampleQty') {
+                    const quantity = Number(value.trim());
+
+                    if (quantity === 0) {
+                        isValid = false;
+                        missingFields.push(field.name + " (cannot be 0)");
+                    }
+                }
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#installation_form')[0];
+            const formData = new FormData(form);
+
+            $('#parameterTable [contenteditable="true"][data-name]').each(function() {
+                const dataName = $(this).data('name');
+                const content = $(this).text().trim();
+
+                if (dataName) {
+                    formData.append(dataName, content);
+                }
+            });
+
+            $('.result-select[data-name]').each(function () {
+                const key = $(this).data('name');
+                const val = ($(this).val() || "").toString().trim();
+                formData.set(key, val);
+            });
+
+            $.ajax({
+                url: $('#installation_form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+                    if (!response.success) {
+                        var errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg != "") {
+                                showDangerAlert(errorMessg);
+                            }
+                        }
+                        else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    }
+                    else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("InstallationTrialReport", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script>
+}
 @section HideSidebar { }

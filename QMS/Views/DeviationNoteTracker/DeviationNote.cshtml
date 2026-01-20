@@ -77,10 +77,10 @@
 
             <div>
                 <!-- Add button: goes to the "details" / create page -->
-                <button id="addChangeNoteBtn"
+                <button id="addDeviationNoteBtn"
                         type="button"
                         class="btn btn-outline-success legitRipple mr-2 header-btn"
-                        onclick="location.href='@Url.Action("DeviationNoteDetails", "DeviationNote")'">
+                        onclick="location.href='@Url.Action("DeviationNoteDetails", "DeviationNoteTracker")'">
                     <i class="fas fa-plus mr-2 fa-1x"></i> Add
                 </button>
 
@@ -139,12 +139,12 @@
         function loadDeviationNoteGridData() {
             Blockloadershow();
             $.ajax({
-                url: '@Url.Action("DeviationList", "Deviation")',
+                url: '@Url.Action("DeviationNoteList", "DeviationNoteTracker")',
                 type: 'GET',
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data)) {
-                        OnChangeNoteGridLoad(data);
+                        OnDeviationNoteGridLoad(data);
                     }
                     else {
                         showDangerAlert('No data available to load.');
@@ -232,8 +232,9 @@
                         Month: month,
                         Date: changeDate,
                         DocumentNo: item.documentNo,
-                        Description: item.description,
-                        DeviationNoteCategory: item.DeviationNoteCategory,
+                        CatRefProduct: item.catRefProduct,
+                        DeviationDetails: item.deviationDetails,
+                        DeviationNoteCategory: item.deviationNoteCategory,
                         VendorName: item.vendorName,
                         User: item.user
                     });
@@ -252,21 +253,21 @@
                             const rowData = cell.getRow().getData();
                             let actionButtons = "";
 
-                            actionButtons += `<i data-toggle="modal" onclick="delDeviationNoteonfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
+                            actionButtons += `<i data-toggle="modal" onclick="delDeviationNoteConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
                             actionButtons += `<i onclick="exportToPDF(${rowData.Id})" class="fas fa-file-pdf fa-1x" title="Export to PDF" style="color:red;cursor:pointer;margin-left: 5px;"></i>`;
 
                             return actionButtons;
                         }
                     },
                     { title: "SNo", field: "Sr_No", width: 50, responsive: 0,  sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left" },
-                   { title: "DEVIATION NOTE NUMBER", field: "NUMBER", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "DEVIAITON NOTE CATEGORY", field: "DeviationNoteCategory", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "PRODUCT CODE", field: "PRODUCTCODE", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "PRODUCT DESCRIPTION", field: "PRODUCTDESCRIPTION", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "WATTAGE", field: "WATTAGE", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "DEVIATION QTY", field: "DEVIATION QTY", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                    { title: "DEVIATION REQUISTION BY", field: "DEVIATIONREQUISTIONBY", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
-                     { title: "VENDOR", field: "VENDOR", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Month", field: "Month", responsive: 1,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Date", field: "Date", responsive: 2,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Document Number", field: "DocumentNo", responsive: 3,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Cat Ref Product", field: "CatRefProduct", responsive: 4,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Deviation Details", field: "DeviationDetails", responsive: 5,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Category", field: "DeviationNoteCategory", responsive: 6,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "Vendor", field: "VendorName", responsive: 7,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                    { title: "User", field: "User", responsive: 8,  headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
                 );
 
                 // // Initialize Tabulator
@@ -290,7 +291,7 @@
 
                     if (columnField !== "Action") {
                         let rowData = cell.getRow().getData();
-                        window.open("@Url.Action("DeviationNoteDetails", "DeviationNote")" + "/" + rowData.Id, '_self');
+                        window.open("@Url.Action("DeviationNoteDetails", "DeviationNoteTracker")" + "/" + rowData.Id, '_self');
                     }
                 });
 
@@ -380,7 +381,7 @@
                 },
             })).get().on('pnotify.confirm', function () {
                 $.ajax({
-                    url: '@Url.Action("DeleteChangeNote", "DeviationNote")',
+                    url: '@Url.Action("DeleteDeviationNote", "DeviationNoteTracker")',
                     type: 'POST',
                     data: { Id: recid },
                     success: function (data) {
@@ -405,7 +406,7 @@
 
         function exportToPDF(recid) {
             Blockloadershow();
-            var url = '@Url.Action("ExportToPDF", "DeviationNote")' + "?id=" + recid;
+            var url = '@Url.Action("ExportToPDF", "DeviationNoteTracker")' + "?id=" + recid;
 
             fetch(url, {
                 method: 'GET',
@@ -446,8 +447,9 @@
                 { key: 'Sr_No', width: 4 },
                 { key: 'Month', width: 15 },
                 { key: 'Date', width: 15 },
-                { key: 'DEVIATION NOTE NUMBER', width: 18 },
-                { key: 'Description', width: 35 },
+                { key: 'DocumentNo', width: 18 },
+                { key: 'CatRefProduct', width: 35 },
+                { key: 'DeviationDetails', width: 35 },
                 { key: 'DeviationNoteCategory', width: 8 },
                 { key: 'VendorName', width: 40 },
                 { key: 'User', width: 20 }
@@ -455,7 +457,7 @@
 
             // 3. Add Header Row (Row 1)
             const headerRow = worksheet.addRow([
-                "SNo", "Month", "Date", "Document Number", "Description", "Category", "Vendor", "User"
+                "SNo", "Month", "Date", "Document Number", "Cat Ref Product", "Deviation Details", "Category", "Vendor", "User"
             ]);
 
             // Style the Headers (Bold + Light Gray Background + Border)
@@ -480,7 +482,8 @@
                     item.Month,
                     item.Date,
                     item.DocumentNo,
-                    item.Description || "", 
+                    item.CatRefProduct || "",
+                    item.DeviationDetails || "",
                     item.DeviationNoteCategory,
                     item.VendorName,
                     item.User

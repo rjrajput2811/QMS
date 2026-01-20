@@ -2,6 +2,24 @@
     ViewData["Title"] = "Installation Trial Report";
 }
 
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+@* <script src="~/js/xlsx.min.js"></script> *@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+
+
 <!-- CSS: Matches Electrical Protection & Photometry header design -->
 <style>
     .header-card {
@@ -30,6 +48,107 @@
     .mr-2 {
         margin-right: 8px;
     }
+
+    .form-control {
+        padding: 0 10px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
+    }
+
+    label {
+        margin-bottom: 0;
+        margin-top: .3rem;
+    }
+
+    #scrollToTopBtn:hover {
+        background-color: #0056b3; /* Darker blue */
+    }
+
+    #scrollToTopBtn {
+        outline: none; /* Removes the focus border */
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 35px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+
+    .calendar-container {
+        cursor: pointer;
+        padding: 8px 8px;
+        width: 100%;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        gap: 8px;
+        border: 1px solid slategray;
+    }
+
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+            padding-left: 20px;
+        }
+
+        .calendar-container span {
+            color: #4682B4;
+            margin: 0;
+            font-size: 14px;
+        }
+
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
+    .month-item {
+        font-size: 14px;
+    }
+
+
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+        /* light warning */
+        100% {
+            background-color: #e6e6e6;
+        }
+    }
+
+    .row-flash {
+        animation: flash-bg 2s ease-out forwards;
+    }
+
+    /* if your table has zebra or hover styles, ensure the flash wins */
+    .tabulator-row.row-flash {
+        transition: background-color 2s ease-out;
+    }
 </style>
 
 <div class="content">
@@ -39,7 +158,12 @@
             <div>
                 <b class="header-title">Installation Trial Report</b>
             </div>
-
+            <div class="col-md-3">
+                <div id="customDateTriggerInsta" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeInsta">Select Date Range</span>
+                </div>
+            </div>
             <div>
                 <!-- Add Button -->
                 <button id="addInstallationButton"
@@ -60,14 +184,345 @@
         </div>
     </div>
 
-   
-        <div class="card-body">
-            <div class="table-responsive">
-    
-</div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div class="form-group row">
+                            <div id="insta_Table" class="col-12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-    -->
 </div>
+@section Scripts {
+
+    <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Moment.js and Litepicker -->
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
+    <script>
+                var tabledata = [];
+        var table = '';
+        let filterStartDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
+        $(document).ready(function () {
+
+            $('#dateRangeInsta').text(
+                moment(filterStartDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndDate).format('MMMM D, YYYY')
+            );
+
+            // Initialize Litepicker and store reference
+            const picker = new Litepicker({
+                element: document.getElementById('customDateTriggerInsta'),
+                singleMode: false,
+                format: 'DD-MM-YYYY',
+                numberOfMonths: 2,
+                numberOfColumns: 2,
+                dropdowns: {
+                    minYear: 2020,
+                    maxYear: null,
+                    months: true,
+                    years: true
+                },
+                plugins: ['ranges'],
+                setup: (picker) => {
+                    picker.on('selected', (start, end) => {
+                        filterStartDate = start.format('YYYY-MM-DD');
+                        filterEndDate = end.format('YYYY-MM-DD');
+                        $('#dateRangeInsta').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                        loadData();
+                    });
+
+                    picker.on('clear', () => {
+                        filterStartDate = "";
+                        filterEndDate = "";
+                        $('#dateRangeInsta').text("Select Date Range");
+                        loadData();
+                    });
+                },
+                ranges: {
+                    Today: [moment(), moment()],
+                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                startDate: moment().startOf('month').format('DD-MM-YYYY'),
+                endDate: moment().endOf('month').format('DD-MM-YYYY')
+            });
+
+            // 🔑 Ensure calendar opens on click
+            $('#customDateTriggerInsta').on('click', function () {
+                picker.show();
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('backButton').addEventListener('click', function () {
+                    window.history.back();
+                });
+            });
+
+            loadData();
+        });
+
+        function loadData() {
+            Blockloadershow();
+            $.ajax({
+                url: '/ProductValidation/GetInstallationTrail',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartDate,
+                    endDate: filterEndDate
+                },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnTabGridLoad(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        //define column header menu as column visibility toggle
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+
+                //create checkbox element using font awesome icons
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                //build label
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                //create menu item
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        //prevent menu closing
+                        e.stopPropagation();
+
+                        //toggle current column visibility
+                        column.toggle();
+
+                        //change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+        function OnTabGridLoad(response) {
+            debugger;
+            Blockloadershow();
+
+            tabledata = [];
+            let columns = [];
+
+            // Map the response to the table format
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+
+                    let formattedDate = "";
+                    let updatedDate = "";
+                    let reportDate = "";
+                    if (item.addedOn) {
+                        const dateObj = new Date(item.addedOn);
+                        formattedDate = dateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.updatedOn) {
+                        const updatedateObj = new Date(item.updatedOn);
+                        updatedDate = updatedateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.reportDate) {
+                        const reportDateObj = new Date(item.reportDate);
+                        reportDate = reportDateObj.toLocaleDateString("en-GB");
+                    }
+
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        ReportNo: item.reportNo,
+                        ReportDate: reportDate,
+                        ProductCatRef: item.productCatRef,
+                        BatchCode: item.batchCode,
+                        PKD: item.pkd,
+                        SampleQty: item.sampleQty,
+                        CheckedBy: item.checkedBy,
+                        VerifiedBy: item.verifiedBy,
+                        User: item.user
+                    });
+                });
+            }
+
+            columns.push(
+                {
+                    title: "Action",
+                    field: "Action",
+                    headerMenu: headerMenu,
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    formatter: function (cell, formatterParams) {
+                        const rowData = cell.getRow().getData();
+                        let actionButtons = "";
+
+                        actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>
+                            <i onclick=""
+                       class="fas fa-file-excel fa-1x"
+                       title="Export To Excel"
+                       style="color:green;cursor:pointer;">
+                    </i>`
+
+                        return actionButtons;
+                    }
+                },
+                {
+                    title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
+                },
+                { title: "Report No", field: "ReportNo", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Report Date", field: "ReportDate", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Product Cat. Ref.", field: "ProductCatRef", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                { title: "Batch Code", field: "BatchCode", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "PKD", field: "PKD", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Sample Qty", field: "SampleQty", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Checked By", field: "CheckedBy", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Verified By", field: "VerifiedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "User", field: "User", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            );
+
+            // // Initialize Tabulator
+            table = new Tabulator("#insta_Table", {
+                data: tabledata,
+                renderHorizontal: "virtual",
+                movableColumns: true,
+                pagination: "local",
+                paginationSize: 10,
+                paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                paginationCounter: "rows",
+                dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                columns: columns
+            });
+
+            table.on("cellClick", function (e, cell) {
+                let columnField = cell.getColumn().getField();
+
+                if (columnField !== "Action") {
+                    let rowData = cell.getRow().getData();
+                    showEditInstaReport(rowData.Id);
+                }
+            });
+
+
+
+            // Hide loader
+            Blockloaderhide();
+        }
+
+        function showEditInstaReport(id) {
+            debugger
+            var url = '/ProductValidation/InstallationTrialReportDetails?id=' + id;
+            window.location.href = url;
+        }
+
+        function delConfirm(recid) {
+            debugger;
+            PNotify.prototype.options.styling = "bootstrap3";
+            (new PNotify({
+                title: 'Confirmation Needed',
+                text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+                icon: 'glyphicon glyphicon-question-sign',
+                hide: false,
+                confirm: {
+                    confirm: true
+                },
+                buttons: {
+                    closer: false,
+                    sticker: false
+                },
+                history: {
+                    history: false
+                },
+            })).get().on('pnotify.confirm', function () {
+                $.ajax({
+                    url: '/ProductValidation/DeleteInstallationTrail',
+                    type: 'POST',
+                    data: { id: recid },
+                    success: function (data) {
+                        if (data.success == true) {
+                            showSuccessAlert("Installation Trail Detail is Deleted successfully.");
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 2500);
+                        }
+                        else if (data.success == false && data.message == "Not_Deleted") {
+                            showDangerAlert("Record is used in QMS Log transactions.");
+                        }
+                        else {
+                            showDangerAlert(data.message);
+                        }
+                    },
+                    error: function () {
+                        showDangerAlert('Error retrieving data.');
+                    }
+                });
+            }).on('pnotify.cancel', function () {
+                loadData();
+            });
+        }
+
+
+        // function exportToExcel(id) {
+
+        //     const url = `/CustomerRCAReport/ExportCAReportToExcel?id=${id}`;
+
+        //     // Open file download in new tab (best for Excel)
+        //     window.open(url, "_blank");
+        // }
+    </script>
+        
+
+}
 
 @section HideSidebar { }  

@@ -1,0 +1,399 @@
+<<<<<<< HEAD
+
+@{
+    ViewData["Title"] = "SPM Certificate";
+}
+
+
+    <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+    <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+    <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+    @* <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" /> *@
+    <script src="~/js/jquery.min.js"></script>
+    <script src="~/js/jquery.datatables.js"></script>
+    <link href="~/css/pnotify.css" rel="stylesheet" />
+    <script src="~/js/pnotify.js"></script>
+    <script src="~/js/pnotify.confirm.js"></script>
+    <script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+    @* <script src="~/lib/bootstrap/dist/js/popupAlert.js"></script> *@
+    <script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+    <script src="~/js/common.js"></script>
+    <script src="~/lib/bootstrap/dist/js/popupalert.js"></script>
+    <script src="~/js/xlsx.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .filter-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .filter-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .card-header-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px 30px;
+            border-bottom: none;
+        }
+        .card-header-custom h3 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .card-header-custom p {
+            margin: 8px 0 0 0;
+            font-size: 15px;
+            opacity: 0.95;
+        }
+        .card-body-custom {
+            padding: 30px;
+        }
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        .filter-section h5 {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+        .filter-section h5 i {
+            margin-right: 8px;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        .required-label::after {
+            content: " *";
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info-text {
+            color: #6c757d;
+            font-size: 13px;
+            margin-top: 5px;
+            font-style: italic;
+        }
+        .form-control, .custom-select {
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            padding: 10px 15px;
+            font-size: 15px;
+        }
+        .form-control:focus, .custom-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .select2-container--bootstrap4 .select2-selection {
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            min-height: 45px;
+        }
+        .select2-container--bootstrap4 .select2-selection--single {
+            height: 45px;
+        }
+        .select2-container--bootstrap4 .select2-selection--single .select2-selection__rendered {
+            line-height: 43px;
+            padding-left: 15px;
+        }
+        .select2-container--bootstrap4 .select2-selection--multiple {
+            min-height: 45px;
+            padding: 5px;
+        }
+        .select2-container--bootstrap4.select2-container--focus .select2-selection {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .custom-control-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        .btn-generate {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px 45px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+        .btn-generate:active {
+            transform: translateY(0);
+        }
+        .btn-reset {
+            padding: 12px 45px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+        .action-buttons {
+            text-align: center;
+            padding: 20px 0;
+            margin-top: 10px;
+        }
+        .validation-summary-errors {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .validation-summary-errors ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .text-danger {
+            font-size: 13px;
+            margin-top: 3px;
+            display: block;
+        }
+        .alert {
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+    </style>
+}
+
+<div class="container-fluid filter-container">
+    <div class="filter-card">
+        <!-- Header -->
+        <div class="card-header-custom">
+            <h3>
+                <i class="fas fa-file-certificate"></i> SPM Certificate Quarterly Report
+            </h3>
+            <p>Select filters to generate vendor performance certificates</p>
+        </div>
+
+        <!-- Body -->
+        <div class="card-body-custom">
+            <form asp-action="Filter" method="post" id="filterForm">
+                <div asp-validation-summary="ModelOnly" class="validation-summary-errors alert alert-danger"></div>
+
+                <!-- Time Period Section -->
+                <div class="filter-section">
+                    <h5>
+                        <i class="far fa-calendar-alt"></i> Time Period
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-label"></label>
+                                <select  class="custom-select" asp-items="@(new SelectList(Model.FinancialYears, "Value", "Text"))">
+                                    <option value="">-- Select Financial Year --</option>
+                                </select>
+                                <span  class="text-danger"></span>
+                                <small class="info-text">Select the financial year for the report</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="required-label"></label>
+                                <select  class="form-control select2-multiple" multiple="multiple">
+                                    @foreach (var quarter in Model.Quarters)
+                                    {
+                                        <option value="@quarter.Value">@quarter.Text (@quarter.DateRange)</option>
+                                    }
+                                </select>
+                                <span  class="text-danger"></span>
+                                <small class="info-text">Select one or multiple quarters</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vendor Selection Section -->
+                <div class="filter-section">
+                    <h5>
+                        <i class="fas fa-building"></i> Vendor Selection
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="required-label"></label>
+                                <select class="form-control select2-multiple" multiple="multiple">
+                                    @foreach (var vendor in Model.Vendors)
+                                    {
+                                        <option value="@vendor.VendorID">@vendor.VendorName @(!string.IsNullOrEmpty(vendor.VendorCode) ? $"({vendor.VendorCode})" : "")</option>
+                                    }
+                                </select>
+                                <span  class="text-danger"></span>
+                                <small class="info-text">Select one or multiple vendors (use search to find quickly)</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Approval Authority Section -->
+                <div class="filter-section">
+                    <h5>
+                        <i class="fas fa-user-tie"></i> Approval Authority
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="required-label"></label>
+                                <select class="form-control select2-single">
+                                    <option value="">-- Select HOD --</option>
+                                    @foreach (var hod in Model.HODs)
+                                    {
+                                        <option value="@hod.UserID">@hod.FullName @(!string.IsNullOrEmpty(hod.Department) ? $"- {hod.Department}" : "")</option>
+                                    }
+                                </select>
+                                <span  class="text-danger"></span>
+                                <small class="info-text">Select HOD whose name will appear at the bottom of certificate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Options Section -->
+                <div class="filter-section">
+                    <h5>
+                        <i class="fas fa-cog"></i> Report Options
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label ></label>
+                                <select  class="custom-select" asp-items="@(new SelectList(Model.OutputFormats, "Value", "Text"))">
+                                </select>
+                                <small class="info-text">Choose output file format</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="d-block">&nbsp;</label>
+                                <div class="custom-control custom-checkbox">
+                                    <input  class="custom-control-input" type="checkbox" id="chkSeparateFiles" />
+                                    <label class="custom-control-label" for="chkSeparateFiles"></label>
+                                </div>
+                                <small class="info-text">Create individual files for each vendor</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button type="submit" class="btn btn-generate btn-lg">
+                        <i class="fas fa-file-download"></i> Generate Report
+                    </button>
+                    <a asp-action="Reset" class="btn btn-secondary btn-lg btn-reset">
+                        <i class="fas fa-redo"></i> Reset Filters
+                    </a>
+                </div>
+            </form>
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function () {
+            // Initialize Select2 for multi-select dropdowns
+            $('.select2-multiple').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select options...',
+                allowClear: true,
+                closeOnSelect: false,
+                width: '100%'
+            });
+
+            // Initialize Select2 for single-select dropdowns
+            $('.select2-single').select2({
+                theme: 'bootstrap4',
+                placeholder: 'Select an option...',
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Form validation before submit
+            $('#filterForm').on('submit', function (e) {
+                var isValid = true;
+                var errorMessage = '';
+
+                // Validate Financial Year
+                var financialYear = $('#FinancialYear').val();
+                if (!financialYear || financialYear === '') {
+                    errorMessage += '• Please select Financial Year\n';
+                    isValid = false;
+                }
+
+                // Validate Quarters
+                var quarters = $('#SelectedQuarters').val();
+                if (!quarters || quarters.length === 0) {
+                    errorMessage += '• Please select at least one Quarter\n';
+                    isValid = false;
+                }
+
+                // Validate Vendors
+                var vendors = $('#SelectedVendors').val();
+                if (!vendors || vendors.length === 0) {
+                    errorMessage += '• Please select at least one Vendor\n';
+                    isValid = false;
+                }
+
+                // Validate HOD
+                var hod = $('#SelectedHOD').val();
+                if (!hod || hod === '') {
+                    errorMessage += '• Please select HOD\n';
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please complete the following:\n\n' + errorMessage);
+                    return false;
+                }
+
+                // Show loading state
+                $(this).find('.btn-generate').html('<i class="fas fa-spinner fa-spin"></i> Generating...');
+                $(this).find('.btn-generate').prop('disabled', true);
+
+                return true;
+            });
+
+            // Clear validation errors on input change
+            $('select').on('change', function () {
+                $(this).next('.text-danger').text('');
+            });
+        });
+    </script>
+
+}

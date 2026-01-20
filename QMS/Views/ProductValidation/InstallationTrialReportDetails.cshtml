@@ -578,13 +578,13 @@
         $(document).ready(function () {
             initPhotoPreviews();
 
-                const inputElement = $("#prodCode_Search");
-                if (inputElement.length) {
+           const inputElement = $("#prodCode_Search");
+           if (inputElement.length) {
                     // Attach the keydown event handler
-                        inputElement.on('input', function (event) {
-                        handleProdCodeSearch(event);
-                    });
-                }
+                   inputElement.on('input', function (event) {
+                   handleProdCodeSearch(event);
+               });
+           }
         });
 
             function handleProdCodeSearch(event) {

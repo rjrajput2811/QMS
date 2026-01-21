@@ -239,7 +239,7 @@
                     <div class="chart-container">
 
                         <div id="rmtc_table_wrapper" style="overflow-x: auto;">
-                            <div id="EelctPerf_table"></div>
+                            <div id="ElecPer_table"></div>
                         </div>
                     </div>
                 </div>
@@ -288,6 +288,79 @@
                     showDangerAlert('Error retrieving data: ' + error);
                     Blockloaderhide();
                 }
+            });
+        }
+
+
+        function loadEditData(id) {
+            Blockloadershow();
+
+            $.ajax({
+                url: '@Url.Action("GetElectricalPerformanceById", "ProductValidation")',
+                type: 'GET',
+                data: { id: id },
+                success: function (data) {
+                    Blockloaderhide();
+
+                    if (!data) {
+                        showDangerAlert("No record found.");
+                        return;
+                    }
+
+                    // ✅ Parent binding (example: adjust IDs to your input controls)
+                    $("#Id").val(data.id);
+                    $("#ReportNo").val(data.reportNo);
+                    $("#ProductCatRef").val(data.productCatRef);
+                    $("#ProductDescription").val(data.productDescription);
+
+                    // Date example
+                    if (data.reportDate) {
+                        $("#ReportDate").val(data.reportDate.substring(0, 10)); // yyyy-mm-dd
+                    }
+
+                    // ✅ Child binding
+                    // If your JSON serializer uses camelCase, Details becomes `details`
+                    const childRows = data.details || data.Details || [];
+
+                    loadChildGrid(childRows);
+                },
+                error: function (xhr) {
+                    Blockloaderhide();
+                    showDangerAlert("Error loading edit data.");
+                    console.log(xhr.responseText);
+                }
+            });
+        }
+
+        var childTable = null;
+
+        function loadChildGrid(rows) {
+            if (childTable) {
+                childTable.setData(rows);
+                return;
+            }
+
+            childTable = new Tabulator("#ElecPerDetails_table", {
+                data: rows,
+                layout: "fitColumns",
+                height: "auto",
+                columns: [
+                    { title: "Sample", field: "sampleNo", width: 80 },
+                    { title: "Condition", field: "conditionType", width: 160 },
+                    { title: "RowNo", field: "rowNo", width: 80 },
+                    { title: "Vac", field: "vac" },
+                    { title: "IacA", field: "iacA" },
+                    { title: "Wac", field: "wac" },
+                    { title: "PF", field: "pf" },
+                    { title: "ATHD", field: "athd" },
+                    { title: "Vdc", field: "vdc" },
+                    { title: "IdcA", field: "idcA" },
+                    { title: "Wdc", field: "wdc" },
+                    { title: "Eff", field: "eff" },
+                    { title: "NoLoadV", field: "noLoadV" },
+                    { title: "StartV", field: "startV" },
+                    { title: "Result", field: "result" }
+                ]
             });
         }
 

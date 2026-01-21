@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using QMS.Core.DatabaseContext;
+using System.ComponentModel.DataAnnotations;
 
 namespace QMS.Core.Models;
 
@@ -19,126 +20,7 @@ public class ElectricalPerformanceViewModel
     public string? SensorDetails { get; set; }
     public string? LampDetails { get; set; }
     public string? PKD { get; set; }
-    public string? S1_BS_Vac { get; set; }
-    public string? S1_BS_IacA { get; set; }
-    public string? S1_BS_Wac { get; set; }
-    public string? S1_BS_PF { get; set; }
-    public string? S1_BS_ATHD { get; set; }
-    public string? S1_BS_Vdc { get; set; }
-    public string? S1_BS_IdcA { get; set; }
-    public string? S1_BS_Wdc { get; set; }
-    public string? S1_BS_Eff { get; set; }
-    public string? S1_BS_NoLoadV { get; set; }
-    public string? S1_BS_StartV { get; set; }
-    public string? S1_BS_Result { get; set; }
-    public string? S1_AS_Vac { get; set; }
-    public string? S1_AS_IacA { get; set; }
-    public string? S1_AS_Wac { get; set; }
-    public string? S1_AS_PF { get; set; }
-    public string? S1_AS_ATHD { get; set; }
-    public string? S1_AS_Vdc { get; set; }
-    public string? S1_AS_IdcA { get; set; }
-    public string? S1_AS_Wdc { get; set; }
-    public string? S1_AS_Eff { get; set; }
-    public string? S1_AS_NoLoadV { get; set; }
-    public string? S1_AS_StartV { get; set; }
-    public string? S1_AS_Result { get; set; }
-    public string? S2_BS_Vac { get; set; }
-    public string? S2_BS_IacA { get; set; }
-    public string? S2_BS_Wac { get; set; }
-    public string? S2_BS_PF { get; set; }
-    public string? S2_BS_ATHD { get; set; }
-    public string? S2_BS_Vdc { get; set; }
-    public string? S2_BS_IdcA { get; set; }
-    public string? S2_BS_Wdc { get; set; }
-    public string? S2_BS_Eff { get; set; }
-    public string? S2_BS_NoLoadV { get; set; }
-    public string? S2_BS_StartV { get; set; }
-    public string? S2_BS_Result { get; set; }
-    public string? S2_AS_Vac { get; set; }
-    public string? S2_AS_IacA { get; set; }
-    public string? S2_AS_Wac { get; set; }
-    public string? S2_AS_PF { get; set; }
-    public string? S2_AS_ATHD { get; set; }
-    public string? S2_AS_Vdc { get; set; }
-    public string? S2_AS_IdcA { get; set; }
-    public string? S2_AS_Wdc { get; set; }
-    public string? S2_AS_Eff { get; set; }
-    public string? S2_AS_NoLoadV { get; set; }
-    public string? S2_AS_StartV { get; set; }
-    public string? S2_AS_Result { get; set; }
-    public string? S3_BS_Vac { get; set; }
-    public string? S3_BS_IacA { get; set; }
-    public string? S3_BS_Wac { get; set; }
-    public string? S3_BS_PF { get; set; }
-    public string? S3_BS_ATHD { get; set; }
-    public string? S3_BS_Vdc { get; set; }
-    public string? S3_BS_IdcA { get; set; }
-    public string? S3_BS_Wdc { get; set; }
-    public string? S3_BS_Eff { get; set; }
-    public string? S3_BS_NoLoadV { get; set; }
-    public string? S3_BS_StartV { get; set; }
-    public string? S3_BS_Result { get; set; }
-    public string? S3_AS_Vac { get; set; }
-    public string? S3_AS_IacA { get; set; }
-    public string? S3_AS_Wac { get; set; }
-    public string? S3_AS_PF { get; set; }
-    public string? S3_AS_ATHD { get; set; }
-    public string? S3_AS_Vdc { get; set; }
-    public string? S3_AS_IdcA { get; set; }
-    public string? S3_AS_Wdc { get; set; }
-    public string? S3_AS_Eff { get; set; }
-    public string? S3_AS_NoLoadV { get; set; }
-    public string? S3_AS_StartV { get; set; }
-    public string? S3_AS_Result { get; set; }
-    public string? S4_BS_Vac { get; set; }
-    public string? S4_BS_IacA { get; set; }
-    public string? S4_BS_Wac { get; set; }
-    public string? S4_BS_PF { get; set; }
-    public string? S4_BS_ATHD { get; set; }
-    public string? S4_BS_Vdc { get; set; }
-    public string? S4_BS_IdcA { get; set; }
-    public string? S4_BS_Wdc { get; set; }
-    public string? S4_BS_Eff { get; set; }
-    public string? S4_BS_NoLoadV { get; set; }
-    public string? S4_BS_StartV { get; set; }
-    public string? S4_BS_Result { get; set; }
-    public string? S4_AS_Vac { get; set; }
-    public string? S4_AS_IacA { get; set; }
-    public string? S4_AS_Wac { get; set; }
-    public string? S4_AS_PF { get; set; }
-    public string? S4_AS_ATHD { get; set; }
-    public string? S4_AS_Vdc { get; set; }
-    public string? S4_AS_IdcA { get; set; }
-    public string? S4_AS_Wdc { get; set; }
-    public string? S4_AS_Eff { get; set; }
-    public string? S4_AS_NoLoadV { get; set; }
-    public string? S4_AS_StartV { get; set; }
-    public string? S4_AS_Result { get; set; }
-    public string? S5_BS_Vac { get; set; }
-    public string? S5_BS_IacA { get; set; }
-    public string? S5_BS_Wac { get; set; }
-    public string? S5_BS_PF { get; set; }
-    public string? S5_BS_ATHD { get; set; }
-    public string? S5_BS_Vdc { get; set; }
-    public string? S5_BS_IdcA { get; set; }
-    public string? S5_BS_Wdc { get; set; }
-    public string? S5_BS_Eff { get; set; }
-    public string? S5_BS_NoLoadV { get; set; }
-    public string? S5_BS_StartV { get; set; }
-    public string? S5_BS_Result { get; set; }
-    public string? S5_AS_Vac { get; set; }
-    public string? S5_AS_IacA { get; set; }
-    public string? S5_AS_Wac { get; set; }
-    public string? S5_AS_PF { get; set; }
-    public string? S5_AS_ATHD { get; set; }
-    public string? S5_AS_Vdc { get; set; }
-    public string? S5_AS_IdcA { get; set; }
-    public string? S5_AS_Wdc { get; set; }
-    public string? S5_AS_Eff { get; set; }
-    public string? S5_AS_NoLoadV { get; set; }
-    public string? S5_AS_StartV { get; set; }
-    public string? S5_AS_Result { get; set; }
+
     public string? OverallResult { get; set; }
     public string? TestedByName { get; set; }
     public string? VerifiedByName { get; set; }
@@ -147,4 +29,8 @@ public class ElectricalPerformanceViewModel
     public DateTime AddedOn { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? UpdatedOn { get; set; }
+    public int Success { get; set; }
+    public string? ElectricalDetails { get; set; }
+    public List<ElectricalPerDetailsViewModal> Details { get; set; } = new();
+
 }

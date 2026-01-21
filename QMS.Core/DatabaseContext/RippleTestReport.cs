@@ -20,6 +20,7 @@ public class RippleTestReport : SqlTable
     public decimal? RMSValue { get; set; }
     public string? Calculation { get; set; }
     public decimal? RipplePercentage { get; set; }
+    public string? RippleTestFileAttachedPath { get; set; }
     public string? Result { get; set; }
     public string? TestedBy { get; set; }
     public string? VerifiedBy { get; set; }

@@ -84,6 +84,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
                     Id = x.Id,
                     ReportNo = x.ReportNo,
                     TestingDate = x.TestingDate,
+                    MeasuringInstrument = x.MeasuringInstrument,
                     ProductCatRef = x.ProductCatRef,
                     ProductDescription = x.ProductDescription,
                     BatchCode = x.BatchCode,
@@ -93,7 +94,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
                     LEDCombination = x.LEDCombination,
                     DeltaValue = x.DeltaValue,
                     RMSValue = x.RMSValue,
-                    Calculation = x.Calculation,
+                    RippleTestFileAttachedPath = x.RippleTestFileAttachedPath,
                     RipplePercentage = x.RipplePercentage,
                     Result = x.Result,
                     TestedBy = x.TestedBy,
@@ -130,6 +131,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
                 new SqlParameter("@RMSValue", model.RMSValue  ?? (object)DBNull.Value),
                 new SqlParameter("@Calculation", model.Calculation  ?? (object)DBNull.Value),
                 new SqlParameter("@RipplePercentage", model.RipplePercentage  ?? (object)DBNull.Value),
+                new SqlParameter("@RippleTestFileAttachedPath", model.RippleTestFileAttachedPath  ?? (object)DBNull.Value),
                 new SqlParameter("@Result", model.Result?? (object)DBNull.Value),
                 new SqlParameter("@TestedBy", model.TestedBy  ?? (object)DBNull.Value),
                 new SqlParameter("@VerifiedBy", model.VerifiedBy?? (object)DBNull.Value),
@@ -153,6 +155,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
                     "@RMSValue, " +
                     "@Calculation, " +
                     "@RipplePercentage, " +
+                    "@RippleTestFileAttachedPath, " +
                     "@Result, " +
                     "@TestedBy, " +
                     "@VerifiedBy, " +
@@ -191,6 +194,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
                 new SqlParameter("@RMSValue", model.RMSValue  ?? (object)DBNull.Value),
                 new SqlParameter("@Calculation", model.Calculation  ?? (object)DBNull.Value),
                 new SqlParameter("@RipplePercentage", model.RipplePercentage  ?? (object)DBNull.Value),
+                new SqlParameter("@RippleTestFileAttachedPath", model.RippleTestFileAttachedPath  ?? (object)DBNull.Value),
                 new SqlParameter("@Result", model.Result?? (object)DBNull.Value),
                 new SqlParameter("@TestedBy", model.TestedBy  ?? (object)DBNull.Value),
                 new SqlParameter("@VerifiedBy", model.VerifiedBy?? (object)DBNull.Value),
@@ -215,6 +219,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
                     "@RMSValue, " +
                     "@Calculation, " +
                     "@RipplePercentage, " +
+                    "@RippleTestFileAttachedPath, " +
                     "@Result, " +
                     "@TestedBy, " +
                     "@VerifiedBy, " +

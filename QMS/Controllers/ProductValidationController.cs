@@ -1181,6 +1181,7 @@ public class ProductValidationController : Controller
             return Json(new { Success = false, Errors = errors });
         }
 
+
         int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
         if (model.Id > 0)
@@ -1595,7 +1596,6 @@ public class ProductValidationController : Controller
     //    // Return browser path for DB
     //    return $"/InstallationTrial_Attach/{installationTrialId}/{fileName}";
     //}
-
 
     public async Task<ActionResult> DeleteInstallationTrailAsync(int Id)
     {

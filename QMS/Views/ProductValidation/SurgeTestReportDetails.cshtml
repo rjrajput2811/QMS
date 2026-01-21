@@ -211,8 +211,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                                     TABLE / BORDER BASE
-                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                     TABLE / BORDER BASE
+                                                                                                                                                                                                                                                                  ============================*/
     /* Use this class on your surge tables (with/without SPD) */
     .surge-table {
         width: 100%;
@@ -253,8 +253,8 @@
     }
 
     /* ===========================
-                                                                                                                                                                                                                                                     EDITABLE CELLS
-                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                     EDITABLE CELLS
+                                                                                                                                                                                                                                                                  ============================*/
     .editable-cell,
     td[contenteditable="true"] {
         background-color: #fff;
@@ -276,8 +276,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                                     RESULT ROW (BOTTOM)
-                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                     RESULT ROW (BOTTOM)
+                                                                                                                                                                                                                                                                  ============================*/
     /* Apply this to the <tr> of your final result row */
     .result-row {
         font-weight: 700;
@@ -327,8 +327,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                                     UTILITIES (optional)
-                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                     UTILITIES (optional)
+                                                                                                                                                                                                                                                                  ============================*/
     .text-center {
         text-align: center;
     }
@@ -484,25 +484,43 @@
 
                                     <tr>
                                         <!-- Row 2 -->
-                                        <td>
-                                            <b>Product Cat Ref :</b> <em>*</em>
-                                            @Html.TextBoxFor(m=>m.ProductCatRef , new{
-                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Product Ref",
-                                                                                        required = "required" , type = "text"})
+                                        <td style="width:20px;">
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <b style="width:105px;">Product Cat Ref :</b> <em>*</em>
+                                                <input type="text"
+                                                       name="prodCode_Search"
+                                                       id="prodCode_Search"
+                                                       class="form-control"
+                                                       placeholder="Search Code"
+                                                       oninput="handleProdCodeSearch(this)"
+                                                       style="width:170px; text-transform:uppercase; font-size:13px;" />
+
+                                                @Html.TextBoxFor(m => m.ProductCatRef, new {
+                                                                                                @class = "form-control",
+                                                                                                style = "width:320px; font-size:13px;",
+                                                                                                placeholder = "Enter Product Ref",
+                                                                                                required = "required",
+                                                                                                type = "text"
+                                                                                                })
+                                            </div>
                                         </td>
 
                                         <td>
                                             <b>Product Description :</b> <em>*</em>
-                                            @Html.TextBoxFor(m=>m.ProductDescription , new{
-                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Description",
-                                                                                        required = "required" , type = "text"})
+                                            @Html.TextBoxFor(m => m.ProductDescription, new {
+                                                                                        @class = "form-control d-inline-block",
+                                                                                        style = "width:60%; font-size:13px;",
+                                                                                        required = "required"
+                                                                                        })
                                         </td>
 
                                         <td>
                                             <b>Driver Code :</b> <em>*</em>
-                                            @Html.TextBoxFor(m=>m.DriverCode , new{
-                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Driver Code",
-                                                                                        required = "required" , type = "text" })
+                                            @Html.TextBoxFor(m => m.DriverCode, new {
+                                                                                        @class = "form-control d-inline-block",
+                                                                                        style = "width:60%; font-size:13px;",
+                                                                                        required = "required"
+                                                                                        })
                                         </td>
                                     </tr>
 
@@ -932,16 +950,137 @@
         $(document).ready(function () {
             initPhotoPreviews();
 
-                const inputElement = $("#BISsear_Code");
-                if (inputElement.length) {
-                    // Attach the keydown event handler
-                        inputElement.on('input', function (event) {
-                        handleBisSearch(event);
-                    });
-                }
+           const inputElement = $("#prodCode_Search");
+           if (inputElement.length) {
+
+                inputElement.on('input', function (event) {
+                handleProdCodeSearch(event);
+               });
+           }
         });
 
-          function setupPreview(inputId, imgId) {
+         function handleProdCodeSearch(event) {
+
+            const input = event.target;
+            if (!input) return;
+
+            let searchQuery = input.value.trim();
+
+            if (searchQuery.length < 4) {
+                clearTimeout(searchTimeout);
+                return;
+            }
+
+            const searchTerms = searchQuery.substring(0, 4);
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                pagedData = {};
+                fetchProdCodeRelatedData(searchTerms, input);
+            }, 300);
+        }
+
+         function fetchProdCodeRelatedData(productCatNo, inputField) {
+                debugger
+                $.ajax({
+                    url: '/Vendor/GetCodeSearch',
+                    type: 'GET',
+                    data: { search: productCatNo },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            displayProdCodeSuggestions(data, inputField);
+                        } else {
+                            showDangerAlert('No data found for the entered Product Cat No.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching data:', error);
+                    }
+                });
+            }
+
+         function displayProdCodeSuggestions(data, inputField) {
+
+                    removeExistingDropdown(inputField);
+
+                    const parent = inputField.parentElement;
+                    if (getComputedStyle(parent).position === "static") {
+                        parent.style.position = "relative";
+                    }
+
+                    const dropdown = document.createElement('div');
+                    dropdown.className = 'suggestion-dropdown';
+                    dropdown.style.position = 'absolute';
+                    dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                    dropdown.style.left = inputField.offsetLeft + 'px';
+                    dropdown.style.backgroundColor = 'white';
+                    dropdown.style.border = '1px solid #ccc';
+                    dropdown.style.zIndex = 1000;
+                    dropdown.style.overflowY = 'auto';
+                    dropdown.style.maxHeight = '300px';
+                    dropdown.style.width = inputField.offsetWidth + 'px';
+                    dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+                    data.forEach(item => {
+                        const code = (item.oldPart_No || "").toString().trim();
+                        const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                        const option = document.createElement('div');
+                        option.className = 'suggestion-item';
+                        option.textContent = desc ? `${code} | ${desc}` : code;
+                        option.style.padding = '8px';
+                        option.style.cursor = 'pointer';
+
+                        option.addEventListener('mouseover', () => {
+                            option.style.backgroundColor = '#4682B4';
+                            option.style.color = '#fff';
+                        });
+                        option.addEventListener('mouseout', () => {
+                            option.style.backgroundColor = '';
+                            option.style.color = '';
+                        });
+
+                        option.addEventListener('click', () => {
+
+                            const productCatRefInput = document.getElementById('ProductCatRef');
+                            if (productCatRefInput) {
+                                productCatRefInput.value = code ?? '';
+                            }
+
+                            const productDescInput = document.getElementById('ProductDescription');
+                            if (productDescInput) {
+                                productDescInput.value = desc ?? '';
+                            }
+
+                            const searchBox = document.getElementById('prodCode_Search');
+                            if (searchBox) {
+                                searchBox.value = code;
+                            }
+
+                            dropdown.remove();
+                        });
+
+                        dropdown.appendChild(option);
+                    });
+
+                    parent.appendChild(dropdown);
+                }
+
+         function removeExistingDropdown(inputField) {
+                const existingDropdown = document.querySelector('.suggestion-dropdown');
+                if (existingDropdown) {
+                    existingDropdown.remove();
+                }
+            }
+
+         document.addEventListener('click', function (e) {
+                if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+                    removeExistingDropdown();
+                }
+            });
+
+       function setupPreview(inputId, imgId) {
             const inp = document.getElementById(inputId);
             const img = document.getElementById(imgId);
 
@@ -967,13 +1106,14 @@
         }
 
         function initPhotoPreviews() {
-            setupPreview('photoUpload1', 'preview1');           
+            setupPreview('photoUpload1', 'preview1');
         }
-                    function insertSurgeTest() {
 
-                    Blockloadershow();
+        function insertSurgeTest() {
 
-                           $('td[contenteditable="true"]').each(function () {
+        Blockloadershow();
+
+            $('td[contenteditable="true"]').each(function () {
             var value = $(this).text().trim();
             var fieldName = $(this).data('name'); // e.g. Voltage_KV
 

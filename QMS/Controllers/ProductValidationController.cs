@@ -496,43 +496,32 @@ public class ProductValidationController : Controller
                 mainTable.AddCell(resultValueCell);
 
                 // ================= FOOTER SIGNATURES =================
-                Cell footerContainer = new Cell(1, 2).SetPadding(0);
-                Table innerFooter = new Table(new float[] { 1, 1 }).UseAllAvailableWidth();
-
-                // Helper to Create Signature Cells
+                // 1. Helper to Create Signature Cells
                 Cell CreateSignatureCell(string label, string name, bool addRightBorder)
                 {
                     Cell cell = new Cell();
-                    cell.SetHeight(45); // INCREASED HEIGHT from 50 to 65 to prevent clipping
+                    cell.SetHeight(45);
 
-                    // 1. Label at the TOP
+                    // Label at the TOP
                     cell.Add(new Paragraph(label).SetFontSize(10).SetFont(boldFont));
 
-
-                    // 3. Name at the BOTTOM (Use check for null)
+                    // Name at the BOTTOM
                     string displayName = !string.IsNullOrEmpty(name) ? name : "____________________";
                     cell.Add(new Paragraph(displayName).SetFontSize(11));
 
                     // Styling
-                    cell.SetVerticalAlignment(VerticalAlignment.BOTTOM); // Aligns the last element to bottom
-                    cell.SetBorder(Border.NO_BORDER);
-
-                    if (addRightBorder)
-                    {
-                        cell.SetBorderRight(new SolidBorder(ColorConstants.BLACK, 1));
-                    }
+                    cell.SetVerticalAlignment(VerticalAlignment.BOTTOM);
 
                     return cell;
                 }
 
-                // Add Tested By (Left)
-                innerFooter.AddCell(CreateSignatureCell("Tested By", model.TestedBy, true));
+                // 2. Add cells DIRECTLY to mainTable (No nested table, no footerContainer)
 
-                // Add Verified By (Right)
-                innerFooter.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, false));
+                // Add Tested By -> Goes into Column 1 (Aligns with "Result" label)
+                mainTable.AddCell(CreateSignatureCell("Tested By", model.TestedBy, true));
 
-                footerContainer.Add(innerFooter);
-                mainTable.AddCell(footerContainer);
+                // Add Verified By -> Goes into Column 2 (Aligns with Result value)
+                mainTable.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, false));
 
                 // Add the single main table to doc
                 document.Add(mainTable);

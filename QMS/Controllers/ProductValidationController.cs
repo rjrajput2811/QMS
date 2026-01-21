@@ -110,9 +110,9 @@ public class ProductValidationController : Controller
         return View();
     }
 
-    public async Task<ActionResult> GetElectricalPerformanceList()
+    public async Task<ActionResult> GetElectricalPerformanceList(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync();
+        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync(startDate, endDate);
         return Json(result);
     }
 

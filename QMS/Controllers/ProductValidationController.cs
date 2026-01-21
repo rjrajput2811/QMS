@@ -1839,13 +1839,13 @@ public class ProductValidationController : Controller
             if (model.Photo_WithLoadFile != null && model.Photo_WithLoadFile.Length > 0)
             {
                 model.Photo_WithLoad = await SaveImageAsync(
-                    model.Photo_WithLoadFile, "WithLoad", model.ReportNo);
+                    model.Photo_WithLoadFile,"InstallationTrial_Attach", "WithLoad", model.ReportNo);
             }
 
             if (model.Photo_WithoutLoadFile != null && model.Photo_WithoutLoadFile.Length > 0)
             {
                 model.Photo_WithoutLoad = await SaveImageAsync(
-                    model.Photo_WithoutLoadFile, "WithoutLoad", model.ReportNo);
+                    model.Photo_WithoutLoadFile, "InstallationTrial_Attach", "WithoutLoad", model.ReportNo);
             }
            
             // ------------------------------------------------------------
@@ -1931,25 +1931,56 @@ public class ProductValidationController : Controller
         }
     }
 
-    private async Task<string> SaveImageAsync(IFormFile file, string prefix, string complaintNo)
+    //private async Task<string> SaveImageAsync(IFormFile file, string prefix, string complaintNo)
+    //{
+    //    if (file == null || file.Length == 0)
+    //        return string.Empty;
+
+    //    // Make complaint no safe for folder/file name
+    //    var safeComplaintNo = (complaintNo ?? string.Empty)
+    //        .Replace(" ", "_")
+    //        .Replace("/", "_")
+    //        .Replace("\\", "_")
+    //        .Replace(":", "_");
+
+    //    // Physical folder path: wwwroot/CAReport_Attach/{ComplaintNo}
+    //    var folderPhysical = Path.Combine(
+    //        Directory.GetCurrentDirectory(),
+    //        "wwwroot",
+    //        "InstallationTrial_Attach",
+    //        safeComplaintNo
+    //    );
+
+    //    if (!Directory.Exists(folderPhysical))
+    //        Directory.CreateDirectory(folderPhysical);
+
+    //    var ext = Path.GetExtension(file.FileName);
+    //    if (string.IsNullOrWhiteSpace(ext))
+    //        ext = ".jpg";
+
+    //    var fileName = $"{safeComplaintNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+    //    var fullPath = Path.Combine(folderPhysical, fileName);
+
+    //    using (var stream = new FileStream(fullPath, FileMode.Create))
+    //    {
+    //        await file.CopyToAsync(stream);
+    //    }
+
+
+    //    var relativeForDb = $"/InstallationTrial_Attach/{safeComplaintNo}/{fileName}";
+
+    //    return relativeForDb;
+    //}
+
+    private async Task<string> SaveImageAsync(IFormFile file, string baseFolder, string prefix, string referenceNo)
     {
         if (file == null || file.Length == 0)
             return string.Empty;
 
-        // Make complaint no safe for folder/file name
-        var safeComplaintNo = (complaintNo ?? string.Empty)
-            .Replace(" ", "_")
-            .Replace("/", "_")
-            .Replace("\\", "_")
-            .Replace(":", "_");
+        var safeRefNo = MakeSafe(referenceNo);
 
-        // Physical folder path: wwwroot/CAReport_Attach/{ComplaintNo}
-        var folderPhysical = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "wwwroot",
-            "InstallationTrial_Attach",
-            safeComplaintNo
-        );
+        // Physical: wwwroot/{baseFolder}/{safeRefNo}
+        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), baseFolder, safeRefNo);
 
         if (!Directory.Exists(folderPhysical))
             Directory.CreateDirectory(folderPhysical);
@@ -1958,7 +1989,7 @@ public class ProductValidationController : Controller
         if (string.IsNullOrWhiteSpace(ext))
             ext = ".jpg";
 
-        var fileName = $"{safeComplaintNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+        var fileName = $"{safeRefNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
         var fullPath = Path.Combine(folderPhysical, fileName);
 
         using (var stream = new FileStream(fullPath, FileMode.Create))
@@ -1966,10 +1997,23 @@ public class ProductValidationController : Controller
             await file.CopyToAsync(stream);
         }
 
-        
-        var relativeForDb = $"/InstallationTrial_Attach/{safeComplaintNo}/{fileName}";
+        // DB path / URL path
+        return $"/{baseFolder}/{safeRefNo}/{fileName}".Replace("\\", "/");
+    }
 
-        return relativeForDb;
+    private static string MakeSafe(string input)
+    {
+        var s = (input ?? string.Empty).Trim();
+
+        foreach (var c in Path.GetInvalidFileNameChars())
+            s = s.Replace(c.ToString(), "_");
+
+        s = s.Replace(" ", "_")
+             .Replace("/", "_")
+             .Replace("\\", "_")
+             .Replace(":", "_");
+
+        return string.IsNullOrWhiteSpace(s) ? "NA" : s;
     }
 
     //private async Task<string> SaveInstallationTrialImageAsync(IFormFile file, string prefix, int installationTrialId)

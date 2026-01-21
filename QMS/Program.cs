@@ -57,6 +57,7 @@ using QMS.Core.Services.SystemLogs;
 using System.Data;
 using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Repositories.SPMBuyRepository;
+using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.InstallationTrialRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
@@ -120,6 +121,7 @@ builder.Services.AddTransient<IDeviationNoteImplementationItemRepository, Deviat
 builder.Services.AddTransient<IDeviationNoteService, DeviationNoteService>();
 builder.Services.AddScoped<ISPMMakeRepository, SPMMakeRepository>();
 builder.Services.AddScoped<ISPMBuyRepository, SPMBuyRepository>();
+builder.Services.AddTransient<IRippleTestReportRepository, RippleTestReportRepository>();
 builder.Services.AddScoped<IInstallationTrialRepository, InstallationTrialRepository>();
 builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportRepository>();
 builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();

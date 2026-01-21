@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <Content Remove="Views\ProductValidation\Index.cshtml" />
+    <Content Remove="Views\SPMCalculationBuy\SPMCertificate.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +35,7 @@
     <Folder Include="wwwroot\BISCertificateAttachments\" />
     <Folder Include="wwwroot\CSOTrackerAttachments\" />
     <Folder Include="wwwroot\KaizenAttachments\" />
+    <Folder Include="wwwroot\RippleTest_Attach\" />
     <Folder Include="wwwroot\RMTCAttachments\" />
     <Folder Include="wwwroot\ThirdPartyAttachments\" />
   </ItemGroup>

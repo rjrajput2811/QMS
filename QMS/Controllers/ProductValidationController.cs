@@ -1,13 +1,26 @@
 ﻿using ClosedXML.Excel;
 using ClosedXML.Excel.Drawings;
+using iText.IO.Font;
+using iText.IO.Font.Constants;
+using iText.IO.Image;
+using iText.Kernel.Colors;
+using iText.Kernel.Font;
+using iText.Kernel.Geom;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Borders;
+using iText.Layout.Element;
+using iText.Layout.Properties;
 using Microsoft.AspNetCore.Mvc;
-using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ImpactTestRepository;
 using QMS.Core.Repositories.PhotometryRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
+using QMS.Core.Repositories.RippleTestReportRepo;
+using Color = System.Drawing.Color;
+using Path = System.IO.Path;
 using QMS.Core.Repositories.SurgeTestReportRepository;
 using System.Drawing;
 using System.Threading.Tasks;
@@ -22,6 +35,7 @@ public class ProductValidationController : Controller
     private readonly IElectricalPerformanceRepository _electricalPerformanceRepository;
     private readonly IWebHostEnvironment _hostEnvironment;
     private readonly IElectricalProtectionRepository _electricalProtectionRepository;
+    private readonly IRippleTestReportRepository _rippleTestReportRepository;
     private readonly ISurgeTestReportRepository _surgeTestRepository;
     private readonly IPhotometryTestRepository _photometryTestRepository;
     private readonly IImpactTestRepository _impactTestRepository;
@@ -33,16 +47,18 @@ public class ProductValidationController : Controller
         IElectricalPerformanceRepository electricalPerformanceRepository,
         IWebHostEnvironment hostEnvironment,
         IElectricalProtectionRepository electricalProtectionRepository,
+        IRippleTestReportRepository rippleTestReportRepository,
         ISurgeTestReportRepository surgeTestRepository ,
         IPhotometryTestRepository photometryTestRepository,
         IImpactTestRepository impactTestRepository,
-        ISystemLogService systemLogService,
+         ISystemLogService systemLogService,
         IInstallationTrialRepository installationTrialRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
         _hostEnvironment = hostEnvironment;
         _electricalProtectionRepository = electricalProtectionRepository;
+        _rippleTestReportRepository = rippleTestReportRepository;
         _installationTrialRepository = installationTrialRepository;
         _surgeTestRepository = surgeTestRepository;
         _photometryTestRepository = photometryTestRepository;
@@ -110,6 +126,12 @@ public class ProductValidationController : Controller
         return View();
     }
 
+    public async Task<ActionResult> GetElectricalPerformanceList()
+    {
+        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync();
+        return Json(result);
+    }
+
     public async Task<IActionResult> ElectricalPerformanceDetails(int Id)
     {
         var model = new ElectricalPerformanceViewModel();
@@ -127,14 +149,140 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
+
+    [HttpPost]
+    public async Task<ActionResult> InsertUpdateElectricalPerformanceDetails(ElectricalPerformanceViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                          .Select(e => e.ErrorMessage)
+                                          .ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _electricalPerformanceRepository.UpdateElectricalPerformancesAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _electricalPerformanceRepository.InsertElectricalPerformancesAsync(model);
+            return Json(result);
+        }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> DeleteElectricalPerformance(int id)
+    {
+        var result = await _electricalPerformanceRepository.DeleteElectricalPerformancesAsync(id);
+        return Json(result);
+    }
+
     public IActionResult RippleTestReport()
     {
         return View();
     }
 
-    public IActionResult Rippletestreportdetails(int Id)
+    public async Task<ActionResult> GetRippleTestReportListAsync()
     {
-        return View();
+        var result = await _rippleTestReportRepository.GetRippleTestReportsAsync();
+        return Json(result);
+    }
+
+    public async Task<IActionResult> RippletestreportdetailsAsync(int Id)
+    {
+        var model = new RippleTestReportViewModel();
+        if (Id > 0)
+        {
+            model = await _rippleTestReportRepository.GetRippleTestReportsByIdAsync(Id);
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> InsertUpdateRippleTestReportAsync(RippleTestReportViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
+
+
+        string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "RippleTest_Attach", model.ReportNo.ToString());
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+        List<string> newSavedPaths = new List<string>();
+
+        if (model.RippleTestFileAttachedFile != null && model.RippleTestFileAttachedFile.Count > 0)
+        {
+            foreach (var file in model.RippleTestFileAttachedFile)
+            {
+                if (file.Length > 0)
+                {
+                    string fileName = file.FileName.Replace(",", "_");
+                    string savePath = Path.Combine(folder, fileName);
+                    using (var stream = new FileStream(savePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    newSavedPaths.Add(savePath);
+                }
+            }
+        }
+
+        string finalPaths = "";
+
+        if (!string.IsNullOrEmpty(model.RemainingImages))
+        {
+            finalPaths = model.RemainingImages;
+        }
+
+        if (newSavedPaths.Count > 0)
+        {
+            string newPathsJoined = string.Join(",", newSavedPaths);
+
+            if (!string.IsNullOrEmpty(finalPaths))
+            {
+                finalPaths += "," + newPathsJoined;
+            }
+            else
+            {
+                finalPaths = newPathsJoined;
+            }
+        }
+
+        model.RippleTestFileAttachedPath = finalPaths;
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _rippleTestReportRepository.UpdateRippleTestReportsAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _rippleTestReportRepository.InsertRippleTestReportsAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DelteRippleTestReportAsync(int id)
+    {
+        var result = await _rippleTestReportRepository.DeleteRippleTestReportsAsync(id);
+        return Json(result);
     }
 
     public async Task<ActionResult> InsertUpdatePhysicalCheckAndVisualInspectionDetailsAsync(PhysicalCheckAndVisualInspectionViewModel model)
@@ -167,6 +315,266 @@ public class ProductValidationController : Controller
     {
         var result = await _physicalCheckAndVisualInspectionRepository.DeletePhysicalCheckAndVisualInspectionsAsync(Id);
         return Json(result);
+    }
+
+    public async Task<ActionResult> ExportRippleTestReportToPDFAsync(int Id)
+    {
+        try
+        {
+            var model = await _rippleTestReportRepository.GetRippleTestReportsByIdAsync(Id);
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                // 2. Initialize PDF Writer & Document
+                PdfWriter writer = new PdfWriter(stream);
+                PdfDocument pdf = new PdfDocument(writer);
+                Document document = new Document(pdf, PageSize.A4);
+                document.SetMargins(20, 20, 20, 20);
+
+                // Create Bold Font (Reusing your existing logic)
+                PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+
+                // --- MAIN TABLE (One wrapper for everything to get the outer border) ---
+                // Columns: Label (1 part) vs Value (2 parts)
+                Table mainTable = new Table(new float[] { 1, 2 }).UseAllAvailableWidth();
+
+                // ================= HEADER SECTION =================
+                // Create a single cell that spans both columns (1, 2)
+                Cell headerContainer = new Cell(1, 2).SetPadding(0);
+
+                // Nested table for Title (Left) and Logo (Right)
+                Table innerHeader = new Table(new float[] { 3, 1 }).UseAllAvailableWidth();
+
+                // 1. Title
+                Cell titleCell = new Cell().Add(new Paragraph("RIPPLE TEST REPORT")
+                    .SetFontSize(18)
+                    .SetFont(boldFont)
+                    .SetFontColor(ColorConstants.BLACK));
+                titleCell.SetBorder(Border.NO_BORDER);
+                titleCell.SetVerticalAlignment(VerticalAlignment.MIDDLE);
+                titleCell.SetTextAlignment(TextAlignment.CENTER);
+                innerHeader.AddCell(titleCell);
+
+                // 2. Logo
+                Cell logoCell = new Cell();
+                var webRootPath = _hostEnvironment.WebRootPath;
+                var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png");
+
+                if (System.IO.File.Exists(imagePath))
+                {
+                    iText.Layout.Element.Image logo = new iText.Layout.Element.Image(ImageDataFactory.Create(imagePath));
+                    logo.SetAutoScale(true);
+                    logo.SetMaxHeight(20); // <--- FIXED: Limits height so it remains small and seeable
+                    logoCell.Add(logo);
+                }
+                else
+                {
+                    logoCell.Add(new Paragraph("Logo"));
+                }
+
+                logoCell.SetBorder(Border.NO_BORDER);
+                logoCell.SetVerticalAlignment(VerticalAlignment.MIDDLE);
+                logoCell.SetTextAlignment(TextAlignment.RIGHT);
+                innerHeader.AddCell(logoCell);
+
+                // Add the nested header table to the main container cell
+                headerContainer.Add(innerHeader);
+                mainTable.AddCell(headerContainer);
+
+                // ================= DATA ROWS =================
+                // Add rows directly to mainTable so they share the border
+                AddRow(mainTable, "Report No:", model.ReportNo, boldFont);
+                AddRow(mainTable, "Testing date :", model.TestingDate.HasValue ? model.TestingDate.Value.ToString("dd/MM/yyyy") : "", boldFont);
+                AddRow(mainTable, "Measuring instrument :", model.MeasuringInstrument, boldFont);
+                AddRow(mainTable, "Product Cat Ref", model.ProductCatRef, boldFont);
+                AddRow(mainTable, "Product Description :", model.ProductDescription, boldFont);
+                AddRow(mainTable, "Batch Code", model.BatchCode, boldFont);
+                AddRow(mainTable, "PKD :", model.PKD, boldFont);
+                AddRow(mainTable, "LED Details", model.LEDDetails, boldFont);
+                AddRow(mainTable, "LED DRIVER", model.LEDDriver, boldFont);
+                AddRow(mainTable, "LED COMBINATION", model.LEDCombination, boldFont);
+
+                // Spacer Row (Empty but with side borders to maintain the box look)
+                mainTable.AddCell(new Cell(1, 2).SetHeight(10).SetBorderTop(Border.NO_BORDER).SetBorderBottom(Border.NO_BORDER));
+
+                // ================= CALCULATION SECTION =================
+                var fontPath = Path.Combine(_hostEnvironment.WebRootPath, "fonts", "arialbd.ttf");
+                PdfFont boldUnicodeFont = PdfFontFactory.CreateFont(fontPath, PdfEncodings.IDENTITY_H);
+                AddCalculationRow(mainTable, "Δ =", model.DeltaValue.HasValue ? model.DeltaValue.Value.ToString("0.00") : "", boldUnicodeFont);
+                AddCalculationRow(mainTable, "RMS =", model.RMSValue.HasValue ? model.RMSValue.Value.ToString("0.00") : "", boldFont);
+                AddCalculationRow(mainTable, "RIPPLE % =", model.RipplePercentage.HasValue ? model.RipplePercentage.Value.ToString("0.00") : "", boldFont);
+
+                // ================= PHOTOS SECTION =================
+                Cell photoCell = new Cell(1, 2); // Do NOT set fixed height here, let it adapt
+                photoCell.SetVerticalAlignment(VerticalAlignment.MIDDLE);
+                photoCell.SetTextAlignment(TextAlignment.CENTER);
+
+                if (!string.IsNullOrEmpty(model.RippleTestFileAttachedPath))
+                {
+                    var photoPaths = model.RippleTestFileAttachedPath.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    // 1. Create a "Gallery" Table with 4 Columns (Adjust number to prefered size)
+                    // This forces images to share the width (25% each)
+                    Table galleryTable = new Table(UnitValue.CreatePercentArray(4)).UseAllAvailableWidth();
+                    bool imageAdded = false;
+
+                    foreach (var rawPath in photoPaths)
+                    {
+                        // 2. Clean Path Logic (Same as before)
+                        string dbPath = rawPath.Trim().Trim('\'').Trim('"');
+                        string finalPathToUse = "";
+
+                        if (System.IO.File.Exists(dbPath))
+                        {
+                            finalPathToUse = dbPath;
+                        }
+                        else
+                        {
+                            string fileName = Path.GetFileName(dbPath);
+                            string constructedPath = Path.Combine(webRootPath, "RippleTest_Attach", model.ReportNo, fileName);
+                            if (System.IO.File.Exists(constructedPath)) finalPathToUse = constructedPath;
+                        }
+
+                        // 3. Add Image to Grid
+                        if (!string.IsNullOrEmpty(finalPathToUse))
+                        {
+                            try
+                            {
+                                byte[] imgBytes = System.IO.File.ReadAllBytes(finalPathToUse);
+                                iText.Layout.Element.Image img = new iText.Layout.Element.Image(ImageDataFactory.Create(imgBytes));
+
+                                // AUTO-SCALE: This fits the image into the small grid column
+                                img.SetAutoScale(true);
+
+                                // Optional: Ensure they aren't too tall if vertical
+                                img.SetMaxHeight(100);
+
+                                // Add to a borderless cell in the gallery table
+                                Cell imgCell = new Cell().Add(img);
+                                imgCell.SetBorder(Border.NO_BORDER);
+                                imgCell.SetPadding(5); // Space between photos
+                                imgCell.SetTextAlignment(TextAlignment.CENTER);
+
+                                galleryTable.AddCell(imgCell);
+                                imageAdded = true;
+                            }
+                            catch { }
+                        }
+                    }
+
+                    // 4. Add the Grid to the main Photo Cell
+                    if (imageAdded)
+                    {
+                        // Check if we need to pad the gallery with empty cells to finish the row?
+                        // (iText handles this automatically usually, but looks cleaner if we just add the table)
+                        photoCell.Add(galleryTable);
+
+                        // Ensure minimum height for consistency
+                        photoCell.SetMinHeight(200);
+                    }
+                    else
+                    {
+                        photoCell.Add(new Paragraph(new Text("Space for photos")).SetFontColor(ColorConstants.GRAY));
+                        photoCell.SetHeight(200);
+                    }
+                }
+                else
+                {
+                    photoCell.Add(new Paragraph(new Text("Space for photos")).SetFontColor(ColorConstants.GRAY));
+                    photoCell.SetHeight(200);
+                }
+
+                mainTable.AddCell(photoCell);
+
+                // ================= RESULT SECTION =================
+                Cell resultLabelCell = new Cell().Add(new Paragraph("Result ( Pass / Fail )")
+                    .SetFontColor(ColorConstants.RED)
+                    .SetFont(boldFont));
+                mainTable.AddCell(resultLabelCell);
+
+                Cell resultValueCell = new Cell().Add(new Paragraph(model.Result ?? ""));
+                mainTable.AddCell(resultValueCell);
+
+                // ================= FOOTER SIGNATURES =================
+                Cell footerContainer = new Cell(1, 2).SetPadding(0);
+                Table innerFooter = new Table(new float[] { 1, 1 }).UseAllAvailableWidth();
+
+                // Helper to Create Signature Cells
+                Cell CreateSignatureCell(string label, string name, bool addRightBorder)
+                {
+                    Cell cell = new Cell();
+                    cell.SetHeight(45); // INCREASED HEIGHT from 50 to 65 to prevent clipping
+
+                    // 1. Label at the TOP
+                    cell.Add(new Paragraph(label).SetFontSize(10).SetFont(boldFont));
+
+
+                    // 3. Name at the BOTTOM (Use check for null)
+                    string displayName = !string.IsNullOrEmpty(name) ? name : "____________________";
+                    cell.Add(new Paragraph(displayName).SetFontSize(11));
+
+                    // Styling
+                    cell.SetVerticalAlignment(VerticalAlignment.BOTTOM); // Aligns the last element to bottom
+                    cell.SetBorder(Border.NO_BORDER);
+
+                    if (addRightBorder)
+                    {
+                        cell.SetBorderRight(new SolidBorder(ColorConstants.BLACK, 1));
+                    }
+
+                    return cell;
+                }
+
+                // Add Tested By (Left)
+                innerFooter.AddCell(CreateSignatureCell("Tested By", model.TestedBy, true));
+
+                // Add Verified By (Right)
+                innerFooter.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, false));
+
+                footerContainer.Add(innerFooter);
+                mainTable.AddCell(footerContainer);
+
+                // Add the single main table to doc
+                document.Add(mainTable);
+                document.Close();
+
+                return File(stream.ToArray(), "application/pdf", $"RippleTestReport_{Id}.pdf");
+            }
+        }
+        catch (Exception ex)
+        {
+            var exc = new OperationResult
+            {
+                Success = false,
+                Message = ex.Message
+            };
+            return Json(exc);
+        }
+    }
+
+    // --- HELPER METHODS (Put these inside your controller class) ---
+
+    private void AddRow(Table table, string label, string value, PdfFont font)
+    {
+        // Label
+        Cell c1 = new Cell().Add(new Paragraph(label).SetFont(font));
+        table.AddCell(c1);
+
+        // Value
+        Cell c2 = new Cell().Add(new Paragraph(value ?? ""));
+        table.AddCell(c2);
+    }
+
+    private void AddCalculationRow(Table table, string label, string value, PdfFont font)
+    {
+        // Label aligned Right
+        Cell c1 = new Cell().Add(new Paragraph(label).SetFont(font));
+        c1.SetTextAlignment(TextAlignment.RIGHT);
+        table.AddCell(c1);
+
+        // Value
+        Cell c2 = new Cell().Add(new Paragraph(value ?? ""));
+        table.AddCell(c2);
     }
 
     #endregion
@@ -1432,13 +1840,13 @@ public class ProductValidationController : Controller
             if (model.Photo_WithLoadFile != null && model.Photo_WithLoadFile.Length > 0)
             {
                 model.Photo_WithLoad = await SaveImageAsync(
-                    model.Photo_WithLoadFile, "WithLoad", model.ReportNo);
+                    model.Photo_WithLoadFile,"InstallationTrial_Attach", "WithLoad", model.ReportNo);
             }
 
             if (model.Photo_WithoutLoadFile != null && model.Photo_WithoutLoadFile.Length > 0)
             {
                 model.Photo_WithoutLoad = await SaveImageAsync(
-                    model.Photo_WithoutLoadFile, "WithoutLoad", model.ReportNo);
+                    model.Photo_WithoutLoadFile, "InstallationTrial_Attach", "WithoutLoad", model.ReportNo);
             }
            
             // ------------------------------------------------------------
@@ -1524,25 +1932,56 @@ public class ProductValidationController : Controller
         }
     }
 
-    private async Task<string> SaveImageAsync(IFormFile file, string prefix, string complaintNo)
+    //private async Task<string> SaveImageAsync(IFormFile file, string prefix, string complaintNo)
+    //{
+    //    if (file == null || file.Length == 0)
+    //        return string.Empty;
+
+    //    // Make complaint no safe for folder/file name
+    //    var safeComplaintNo = (complaintNo ?? string.Empty)
+    //        .Replace(" ", "_")
+    //        .Replace("/", "_")
+    //        .Replace("\\", "_")
+    //        .Replace(":", "_");
+
+    //    // Physical folder path: wwwroot/CAReport_Attach/{ComplaintNo}
+    //    var folderPhysical = Path.Combine(
+    //        Directory.GetCurrentDirectory(),
+    //        "wwwroot",
+    //        "InstallationTrial_Attach",
+    //        safeComplaintNo
+    //    );
+
+    //    if (!Directory.Exists(folderPhysical))
+    //        Directory.CreateDirectory(folderPhysical);
+
+    //    var ext = Path.GetExtension(file.FileName);
+    //    if (string.IsNullOrWhiteSpace(ext))
+    //        ext = ".jpg";
+
+    //    var fileName = $"{safeComplaintNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+    //    var fullPath = Path.Combine(folderPhysical, fileName);
+
+    //    using (var stream = new FileStream(fullPath, FileMode.Create))
+    //    {
+    //        await file.CopyToAsync(stream);
+    //    }
+
+
+    //    var relativeForDb = $"/InstallationTrial_Attach/{safeComplaintNo}/{fileName}";
+
+    //    return relativeForDb;
+    //}
+
+    private async Task<string> SaveImageAsync(IFormFile file, string baseFolder, string prefix, string referenceNo)
     {
         if (file == null || file.Length == 0)
             return string.Empty;
 
-        // Make complaint no safe for folder/file name
-        var safeComplaintNo = (complaintNo ?? string.Empty)
-            .Replace(" ", "_")
-            .Replace("/", "_")
-            .Replace("\\", "_")
-            .Replace(":", "_");
+        var safeRefNo = MakeSafe(referenceNo);
 
-        // Physical folder path: wwwroot/CAReport_Attach/{ComplaintNo}
-        var folderPhysical = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "wwwroot",
-            "InstallationTrial_Attach",
-            safeComplaintNo
-        );
+        // Physical: wwwroot/{baseFolder}/{safeRefNo}
+        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), baseFolder, safeRefNo);
 
         if (!Directory.Exists(folderPhysical))
             Directory.CreateDirectory(folderPhysical);
@@ -1551,7 +1990,7 @@ public class ProductValidationController : Controller
         if (string.IsNullOrWhiteSpace(ext))
             ext = ".jpg";
 
-        var fileName = $"{safeComplaintNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
+        var fileName = $"{safeRefNo}_{prefix}_{DateTime.Now:yyyyMMddHHmmssfff}{ext}";
         var fullPath = Path.Combine(folderPhysical, fileName);
 
         using (var stream = new FileStream(fullPath, FileMode.Create))
@@ -1559,10 +1998,23 @@ public class ProductValidationController : Controller
             await file.CopyToAsync(stream);
         }
 
-        
-        var relativeForDb = $"/InstallationTrial_Attach/{safeComplaintNo}/{fileName}";
+        // DB path / URL path
+        return $"/{baseFolder}/{safeRefNo}/{fileName}".Replace("\\", "/");
+    }
 
-        return relativeForDb;
+    private static string MakeSafe(string input)
+    {
+        var s = (input ?? string.Empty).Trim();
+
+        foreach (var c in Path.GetInvalidFileNameChars())
+            s = s.Replace(c.ToString(), "_");
+
+        s = s.Replace(" ", "_")
+             .Replace("/", "_")
+             .Replace("\\", "_")
+             .Replace(":", "_");
+
+        return string.IsNullOrWhiteSpace(s) ? "NA" : s;
     }
 
     //private async Task<string> SaveInstallationTrialImageAsync(IFormFile file, string prefix, int installationTrialId)

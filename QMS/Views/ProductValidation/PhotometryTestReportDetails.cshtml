@@ -289,9 +289,24 @@
                                 <tbody>
                                     <tr>
                                         <td>
-                                            <span class="field-label">Product Cat Ref :</span><em class="req">*</em>
-                                            @Html.TextBoxFor(m => m.ProductCatRef, new {@class = "inline-input",
-                                            placeholder = "Enter Product Reference",required = "required",type = "text"})
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <b style="width:105px;">Product Cat Ref :</b> <em>*</em>
+                                                <input type="text"
+                                                       name="prodCode_Search"
+                                                       id="prodCode_Search"
+                                                       class="form-control"
+                                                       placeholder="Search Code"
+                                                       oninput="handleProdCodeSearch(this)"
+                                                       style="width:170px; text-transform:uppercase; font-size:13px;" />
+
+                                                @Html.TextBoxFor(m => m.ProductCatRef, new {
+                                                @class = "form-control",
+                                                                                                style = "width:320px; font-size:13px;",
+                                                                                                placeholder = "Enter Product Ref",
+                                                                                                required = "required",
+                                                                                                type = "text"
+                                                                                                })
+                                            </div>
                                         </td>
                                         <td>
                                             <span class="field-label">Product Description :</span><em class="req">*</em>
@@ -830,6 +845,149 @@
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
     <script>
+        let searchTimeout;
+        $(document).ready(function () {
+
+           const inputElement = $("#prodCode_Search");
+           if (inputElement.length) {
+                    // Attach the keydown event handler
+                   inputElement.on('input', function (event) {
+                   handleProdCodeSearch(event);
+               });
+           }
+        });
+
+        function handleProdCodeSearch(event) {
+
+            const input = event.target;
+            if (!input) return;
+
+            let searchQuery = input.value.trim();
+
+            // 🔴 Clear suggestions if less than 4 chars
+            if (searchQuery.length < 4) {
+                clearTimeout(searchTimeout);
+                // optional: hide suggestion dropdown here
+                // hideBisSuggestions();
+                return;
+            }
+
+            // ✅ Take first 4 characters only
+            const searchTerms = searchQuery.substring(0, 4);
+
+            // 🟡 Debounce API call
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                pagedData = {}; // Clear cached data
+                fetchProdCodeRelatedData(searchTerms, input);
+            }, 300);
+        }
+
+          function fetchProdCodeRelatedData(productCatNo, inputField) {
+                debugger
+                $.ajax({
+                    url: '/Vendor/GetCodeSearch', // API endpoint
+                    type: 'GET', // HTTP method
+                    data: { search: productCatNo }, // Query parameters
+                    dataType: 'json', // Expected response data type
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            displayProdCodeSuggestions(data, inputField);
+                        } else {
+                            showDangerAlert('No data found for the entered Product Cat No.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching data:', error);
+                    }
+                });
+            }
+
+            // Function to display suggestions in a dropdown
+          function displayProdCodeSuggestions(data, inputField) {
+                    // Remove any existing dropdown (if any)
+                    removeExistingDropdown(inputField);
+
+                    // Ensure parent can anchor absolute dropdown
+                    const parent = inputField.parentElement;
+                    if (getComputedStyle(parent).position === "static") {
+                        parent.style.position = "relative";
+                    }
+
+                    const dropdown = document.createElement('div');
+                    dropdown.className = 'suggestion-dropdown';
+                    dropdown.style.position = 'absolute';
+                    dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                    dropdown.style.left = inputField.offsetLeft + 'px';
+                    dropdown.style.backgroundColor = 'white';
+                    dropdown.style.border = '1px solid #ccc';
+                    dropdown.style.zIndex = 1000;
+                    dropdown.style.overflowY = 'auto';
+                    dropdown.style.maxHeight = '300px';
+                    dropdown.style.width = inputField.offsetWidth + 'px';
+                    dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+                    data.forEach(item => {
+                        const code = (item.oldPart_No || "").toString().trim();
+                        // change these keys as per your API response:
+                        const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                        const option = document.createElement('div');
+                        option.className = 'suggestion-item';
+                        option.textContent = desc ? `${code} | ${desc}` : code;
+                        option.style.padding = '8px';
+                        option.style.cursor = 'pointer';
+
+                        option.addEventListener('mouseover', () => {
+                            option.style.backgroundColor = '#4682B4';
+                            option.style.color = '#fff';
+                        });
+                        option.addEventListener('mouseout', () => {
+                            option.style.backgroundColor = '';
+                            option.style.color = '';
+                        });
+
+                        option.addEventListener('click', () => {
+
+                            const productCatRefInput = document.getElementById('ProductCatRef');
+                            if (productCatRefInput) {
+                                productCatRefInput.value = code ?? '';
+                            }
+
+                            const productDescInput = document.getElementById('ProductDescription');
+                            if (productDescInput) {
+                                productDescInput.value = desc ?? '';
+                            }
+
+                            // optional: also set search box to just code
+                            const searchBox = document.getElementById('prodCode_Search');
+                            if (searchBox) {
+                                searchBox.value = code;
+                            }
+
+                            dropdown.remove();
+                        });
+
+                        dropdown.appendChild(option);
+                    });
+
+                    parent.appendChild(dropdown);
+                }
+
+            // Function to remove any existing dropdowns
+          function removeExistingDropdown(inputField) {
+                const existingDropdown = document.querySelector('.suggestion-dropdown');
+                if (existingDropdown) {
+                    existingDropdown.remove();
+                }
+            }
+
+            // Remove dropdown on outside click
+          document.addEventListener('click', function (e) {
+                if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+                    removeExistingDropdown();
+                }
+            });
 
         function savePhotometryTest() {
             Blockloadershow();
@@ -852,7 +1010,7 @@
                 if (!value) {
                     isValid = false;
                     missingFields.push(field.name);
-                }              
+                }
             });
 
             if (!isValid) {

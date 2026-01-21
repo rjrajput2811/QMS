@@ -1582,6 +1582,17 @@ public class ProductValidationController : Controller
     [HttpPost]
     public async Task<ActionResult> InsertUpdateSurgeTestReport(SurgeTestReportViewModel model)
     {
+        if (model == null)
+        {
+            return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+        }
+
+        if (model.Photo_SurgeFile != null && model.Photo_SurgeFile.Length > 0)
+        {
+            model.Surge_Photo = await SaveImageAsync(
+                model.Photo_SurgeFile, "SurgeTest_Attach", "SurgeDriver", model.ReportNo);
+        }
+
         if (!ModelState.IsValid)
         {
             var errors = ModelState.Values.SelectMany(v => v.Errors)
@@ -1589,6 +1600,30 @@ public class ProductValidationController : Controller
             return Json(new { Success = false, Errors = errors });
         }
 
+        bool exists;
+        if (model.Id > 0)
+        {            
+            exists = await _surgeTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            exists = await _surgeTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
+        }
 
         int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
@@ -1656,6 +1691,34 @@ public class ProductValidationController : Controller
             return Json(new { Success = false, Errors = errors });
         }
 
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            // UPDATE: exclude same Id record
+            exists = await _photometryTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _photometryTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
+        }
+
         if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
@@ -1672,9 +1735,9 @@ public class ProductValidationController : Controller
         }
     }
 
-    public async Task<ActionResult> GetPhotometryTestReportAsync()
+    public async Task<ActionResult> GetPhotometryTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _photometryTestRepository.GetPhotometryTestReportAsync();
+        var result = await _photometryTestRepository.GetPhotometryTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -1981,7 +2044,7 @@ public class ProductValidationController : Controller
         var safeRefNo = MakeSafe(referenceNo);
 
         // Physical: wwwroot/{baseFolder}/{safeRefNo}
-        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), baseFolder, safeRefNo);
+        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", baseFolder, safeRefNo);
 
         if (!Directory.Exists(folderPhysical))
             Directory.CreateDirectory(folderPhysical);
@@ -2076,9 +2139,9 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public async Task<ActionResult> GetImpactTestReportAsync()
+    public async Task<ActionResult> GetImpactTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _impactTestRepository.GetImpactTestReportAsync();
+        var result = await _impactTestRepository.GetImpactTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -2088,6 +2151,40 @@ public class ProductValidationController : Controller
         {
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Observation_PhotoFile != null && model.Observation_PhotoFile.Length > 0)
+        {
+            model.Observation_Photo = await SaveImageAsync(
+                model.Observation_PhotoFile, "ImpactTest_Attach", "ImpactTestObs", model.ReportNo);
+        }
+
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            // UPDATE: exclude same Id record
+            exists = await _impactTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _impactTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
         }
 
         if (model.Id > 0)

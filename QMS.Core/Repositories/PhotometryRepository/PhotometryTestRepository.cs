@@ -381,7 +381,7 @@ namespace QMS.Core.Repositories.PhotometryRepository
             }
         }
 
-        public async Task<List<PhotometryTestReportViewModel>> GetPhotometryTestReportAsync()
+        public async Task<List<PhotometryTestReportViewModel>> GetPhotometryTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
@@ -409,6 +409,16 @@ namespace QMS.Core.Repositories.PhotometryRepository
                         AddedBy = x.AddedBy
                     })
                     .ToList());
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    var s = startDate.Value.Date;
+                    var e = endDate.Value.Date;
+
+                    result = result
+                        .Where(d => d.ReportDate?.Date >= s && d.ReportDate?.Date <= e)
+                        .ToList();
+                }
 
                 foreach (var rec in result)
                 {
@@ -588,6 +598,44 @@ namespace QMS.Core.Repositories.PhotometryRepository
             }
 
 
+        }
+
+        public async Task<bool> CheckDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.Photometries
+                    .Where(x => x.Deleted == false && x.ReportNo == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.Photometries
+                        .Where(x => x.Deleted == false &&
+                               x.ReportNo == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
     }
 }

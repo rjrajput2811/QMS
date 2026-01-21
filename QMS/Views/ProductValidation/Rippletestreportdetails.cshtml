@@ -136,6 +136,32 @@
             object-fit: cover;
         }
 
+    .img-wrapper {
+        position: relative; /* Needed to position the X button */
+        display: inline-block;
+    }
+
+    .remove-btn {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: red;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+        line-height: 20px;
+        text-align: center;
+        cursor: pointer;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+
+        .remove-btn:hover {
+            background: darkred;
+        }
+
     .result-cell {
         font-weight: bold;
         color: red;
@@ -153,173 +179,576 @@
 <div class="content">
     <div class="row">
         <div class="col-12">
+            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+                    <div>
+                        <b style="font-size:large; color:#4682B4;">
+                            Ripple Test Report
+                        </b>
+                    </div>
 
-    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
-            <div>
-                <b style="font-size:large; color:#4682B4;">
-                    Ripple Test Report
-                </b>
-            </div>
+                    <div>
+                        <button id="saveButton" type="button" onclick="submitForm()" class="btn btn-outline-success mr-2" style="width:120px; font-size:15px">
+                            <i class="fas fa-save mr-2 fa-1x"></i> SAVE
+                        </button>
 
-            <div>
-                <button id="saveButton" type="button" class="btn btn-outline-success mr-2" style="width:120px; font-size:15px">
-                    <i class="fas fa-save mr-2 fa-1x"></i> SAVE
-                </button>
-
-                <a href='@Url.Action("RippleTestReport","ProductValidation")'
-                   class="btn btn-outline-primary"
-                   style="width:120px; font-size:15px">
-                    <i class="fas fa-arrow-left"></i> BACK
-                </a>
-            </div>
-        </div>
-    </div>
-<form id="electricalForm" method="post" action="#">
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <!-- Top meta table (unchanged) -->
-            <div class="table-responsive">
-                <table class="table table-bordered" style="font-size:14px; border:1px solid #000; width:100%; border-collapse:collapse;">
-                    <colgroup>
-                        <col style="width:33.33%;">
-                        <col style="width:33.33%;">
-                        <col style="width:33.33%;">
-                    </colgroup>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <b>Product Cat Ref :</b>
-                                @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control" })
-                            </td>
-                            <td>
-                                <b>Product Description :</b>
-                                @Html.TextBoxFor(m => m.ProductDescription, new { @class = "form-control" })
-                            </td>
-                            <td>
-                                <b>Report No. :</b>
-                                @Html.TextBoxFor(m => m.ReportNo, new { @class = "form-control" })
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>Light Source Details :</b>
-                                @* @Html.TextBoxFor(m => m.li, new { @class = "form-control" }) *@
-                            </td>
-                            <td>
-                                <b>Driver Details &amp; Qty :</b>
-                                @* @Html.TextBoxFor(m => m.DriverDetails, new { @class = "form-control" }) *@
-                            </td>
-                            <td>
-                                <b>Report Date :</b>
-                                @* @Html.TextBoxFor(m => m.ReportDate, new { @class = "form-control" }) *@
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>PCB Details &amp; Qty :</b>
-                                @* @Html.TextBoxFor(m => m.PCBDetails, new { @class = "form-control" }) *@
-                            </td>
-                            <td>
-                                <b>LED Combinations :</b>
-                                @* @Html.TextBoxFor(m => m.LEDCombinations, new { @class = "form-control" }) *@
-                            </td>
-                            <td>
-                                <b>Batch Code :</b>
-                                @Html.TextBoxFor(m => m.BatchCode, new { @class = "form-control" })
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>Sensor Details &amp; Qty :</b>
-                                @* @Html.TextBoxFor(m => m.SensorDetails, new { @class = "form-control" }) *@
-                            </td>
-                            <td>
-                                <b>Lamp Details :</b>
-                                @* @Html.TextBoxFor(m => m.LampDetails, new { @class = "form-control" }) *@
-                            </td>
-                            <td>
-                                <b>PKD :</b>
-                                @Html.TextBoxFor(m => m.PKD, new { @class = "form-control" })
-                            </td>
-                        </tr>
-                  
-                       
-                    </tbody>
-                </table>
-            </div>
-            <table>
-                <tr>
-                    <td colspan="2"></td>
-                </tr>
-                <tr>
-                    <td class="formula-cell">RIPPLE % = ((Δ/2)/RMS) * 100</td>
-                  
-                    <td class="td-text-wrap" contenteditable="true" data-name="RIPPLERMS">
-                        @* @Model.RIPPLERMS *@
-                        </td>
-                  </tr>
-                <tr>
-                    <td class="formula-cell" >  Δ =</td>
-                    <td class="td-text-wrap" contenteditable="true" data-name="PIE">
-                        @* @Model.PIE *@
-                        </td>
-                    </tr>
-                <tr>
-                    <td class="formula-cell" > RMS = </td>
-                    <td class ="td-text-wrap" contenteditable="true" data-name="RMS">
-                        @* @Model.RMS *@
-                    </td>
-
-                    </tr>
-                    <tr>
-                    <td class="formula-cell" >Calculation =</td>
-                    <td class="td-text-wrap" contenteditable="true" data-name="Calculation">
-                       @*  @Model.Calculation *@
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="formula-cell">RIPPLE % =</td>
-                    <td class="td-text-wrap" contenteditable="true" data-name="RIPPLE">
-                        @* @Model.RIPPLE *@
-                        </td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="photo-space">
-                        <label for="photoUpload" class="upload-label">Upload Photos</label>
-                        <input type="file" id="photoUpload" multiple accept="image/*" onchange="previewPhotos(event)">
-                        <div id="photoPreview" class="photo-preview">
-                            <em style="color:#555;">No photos uploaded</em>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="result-cell">
-                        Result ( Pass / Fail )
-                    </td>
-                </tr>
-              
-            </table>
-            <div class="card">
-                <div class="card-body">
-                    <div class="row form-group align-items-center mb-2">
-                        <div class="col-3 pe-3 align-items-center">
-                            <label class="me-3"><b>Tested By</b></label><em>*</em>
-                            @*  @Html.TextBoxFor(m => m.TestedBy, new { @class = "form-control" }) *@
-                        </div>
-                        <div class="col-3 pe-3 align-items-center">
-                            <label class="me-3"><b>Verified By</b></label>
-                            @*  @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "form-control" }) *@
-                        </div>
+                        <a href='@Url.Action("RippleTestReport","ProductValidation")'
+                           class="btn btn-outline-primary"
+                           style="width:120px; font-size:15px">
+                            <i class="fas fa-arrow-left"></i> BACK
+                        </a>
                     </div>
                 </div>
             </div>
-            </div>
-            </div>
-            </form>
+            <form id="rippleTest-form" method="post" asp-action="InsertUpdateRippleTestReport" asp-controller="ProductValidation">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <!-- Top meta table (unchanged) -->
+                        <div class="table-responsive">
+                            @Html.HiddenFor(m => m.Id)
+                            <table class="table table-bordered" style="font-size:14px; border:1px solid #000; width:100%; border-collapse:collapse;">
+                                <colgroup>
+                                    <col style="width:33.33%;">
+                                    <col style="width:33.33%;">
+                                    <col style="width:33.33%;">
+                                </colgroup>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <b>Report No. :</b>
+                                            @Html.TextBoxFor(m => m.ReportNo, new { @class = "form-control" })
+                                        </td>
+                                        <td>
+                                            <b>Testing date :</b>
+                                            @Html.TextBoxFor(m => m.TestingDate, "{0:yyyy-MM-dd}", new { @class = "form-control", style = "width: 40%;", type = "date" })
+                                        </td>
+                                        <td>
+                                            <b>Measuring Instrument :</b>
+                                            @Html.TextBoxFor(m => m.MeasuringInstrument, new { @class = "form-control" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <b>Product Code and Description :</b>
+                                            <div class="row">
+                                                <div class="col-md-3">
+                                                    @Html.TextBoxFor(m => m.ProductCatRef, new { 
+                                                        @class = "form-control w-100", 
+                                                        placeholder = "Search Code", 
+                                                        aria_label = "Search Code", 
+                                                        oninput = "handleProductCatRefSearch(this)", 
+                                                        style = "text-transform: uppercase;" 
+                                                    })
+                                                </div>
+                                                <div class="col-md-9">
+                                                    @Html.TextBoxFor(m => m.ProductDescription, new { 
+                                                        @class = "form-control w-100", 
+                                                        placeholder = "Enter product code and description", 
+                                                        aria_label = "Product Code and Description", 
+                                                        autocomplete = "off"
+                                                    })
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <b>Batch Code :</b>
+                                            @Html.TextBoxFor(m => m.BatchCode, new { @class = "form-control" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>PKD :</b>
+                                            @Html.TextBoxFor(m => m.PKD, new { @class = "form-control" })
+                                        </td>
+                                        <td>
+                                            <b>LED Details :</b>
+                                            @Html.TextBoxFor(m => m.LEDDetails, new { @class = "form-control" })
+                                        </td>
+                                        <td>
+                                            <b>LED Driver :</b>
+                                            @Html.TextBoxFor(m => m.LEDDriver, new { @class = "form-control" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <b>LED Combination :</b>
+                                            @Html.TextBoxFor(m => m.LEDCombination, new { @class = "form-control" })
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <table id="rmsCalculationTable">
+                            <tr>
+                                <td colspan="2"></td>
+                            </tr>
+                            <tr>
+                                <td class="formula-cell w-50"> Δ =</td>
+                                <td class="td-text-wrap" contenteditable="true" data-name="DeltaValue">
+                                    @{
+                                        var delta = Model.DeltaValue ?? 0;
+                                        @((delta % 1 == 0) ? delta.ToString("0") : delta.ToString("0.00"))
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="formula-cell w-50"> RMS = </td>
+                                <td class="td-text-wrap" contenteditable="true" data-name="RMSValue">
+                                    @{
+                                        var rms = Model.RMSValue ?? 0;
+                                        @((rms % 1 == 0) ? rms.ToString("0") : rms.ToString("0.00"))
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="formula-cell w-50">RIPPLE % =</td>
+                                <td class="td-text-wrap" data-name="RipplePercentage">
+                                    @{
+                                        var ripple = Model.RipplePercentage ?? 0;
+                                        @((ripple % 1 == 0) ? ripple.ToString("0") : ripple.ToString("0.00"))
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="photo-space">
+                                    <label for="photoUpload" class="upload-label">Upload Photos</label>
+                                    <input type="file" id="photoUpload" multiple accept="image/*">
+                                    <input type="hidden" id="remainingImages" name="remainingImages" value="@Model.RippleTestFileAttachedPath" />
+                                    <div id="photoPreview" class="photo-preview">
+                                        @if (!string.IsNullOrEmpty(Model.RippleTestFileAttachedPath))
+                                        {
+                                            var imagePaths = Model.RippleTestFileAttachedPath.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                                            @foreach (var path in imagePaths)
+                                            {
+                                                var rawPath = path.Trim();
+                                                string displayPath = rawPath;
 
+                                                int wwwRootIndex = rawPath.IndexOf("wwwroot", StringComparison.OrdinalIgnoreCase);
+                                                if (wwwRootIndex >= 0)
+                                                {
+                                                    displayPath = rawPath.Substring(wwwRootIndex + 7).Replace("\\", "/");
+                                                }
+
+                                                displayPath = "~" + displayPath;
+                                                <div class="img-wrapper uploaded-from-db">
+                                                    <img src="@Url.Content(displayPath)" title="Saved File" />
+                                                    <button type="button" class="remove-btn"
+                                                            onclick="removeExistingImage(this, '@rawPath.Replace(@"\", @"\\")')">
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            }
+                                        }
+
+                                        <em style="color:#555; @(!string.IsNullOrEmpty(Model.RippleTestFileAttachedPath) ? "display:none;" : "")">
+                                            No photos uploaded
+                                        </em>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="result-cell">
+                                    Result ( Pass / Fail )
+                                    @Html.TextBoxFor(m => m.Result, new { @class = "form-control" })
+                                </td>
+                            </tr>
+              
+                        </table>
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="row form-group align-items-center mb-2">
+                                    <div class="col-3 pe-3 align-items-center">
+                                        <label class="me-3"><b>Tested By</b></label><em>*</em>
+                                         @Html.TextBoxFor(m => m.TestedBy, new { @class = "form-control" })
+                                    </div>
+                                    <div class="col-3 pe-3 align-items-center">
+                                        <label class="me-3"><b>Verified By</b></label>
+                                         @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "form-control" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        let searchTimeout;
+
+        $(document).ready(function () {
+            $('td[data-name="DeltaValue"], td[data-name="RMSValue"]').on('input blur', function () {
+                calculateRipple();
+            });
+
+            const dt = new DataTransfer();
+            const $fileInput = $('#photoUpload');
+            const $previewContainer = $('#photoPreview');
+
+            $fileInput.on('change', function (e) {
+                // 1. Loop through the newly selected files
+                for (let i = 0; i < this.files.length; i++) {
+                    let file = this.files[i];
+
+                    // OPTIONAL: Check for duplicates based on name and size
+                    let isDuplicate = false;
+                    for (let j = 0; j < dt.files.length; j++) {
+                        if (dt.files[j].name === file.name && dt.files[j].size === file.size) {
+                            isDuplicate = true;
+                            break;
+                        }
+                    }
+
+                    // 2. If not duplicate, add to master list and preview
+                    if (!isDuplicate) {
+                        dt.items.add(file);
+                        createPreview(file);
+                    }
+                }
+
+                // 3. Update the actual input to match our master list
+                this.files = dt.files;
+
+                // Hide "No photos" text
+                $('#photoPreview em').hide();
+            });
+
+            function createPreview(file) {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function (e) {
+                    // Create the wrapper
+                    const $wrapper = $('<div>').addClass('img-wrapper');
+                
+                    // Create the image using YOUR styles
+                    const $img = $('<img>').attr('src', e.target.result);
+
+                    // Create the remove button
+                    const $btn = $('<button type="button">') // type="button" prevents form submit
+                        .addClass('remove-btn')
+                        .text('×')
+                        .on('click', function () {
+                            // A. Remove from UI
+                            $wrapper.remove();
+
+                            // B. Remove from DataTransfer (Master List)
+                            // We must create a new DataTransfer because .items.remove() is tricky with index shifts
+                            const newDt = new DataTransfer();
+                            for (let i = 0; i < dt.files.length; i++) {
+                                if (dt.files[i] !== file) {
+                                    newDt.items.add(dt.files[i]);
+                                }
+                            }
+                        
+                            // C. Update global variables
+                            dt.items.clear();
+                            for (let i = 0; i < newDt.files.length; i++) {
+                                dt.items.add(newDt.files[i]);
+                            }
+                        
+                            // D. Update the Input
+                            $fileInput[0].files = dt.files;
+
+                            // E. Show "No photos" if empty
+                            if (dt.files.length === 0 && $('.uploaded-from-db').length === 0) {
+                                $('#photoPreview em').show();
+                            }
+                        });
+
+                    $wrapper.append($img).append($btn);
+                    $previewContainer.append($wrapper);
+                };
+            }
+        });
+
+        function calculateRipple() {
+            // 1. Get values using the data-name attribute
+            // We use .text() because these are contenteditable <td>s, not <input>s
+            var deltaText = $('td[data-name="DeltaValue"]').text().trim();
+            var rmsText = $('td[data-name="RMSValue"]').text().trim();
+
+            // 2. Parse to numbers (handle empty strings safely)
+            var delta = parseFloat(deltaText) || 0;
+            var rms = parseFloat(rmsText) || 0;
+
+            // 3. Calculate based on formula: ((Δ / 2) / RMS) * 100
+            var rippleResult = 0;
+        
+            if (rms !== 0) {
+                rippleResult = ((delta / 2) / rms) * 100;
+            }
+
+            // 4. Update the Ripple cell (formatted to 2 decimal places)
+            // Check if result is valid number (not Infinity/NaN)
+            if (isFinite(rippleResult)) {
+                $('td[data-name="RipplePercentage"]').text(rippleResult.toFixed(2));
+            } else {
+                $('td[data-name="RipplePercentage"]').text('0');
+            }
+        }
+
+        function handleProductCatRefSearch(inputElement) {
+            const input = inputElement;
+            if (!input) return;
+
+            let searchQuery = input.value.trim();
+
+            // 🔴 Clear suggestions if less than 4 chars
+            if (searchQuery.length < 4) {
+                clearTimeout(searchTimeout);
+                // optional: hide suggestion dropdown here
+                // hideBisSuggestions();
+                return;
+            }
+
+            // ✅ Take first 4 characters only
+            const searchTerms = searchQuery.substring(0, 4);
+
+            // 🟡 Debounce API call
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                pagedData = {}; // Clear cached data
+                fetchProductCatRefRelatedData(searchTerms, input);
+            }, 300);
+        }
+
+        function fetchProductCatRefRelatedData(productCatNo, inputField) {
+            $.ajax({
+                url: '@Url.Action("GetCodeSearch", "Vendor")', // API endpoint
+                type: 'GET', // HTTP method
+                data: { search: productCatNo }, // Query parameters
+                dataType: 'json', // Expected response data type
+                success: function (data) {
+                    if (data && data.length > 0) {
+                        displayProductCatRefSuggestions(data, inputField);
+                    } else {
+                        showDangerAlert('No data found for the entered Product Cat No.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching data:', error);
+                }
+            });
+        }
+
+        function displayProductCatRefSuggestions(data, inputField) {
+            // Remove any existing dropdown (if any)
+            removeExistingDropdown(inputField);
+
+            // Ensure parent can anchor absolute dropdown
+            const parent = inputField.parentElement;
+            if (getComputedStyle(parent).position === "static") {
+                parent.style.position = "relative";
+            }
+
+            const dropdown = document.createElement('div');
+            dropdown.className = 'suggestion-dropdown';
+            dropdown.style.position = 'absolute';
+            dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+            dropdown.style.left = inputField.offsetLeft + 'px';
+            dropdown.style.backgroundColor = 'white';
+            dropdown.style.border = '1px solid #ccc';
+            dropdown.style.zIndex = 1000;
+            dropdown.style.overflowY = 'auto';
+            dropdown.style.maxHeight = '300px';
+            dropdown.style.width = inputField.offsetWidth + 'px';
+            dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+            data.forEach(item => {
+                const code = (item.oldPart_No || "").toString().trim();
+                // change these keys as per your API response:
+                const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                const option = document.createElement('div');
+                option.className = 'suggestion-item';
+                option.textContent = desc ? `${code} | ${desc}` : code;
+                option.style.padding = '8px';
+                option.style.cursor = 'pointer';
+
+                option.addEventListener('mouseover', () => {
+                    option.style.backgroundColor = '#4682B4';
+                    option.style.color = '#fff';
+                });
+                option.addEventListener('mouseout', () => {
+                    option.style.backgroundColor = '';
+                    option.style.color = '';
+                });
+
+                option.addEventListener('click', () => {
+                    const productInput = document.getElementById('ProductDescription');
+                    if (productInput) {
+                        productInput.value = desc ? `${code} | ${desc}` : code;
+                    }
+
+                    // optional: also set search box to just code
+                    const searchBox = document.getElementById('ProductCatRef');
+                    if (searchBox) {
+                        searchBox.value = code;
+                    }
+
+                    dropdown.remove();
+                });
+
+                dropdown.appendChild(option);
+            });
+
+            parent.appendChild(dropdown);
+        }
+
+        // Function to remove any existing dropdowns
+        function removeExistingDropdown(inputField) {
+            const existingDropdown = document.querySelector('.suggestion-dropdown');
+            if (existingDropdown) {
+                existingDropdown.remove();
+            }
+        }
+
+        // Remove dropdown on outside click
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#ProductCatRef')) {
+                removeExistingDropdown();
+            }
+        });
+
+        function removeExistingImage(btn, pathToRemove) {
+            // 1. Remove the visual element
+            $(btn).closest('.img-wrapper').remove();
+
+            // 2. Update the Hidden Input
+            var $input = $('#remainingImages');
+            var currentPaths = $input.val().split(',');
+
+            // Filter out the path we just removed
+            var newPaths = currentPaths.filter(function(path) {
+                return path.trim() !== pathToRemove.trim();
+            });
+
+            // Update the value
+            $input.val(newPaths.join(','));
+
+            // 3. If everything is gone (both new and old), show the "No photos" text
+            if (newPaths.length === 0 && $('#photoUpload')[0].files.length === 0) {
+                $('#photoPreview em').show();
+            }
+        }
+
+        function submitForm() {
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'TestingDate', name: 'Testing Date' },
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }
+            });
+
+            const numericFields = [
+                { dataName: 'DeltaValue', displayName: 'Delta Value (Δ)' },
+                { dataName: 'RMSValue', displayName: 'RMS Value' }
+            ];
+
+            numericFields.forEach(field => {
+                const element = $(`td[data-name="${field.dataName}"]`);
+                const value = element.text().trim();
+
+                if (value) {
+                    if (isNaN(parseFloat(value)) || !isFinite(value)) {
+                        isValid = false;
+                        missingFields.push(field.displayName + " (Must be a valid number)");
+                    }
+                }
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#rippleTest-form')[0];
+            const formData = new FormData(form);
+
+            $('#rmsCalculationTable td[data-name]').each(function() {
+                const dataName = $(this).data('name');
+                const content = $(this).text().trim();
+
+                if (dataName) {
+                    formData.append(dataName, content);
+                }
+            });
+
+            var fileInput = $('#photoUpload')[0]; // Access raw DOM element
+            if (fileInput && fileInput.files.length > 0) {
+                $.each(fileInput.files, function(index, file) {
+                     formData.append('RippleTestFileAttachedFile', file);
+                });
+            }
+
+            formData.append('RemainingImages', $('#remainingImages').val());
+
+            $.ajax({
+                url: $('#rippleTest-form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+                    if (!response.success) {
+                        var errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg != "") {
+                                showDangerAlert(errorMessg);
+                            }
+                        }
+                        else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    }
+                    else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("RippleTestReport", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script>    
+}
+
 @section HideSidebar { }
          

@@ -1,6 +1,25 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model RegulatoryRequirementViewModel
+@{
     ViewData["Title"] = "Legal / Regulatory Requirement and Documents Verification";
 }
+
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
 <style>
 
@@ -195,12 +214,11 @@
         padding: 4px 6px;
     }
 
+    em {
+        color: red;
+        font-style: normal;
     }
 </style>
-
-
-
-
 
 <div class="content">
     <div class="row">
@@ -216,398 +234,925 @@
                     </div>
 
                     <div>
-                        <button id="addLegalDocButton"
-                                type="button"
-                                class="btn btn-outline-success legitRipple mr-2"
-                                onclick="insertLegalDocVerification()"
-                                style="width:120px; font-size:15px;">
+                        <button id="addLegalDocButton" type="button" class="btn btn-outline-success legitRipple mr-2"
+                                onclick="insertLegalDocVerification()" style="width:120px; font-size:15px;">
                             <i class="fas fa-save mr-1"></i> Save
                         </button>
 
                         <a href='@Url.Action("RegulatoryRequirements", "ProductValidation")'
-                           class="btn btn-outline-primary"
-                           style="width:120px; font-size:15px;">
-                            <i class="fas fa-arrow-left"></i> BACK
+                           class="btn btn-outline-primary" style="width:120px; font-size:15px;">
+                            <i class="fas fa-arrow-left"></i> Back
                         </a>
                     </div>
                 </div>
             </div>
 
-
-       
-
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
                 <div class="card-body" style="padding:18px 20px;">
-                    <div class="table table-bordered table-legal">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-bottom:0;">
-                            <tbody>
-                               
-                                <tr>
-                                    <td style="width:60%; padding:10px;"></td>
+                    <form id="Regulatory-form" method="post" asp-action="InsertUpdateLegalRegulatory" asp-controller="ProductValidation">
+                        <div class="table table-bordered table-legal">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-bottom:0;">
 
-                                    <td style="width:20%; vertical-align:top; padding:10px;">
-                                        <b>Report No -</b>
-                                        <input type="text" class="underline-input"
-                                               placeholder="Enter report number"
-                                               style="width:65%; margin-left:6px;" />
-                                    </td>
+                                <tbody>
+                                    <tr>
+                                        <td style="vertical-align:top; padding:10px;">
+                                            <b>Report No :</b><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.ReportNo, new {@class = "underline-input",
+                                            placeholder = "Enter Report Number",required = "required",type = "text" ,style = "margin-left:6px;"})
+                                        </td>
 
-                                    <td style="width:20%; vertical-align:top; padding:10px;">
-                                        <b>Date -</b>
-                                        <input type="date" class="underline-input"
-                                               style="width:50%; margin-left:6px; cursor:pointer;" />
-                                    </td>
-                                </tr>
+                                        <td style="vertical-align:top; padding:10px;">
+                                            <b>Date :</b><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new { @class = "underline-input", placeholder = "dd-mm-yyyy" ,required = "required",type = "date" ,style = "margin-left:6px;"})
+                                        </td>
+                                    </tr>
 
-                      
-                                <tr>
-                                    <td style="vertical-align:top; padding:10px;">
-                                        <b>Product Cat Ref</b>
-                                        <input type="text" class="underline-input"
-                                               placeholder="Enter product reference"
-                                               style="width:80%; margin-left:6px; border-bottom:1.5px solid #000;" />
-                                    </td>
+                                    <tr>
+                                        <td style="vertical-align:top; padding:10px;">
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <b style="width:105px;">Product Cat Ref :</b> <em>*</em>
+                                                <input type="text" name="prodCode_Search"
+                                                       id="prodCode_Search" class="form-control" placeholder="Search Code"
+                                                       oninput="handleProdCodeSearch(this)"
+                                                       style="width:170px; text-transform:uppercase; font-size:13px;" />
 
-                                    <td colspan="2" style="vertical-align:top; padding:10px;">
-                                        <b>Product Description</b>
-                                        <input type="text" class="underline-input"
-                                               placeholder="Enter description"
-                                               style="width:70%; margin-left:6px; border-bottom:1.5px solid #000;" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px; font-size:14px;">
-                            <thead>
-                                <tr>
-                                    <th style="width:5%; text-align:left; padding:6px;">Category</th>
-                                    <th style="width:10%; text-align:left; padding:6px;">Minimum Technical Requirement</th>
-                                    <th colspan="4" style="width:35%; color:red; text-align:center; padding:6px;">
-                                        Result (OK / Not OK / Not Applicable / Pending)
-                                    </th>
-                                    <th style="width:8%; text-align:center; padding:6px;">Upload File</th>
-                                </tr>
+                                                @Html.TextBoxFor(m => m.ProductCatRef, new {@class = "form-control",
+                                                                                                style = "width:320px; font-size:13px;",placeholder = "Enter Product Ref",
+                                                                                                required = "required",type = "text"})
+                                            </div>
+                                        </td>
 
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Driver BIS registration</td>
-                                    <td>Valid BIS Inclusion Letter & Lab Report</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
+                                        <td colspan="2" style="vertical-align:top; padding:10px;">
+                                            <b>Product Description :</b><em class="req">*</em>
+                                            @Html.TextBoxFor(m => m.ProductDescription, new {@class = "underline-input",
+                                                                                        placeholder = "Enter Product Description",required = "required",type = "text"})
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                            <table class="table table-bordered" id="Regulatory_table" name="Regulatory_table" style="width:100%; border-collapse:collapse; margin-top:-1.5px; font-size:14px;">
+                                <thead>
+                                    <tr>
+                                        <th style="width:5%; text-align:left; padding:6px;">Category</th>
+                                        <th style="width:10%; text-align:left; padding:6px;">Minimum Technical Requirement</th>
+                                        <th colspan="4" style="width:35%; color:red; text-align:center; padding:6px;">
+                                            Result (OK / Not OK / Not Applicable / Pending)
+                                        </th>
+                                        <th style="width:8%; text-align:center; padding:6px;">Upload File</th>
+                                    </tr>
 
-                                </tr>
+                                </thead>
+                                <tbody>
+                                    
+                                    <tr>
+                                        <td>Driver BIS registration</td>
+                                        <td>Valid BIS Inclusion Letter & Lab Report</td>
 
-                                <tr>
-                                    <td>Luminaires BIS Registration</td>
-                                    <td>Valid BIS Inclusion Letter & Lab Report</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DriverBIS_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DriverBIS_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DriverBIS_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DriverBIS_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.DriverBIS_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="DriverBISUpload" accept="image/*" name="DriverBIS_Photo" style="" />
+                                                    <img id="previewDriverBIS" alt="" src="@Model?.DriverBIS_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.DriverBIS_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
 
-                                <tr>
-                                    <td>CCL list compliance</td>
-                                    <td>Valid Driver & Product CCL Report</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    </tr>
 
-                                <tr>
-                                    <td>NPI Buy Sheet</td>
-                                    <td>Product must match with NPI</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>Luminaires BIS Registration</td>
+                                        <td>Valid BIS Inclusion Letter & Lab Report</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.LuminairesBIS_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.LuminairesBIS_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.LuminairesBIS_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.LuminairesBIS_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.LuminairesBIS_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="LuminairesBISUpload" accept="image/*" name="LuminairesBIS_Photo" style="" />
+                                                    <img id="previewLuminairesBIS" alt="" src="@Model?.LuminairesBIS_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.LuminairesBIS_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td>CPS</td>
-                                    <td>Product must match with CPS</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>CCL list compliance</td>
+                                        <td>Valid Driver & Product CCL Report</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CCL_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CCL_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CCL_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CCL_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.CCL_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="CCLUpload" accept="image/*" name="CCL_Photo" style="" />
+                                                    <img id="previewCCL" alt="" src="@Model?.CCL_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.CCL_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td>PPS</td>
-                                    <td>Product must match with PPS</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>TDS</td>
-                                    <td>Product Must match with TDS</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>NPI Buy Sheet</td>
+                                        <td>Product must match with NPI</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.NPIBuySheet_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.NPIBuySheet_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.NPIBuySheet_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.NPIBuySheet_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.NPIBuySheet_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="NPIBuyUpload" accept="image/*" name="NPIBuySheet_Photo" style="" />
+                                                    <img id="previewNPIBuy" alt="" src="@Model?.NPIBuySheet_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.NPIBuySheet_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td>Design Docket</td>
-                                    <td>Product Must match with Docket</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>CPS</td>
+                                        <td>Product must match with CPS</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CPS_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CPS_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CPS_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CPS_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.CPS_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="CPSUpload" accept="image/*" name="CPS_Photo" style="" />
+                                                    <img id="previewCPS" alt="" src="@Model?.CPS_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.CPS_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td>Installation sheet</td>
-                                    <td>Product Can install as per Sheet</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td>PPS</td>
+                                        <td>Product must match with PPS</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PPS_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PPS_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PPS_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PPS_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.PPS_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="PPSUpload" accept="image/*" name="PPS_Photo" style="" />
+                                                    <img id="previewPPS" alt="" src="@Model?.PPS_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.PPS_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td>ROHS Compliance</td>
-                                    <td>Component Must Compliance</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
+                                    <tr>
+                                        <td>TDS</td>
+                                        <td>Product Must match with TDS</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.TDS_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.TDS_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.TDS_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.TDS_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.TDS_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="TDSUpload" accept="image/*" name="TDS_Photo" style="" />
+                                                    <img id="previewTDS" alt="" src="@Model?.TDS_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.TDS_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td>CIMFR For flame proof</td>
-                                    <td>Valid CIMFR Certificate</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
+                                    <tr>
+                                        <td>Design Docket</td>
+                                        <td>Product Must match with Docket</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DesignDocket_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DesignDocket_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DesignDocket_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.DesignDocket_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.DesignDocket_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="DesignDocketUpload" accept="image/*" name="DesignDocket_Photo" style="" />
+                                                    <img id="previewDesignDocket" alt="" src="@Model?.DesignDocket_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.DesignDocket_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                </tr>
+                                    <tr>
+                                        <td>Installation sheet</td>
+                                        <td>Product Can install as per Sheet</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.InstallationSheet_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.InstallationSheet_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.InstallationSheet_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.InstallationSheet_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.InstallationSheet_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="InstallationSheetUpload" accept="image/*" name="InstallationSheet_Photo" style="" />
+                                                    <img id="previewInstallationSheet" alt="" src="@Model?.InstallationSheet_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.InstallationSheet_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
 
-                                <tr>
-                                    <td>PESO For flame proof</td>
-                                    <td>Valid CIMFR Certificate</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
+                                    <tr>
+                                        <td>ROHS Compliance</td>
+                                        <td>Component Must Compliance</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.ROHSCompliance_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.ROHSCompliance_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.ROHSCompliance_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.ROHSCompliance_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.ROHSCompliance_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="ROHSComplianceUpload" accept="image/*" name="ROHSCompliance_Photo" style="" />
+                                                    <img id="previewROHSCompliance" alt="" src="@Model?.ROHSCompliance_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.ROHSCompliance_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
 
-                                </tr>
+                                    </tr>
 
-                                <tr>
-                                    <td>BOM</td>
-                                    <td>Product must match with BOM</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
+                                    <tr>
+                                        <td>CIMFR For flame proof</td>
+                                        <td>Valid CIMFR Certificate</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CIMFR_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CIMFR_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CIMFR_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CIMFR_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.CIMFR_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="CIMFRUpload" accept="image/*" name="CIMFR_Photo" style="" />
+                                                    <img id="previewCIMFR" alt="" src="@Model?.CIMFR_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.CIMFR_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
 
-                                </tr>
+                                    </tr>
 
-                                <tr>
-                                    <td>Spare Code Uploaded on Wipro SAP</td>
-                                    <td>Sapre must be Uploaded</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
+                                    <tr>
+                                        <td>PESO For flame proof</td>
+                                        <td>Valid CIMFR Certificate</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PESO_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PESO_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PESO_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.PESO_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.PESO_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="PESORUpload" accept="image/*" name="PESO_Photo" style="" />
+                                                    <img id="previewPESO" alt="" src="@Model?.PESO_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.PESO_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
 
-                                </tr>
+                                    </tr>
 
-                                <tr>
-                                    <td>CE Registration for export</td>
-                                    <td>Valid CE certificate</td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td><select class="soft-select small"><option value="">Select</option><option>OK</option><option>Not OK</option><option>Not Applicable</option><option>Pending</option></select></td>
-                                    <td>
-                                        <div class="file-upload-wrapper">
-                                            <button type="button" class="chooseFileBtn" onclick="this.parentElement.querySelector('input[type=file]').click()">
-                                                Choose File
-                                            </button>
-                                            <input type="file" style="display:none;" onchange="showFileName(this)" />
-                                            <span class="file-name">No file chosen</span>
-                                        </div>
-                                    </td>
+                                    <tr>
+                                        <td>BOM</td>
+                                        <td>Product must match with BOM</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.BOM_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.BOM_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.BOM_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.BOM_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.BOM_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="BOMUpload" accept="image/*" name="BOM_Photo" style="" />
+                                                    <img id="previewBOM" alt="" src="@Model?.BOM_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.BOM_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
 
-                                </tr>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Spare Code Uploaded on Wipro SAP</td>
+                                        <td>Sapre must be Uploaded</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.SpareCodeSAP_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.SpareCodeSAP_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.SpareCodeSAP_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.SpareCodeSAP_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.SpareCodeSAP_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="SpareCodeSAPUpload" accept="image/*" name="SpareCodeSAP_Photo" style="" />
+                                                    <img id="previewSpareCodeSAP" alt="" src="@Model?.SpareCodeSAP_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.SpareCodeSAP_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td>CE Registration for export</td>
+                                        <td>Valid CE certificate</td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CERegistration_Result1,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CERegistration_Result2,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CERegistration_Result3,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            @Html.DropDownListFor(m => m.CERegistration_Result4,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
+                                        </td>
+                                        <td>
+                                            <div class="file-upload-wrapper">
+                                                <div style="display:flex; justify-content:center; align-items:center;">
+                                                    @Html.HiddenFor(m => m.CERegistration_UploadFile)
+                                                    <span class="photo-text"></span>
+                                                    <input type="file" id="CERegistrationUpload" accept="image/*" name="CERegistration_Photo" style="" />
+                                                    <img id="previewCERegistration" alt="" src="@Model?.CERegistration_UploadFile"
+                                                         @(string.IsNullOrEmpty(Model?.CERegistration_UploadFile) ? "display:none;" : "display:block;")
+                                                         style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                    </tr>
 
 
-                            </tbody>
-                        </table>
-                    </div>
-
-            
-                    <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px;">
-                            <tbody>
-                  
-                                <tr>
-                                    <td colspan="2" style="padding:12px; vertical-align:middle;">
-                                        <strong style="color:#d00;">Result ( OK / Not OK / Not Applicable / Pending )</strong>
-                                        <select class="soft-select small" style="width:220px; margin-left:15px;">
-                                            <option value="">Select</option>
-                                            <option value="ok">OK</option>
-                                            <option value="notok">Not OK</option>
-                                            <option value="na">Not Applicable</option>
-                                            <option value="pending">Pending</option>
-                                        </select>
+                                </tbody>
+                            </table>
+                        </div>
 
 
+                        <div class="table-responsive" style="margin:0; padding:0; border-top:none;">
+                            <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-top:-1.5px;">
+                                <tbody>
 
-                                    </td>
-                                </tr>
+                                    <tr>
+                                        <td colspan="2" style="padding:12px; vertical-align:middle;">
+                                            <strong style="color:#d00;">Result ( OK / Not OK / Not Applicable / Pending )</strong>
+                                            @Html.DropDownListFor(m => m.OverallResult,
+                                                                                        new List<SelectListItem>{
+                                                                                        new SelectListItem { Text="Select", Value="" },
+                                                                                        new SelectListItem { Text="OK", Value="OK" },
+                                                                                        new SelectListItem { Text="Not OK", Value="Not OK" },
+                                                                                        new SelectListItem { Text="Not Applicable", Value="Not Applicable" },
+                                                                                        new SelectListItem { Text="Pending", Value="Pending" }},new { @class = "soft-select small" })
 
-                     
-                                <tr>
-                                    <td style="width:50%; padding:12px;">
-                                        <strong>Checked By :</strong>
-                                        <input type="text" class="underline-input" placeholder="Enter name" style="width:70%; margin-left:10px;" />
-                                    </td>
 
-                                    <td style="width:50%; padding:12px;">
-                                        <strong>Verified By :</strong>
-                                        <input type="text" class="underline-input" placeholder="Enter name" style="width:70%; margin-left:10px;" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
 
+                                        </td>
+                                    </tr>
+
+
+                                    <tr>
+                                        <td style="width:50%; padding:12px;">
+                                            <strong>Checked By :</strong>
+                                            @Html.TextBoxFor(m => m.CheckedBy, new {
+                                                                                        @class = "underline-input",type = "text" ,name = "CheckedBy"})
+                                        </td>
+
+                                        <td style="width:50%; padding:12px;">
+                                            <strong>Verified By :</strong>
+                                            @Html.TextBoxFor(m => m.VerifiedBy, new {
+                                                                                        @class = "underline-input",type = "text" ,name = "VerifiedBy"})
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
                 </div>
 
             </div>
@@ -616,35 +1161,289 @@
 </div>
 
 @section Scripts {
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
     <script>
-        $(document).ready(function () {
-            initFileNameDisplay();
-        });
-        
-        function initFileNameDisplay() {
-            const inputs = document.querySelectorAll('.file-upload-wrapper input[type="file"]');
 
-            inputs.forEach(input => {
-                input.addEventListener('change', function () {
-                    const wrapper = input.closest('.file-upload-wrapper');
-                    if (!wrapper) return;
-
-                    const fileNameSpan = wrapper.querySelector('.file-name');
-                    if (!fileNameSpan) return;
-
-                    if (input.files && input.files.length > 0) {
-                        fileNameSpan.textContent = input.files[0].name;
-                    } else {
-                        fileNameSpan.textContent = "No file chosen";
-                    }
+                let searchTimeout;
+                $(document).ready(function () {
+                    initPhotoPreviews();
+                   const inputElement = $("#prodCode_Search");
+                   if (inputElement.length) {
+                            // Attach the keydown event handler
+                           inputElement.on('input', function (event) {
+                           handleProdCodeSearch(event);
+                       });
+                   }
                 });
-            });
-        }
 
-       
-     
+                function handleProdCodeSearch(event) {
+
+                    const input = event.target;
+                    if (!input) return;
+
+                    let searchQuery = input.value.trim();
+
+                    // 🔴 Clear suggestions if less than 4 chars
+                    if (searchQuery.length < 4) {
+                        clearTimeout(searchTimeout);
+                        // optional: hide suggestion dropdown here
+                        // hideBisSuggestions();
+                        return;
+                    }
+
+                    // ✅ Take first 4 characters only
+                    const searchTerms = searchQuery.substring(0, 4);
+
+                    // 🟡 Debounce API call
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        pagedData = {}; // Clear cached data
+                        fetchProdCodeRelatedData(searchTerms, input);
+                    }, 300);
+                }
+
+                function fetchProdCodeRelatedData(productCatNo, inputField) {
+                        debugger
+                        $.ajax({
+                            url: '/Vendor/GetCodeSearch', // API endpoint
+                            type: 'GET', // HTTP method
+                            data: { search: productCatNo }, // Query parameters
+                            dataType: 'json', // Expected response data type
+                            success: function (data) {
+                                if (data && data.length > 0) {
+                                    displayProdCodeSuggestions(data, inputField);
+                                } else {
+                                    showDangerAlert('No data found for the entered Product Cat No.');
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error fetching data:', error);
+                            }
+                        });
+                    }
+
+                    // Function to display suggestions in a dropdown
+                function displayProdCodeSuggestions(data, inputField) {
+                            // Remove any existing dropdown (if any)
+                            removeExistingDropdown(inputField);
+
+                            // Ensure parent can anchor absolute dropdown
+                            const parent = inputField.parentElement;
+                            if (getComputedStyle(parent).position === "static") {
+                                parent.style.position = "relative";
+                            }
+
+                            const dropdown = document.createElement('div');
+                            dropdown.className = 'suggestion-dropdown';
+                            dropdown.style.position = 'absolute';
+                            dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                            dropdown.style.left = inputField.offsetLeft + 'px';
+                            dropdown.style.backgroundColor = 'white';
+                            dropdown.style.border = '1px solid #ccc';
+                            dropdown.style.zIndex = 1000;
+                            dropdown.style.overflowY = 'auto';
+                            dropdown.style.maxHeight = '300px';
+                            dropdown.style.width = inputField.offsetWidth + 'px';
+                            dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+                            data.forEach(item => {
+                                const code = (item.oldPart_No || "").toString().trim();
+                                // change these keys as per your API response:
+                                const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                                const option = document.createElement('div');
+                                option.className = 'suggestion-item';
+                                option.textContent = desc ? `${code} | ${desc}` : code;
+                                option.style.padding = '8px';
+                                option.style.cursor = 'pointer';
+
+                                option.addEventListener('mouseover', () => {
+                                    option.style.backgroundColor = '#4682B4';
+                                    option.style.color = '#fff';
+                                });
+                                option.addEventListener('mouseout', () => {
+                                    option.style.backgroundColor = '';
+                                    option.style.color = '';
+                                });
+
+                                option.addEventListener('click', () => {
+
+                                    const productCatRefInput = document.getElementById('ProductCatRef');
+                                    if (productCatRefInput) {
+                                        productCatRefInput.value = code ?? '';
+                                    }
+
+                                    const productDescInput = document.getElementById('ProductDescription');
+                                    if (productDescInput) {
+                                        productDescInput.value = desc ?? '';
+                                    }
+
+                                    // optional: also set search box to just code
+                                    const searchBox = document.getElementById('prodCode_Search');
+                                    if (searchBox) {
+                                        searchBox.value = code;
+                                    }
+
+                                    dropdown.remove();
+                                });
+
+                                dropdown.appendChild(option);
+                            });
+
+                            parent.appendChild(dropdown);
+                        }
+
+                    // Function to remove any existing dropdowns
+                function removeExistingDropdown(inputField) {
+                        const existingDropdown = document.querySelector('.suggestion-dropdown');
+                        if (existingDropdown) {
+                            existingDropdown.remove();
+                        }
+                    }
+
+                    // Remove dropdown on outside click
+                document.addEventListener('click', function (e) {
+                        if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+                            removeExistingDropdown();
+                        }
+                    });
+
+                    function setupPreview(inputId, imgId) {
+                     const inp = document.getElementById(inputId);
+                     const img = document.getElementById(imgId);
+
+                     if (!inp || !img) return;
+
+                     inp.addEventListener('change', () => {
+                         const file = inp.files && inp.files[0];
+
+                         if (!file) {
+                             img.src = '';
+                             img.style.display = 'none';
+                             return;
+                         }
+
+                         const reader = new FileReader();
+                         reader.onload = e => {
+                             img.src = e.target.result;
+                             img.style.display = 'block';
+                         };
+
+                         reader.readAsDataURL(file);
+                     });
+                 }
+
+                 function initPhotoPreviews() {
+                    setupPreview('DriverBISUpload', 'previewDriverBIS');
+                    setupPreview('LuminairesBISUpload', 'previewLuminairesBIS');
+                    setupPreview('CCLUpload', 'previewCCL');
+                    setupPreview('NPIBuyUpload', 'previewNPIBuy');
+                    setupPreview('CPSUpload', 'previewCPS');
+                    setupPreview('PPSUpload', 'previewPPS');
+                    setupPreview('TDSUpload', 'previewTDS');
+                    setupPreview('DesignDocketUpload', 'previewDesignDocket');
+                    setupPreview('InstallationSheetUpload', 'previewInstallationSheet');
+                    setupPreview('ROHSComplianceUpload', 'previewROHSCompliance');
+                    setupPreview('CIMFRUpload', 'previewCIMFR');
+                    setupPreview('PESORUpload', 'previewPESO');
+                    setupPreview('BOMUpload', 'previewBOM');
+                    setupPreview('SpareCodeSAPUpload', 'previewSpareCodeSAP');
+                    setupPreview('CERegistrationUpload', 'previewCERegistration');
+                 }
+
+                function insertLegalDocVerification() {
+                       Blockloadershow();
+                       const requiredFields = [
+                           { id: 'ProductCatRef', name: 'Product Cat Ref' },
+                           { id: 'ProductDescription', name: 'Product Description' },
+                           { id: 'ReportNo', name: 'Report No' },
+                           { id: 'ReportDate', name: 'Report Date' }
+                       ];
+
+                       let isValid = true;
+                       let missingFields = [];
+
+                       requiredFields.forEach(field => {
+                           const element = $('#' + field.id);
+                           const value = element.val();
+
+                           if (!value) {
+                               isValid = false;
+                               missingFields.push(field.name);
+                           }
+                       });
+
+                       if (!isValid) {
+                           const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                           const alertMessage = `
+                                   <p>Please fill out the following required field(s):</p>
+                                   <ul>${missingFieldsList}</ul>
+                               `;
+                           showDangerAlert(alertMessage);
+                           Blockloaderhide();
+                           return false;
+                       }
+
+                       $("#Id").val(@Model.Id);
+
+                       const form = $('#Regulatory-form')[0];
+                       const formData = new FormData(form);
+
+                       $('#Regulatory_table [contenteditable="true"]').each(function() {
+                           const dataName = $(this).data('name');
+                           const content = $(this).text().trim();
+
+                           if (dataName) {
+                               formData.append(dataName, content);
+                           }
+                       });
+
+                       $.ajax({
+                           url: $('#Regulatory-form').attr('action'),
+                           type: 'POST',
+                           data: formData,
+                           processData: false,
+                           contentType: false,
+                           success: function (response) {
+                               Blockloaderhide();
+                               if (!response.success) {
+                                   var errorMessg = "";
+                                   if (response.errors != undefined) {
+                                       for (var error of response.errors) {
+                                           errorMessg += error + "\n";
+                                       }
+                                       if (errorMessg != "") {
+                                           showDangerAlert(errorMessg);
+                                       }
+                                   }
+                                   else {
+                                       showDangerAlert(response.message);
+                                   }
+                                   return false;
+                               }
+                               else {
+                                   if ($("#Id").val() > 0) {
+                                       showSuccessAlert("Updated Successfully.");
+                                   }
+                                   else {
+                                       showSuccessAlert("Saved Successfully.");
+                                   }
+                                   setTimeout(function () {
+                                       window.open('@Url.Action("RegulatoryRequirements", "ProductValidation")', '_self');
+                                   }, 2500);
+                               }
+                           },
+                           error: function (xhr, status, error) {
+                               Blockloaderhide();
+                               showDangerAlert('Error saving data: ' + error);
+                           }
+                       });
+                   }
+
     </script>
 
 }
-    @section HideSidebar { }
+@section HideSidebar { }

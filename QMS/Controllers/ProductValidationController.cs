@@ -22,6 +22,7 @@ using QMS.Core.Repositories.RippleTestReportRepo;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
 using QMS.Core.Repositories.SurgeTestReportRepository;
+using QMS.Core.Repositories.RegulatoryRequirementRepository;
 using System.Drawing;
 using System.Threading.Tasks;
 using QMS.Core.Repositories.InstallationTrialRepository;
@@ -39,6 +40,7 @@ public class ProductValidationController : Controller
     private readonly ISurgeTestReportRepository _surgeTestRepository;
     private readonly IPhotometryTestRepository _photometryTestRepository;
     private readonly IImpactTestRepository _impactTestRepository;
+    private readonly IRegulatoryRequirementRepository _regulatoryRequirementRepository;
     private readonly IInstallationTrialRepository _installationTrialRepository;
     private readonly ISystemLogService _systemLogService;
 
@@ -48,11 +50,12 @@ public class ProductValidationController : Controller
         IWebHostEnvironment hostEnvironment,
         IElectricalProtectionRepository electricalProtectionRepository,
         IRippleTestReportRepository rippleTestReportRepository,
-        ISurgeTestReportRepository surgeTestRepository ,
+        ISurgeTestReportRepository surgeTestRepository,
         IPhotometryTestRepository photometryTestRepository,
         IImpactTestRepository impactTestRepository,
-         ISystemLogService systemLogService,
-        IInstallationTrialRepository installationTrialRepository)
+        ISystemLogService systemLogService,
+        IInstallationTrialRepository installationTrialRepository,
+        IRegulatoryRequirementRepository regulatoryRequirementRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
@@ -64,6 +67,7 @@ public class ProductValidationController : Controller
         _photometryTestRepository = photometryTestRepository;
         _impactTestRepository = impactTestRepository;
         _systemLogService = systemLogService;
+        _regulatoryRequirementRepository = regulatoryRequirementRepository;
     }
 
 
@@ -126,9 +130,9 @@ public class ProductValidationController : Controller
         return View();
     }
 
-    public async Task<ActionResult> GetElectricalPerformanceList()
+    public async Task<ActionResult> GetElectricalPerformanceList(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync();
+        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -309,7 +313,7 @@ public class ProductValidationController : Controller
         }
     }
 
-    
+
 
     public async Task<ActionResult> DeletePhysicalCheckAndVisualInspectionAsync(int Id)
     {
@@ -496,43 +500,32 @@ public class ProductValidationController : Controller
                 mainTable.AddCell(resultValueCell);
 
                 // ================= FOOTER SIGNATURES =================
-                Cell footerContainer = new Cell(1, 2).SetPadding(0);
-                Table innerFooter = new Table(new float[] { 1, 1 }).UseAllAvailableWidth();
-
-                // Helper to Create Signature Cells
+                // 1. Helper to Create Signature Cells
                 Cell CreateSignatureCell(string label, string name, bool addRightBorder)
                 {
                     Cell cell = new Cell();
-                    cell.SetHeight(45); // INCREASED HEIGHT from 50 to 65 to prevent clipping
+                    cell.SetHeight(45);
 
-                    // 1. Label at the TOP
+                    // Label at the TOP
                     cell.Add(new Paragraph(label).SetFontSize(10).SetFont(boldFont));
 
-
-                    // 3. Name at the BOTTOM (Use check for null)
+                    // Name at the BOTTOM
                     string displayName = !string.IsNullOrEmpty(name) ? name : "____________________";
                     cell.Add(new Paragraph(displayName).SetFontSize(11));
 
                     // Styling
-                    cell.SetVerticalAlignment(VerticalAlignment.BOTTOM); // Aligns the last element to bottom
-                    cell.SetBorder(Border.NO_BORDER);
-
-                    if (addRightBorder)
-                    {
-                        cell.SetBorderRight(new SolidBorder(ColorConstants.BLACK, 1));
-                    }
+                    cell.SetVerticalAlignment(VerticalAlignment.BOTTOM);
 
                     return cell;
                 }
 
-                // Add Tested By (Left)
-                innerFooter.AddCell(CreateSignatureCell("Tested By", model.TestedBy, true));
+                // 2. Add cells DIRECTLY to mainTable (No nested table, no footerContainer)
 
-                // Add Verified By (Right)
-                innerFooter.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, false));
+                // Add Tested By -> Goes into Column 1 (Aligns with "Result" label)
+                mainTable.AddCell(CreateSignatureCell("Tested By", model.TestedBy, true));
 
-                footerContainer.Add(innerFooter);
-                mainTable.AddCell(footerContainer);
+                // Add Verified By -> Goes into Column 2 (Aligns with Result value)
+                mainTable.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, false));
 
                 // Add the single main table to doc
                 document.Add(mainTable);
@@ -1573,20 +1566,56 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public async Task<ActionResult> GetSurgeTestReportList()
+    public async Task<ActionResult> GetSurgeTestReportList(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _surgeTestRepository.GetSurgeTestReportAsync();
+        var result = await _surgeTestRepository.GetSurgeTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
     [HttpPost]
     public async Task<ActionResult> InsertUpdateSurgeTestReport(SurgeTestReportViewModel model)
     {
+        if (model == null)
+        {
+            return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+        }
+
+        if (model.Photo_SurgeFile != null && model.Photo_SurgeFile.Length > 0)
+        {
+            model.Surge_Photo = await SaveImageAsync(
+                model.Photo_SurgeFile, "SurgeTest_Attach", "SurgeDriver", model.ReportNo);
+        }
+
         if (!ModelState.IsValid)
         {
             var errors = ModelState.Values.SelectMany(v => v.Errors)
                             .Select(e => e.ErrorMessage).ToList();
             return Json(new { Success = false, Errors = errors });
+        }
+
+        bool exists;
+        if (model.Id > 0)
+        {
+            exists = await _surgeTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            exists = await _surgeTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
         }
 
         int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
@@ -1655,6 +1684,34 @@ public class ProductValidationController : Controller
             return Json(new { Success = false, Errors = errors });
         }
 
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            // UPDATE: exclude same Id record
+            exists = await _photometryTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _photometryTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
+        }
+
         if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
@@ -1671,9 +1728,9 @@ public class ProductValidationController : Controller
         }
     }
 
-    public async Task<ActionResult> GetPhotometryTestReportAsync()
+    public async Task<ActionResult> GetPhotometryTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _photometryTestRepository.GetPhotometryTestReportAsync();
+        var result = await _photometryTestRepository.GetPhotometryTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -1839,7 +1896,7 @@ public class ProductValidationController : Controller
             if (model.Photo_WithLoadFile != null && model.Photo_WithLoadFile.Length > 0)
             {
                 model.Photo_WithLoad = await SaveImageAsync(
-                    model.Photo_WithLoadFile,"InstallationTrial_Attach", "WithLoad", model.ReportNo);
+                    model.Photo_WithLoadFile, "InstallationTrial_Attach", "WithLoad", model.ReportNo);
             }
 
             if (model.Photo_WithoutLoadFile != null && model.Photo_WithoutLoadFile.Length > 0)
@@ -1847,7 +1904,7 @@ public class ProductValidationController : Controller
                 model.Photo_WithoutLoad = await SaveImageAsync(
                     model.Photo_WithoutLoadFile, "InstallationTrial_Attach", "WithoutLoad", model.ReportNo);
             }
-           
+
             // ------------------------------------------------------------
 
             if (!ModelState.IsValid)
@@ -1980,7 +2037,7 @@ public class ProductValidationController : Controller
         var safeRefNo = MakeSafe(referenceNo);
 
         // Physical: wwwroot/{baseFolder}/{safeRefNo}
-        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), baseFolder, safeRefNo);
+        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", baseFolder, safeRefNo);
 
         if (!Directory.Exists(folderPhysical))
             Directory.CreateDirectory(folderPhysical);
@@ -2048,7 +2105,6 @@ public class ProductValidationController : Controller
     //    return $"/InstallationTrial_Attach/{installationTrialId}/{fileName}";
     //}
 
-
     public async Task<ActionResult> DeleteInstallationTrailAsync(int Id)
     {
         var result = await _installationTrialRepository.DeleteInstallationTrailAsync(Id);
@@ -2076,9 +2132,9 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public async Task<ActionResult> GetImpactTestReportAsync()
+    public async Task<ActionResult> GetImpactTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _impactTestRepository.GetImpactTestReportAsync();
+        var result = await _impactTestRepository.GetImpactTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -2088,6 +2144,40 @@ public class ProductValidationController : Controller
         {
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Observation_PhotoFile != null && model.Observation_PhotoFile.Length > 0)
+        {
+            model.Observation_Photo = await SaveImageAsync(
+                model.Observation_PhotoFile, "ImpactTest_Attach", "ImpactTestObs", model.ReportNo);
+        }
+
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            // UPDATE: exclude same Id record
+            exists = await _impactTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _impactTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
         }
 
         if (model.Id > 0)
@@ -2136,11 +2226,173 @@ public class ProductValidationController : Controller
 
         return View();
     }
-
-    public IActionResult RegulatoryRequirementsDetails()
+    public async Task<ActionResult> RegulatoryRequirementsDetails(int Id)
     {
-        return View();
+        var model = new RegulatoryRequirementViewModel();
+        if (Id > 0)
+        {
+            model = await _regulatoryRequirementRepository.GetRegulatoryRequirementByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
     }
+
+    public async Task<ActionResult> GetRegulatoryRequirementAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _regulatoryRequirementRepository.GetRegulatoryRequirementAsync(startDate, endDate);
+        return Json(result);
+    }
+    public async Task<ActionResult> InsertUpdateLegalRegulatoryAsync(RegulatoryRequirementViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.DriverBIS_Photo != null && model.DriverBIS_Photo.Length > 0)
+        {
+            model.DriverBIS_UploadFile = await SaveImageAsync(
+                model.DriverBIS_Photo, "RegulatoryRequirement_Attach", "DriverBIS", model.ReportNo);
+        }
+
+        if (model.LuminairesBIS_Photo != null && model.LuminairesBIS_Photo.Length > 0)
+        {
+            model.LuminairesBIS_UploadFile = await SaveImageAsync(
+                model.LuminairesBIS_Photo, "RegulatoryRequirement_Attach", "LuminairesBIS", model.ReportNo);
+        }
+
+        if (model.CCL_Photo != null && model.CCL_Photo.Length > 0)
+        {
+            model.CCL_UploadFile = await SaveImageAsync(
+                model.CCL_Photo, "RegulatoryRequirement_Attach", "CCL", model.ReportNo);
+        }
+
+        if (model.NPIBuySheet_Photo != null && model.NPIBuySheet_Photo.Length > 0)
+        {
+            model.NPIBuySheet_UploadFile = await SaveImageAsync(
+                model.NPIBuySheet_Photo, "RegulatoryRequirement_Attach", "NPIBuySheet", model.ReportNo);
+        }
+
+        if (model.CPS_Photo != null && model.CPS_Photo.Length > 0)
+        {
+            model.CPS_UploadFile = await SaveImageAsync(
+                model.CPS_Photo, "RegulatoryRequirement_Attach", "CPS", model.ReportNo);
+        }
+
+        if (model.PPS_Photo != null && model.PPS_Photo.Length > 0)
+        {
+            model.PPS_UploadFile = await SaveImageAsync(
+                model.PPS_Photo, "RegulatoryRequirement_Attach", "PPS", model.ReportNo);
+        }
+
+        if (model.TDS_Photo != null && model.TDS_Photo.Length > 0)
+        {
+            model.TDS_UploadFile = await SaveImageAsync(
+                model.TDS_Photo, "RegulatoryRequirement_Attach", "TDS", model.ReportNo);
+        }
+
+        if (model.DesignDocket_Photo != null && model.DesignDocket_Photo.Length > 0)
+        {
+            model.DesignDocket_UploadFile = await SaveImageAsync(
+                model.DesignDocket_Photo, "RegulatoryRequirement_Attach", "DesignDocket", model.ReportNo);
+        }
+
+        if (model.InstallationSheet_Photo != null && model.InstallationSheet_Photo.Length > 0)
+        {
+            model.InstallationSheet_UploadFile = await SaveImageAsync(
+                model.InstallationSheet_Photo, "RegulatoryRequirement_Attach", "InstallationSheet", model.ReportNo);
+        }
+
+        if (model.ROHSCompliance_Photo != null && model.ROHSCompliance_Photo.Length > 0)
+        {
+            model.ROHSCompliance_UploadFile = await SaveImageAsync(
+                model.ROHSCompliance_Photo, "RegulatoryRequirement_Attach", "ROHSCompliance", model.ReportNo);
+        }
+
+        if (model.CIMFR_Photo != null && model.CIMFR_Photo.Length > 0)
+        {
+            model.CIMFR_UploadFile = await SaveImageAsync(
+                model.CIMFR_Photo, "RegulatoryRequirement_Attach", "CIMFR", model.ReportNo);
+        }
+
+        if (model.PESO_Photo != null && model.PESO_Photo.Length > 0)
+        {
+            model.PESO_UploadFile = await SaveImageAsync(
+                model.PESO_Photo, "RegulatoryRequirement_Attach", "PESO", model.ReportNo);
+        }
+
+        if (model.BOM_Photo != null && model.BOM_Photo.Length > 0)
+        {
+            model.BOM_UploadFile = await SaveImageAsync(
+                model.BOM_Photo, "RegulatoryRequirement_Attach", "BOM", model.ReportNo);
+        }
+
+        if (model.SpareCodeSAP_Photo != null && model.SpareCodeSAP_Photo.Length > 0)
+        {
+            model.SpareCodeSAP_UploadFile = await SaveImageAsync(
+                model.SpareCodeSAP_Photo, "RegulatoryRequirement_Attach", "SpareCodeSAP", model.ReportNo);
+        }
+
+        if (model.CERegistration_Photo != null && model.CERegistration_Photo.Length > 0)
+        {
+            model.CERegistration_UploadFile = await SaveImageAsync(
+                model.CERegistration_Photo, "RegulatoryRequirement_Attach", "CERegistration", model.ReportNo);
+        }
+
+
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            exists = await _regulatoryRequirementRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _regulatoryRequirementRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _regulatoryRequirementRepository.UpdateRegulatoryRequirementAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _regulatoryRequirementRepository.InsertRegulatoryRequirementAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DeleteRegulatoryRequirementAsync(int Id)
+    {
+        var result = await _regulatoryRequirementRepository.DeleteRegulatoryRequirementAsync(Id);
+        return Json(result);
+    }
+
     #endregion
 
     #region GlowWireTestReport

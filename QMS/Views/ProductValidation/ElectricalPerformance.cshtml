@@ -7,6 +7,8 @@
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
 <link href="~/css/pnotify.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/LitePicker.css" />
+
 
 
 
@@ -222,11 +224,17 @@
             <div>
                 <b style="font-size: large; color: #4682B4;">Electrical  Performance</b>
             </div>
+            <div class="col-md-3">
+                <div id="customDateTriggerInsta" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeInsta">Select Date Range</span>
+                </div>
+            </div>
             <div>
                 <button id="" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="location.href='@Url.Action("ElectricalPerformanceDetails", "ProductValidation")'" style="width: 140px; font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
-                <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("Index", "ProductValidation")'">
+                <button id="backButton" class="btn btn-outline-primary" onclick="location.href='@Url.Action("ProductValidationMenu", "ProductValidation")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
@@ -253,19 +261,71 @@
     <script src="~/js/tabulator.min.js"></script>
     <script src="~/js/dashboard/moment/moment.min.js"></script>
     <script src="~/js/select2.min.js"></script>
+
     <!-- Moment.js and Litepicker -->
-    @* <script src="~/js/ranges.js"></script> *@
-   
+    <script src="~/lib/bootstrap/dist/js/LitePicker.js"></script>
+
     @* <script src="~/js/litepicker.js"></script> *@
     <script src="~/js/exceljs.min.js"></script>
     <script>
         window.APP_BASE = '@Url.Content("~")';
         window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
-
+        let filterStartDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
         var tabledata = [];
         var table = '';
         const searchTerms = {};
         $(document).ready(function () {
+                        $('#dateRangeInsta').text(
+                moment(filterStartDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndDate).format('MMMM D, YYYY')
+            );
+
+            // Initialize Litepicker and store reference
+            const picker = new Litepicker({
+                element: document.getElementById('customDateTriggerInsta'),
+                singleMode: false,
+                format: 'DD-MM-YYYY',
+                numberOfMonths: 2,
+                numberOfColumns: 2,
+                dropdowns: {
+                    minYear: 2020,
+                    maxYear: null,
+                    months: true,
+                    years: true
+                },
+                plugins: ['ranges'],
+                setup: (picker) => {
+                    picker.on('selected', (start, end) => {
+                        filterStartDate = start.format('YYYY-MM-DD');
+                        filterEndDate = end.format('YYYY-MM-DD');
+                        $('#dateRangeInsta').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                        loadElectricalperformanceGridData();
+                    });
+
+                    picker.on('clear', () => {
+                        filterStartDate = "";
+                        filterEndDate = "";
+                        $('#dateRangeInsta').text("Select Date Range");
+                        loadElectricalperformanceGridData();
+                    });
+                },
+                ranges: {
+                    Today: [moment(), moment()],
+                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                startDate: moment().startOf('month').format('DD-MM-YYYY'),
+                endDate: moment().endOf('month').format('DD-MM-YYYY')
+            });
+
+            //  Ensure calendar opens on click
+            $('#customDateTriggerInsta').on('click', function () {
+                picker.show();
+            });
+
             loadElectricalperformanceGridData();
         });
 
@@ -274,6 +334,11 @@
             $.ajax({
                 url: '@Url.Action("GetElectricalPerformanceList", "ProductValidation")',
                 type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartDate,
+                    endDate: filterEndDate
+                },
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data)) {

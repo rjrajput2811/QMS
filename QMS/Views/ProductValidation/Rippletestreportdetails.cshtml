@@ -171,6 +171,63 @@
         height: 60px;
         vertical-align: bottom;
     }
+
+    .soft-select {
+        -webkit-appearance: auto !important;
+        -moz-appearance: auto !important;
+        appearance: auto !important;
+        display: inline-block;
+        width: 90%;
+        min-width: 0; /* allow it to shrink inside table cell */
+        padding: 8px 28px 8px 10px; /* right padding leaves room for chevron */
+        font-size: 14px;
+        line-height: 1.2;
+        color: #111;
+        background-color: transparent; /* transparent so table bg shows through */
+        border: none;
+        border-bottom: 2px solid #e6eef6; /* subtle underline */
+        border-radius: 0 0 8px 8px; /* gentle curve at bottom corners */
+        box-shadow: none;
+        /* background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 5 5-5' stroke='%23666' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>"); */
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        background-size: 12px;
+        transition: border-color 0.18s ease-in-out, transform 0.08s;
+        cursor: pointer;
+        vertical-align: middle;
+        box-sizing: border-box;
+        margin: 6px auto; /* centers inside the table cell */
+    }
+
+        /* compact / tighter variant used in table */
+        .soft-select.small {
+            padding: 6px 24px 6px 8px;
+            font-size: 13px;
+            border-bottom-width: 1.8px;
+            border-radius: 0 0 6px 6px;
+            width: 86%; /* a little narrower to match your shot */
+        }
+
+        /* hover and focus states */
+        .soft-select:hover {
+            border-bottom-color: #c8ddf5;
+        }
+
+        .soft-select:focus {
+            outline: none;
+            border-bottom-color: #4a90e2;
+            transform: translateY(-1px);
+        }
+
+    /* remove native IE/Edge arrow */
+    select.soft-select::-ms-expand {
+        display: none;
+    }
+
+    /* small visual reset for select options on some browsers */
+    select.soft-select option {
+        color: #111;
+    }
 </style>
 
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
@@ -349,7 +406,11 @@
                             <tr>
                                 <td colspan="2" class="result-cell">
                                     Result ( Pass / Fail )
-                                    @Html.TextBoxFor(m => m.Result, new { @class = "form-control" })
+                                    <select class="soft-select small" asp-for="Result" data-name="Result" style="display: inline-block; width: 100px;">
+                                        <option value="" selected>Select</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
                                 </td>
                             </tr>
               
@@ -580,7 +641,7 @@
                 option.addEventListener('click', () => {
                     const productInput = document.getElementById('ProductDescription');
                     if (productInput) {
-                        productInput.value = desc ? `${code} | ${desc}` : code;
+                        productInput.value = desc;
                     }
 
                     // optional: also set search box to just code

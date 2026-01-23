@@ -1,10 +1,17 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 namespace QMS.Core.Repositories.SurgeTestReportRepository;
 
 public class SurgeTestReportRepository : SqlTableRepository, ISurgeTestReportRepository
@@ -18,7 +25,7 @@ public class SurgeTestReportRepository : SqlTableRepository, ISurgeTestReportRep
         _systemLogService = systemLogService;
     }
 
-    public async Task<List<SurgeTestReportViewModel>> GetSurgeTestReportAsync()
+    public async Task<List<SurgeTestReportViewModel>> GetSurgeTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
         try
         {
@@ -48,9 +55,21 @@ public class SurgeTestReportRepository : SqlTableRepository, ISurgeTestReportRep
                     PKDCode = x.PKDCode,
                     ReferenceStandard = x.ReferenceStandard,
                     AcceptanceNorm = x.AcceptanceNorm,
-                    AddedBy = x.AddedBy
+                    AddedBy = x.AddedBy,
+                    AddedOn=x.AddedOn,
+                    UpdatedOn=x.UpdatedOn,
                 })
                 .ToList());
+
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                var s = startDate.Value.Date;
+                var e = endDate.Value.Date;
+
+                result = result
+                    .Where(d => d.ReportDate?.Date >= s && d.ReportDate?.Date <= e)
+                    .ToList();
+            }
 
             foreach (var rec in result)
             {
@@ -97,7 +116,8 @@ public class SurgeTestReportRepository : SqlTableRepository, ISurgeTestReportRep
                     AddedBy = x.AddedBy,
                     AddedOn = x.AddedOn,
                     CheckedBy = x.CheckedBy,
-                    VerifiedBy = x.VerifiedBy
+                    VerifiedBy = x.VerifiedBy,
+                    Surge_Photo=x.Surge_Photo
                 })
                 .FirstOrDefault());
 
@@ -270,6 +290,44 @@ public class SurgeTestReportRepository : SqlTableRepository, ISurgeTestReportRep
             {
                 Success = false
             };
+        }
+    }
+
+    public async Task<bool> CheckDuplicate(string searchText, int Id)
+    {
+        try
+        {
+            bool existingflag = false;
+            int? existingId = null;
+
+            IQueryable<int> query = _dbContext.SurgeTestReports
+                .Where(x => x.Deleted == false && x.ReportNo == searchText)
+                .Select(x => x.Id);
+
+            // Add additional condition if Id is not 0
+            if (Id != 0)
+            {
+                query = _dbContext.SurgeTestReports
+                    .Where(x => x.Deleted == false &&
+                           x.ReportNo == searchText
+                           && x.Id != Id)
+                    .Select(x => x.Id);
+            }
+
+
+            existingId = await query.FirstOrDefaultAsync();
+
+            if (existingId != null && existingId > 0)
+            {
+                existingflag = true;
+            }
+
+            return existingflag;
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.Message);
+            throw;
         }
     }
 }

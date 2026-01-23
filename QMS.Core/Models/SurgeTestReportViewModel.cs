@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -72,6 +73,8 @@ namespace QMS.Core.Models
         public int UpdatedBy { get; set; }
         public DateTime? UpdatedOn { get; set; }
         public string? User { get; set; }
+
+        public IFormFile? Photo_SurgeFile { get; set; }
     }
 
     public class SurgeTestDetailVM

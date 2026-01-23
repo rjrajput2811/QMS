@@ -44,15 +44,19 @@
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+
+<link href="~/lib/bootstrap/dist/css/litepicker.css" rel="stylesheet" />
 <script src="~/js/jquery.min.js"></script>
 <script src="~/js/jquery.datatables.js"></script>
-
+<script src="~/lib/bootstrap/dist/js/litepicker.js"></script>
 <script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/noty.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
 <script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
+<script src="~/js/ranges.js"></script>
+
 <script type="text/javascript">
     
 
@@ -60,107 +64,251 @@
     const SAMPLE_COUNT = 5;         // keep 5 by default
     const COND_BEFORE = "Before Soaking";
     const COND_AFTER  = "After 2 hrs Soaking";
-
+    let searchTimeout;
     // Your Edit Id
     const EL_ID = parseInt("@(Model?.Id ?? 0)", 10) || 0;
 
+        $(document).ready(function () {
+            
 
-    function saveElectricalPerformance() {
-
-        // ================= HEADER =================
-        var idVal = $('#Id').val();
-        idVal = idVal ? parseInt(idVal) : 0;
-
-        var model = {
-            Id: idVal,   // VERY IMPORTANT
-            ProductCatRef: $('#ProductCatRef').val(),
-            ProductDescription: $('#ProductDescription').val(),
-            ReportNo: $('#ReportNo').val(),
-            ReportDate: $('#ReportDate').val(),
-
-            LightSourceDetails: $('#LightSourceDetails').val(),
-            DriverDetails: $('#DriverDetails').val(),
-            PCBDetails: $('#PCBDetails').val(),
-            LEDCombinations: $('#LEDCombinations').val(),
-            BatchCode: $('#BatchCode').val(),
-            SensorDetails: $('#SensorDetails').val(),
-            LampDetails: $('#LampDetails').val(),
-            PKD: $('#PKD').val(),
-
-            OverallResult: $('#OverallResult').val(),
-            TestedByName: $('#TestedByName').val(),
-            VerifiedByName: $('#VerifiedByName').val(),
-
-            ElectricalDetails: ""
-        };
-
-        // ================= TABLE LOOP =================
-        var rows = [];
-        var map = {};
-
-        $('input[name^="Details["]').each(function () {
-
-            var name = $(this).attr('name'); // Details[0].Vac
-            var match = name.match(/Details\[(\d+)\]\.(.+)/);
-            if (!match) return;
-
-            var index = match[1];
-            var field = match[2];
-            var value = $(this).val() || '';
-
-            if (!map[index]) map[index] = {};
-            map[index][field] = value;
-        });
-
-        Object.keys(map).sort(function (a, b) {
-            return a - b;
-        }).forEach(function (i) {
-
-            var d = map[i];
-
-            var row =
-                (d.SampleNo || '') + '^' +
-                (d.ConditionType || '') + '^' +
-                (d.RowNo || '') + '^' +
-
-                (d.Vac || '') + '^' +
-                (d.IacA || '') + '^' +
-                (d.Wac || '') + '^' +
-                (d.PF || '') + '^' +
-                (d.ATHD || '') + '^' +
-
-                (d.Vdc || '') + '^' +
-                (d.IdcA || '') + '^' +
-                (d.Wdc || '') + '^' +
-                (d.Eff || '') + '^' +
-                (d.NoLoadV || '') + '^' +
-                (d.StartV || '') + '^' +
-
-                (d.Result || '');
-
-            rows.push(row);
-        });
-
-        model.ElectricalDetails = rows.join('~');
-
-        // ================= AJAX =================
-        $.ajax({
-            url: '/ProductValidation/InsertUpdateElectricalPerformanceDetails',
-            type: 'POST',
-            data: model,
-            success: function (res) {
-                if (model.Id > 0) {
-                    alert('Updated successfully');
-                } else {
-                    alert('Inserted successfully');
+                const inputElement = $("#prodCode_Search");
+                if (inputElement.length) {
+                    // Attach the keydown event handler
+                        inputElement.on('input', function (event) {
+                        handleProdCodeSearch(event);
+                    });
                 }
-            },
-            error: function (err) {
-                console.error(err);
-                alert('Error while saving');
-            }
         });
-    }
+
+        function handleProdCodeSearch(event) {
+            debugger
+            const input = event.target;
+            if (!input) return;
+
+            let searchQuery = input.value.trim();
+
+            // 🔴 Clear suggestions if less than 4 chars
+            if (searchQuery.length < 4) {
+                clearTimeout(searchTimeout);
+                // optional: hide suggestion dropdown here
+                // hideBisSuggestions();
+                return;
+            }
+
+            // ✅ Take first 4 characters only
+            const searchTerms = searchQuery.substring(0, 4);
+
+            // 🟡 Debounce API call
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                pagedData = {}; // Clear cached data
+                fetchProdCodeRelatedData(searchTerms, input);
+            }, 300);
+        }
+
+           function fetchProdCodeRelatedData(productCatNo, inputField) {
+               
+                $.ajax({
+                    url: '/Vendor/GetCodeSearch', // API endpoint
+                    type: 'GET', // HTTP method
+                    data: { search: productCatNo }, // Query parameters
+                    dataType: 'json', // Expected response data type
+                    success: function (data) {
+                        if (data && data.length > 0) {
+                            displayProdCodeSuggestions(data, inputField);
+                        } else {
+                            showDangerAlert('No data found for the entered Product Cat No.');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Error fetching data:', error);
+                    }
+                });
+            }
+
+            // Function to display suggestions in a dropdown
+                function displayProdCodeSuggestions(data, inputField) {
+                    // Remove any existing dropdown (if any)
+                    removeExistingDropdown(inputField);
+
+                    // Ensure parent can anchor absolute dropdown
+                    const parent = inputField.parentElement;
+                    if (getComputedStyle(parent).position === "static") {
+                        parent.style.position = "relative";
+                    }
+
+                    const dropdown = document.createElement('div');
+                    dropdown.className = 'suggestion-dropdown';
+                    dropdown.style.position = 'absolute';
+                    dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                    dropdown.style.left = inputField.offsetLeft + 'px';
+                    dropdown.style.backgroundColor = 'white';
+                    dropdown.style.border = '1px solid #ccc';
+                    dropdown.style.zIndex = 1000;
+                    dropdown.style.overflowY = 'auto';
+                    dropdown.style.maxHeight = '300px';
+                    dropdown.style.width = inputField.offsetWidth + 'px';
+                    dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+                    data.forEach(item => {
+                        const code = (item.oldPart_No || "").toString().trim();
+                        // change these keys as per your API response:
+                        const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                        const option = document.createElement('div');
+                        option.className = 'suggestion-item';
+                        option.textContent = desc ? `${code} | ${desc}` : code;
+                        option.style.padding = '8px';
+                        option.style.cursor = 'pointer';
+
+                        option.addEventListener('mouseover', () => {
+                            option.style.backgroundColor = '#4682B4';
+                            option.style.color = '#fff';
+                        });
+                        option.addEventListener('mouseout', () => {
+                            option.style.backgroundColor = '';
+                            option.style.color = '';
+                        });
+
+                        option.addEventListener('click', () => {
+
+                            const productCatRefInput = document.getElementById('ProductCatRef');
+                            if (productCatRefInput) {
+                                productCatRefInput.value = code ?? '';
+                            }
+
+                            const productDescInput = document.getElementById('ProductDescription');
+                            if (productDescInput) {
+                                productDescInput.value = desc ?? '';
+                            }
+
+                            // optional: also set search box to just code
+                            const searchBox = document.getElementById('prodCode_Search');
+                            if (searchBox) {
+                                searchBox.value = code;
+                            }
+
+                            dropdown.remove();
+                        });
+
+                        dropdown.appendChild(option);
+                    });
+
+                    parent.appendChild(dropdown);
+                }
+
+
+
+            // Function to remove any existing dropdowns
+            function removeExistingDropdown(inputField) {
+                const existingDropdown = document.querySelector('.suggestion-dropdown');
+                if (existingDropdown) {
+                    existingDropdown.remove();
+                }
+            }
+
+            // Remove dropdown on outside click
+            document.addEventListener('click', function (e) {
+                if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+                    removeExistingDropdown();
+                }
+            });
+            function saveElectricalPerformance() {
+
+                // ================= HEADER =================
+                var idVal = $('#Id').val();
+                idVal = idVal ? parseInt(idVal) : 0;
+
+                var model = {
+                    Id: idVal,   // VERY IMPORTANT
+                    ProductCatRef: $('#ProductCatRef').val(),
+                    ProductDescription: $('#ProductDescription').val(),
+                    ReportNo: $('#ReportNo').val(),
+                    ReportDate: $('#ReportDate').val(),
+
+                    LightSourceDetails: $('#LightSourceDetails').val(),
+                    DriverDetails: $('#DriverDetails').val(),
+                    PCBDetails: $('#PCBDetails').val(),
+                    LEDCombinations: $('#LEDCombinations').val(),
+                    BatchCode: $('#BatchCode').val(),
+                    SensorDetails: $('#SensorDetails').val(),
+                    LampDetails: $('#LampDetails').val(),
+                    PKD: $('#PKD').val(),
+
+                    OverallResult: $('#OverallResult').val(),
+                    TestedByName: $('#TestedByName').val(),
+                    VerifiedByName: $('#VerifiedByName').val(),
+
+                    ElectricalDetails: ""
+                };
+
+                // ================= TABLE LOOP =================
+                var rows = [];
+                var map = {};
+
+                $('input[name^="Details["]').each(function () {
+
+                    var name = $(this).attr('name'); // Details[0].Vac
+                    var match = name.match(/Details\[(\d+)\]\.(.+)/);
+                    if (!match) return;
+
+                    var index = match[1];
+                    var field = match[2];
+                    var value = $(this).val() || '';
+
+                    if (!map[index]) map[index] = {};
+                    map[index][field] = value;
+                });
+
+                Object.keys(map).sort(function (a, b) {
+                    return a - b;
+                }).forEach(function (i) {
+
+                    var d = map[i];
+
+                    var row =
+                        (d.SampleNo || '') + '^' +
+                        (d.ConditionType || '') + '^' +
+                        (d.RowNo || '') + '^' +
+
+                        (d.Vac || '') + '^' +
+                        (d.IacA || '') + '^' +
+                        (d.Wac || '') + '^' +
+                        (d.PF || '') + '^' +
+                        (d.ATHD || '') + '^' +
+
+                        (d.Vdc || '') + '^' +
+                        (d.IdcA || '') + '^' +
+                        (d.Wdc || '') + '^' +
+                        (d.Eff || '') + '^' +
+                        (d.NoLoadV || '') + '^' +
+                        (d.StartV || '') + '^' +
+
+                        (d.Result || '');
+
+                    rows.push(row);
+                });
+
+                model.ElectricalDetails = rows.join('~');
+
+                // ================= AJAX =================
+                $.ajax({
+                    url: '/ProductValidation/InsertUpdateElectricalPerformanceDetails',
+                    type: 'POST',
+                    data: model,
+                    success: function (res) {
+                        if (model.Id > 0) {
+                            alert('Updated successfully');
+                        } else {
+                            alert('Inserted successfully');
+                        }
+                    },
+                    error: function (err) {
+                        console.error(err);
+                        alert('Error while saving');
+                    }
+                });
+            }
 
 </script>
 
@@ -472,7 +620,19 @@
 
 			<div class="row-grid">
 				<div class="cell"><label>Product Cat Ref :</label></div>
-				<div class="cell">@Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control" })</div>
+                    <!-- BIS Search Code -->
+                    <div class="row">
+                        <input type="text"
+                               name="prodCode_Search"
+                               id="prodCode_Search"
+							   class="inline-input form-control col-md-3"
+                               placeholder="Search Code"
+                               aria-label="Search Code"
+                               oninput="handleProdCodeSearch(this)"
+                               style="text-transform: uppercase;width: 175px;" />
+
+						<div>@Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control" })</div>
+					</div>
 
 				<div class="cell"><label>Product Description :</label></div>
 				<div class="cell">@Html.TextBoxFor(m => m.ProductDescription, new { @class = "form-control" })</div>

@@ -45,6 +45,7 @@ using QMS.Core.Repositories.SPMBuyRepository;
 using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Repositories.SPMReportRepository;
 using QMS.Core.Repositories.SurgeTestReportRepository;
+using QMS.Core.Repositories.RegulatoryRequirementRepository;
 using QMS.Core.Repositories.ThirdPartyCertRepository;
 using QMS.Core.Repositories.ThirdPartyInspectionRepository;
 using QMS.Core.Repositories.ThirdPartyTestRepository;
@@ -55,8 +56,6 @@ using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.DeviationNoteService;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
-using QMS.Core.Repositories.SPMMakeRepository;
-using QMS.Core.Repositories.SPMBuyRepository;
 using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Repositories.DropTestRepository;
@@ -127,6 +126,8 @@ builder.Services.AddScoped<IInstallationTrialRepository, InstallationTrialReposi
 builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportRepository>();
 builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();
 builder.Services.AddTransient<IImpactTestRepository, ImpactTestRepository>();
+builder.Services.AddTransient<IRegulatoryRequirementRepository, RegulatoryRequirementRepository>();
+
 builder.Services.AddTransient<IDropTestRepository, DropTestRepository>();
 
 

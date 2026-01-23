@@ -116,29 +116,14 @@
             outline: none;
             border-bottom-color: #4a90e2;
             box-shadow: 0 2px 3px rgba(70,130,180,0.25);
-        }
+        } 
 
     .form-control {
-        margin-left: 10px;
-        width: 140px;
-        padding: 3px 22px 3px 10px; /* ↓ slimmer dropdown */
-        border: none;
-        border-bottom: 1.5px solid #cbd5e1;
-        border-radius: 6px;
-        background-color: #fff;
-        font-size: 13px; /* ↓ slightly smaller text */
-        color: #000;
-        appearance: none;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 20 20' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M5.516 7.548l4.484 4.486 4.484-4.486L16 8.548l-6 6-6-6z'/></svg>");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        background-size: 12px;
-        cursor: pointer;
-        transition: all 0.25s ease-in-out;
+        padding: 0 10px !important;
+        border: 0;
+        border-bottom: 1px solid #cccccc;
+        border-radius: 0px;
     }
-
 
         /* 🔹 Focus & Hover Effects */
         .form-control:focus {
@@ -200,7 +185,7 @@
         font-size: 13px;
         width: 100%;
         table-layout: fixed;
-        word-wrap: break-word;     
+        word-wrap: break-word;
     }
 
     .info-table {
@@ -260,10 +245,35 @@
                                             <b>Customer / Project Name :</b><em>*</em>
                                             @Html.TextBoxFor(m => m.CustomerProjectName, new { @class = "underline-input",style="width:60%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
-
-                                        
                                     </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <b style="width:120px;">Product Cat Ref :</b> <em>*</em>
+                                                <input type="text"
+                                                       name="prodCode_Search"
+                                                       id="prodCode_Search"
+                                                       class="form-control"
+                                                       placeholder="Search Code"
+                                                       oninput="handleProdCodeSearch(this)"
+                                                       style="width:170px; text-transform:uppercase; font-size:13px;" />
 
+                                                @Html.TextBoxFor(m => m.ProductCatRef, new {
+                                                @class = "form-control",
+                                                                                                style = "width:320px; font-size:13px;",
+                                                                                                placeholder = "Enter Product Ref",
+                                                                                                required = "required",
+                                                                                                type = "text"
+                                                                                                })
+                                            </div>
+                                        </td>
+
+                                        <td colspan="2">
+                                            <b>Product Description :</b><em>*</em>
+                                            @Html.TextBoxFor(m => m.ProductDescription, new { @class = "underline-input",style="width:50%; margin-left:10px;" , type="text" , required = "required"})
+                                        </td>
+
+                                    </tr>
                                     <tr>
                                         <td colspan="2">
                                             <b>Report No :</b><em>*</em>
@@ -278,19 +288,11 @@
 
 
                                     <tr>
-                                        <td>
-                                            <b>Product Cat Ref :</b><em>*</em>
-                                            @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "underline-input",style="width:58%; margin-left:10px;" , type="text" , required = "required"})
-                                        </td>
-                                        <td>
-                                            <b>Product Description :</b><em>*</em>
-                                            @Html.TextBoxFor(m => m.ProductDescription, new { @class = "underline-input",style="width:50%; margin-left:10px;" , type="text" , required = "required"})
-                                        </td>
-                                        <td>
+                                        <td colspan="2">
                                             <b>Batch Code :</b><em>*</em>
                                             @Html.TextBoxFor(m => m.BatchCode, new { @class = "underline-input",style="width:50%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
-                                        <td>
+                                        <td colspan="2">
                                             <b>Quantity :</b><em>*</em>
                                             @Html.TextBoxFor(m => m.Quantity, new { @class = "underline-input",style="width:50%; margin-left:10px;" , type="text" , required = "required"})
                                         </td>
@@ -510,7 +512,7 @@
                                                 <div class="col-7">1. Damage observed</div>
                                                 <div class="col-5">
                                                     @Html.DropDownListFor(m => m.Observation_DamageObserved,
-                                                    new List<SelectListItem>{
+                                                                                                        new List<SelectListItem>{
                                                                                                         new SelectListItem { Text="Select", Value="" },
                                                                                                         new SelectListItem { Text="YES", Value="yes" },
                                                                                                         new SelectListItem { Text="NO", Value="no" }
@@ -548,18 +550,18 @@
 
                                         <td style="width:50%; vertical-align:top;">
 
-                                            <div id="photoContainer" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
-                                                <div id="photoSpace">
-                                                    <div style="font-size:18px; font-weight:600;">Space For Photo</div>
-                                                    <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
-                                                </div>
-                                                <img id="photoPreview" style="max-width:100%; max-height:100%; display:none;" />
-                                            </div>
+                                            <label for="photoUpload"
+                                                   style="display:block; color:#000; font-weight:bold; margin-bottom:10px;">
+                                                Space for Photo :
+                                            </label>
 
-                                            <div class="mt-2">
-                                                <button type="button" id="chooseFileBtn" class="chooseFileBtn">Choose file</button>
-                                                <input type="file" id="photoInput" accept="image/*" style="display:none" />
-                                                <span id="fileName">No file chosen</span>
+                                            <div style="display:flex; justify-content:center; align-items:center;">
+                                                @Html.HiddenFor(m => m.Observation_Photo)
+                                                <span class="photo-text"></span>
+                                                <input type="file" id="photoUpload1" accept="image/*" name="Observation_PhotoFile" style="" />
+                                                <img id="preview1" alt="" src="@Model?.Observation_Photo"
+                                                     @(string.IsNullOrEmpty(Model?.Observation_Photo) ? "display:none;" : "display:block;")
+                                                     style="width:30%; height:15%;border:1px solid #aaa; border-radius:5px;">
                                             </div>
 
                                         </td>
@@ -601,11 +603,139 @@
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
     <script>
-
+        let searchTimeout;
         $(document).ready(function () {
-            initPhotoSelect();
-            initPhotoChange();
-        });
+             initPhotoPreviews();
+
+            const inputElement = $("#prodCode_Search");
+            if (inputElement.length) {
+
+                 inputElement.on('input', function (event) {
+                 handleProdCodeSearch(event);
+                });
+            }
+         });
+
+         function handleProdCodeSearch(event) {
+
+             const input = event.target;
+             if (!input) return;
+
+             let searchQuery = input.value.trim();
+
+             if (searchQuery.length < 4) {
+                 clearTimeout(searchTimeout);
+                 return;
+             }
+
+             const searchTerms = searchQuery.substring(0, 4);
+
+             clearTimeout(searchTimeout);
+             searchTimeout = setTimeout(() => {
+                 pagedData = {};
+                 fetchProdCodeRelatedData(searchTerms, input);
+             }, 300);
+         }
+
+          function fetchProdCodeRelatedData(productCatNo, inputField) {
+                 debugger
+                 $.ajax({
+                     url: '/Vendor/GetCodeSearch',
+                     type: 'GET',
+                     data: { search: productCatNo },
+                     dataType: 'json',
+                     success: function (data) {
+                         if (data && data.length > 0) {
+                             displayProdCodeSuggestions(data, inputField);
+                         } else {
+                             showDangerAlert('No data found for the entered Product Cat No.');
+                         }
+                     },
+                     error: function (xhr, status, error) {
+                         console.error('Error fetching data:', error);
+                     }
+                 });
+             }
+
+          function displayProdCodeSuggestions(data, inputField) {
+
+                     removeExistingDropdown(inputField);
+
+                     const parent = inputField.parentElement;
+                     if (getComputedStyle(parent).position === "static") {
+                         parent.style.position = "relative";
+                     }
+
+                     const dropdown = document.createElement('div');
+                     dropdown.className = 'suggestion-dropdown';
+                     dropdown.style.position = 'absolute';
+                     dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                     dropdown.style.left = inputField.offsetLeft + 'px';
+                     dropdown.style.backgroundColor = 'white';
+                     dropdown.style.border = '1px solid #ccc';
+                     dropdown.style.zIndex = 1000;
+                     dropdown.style.overflowY = 'auto';
+                     dropdown.style.maxHeight = '300px';
+                     dropdown.style.width = inputField.offsetWidth + 'px';
+                     dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+                     data.forEach(item => {
+                         const code = (item.oldPart_No || "").toString().trim();
+                         const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+                         const option = document.createElement('div');
+                         option.className = 'suggestion-item';
+                         option.textContent = desc ? `${code} | ${desc}` : code;
+                         option.style.padding = '8px';
+                         option.style.cursor = 'pointer';
+
+                         option.addEventListener('mouseover', () => {
+                             option.style.backgroundColor = '#4682B4';
+                             option.style.color = '#fff';
+                         });
+                         option.addEventListener('mouseout', () => {
+                             option.style.backgroundColor = '';
+                             option.style.color = '';
+                         });
+
+                         option.addEventListener('click', () => {
+
+                             const productCatRefInput = document.getElementById('ProductCatRef');
+                             if (productCatRefInput) {
+                                 productCatRefInput.value = code ?? '';
+                             }
+
+                             const productDescInput = document.getElementById('ProductDescription');
+                             if (productDescInput) {
+                                 productDescInput.value = desc ?? '';
+                             }
+
+                             const searchBox = document.getElementById('prodCode_Search');
+                             if (searchBox) {
+                                 searchBox.value = code;
+                             }
+
+                             dropdown.remove();
+                         });
+
+                         dropdown.appendChild(option);
+                     });
+
+                     parent.appendChild(dropdown);
+                 }
+
+          function removeExistingDropdown(inputField) {
+                 const existingDropdown = document.querySelector('.suggestion-dropdown');
+                 if (existingDropdown) {
+                     existingDropdown.remove();
+                 }
+             }
+
+          document.addEventListener('click', function (e) {
+                 if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+                     removeExistingDropdown();
+                 }
+             });
 
          function insertImpactTest() {
             Blockloadershow();
@@ -707,58 +837,35 @@
             });
         }
 
-        function initPhotoSelect() {
-            const chooseBtn = document.getElementById('chooseFileBtn');
-            const fileInput = document.getElementById('photoInput');
+        function setupPreview(inputId, imgId) {
+             const inp = document.getElementById(inputId);
+             const img = document.getElementById(imgId);
 
-            if (!chooseBtn || !fileInput) return;
+             if (!inp || !img) return;
 
-            chooseBtn.addEventListener('click', function () {
-                fileInput.click();
-            });
-        }
+             inp.addEventListener('change', () => {
+                 const file = inp.files && inp.files[0];
 
-        function initPhotoChange() {
-            const fileInput = document.getElementById('photoInput');
-            const fileNameEl = document.getElementById('fileName');
-            const preview = document.getElementById('photoPreview');
-            const photoSpace = document.getElementById('photoSpace');
+                 if (!file) {
+                     img.src = '';
+                     img.style.display = 'none';
+                     return;
+                 }
 
-            if (!fileInput || !fileNameEl || !preview || !photoSpace) return;
+                 const reader = new FileReader();
+                 reader.onload = e => {
+                     img.src = e.target.result;
+                     img.style.display = 'block';
+                 };
 
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
+                 reader.readAsDataURL(file);
+             });
+         }
 
+         function initPhotoPreviews() {
+             setupPreview('photoUpload1', 'preview1');
+         }
 
-                if (!file) {
-                    fileNameEl.textContent = "No file chosen";
-                    preview.style.display = "none";
-                    photoSpace.style.display = "block";
-                    return;
-                }
-
-
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("File is too large. Max 5MB.");
-                    fileInput.value = "";
-                    return;
-                }
-
-
-                fileNameEl.textContent = file.name;
-
-
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (ev) {
-                        preview.src = ev.target.result;
-                        preview.style.display = "block";
-                        photoSpace.style.display = "none";
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
 
     </script>
 }

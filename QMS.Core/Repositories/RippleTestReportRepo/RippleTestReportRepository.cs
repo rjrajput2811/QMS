@@ -75,7 +75,7 @@ public class RippleTestReportRepository : SqlTableRepository, IRippleTestReportR
                 new SqlParameter("@Id", Id),
             };
 
-            var sql = @"EXEC sp_Get_RippleTestReport";
+            var sql = @"EXEC sp_Get_RippleTestReport @Id";
 
             var result = await Task.Run(() => _dbContext.RippleTestReports.FromSqlRaw(sql, parameters)
                 .AsEnumerable()

@@ -19,7 +19,7 @@ public class ElectricalPerformanceRepository : SqlTableRepository, IElectricalPe
         _systemLogService = systemLogService;
     }
 
-    public async Task<List<ElectricalPerformanceViewModel>> GetElectricalPerformancesAsync()
+    public async Task<List<ElectricalPerformanceViewModel>> GetElectricalPerformancesAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
         try
         {
@@ -50,13 +50,34 @@ public class ElectricalPerformanceRepository : SqlTableRepository, IElectricalPe
                     SensorDetails = x.SensorDetails,
                     LampDetails = x.LampDetails,
                     PKD = x.PKD,
-                    AddedBy = x.AddedBy
+                    AddedBy = x.AddedBy,
+                    UpdatedBy = x.UpdatedBy,
+                    AddedOn = x.AddedOn,
+                    UpdatedOn = x.UpdatedOn
                 })
                 .ToList());
 
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    var s = startDate.Value.Date;
+                    var e = endDate.Value.Date;
+
+                result = result
+                        .Where(d => d.AddedOn.Date >= s && d.AddedOn.Date <= e)
+                        .ToList();
+                }
+
+            var userIds = result.Select(x => x.AddedBy).Distinct().ToList();
+
+            var userMap = await _dbContext.User
+                .AsNoTracking()
+                .Where(u => userIds.Contains(u.Id))
+                .ToDictionaryAsync(u => u.Id, u => u.Name);
+
             foreach (var rec in result)
             {
-                rec.User = await _dbContext.User.Where(i => i.Id == rec.AddedBy).Select(x => x.Name).FirstOrDefaultAsync();
+                // rec.User = await _dbContext.User.Where(i => i.Id == rec.AddedBy).Select(x => x.Name).FirstOrDefaultAsync();
+                rec.User = userMap.TryGetValue(rec.AddedBy, out var name) ? name : "";
             }
 
             return result;

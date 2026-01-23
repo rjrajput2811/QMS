@@ -211,8 +211,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                     TABLE / BORDER BASE
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             TABLE / BORDER BASE
+                                                                                                                                                                                                                                                                          ============================*/
     /* Use this class on your surge tables (with/without SPD) */
     .surge-table {
         width: 100%;
@@ -253,8 +253,8 @@
     }
 
     /* ===========================
-                                                                                                                                                                                                                                     EDITABLE CELLS
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             EDITABLE CELLS
+                                                                                                                                                                                                                                                                          ============================*/
     .editable-cell,
     td[contenteditable="true"] {
         background-color: #fff;
@@ -276,8 +276,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                     RESULT ROW (BOTTOM)
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             RESULT ROW (BOTTOM)
+                                                                                                                                                                                                                                                                          ============================*/
     /* Apply this to the <tr> of your final result row */
     .result-row {
         font-weight: 700;
@@ -327,8 +327,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                     UTILITIES (optional)
-                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             UTILITIES (optional)
+                                                                                                                                                                                                                                                                          ============================*/
     .text-center {
         text-align: center;
     }
@@ -484,25 +484,43 @@
 
                                     <tr>
                                         <!-- Row 2 -->
-                                        <td>
-                                            <b>Product Cat Ref :</b> <em>*</em>
-                                            @Html.TextBoxFor(m=>m.ProductCatRef , new{
-                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Product Ref",
-                                                                                        required = "required" , type = "text"})
+                                        <td style="width:20px;">
+                                            <div style="display:flex; align-items:center; gap:10px;">
+                                                <b style="width:105px;">Product Cat Ref :</b> <em>*</em>
+                                                <input type="text"
+                                                       name="prodCode_Search"
+                                                       id="prodCode_Search"
+                                                       class="form-control"
+                                                       placeholder="Search Code"
+                                                       oninput="handleProdCodeSearch(this)"
+                                                       style="width:170px; text-transform:uppercase; font-size:13px;" />
+
+                                                @Html.TextBoxFor(m => m.ProductCatRef, new {
+                                                                                                @class = "form-control",
+                                                                                                style = "width:320px; font-size:13px;",
+                                                                                                placeholder = "Enter Product Ref",
+                                                                                                required = "required",
+                                                                                                type = "text"
+                                                                                                })
+                                            </div>
                                         </td>
 
                                         <td>
                                             <b>Product Description :</b> <em>*</em>
-                                            @Html.TextBoxFor(m=>m.ProductDescription , new{
-                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Description",
-                                                                                        required = "required" , type = "text"})
+                                            @Html.TextBoxFor(m => m.ProductDescription, new {
+                                                                                        @class = "form-control d-inline-block",
+                                                                                        style = "width:60%; font-size:13px;",
+                                                                                        required = "required"
+                                                                                        })
                                         </td>
 
                                         <td>
                                             <b>Driver Code :</b> <em>*</em>
-                                            @Html.TextBoxFor(m=>m.DriverCode , new{
-                                                                                        @class = "form-control d-inline-block",style = "width:60%; font-size:13px;",placeholder = "Enter Driver Code",
-                                                                                        required = "required" , type = "text" })
+                                            @Html.TextBoxFor(m => m.DriverCode, new {
+                                                                                        @class = "form-control d-inline-block",
+                                                                                        style = "width:60%; font-size:13px;",
+                                                                                        required = "required"
+                                                                                        })
                                         </td>
                                     </tr>
 
@@ -886,12 +904,12 @@
                                         </label>
 
                                         <div style="display:flex; justify-content:center; align-items:center;">
-                                            <input type="file"
-                                                   id="photoUpload"
-                                                   name="photoUpload"
-                                                   accept="image/*"
-                                                   class="form-control"
-                                                   style="width:auto; background-color:#f5f7fa; border:none; border-bottom:2px solid #d0d7e6; border-radius:6px; font-size:14px; padding:4px 6px; text-align:center;" />
+                                            @Html.HiddenFor(m => m.Surge_Photo)
+                                            <span class="photo-text"></span>
+                                            <input type="file" id="photoUpload1" accept="image/*" name="Photo_SurgeFile" style="" />
+                                            <img id="preview1" alt="" src="@Model?.Surge_Photo"
+                                                 @(string.IsNullOrEmpty(Model?.Surge_Photo) ? "display:none;" : "display:block;")
+                                                 style="width:15%; height:15%;border:1px solid #aaa; border-radius:5px;">
                                         </div>
                                     </td>
                                 </tr>
@@ -927,119 +945,282 @@
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
     <script>
+         let searchTimeout;
 
-                    function insertSurgeTest() {
+         $(document).ready(function () {
+             initPhotoPreviews();
 
-                    Blockloadershow();
+            const inputElement = $("#prodCode_Search");
+            if (inputElement.length) {
 
-                           $('td[contenteditable="true"]').each(function () {
-            var value = $(this).text().trim();
-            var fieldName = $(this).data('name'); // e.g. Voltage_KV
-
-            if (fieldName !== undefined) {
-                // Find the closest hidden input for the same field
-                var hiddenInput = $(this).closest('tr').find('input[name$=".' + fieldName + '"]');
-
-                if (hiddenInput.length > 0) {
-                    hiddenInput.val(value);
-                }
+                 inputElement.on('input', function (event) {
+                 handleProdCodeSearch(event);
+                });
             }
-        });
+         });
 
-                    const requiredFields = [
-                        { name: 'ReportDate', label: 'Report Date' },
-                        { name: 'ReportNo', label: 'Report No' },
-                        { name: 'BatchCode', label: 'Batch Code' },
-                        { name: 'ProductCatRef', label: 'Product Cat Ref' },
-                        { name: 'ProductDescription', label: 'Product Description' },
-                        { name: 'DriverCode', label: 'Driver Code' },
-                        { name: 'SPDCode', label: 'SPD Code' },
-                        { name: 'LEDConfiguration', label: 'LED Configuration' },
-                        { name: 'PKDCode', label: 'PKD Code' }
+          function handleProdCodeSearch(event) {
 
-                    ];
+             const input = event.target;
+             if (!input) return;
 
-                    let isValid = true;
-                    let missingFields = [];
+             let searchQuery = input.value.trim();
 
-                    requiredFields.forEach(field => {
-                       const value = $(`[name="${field.name}"]`).val();
+             if (searchQuery.length < 4) {
+                 clearTimeout(searchTimeout);
+                 return;
+             }
 
-                        if (!value || value.trim() === '') {
-                            isValid = false;
-                            missingFields.push(field.name);
-                        }
-                    });
+             const searchTerms = searchQuery.substring(0, 4);
 
-                    if (!isValid) {
-                        const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
-                        const alertMessage = `
-                                <p>Please fill out the following required field(s):</p>
-                                <ul>${missingFieldsList}</ul>
-                            `;
-                        showDangerAlert(alertMessage);
-                        Blockloaderhide();
-                        return false;
-                    }
-                    $("#Id").val(@Model.Id);
-                   const form = $('#surgeTest-form')[0];
-                    const formData = new FormData(form);
+             clearTimeout(searchTimeout);
+             searchTimeout = setTimeout(() => {
+                 pagedData = {};
+                 fetchProdCodeRelatedData(searchTerms, input);
+             }, 300);
+         }
 
-                    // $('#surgeTest-form [contenteditable="true"]').each(function () {
+          function fetchProdCodeRelatedData(productCatNo, inputField) {
+                 debugger
+                 $.ajax({
+                     url: '/Vendor/GetCodeSearch',
+                     type: 'GET',
+                     data: { search: productCatNo },
+                     dataType: 'json',
+                     success: function (data) {
+                         if (data && data.length > 0) {
+                             displayProdCodeSuggestions(data, inputField);
+                         } else {
+                             showDangerAlert('No data found for the entered Product Cat No.');
+                         }
+                     },
+                     error: function (xhr, status, error) {
+                         console.error('Error fetching data:', error);
+                     }
+                 });
+             }
 
-                    //     const dataName = $(this).data('name');
-                    //     const content = $(this).text().trim();
+          function displayProdCodeSuggestions(data, inputField) {
 
-                    //     if (dataName) {
-                    //         formData.append(dataName, content);
-                    //     }
+                     removeExistingDropdown(inputField);
 
-                    // });
+                     const parent = inputField.parentElement;
+                     if (getComputedStyle(parent).position === "static") {
+                         parent.style.position = "relative";
+                     }
 
-                    $.ajax({
-                        url: $('#surgeTest-form').attr('action'),
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function (response) {
-                            Blockloaderhide();
+                     const dropdown = document.createElement('div');
+                     dropdown.className = 'suggestion-dropdown';
+                     dropdown.style.position = 'absolute';
+                     dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                     dropdown.style.left = inputField.offsetLeft + 'px';
+                     dropdown.style.backgroundColor = 'white';
+                     dropdown.style.border = '1px solid #ccc';
+                     dropdown.style.zIndex = 1000;
+                     dropdown.style.overflowY = 'auto';
+                     dropdown.style.maxHeight = '300px';
+                     dropdown.style.width = inputField.offsetWidth + 'px';
+                     dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
 
-                            if (!response.success) {
-                                 var errorMessg = "";
-                    if (response.errors != undefined) {
-                        for (var error of response.errors) {
-                            errorMessg += error + "\n";
-                        }
-                        if (errorMessg != "") {
-                            showDangerAlert(errorMessg);
-                        }
-                    }
-                    else {
-                        showDangerAlert(response.message);
-                    }
-                    return false;
-                }
+                     data.forEach(item => {
+                         const code = (item.oldPart_No || "").toString().trim();
+                         const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
 
-                else {
-                    if ($("#Id").val() > 0) {
-                        showSuccessAlert("Updated Successfully.");
-                    }
-                    else {
-                        showSuccessAlert("Saved Successfully.");
-                    }
-                    setTimeout(function () {
-                        window.open('@Url.Action("SurgeTestReport", "ProductValidation")', '_self');
-                    }, 2500);
-                }
+                         const option = document.createElement('div');
+                         option.className = 'suggestion-item';
+                         option.textContent = desc ? `${code} | ${desc}` : code;
+                         option.style.padding = '8px';
+                         option.style.cursor = 'pointer';
 
-                  },
-                        error: function (xhr, status, error) {
-                            Blockloaderhide();
-                            showDangerAlert("Error saving data: " + error);
-                        }
-                    });
-                }
+                         option.addEventListener('mouseover', () => {
+                             option.style.backgroundColor = '#4682B4';
+                             option.style.color = '#fff';
+                         });
+                         option.addEventListener('mouseout', () => {
+                             option.style.backgroundColor = '';
+                             option.style.color = '';
+                         });
+
+                         option.addEventListener('click', () => {
+
+                             const productCatRefInput = document.getElementById('ProductCatRef');
+                             if (productCatRefInput) {
+                                 productCatRefInput.value = code ?? '';
+                             }
+
+                             const productDescInput = document.getElementById('ProductDescription');
+                             if (productDescInput) {
+                                 productDescInput.value = desc ?? '';
+                             }
+
+                             const searchBox = document.getElementById('prodCode_Search');
+                             if (searchBox) {
+                                 searchBox.value = code;
+                             }
+
+                             dropdown.remove();
+                         });
+
+                         dropdown.appendChild(option);
+                     });
+
+                     parent.appendChild(dropdown);
+                 }
+
+          function removeExistingDropdown(inputField) {
+                 const existingDropdown = document.querySelector('.suggestion-dropdown');
+                 if (existingDropdown) {
+                     existingDropdown.remove();
+                 }
+             }
+
+          document.addEventListener('click', function (e) {
+                 if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+                     removeExistingDropdown();
+                 }
+             });
+
+        function setupPreview(inputId, imgId) {
+             const inp = document.getElementById(inputId);
+             const img = document.getElementById(imgId);
+
+             if (!inp || !img) return;
+
+             inp.addEventListener('change', () => {
+                 const file = inp.files && inp.files[0];
+
+                 if (!file) {
+                     img.src = '';
+                     img.style.display = 'none';
+                     return;
+                 }
+
+                 const reader = new FileReader();
+                 reader.onload = e => {
+                     img.src = e.target.result;
+                     img.style.display = 'block';
+                 };
+
+                 reader.readAsDataURL(file);
+             });
+         }
+
+         function initPhotoPreviews() {
+             setupPreview('photoUpload1', 'preview1');
+         }
+
+         function insertSurgeTest() {
+
+         Blockloadershow();
+
+             $('td[contenteditable="true"]').each(function () {
+             var value = $(this).text().trim();
+             var fieldName = $(this).data('name'); // e.g. Voltage_KV
+
+             if (fieldName !== undefined) {
+                 // Find the closest hidden input for the same field
+                 var hiddenInput = $(this).closest('tr').find('input[name$=".' + fieldName + '"]');
+
+                 if (hiddenInput.length > 0) {
+                     hiddenInput.val(value);
+                 }
+             }
+         });
+
+                     const requiredFields = [
+                         { name: 'ReportDate', label: 'Report Date' },
+                         { name: 'ReportNo', label: 'Report No' },
+                         { name: 'BatchCode', label: 'Batch Code' },
+                         { name: 'ProductCatRef', label: 'Product Cat Ref' },
+                         { name: 'ProductDescription', label: 'Product Description' },
+                         { name: 'DriverCode', label: 'Driver Code' },
+                         { name: 'SPDCode', label: 'SPD Code' },
+                         { name: 'LEDConfiguration', label: 'LED Configuration' },
+                         { name: 'PKDCode', label: 'PKD Code' }
+
+                     ];
+
+                     let isValid = true;
+                     let missingFields = [];
+
+                     requiredFields.forEach(field => {
+                        const value = $(`[name="${field.name}"]`).val();
+
+                         if (!value || value.trim() === '') {
+                             isValid = false;
+                             missingFields.push(field.name);
+                         }
+                     });
+
+                     if (!isValid) {
+                         const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                         const alertMessage = `
+                                 <p>Please fill out the following required field(s):</p>
+                                 <ul>${missingFieldsList}</ul>
+                             `;
+                         showDangerAlert(alertMessage);
+                         Blockloaderhide();
+                         return false;
+                     }
+                     $("#Id").val(@Model.Id);
+                    const form = $('#surgeTest-form')[0];
+                     const formData = new FormData(form);
+
+                     // $('#surgeTest-form [contenteditable="true"]').each(function () {
+
+                     //     const dataName = $(this).data('name');
+                     //     const content = $(this).text().trim();
+
+                     //     if (dataName) {
+                     //         formData.append(dataName, content);
+                     //     }
+
+                     // });
+
+                     $.ajax({
+                         url: $('#surgeTest-form').attr('action'),
+                         type: 'POST',
+                         data: formData,
+                         processData: false,
+                         contentType: false,
+                         success: function (response) {
+                             Blockloaderhide();
+
+                             if (!response.success) {
+                                  var errorMessg = "";
+                     if (response.errors != undefined) {
+                         for (var error of response.errors) {
+                             errorMessg += error + "\n";
+                         }
+                         if (errorMessg != "") {
+                             showDangerAlert(errorMessg);
+                         }
+                     }
+                     else {
+                         showDangerAlert(response.message);
+                     }
+                     return false;
+                 }
+
+                 else {
+                     if ($("#Id").val() > 0) {
+                         showSuccessAlert("Updated Successfully.");
+                     }
+                     else {
+                         showSuccessAlert("Saved Successfully.");
+                     }
+                     setTimeout(function () {
+                         window.open('@Url.Action("SurgeTestReport", "ProductValidation")', '_self');
+                     }, 2500);
+                 }
+
+                   },
+                         error: function (xhr, status, error) {
+                             Blockloaderhide();
+                             showDangerAlert("Error saving data: " + error);
+                         }
+                     });
+                 }
 
 
     </script>

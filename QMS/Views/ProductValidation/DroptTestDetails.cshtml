@@ -1,15 +1,16 @@
+
+
 @{
     ViewData["Title"] = "Drop Test Report";
 }
 
 <style>
-
     .underline-input {
         border: 0;
         border-bottom: 1.5px solid #666;
         border-radius: 0;
         background: transparent;
-        width: 50%;
+        width: 80%;
         font-size: 15px;
         padding: 2px 6px;
         outline: none;
@@ -19,6 +20,24 @@
     }
 
         .underline-input:focus {
+            border-bottom: 1.5px solid #4682B4;
+        }
+
+    .underline-input-Cert {
+        border: 0;
+        border-bottom: 1.5px solid #666;
+        border-radius: 0;
+        background: transparent;
+        width: 100%;
+        font-size: 15px;
+        padding: 2px 6px;
+        outline: none;
+        box-shadow: none;
+        vertical-align: middle;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+    .underline-input-Cert :focus {
             border-bottom: 1.5px solid #4682B4;
         }
 
@@ -151,14 +170,13 @@
         }
 
     .chooseFileBtn {
-        padding: 4px 10px;
+        padding: 6px 12px;
         border-radius: 4px;
         border: 1px solid #ccc;
         background-color: #f8f9fa;
         cursor: pointer;
         font-size: 13px;
         color: #000;
-        margin-bottom: 6px;
         transition: all 0.2s ease-in-out;
     }
 
@@ -231,223 +249,257 @@
             background-color: #c82333;
             border-color: #bd2130;
         }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .photo-preview-container {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .photo-preview-img {
+        max-width: 100%;
+        max-height: 250px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px;
+        display: none;
+        margin: 0 auto;
+    }
+
+    .photo-space {
+        width: 100%;
+        height: 250px;
+        border: 2px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 13px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+
+    .multi-line-text {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* Photo table specific styles */
+    .photo-row {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .photo-cell {
+        padding: 15px;
+        text-align: center;
+        vertical-align: top;
+        width: 50%;
+    }
+
+    .photo-cell-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .photo-controls {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
 </style>
 
-<div class="container-fluid" style="padding:20px;">
-    <div class="row">
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
         <div class="col-12">
-
-            <!-- Header Card -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+                    <span class="header-title">DROP TEST REPORT</span>
                     <div>
-                        <b class="header-title">Drop Test Report</b>
-                    </div>
-                    <div>
-                        <button id="saveDropTestButton"
-                                type="button"
-                                class="btn btn-outline-success legitRipple mr-2 header-btn"
-                                onclick="saveDropTest()">
-                            <i class="fas fa-save mr-1"></i>Save
+                        <button type="button" class="btn btn-primary header-btn me-2" onclick="saveDropTest()">
+                            <i class="fas fa-save"></i> Save
                         </button>
-                        <a href='@Url.Action("DropTestReport", "ProductValidation")'
-                           class="btn btn-outline-primary header-btn">
-                            <i class="fas fa-arrow-left"></i> BACK
-                        </a>
+                        <button type="button" class="btn btn-secondary header-btn" onclick="window.history.back()">
+                            <i class="fas fa-times"></i> Back
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Main Content Card -->
-            <div class="card shadow-sm">
-                <div class="card-body" style="padding:25px;">
+                <div class="card-body">
 
-                    <!-- Title and Report Details -->
+
+                    <!-- Product Information -->
                     <div class="table-responsive">
-                        <table class="table table-bordered info-table">
-                            <tbody>
-                                <tr>
-                                    <td colspan="4" style="text-align:center; font-size:18px; font-weight:700; background-color:#f7f8fa;">
-                                        DROP TEST REPORT
-                                    </td>
-                                    <td style="white-space:normal;">
-                                        <b>Report No:</b>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="reportNo" />
-                                    </td>
-                                    <td style="white-space:normal;">
-                                        <b>Date:</b>
-                                        <input type="date" class="underline-input" style="width:60%; margin-left:8px;" id="reportDate" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="6" style="white-space:normal;">
-                                        <b>PRODUCT Cat Ref:</b>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="productCatRef" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="6" style="white-space:normal;">
-                                        <b>PRODUCT Description:</b>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="productDescription" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="6" style="white-space:normal;">
-                                        <b>Case Lot:</b>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="caseLot" />
-                                    </td>
-                                </tr>
-
-                                <!-- Criteria Section -->
-                                <tr>
-                                    <td colspan="6" style="background-color:#f7f8fa; font-weight:700;">
-                                        CRITERIA FOR DROP TEST
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Dimension Of Packing Box:</b><br />
-                                        <div class="mt-2">
-                                            <input type="text" placeholder="L (cm)" class="underline-input" style="width:30%; margin-right:5px;" id="dimensionL" />
-                                            <input type="text" placeholder="W (cm)" class="underline-input" style="width:30%; margin-right:5px;" id="dimensionW" />
-                                            <input type="text" placeholder="H (cm)" class="underline-input" style="width:30%;" id="dimensionH" />
-                                        </div>
-                                    </td>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Master Carton:</b>
-                                        <input type="text" class="underline-input" style="width:65%; margin-left:8px;" id="masterCarton" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Inner Padding Dimension:</b>
-                                        <input type="text" class="underline-input" style="width:55%; margin-left:8px;" id="innerPaddingDimension" />
-                                    </td>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Inner Carton:</b>
-                                        <input type="text" class="underline-input" style="width:65%; margin-left:8px;" id="innerCarton" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Gross Weight (Kg):</b>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="grossWeight" />
-                                    </td>
-                                    <td colspan="3" rowspan="2"></td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Height for test (As per IS 9000-7-3:1979):</b>
-                                        <input type="text" class="underline-input" style="width:40%; margin-left:8px;" id="heightTest" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Glow Test:</b>
-                                        <input type="text" class="underline-input" style="width:70%; margin-left:8px;" id="glowTest" />
-                                    </td>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Product must Glow post Drop/Roll Test</b>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Test Details Table -->
-                    <div class="table-responsive mt-3">
-                        <div class="mb-2 text-right">
-                            <button type="button" class="btn btn-sm btn-success" onclick="addTestRow()" style="font-size:13px;">
-                                <i class="fas fa-plus"></i> Add Row
-                            </button>
-                        </div>
-                        <table class="table table-bordered" id="testTable">
-                            <thead>
-                                <tr>
-                                    <th style="width:8%;">Sr. No.</th>
-                                    <th style="width:15%;">Test</th>
-                                    <th style="width:30%;">Parameter / Specification</th>
-                                    <th style="width:20%;">Acceptance Criteria</th>
-                                    <th style="width:17%;">Observations</th>
-                                    <th style="width:10%;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="testTableBody">
-                                <tr>
-                                    <td contenteditable="true" style="text-align:center;">1</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true" style="white-space:normal;">
-                                      
-                                    </td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="text-align:center;">
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteTestRow(this)" title="Delete Row">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-
-                                
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Photographs Section -->
-                    <div class="table-responsive mt-3">
                         <table class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    <td colspan="2" style="background-color:#f7f8fa; font-weight:700; text-align:center;">
-                                        PHOTOGRAPHS (Before and After)
+                                    <td>
+                                        <b>Report No:</b>
+                                        <input type="text" class="underline-input" id="reportNo" placeholder="" />
+                                    </td>
+                                    <td>
+                                        <b>Date:</b>
+                                        <input type="date" class="underline-input" id="reportDate" />
+                                    </td>
+                                    <td>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="width:50%; vertical-align:top; padding:18px;">
-                                        <b>Before Test:</b><br /><br />
-                                        <div id="photoContainerBefore" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
-                                            <div id="photoSpaceBefore">
-                                                <div style="font-size:18px; font-weight:600;">Space For Photo</div>
-                                                <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
-                                            </div>
-                                            <img id="photoPreviewBefore" style="max-width:100%; max-height:100%; display:none;" />
-                                        </div>
-                                        <div class="mt-2">
-                                            <button type="button" id="chooseFileBtnBefore" class="chooseFileBtn">Choose file</button>
-                                            <input type="file" id="photoInputBefore" accept="image/*" style="display:none" />
-                                            <span id="fileNameBefore">No file chosen</span>
-                                        </div>
+                                    <td style="white-space:normal;">
+                                        <b>PRODUCT Cat Ref:</b>
+                                        <div contenteditable="true" class="ce-field" id="productCatRef"></div>
                                     </td>
-
-                                    <td style="width:50%; vertical-align:top; padding:18px;">
-                                        <b>After Test:</b><br /><br />
-                                        <div id="photoContainerAfter" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
-                                            <div id="photoSpaceAfter">
-                                                <div style="font-size:18px; font-weight:600;">Space For Photo</div>
-                                                <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
-                                            </div>
-                                            <img id="photoPreviewAfter" style="max-width:100%; max-height:100%; display:none;" />
-                                        </div>
-                                        <div class="mt-2">
-                                            <button type="button" id="chooseFileBtnAfter" class="chooseFileBtn">Choose file</button>
-                                            <input type="file" id="photoInputAfter" accept="image/*" style="display:none" />
-                                            <span id="fileNameAfter">No file chosen</span>
-                                        </div>
+                                    <td style="white-space:normal;">
+                                        <b>PRODUCT Description:</b>
+                                        <div contenteditable="true" class="ce-field" id="productDescription"></div>
+                                    </td>
+                                    <td style="white-space:normal;">
+                                        <b>Case Lot:</b>
+                                        <div contenteditable="true" class="ce-field" id="caseLot"></div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <!-- Remark Section -->
+                    <!-- Criteria for Drop Test -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td rowspan="5" style="text-align:center; background-color:#e9ecef; vertical-align:middle; width:20%; font-weight:600; font-size:14px;">
+                                        CRITERIA FOR DROP TEST
+                                    </td>
+                                    <td style="width:30%; white-space:normal; font-weight:600;">
+                                        Dimension Of Packing Box
+                                    </td>
+                                    <td style="width:50%; white-space:normal;">
+                                        <div style="margin-bottom:8px;">
+                                            <span style="font-weight:600;">Master Carton:</span>
+                                            <input type="text" class="underline-input-Cert" id="masterCarton" placeholder="" />
+                                        </div>
+                                        <div>
+                                            <span style="font-weight:600;">Inner Carton:-</span>
+                                            <input type="text" class="underline-input-Cert" id="innerCarton" placeholder="" />
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:normal; font-weight:600;">
+                                        Inner Padding Dimension
+                                    </td>
+                                    <td style="white-space:normal;">
+                                        <input type="text" class="underline-input-Cert" id="innerPaddingDim" placeholder="" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:normal; font-weight:600;">
+                                        Gross Weight ( Kg )
+                                    </td>
+                                    <td>
+                                        <input type="text" class="underline-input-Cert" id="grossWeight" placeholder="" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:normal; font-weight:600;">
+                                        Height for test (As per IS 9000-7-3:1979)
+                                    </td>
+                                    <td>
+                                        <input type="text" class="underline-input-Cert" id="heightTest" placeholder="" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="white-space:normal; font-weight:600; text-align:center;">
+                                        Glow Test
+                                    </td>
+                                    <td style="white-space:normal; text-align:center;font-weight:600;">
+                                        <input type="text" class="underline-input-Cert" id="glowTest" placeholder="Product must Glow post Drop/ Roll Test" />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Test Parameters Table -->
+                    <div class="table-responsive mt-2">
+                        <div class="mt-1">
+                            <button type="button" class="btn btn-sm btn-success" onclick="addTestRow()">
+                                <i class="fas fa-plus"></i> Add Row
+                            </button>
+                        </div>
+                        <table class="table table-bordered mt-1">
+                            <thead>
+                                <tr>
+                                    <th style="width:8%; text-align:center;">Sr. No.</th>
+                                    <th style="width:15%; text-align:center;">Test</th>
+                                    <th style="width:30%; text-align:center;">Parameter / Specification</th>
+                                    <th style="width:25%; text-align:center;">Acceptance Criteria</th>
+                                    <th style="width:17%; text-align:center;">Observations</th>
+                                    <th style="width:5%; text-align:center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="testTableBody">
+                            </tbody>
+                        </table>
+                        
+                    </div>
+
+                    <!-- Photographs Section (Before and After) - Horizontal Layout -->
+                    <div class="table-responsive mt-3">
+                        <div class="add-photo-btn-container mt-3" style="text-align:center; padding:10px;">
+                            <button type="button" class="btn btn-success" onclick="addPhotoRow()">
+                                <i class="fas fa-plus"></i> Add Photo Row
+                            </button>
+                        </div>
+                        <table class="table table-bordered mt-2">
+                            <thead>
+                                <tr>
+                                    <th style="width:5%; text-align:center;">Sr. No.</th>
+                                    <th style="width:42%; text-align:center;">Before Test</th>
+                                    <th style="width:42%; text-align:center;">After Test</th>
+                                    <th style="width:11%; text-align:center;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="photoTableBody">
+                                <!-- Photo rows will be added here dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Test Result -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <td class="result-cell">
+                                        <b>Test Result:</b>
+                                        <select class="result-dropdown" id="testResult">
+                                            <option value="">-- Select --</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                   @*  <!-- Remark Section -->
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <tbody>
@@ -460,18 +512,18 @@
                             </tbody>
                         </table>
                     </div>
-
+ *@
                     <!-- Signature Section -->
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <tbody>
                                 <tr>
-                                    <td>
-                                        <b>Tested By:</b>
+                                    <td style="width:50%;">
+                                        <b>TESTED BY:</b>
                                         <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="testedBy" />
                                     </td>
-                                    <td>
-                                        <b>Approved By:</b>
+                                    <td style="width:50%;">
+                                        <b>APPROVED BY:</b>
                                         <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="approvedBy" />
                                     </td>
                                 </tr>
@@ -481,17 +533,18 @@
 
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
+        let photoRowCounter = 0;
 
         $(document).ready(function () {
-            initPhotoSelect();
             setTodayDate();
+            // Add initial photo row
+            addPhotoRow();
         });
 
         function setTodayDate() {
@@ -499,101 +552,122 @@
             document.getElementById('reportDate').value = today;
         }
 
-        function initPhotoSelect() {
-            // Before Photo
-            initSinglePhoto('chooseFileBtnBefore', 'photoInputBefore', 'fileNameBefore', 'photoPreviewBefore', 'photoSpaceBefore');
-            
-            // After Photo
-            initSinglePhoto('chooseFileBtnAfter', 'photoInputAfter', 'fileNameAfter', 'photoPreviewAfter', 'photoSpaceAfter');
+        function addPhotoRow() {
+            const tbody = document.getElementById('photoTableBody');
+            photoRowCounter++;
+            const rowCount = tbody.getElementsByTagName('tr').length + 1;
+            const beforePhotoId = `before_photo_${photoRowCounter}`;
+            const afterPhotoId = `after_photo_${photoRowCounter}`;
+            const newRow = document.createElement('tr');
+            newRow.className = 'photo-row';
+            newRow.id = `photo_row_${photoRowCounter}`;
+            newRow.innerHTML = `
+                <td style="text-align:center; vertical-align:middle; font-weight:600;">
+                    ${rowCount}
+                </td>
+                <td class="photo-cell">
+                    <div class="photo-cell-content">
+                        <div id="${beforePhotoId}_space" class="photo-space">
+                            <span>Before Test - No Image</span>
+                        </div>
+                        <img id="${beforePhotoId}_preview" class="photo-preview-img" src="" alt="Before Preview" />
+                        <div class="photo-controls">
+                            <button type="button" class="chooseFileBtn" onclick="triggerFileInput('${beforePhotoId}')">
+                                <i class="fas fa-upload"></i> Choose File
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" id="${beforePhotoId}_delete" style="display:none; margin-left:5px;" onclick="removePhoto('${beforePhotoId}')" title="Remove Photo">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <input type="file" id="${beforePhotoId}_input" accept="image/*" style="display:none" onchange="handlePhotoUpload('${beforePhotoId}')" />
+                        </div>
+                        <span id="${beforePhotoId}_filename" class="muted">No file chosen</span>
+                    </div>
+                </td>
+                <td class="photo-cell">
+                    <div class="photo-cell-content">
+                        <div id="${afterPhotoId}_space" class="photo-space">
+                            <span>After Test - No Image</span>
+                        </div>
+                        <img id="${afterPhotoId}_preview" class="photo-preview-img" src="" alt="After Preview" />
+                        <div class="photo-controls">
+                            <button type="button" class="chooseFileBtn" onclick="triggerFileInput('${afterPhotoId}')">
+                                <i class="fas fa-upload"></i> Choose File
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" id="${afterPhotoId}_delete" style="display:none; margin-left:5px;" onclick="removePhoto('${afterPhotoId}')" title="Remove Photo">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <input type="file" id="${afterPhotoId}_input" accept="image/*" style="display:none" onchange="handlePhotoUpload('${afterPhotoId}')" />
+                        </div>
+                        <span id="${afterPhotoId}_filename" class="muted">No file chosen</span>
+                    </div>
+                </td>
+                <td style="text-align:center; vertical-align:middle;">
+                    <button type="button" class="btn btn-sm btn-danger" onclick="removePhotoRow(${photoRowCounter})" title="Delete Row">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(newRow);
+            updatePhotoRowNumbers();
         }
 
-        function initSinglePhoto(btnId, inputId, fileNameId, previewId, spaceId) {
-            const chooseBtn = document.getElementById(btnId);
-            const fileInput = document.getElementById(inputId);
-            const fileNameEl = document.getElementById(fileNameId);
-            const preview = document.getElementById(previewId);
-            const photoSpace = document.getElementById(spaceId);
-
-            if (!chooseBtn || !fileInput) return;
-
-            chooseBtn.addEventListener('click', function () {
-                fileInput.click();
-            });
-
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
-
-                if (!file) {
-                    fileNameEl.textContent = "No file chosen";
-                    preview.style.display = "none";
-                    photoSpace.style.display = "block";
-                    return;
-                }
-
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("File is too large. Max 5MB.");
-                    fileInput.value = "";
-                    return;
-                }
-
-                fileNameEl.textContent = file.name;
-
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (ev) {
-                        preview.src = ev.target.result;
-                        preview.style.display = "block";
-                        photoSpace.style.display = "none";
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
+        function updatePhotoRowNumbers() {
+            const tbody = document.getElementById('photoTableBody');
+            const rows = tbody.getElementsByTagName('tr');
+            for (let i = 0; i < rows.length; i++) {
+                const firstCell = rows[i].getElementsByTagName('td')[0];
+                firstCell.textContent = (i + 1);
+            }
         }
 
-        function saveDropTest() {
-            // Collect all form data
-            const formData = {
-                reportNo: document.getElementById('reportNo').value,
-                reportDate: document.getElementById('reportDate').value,
-                productCatRef: document.getElementById('productCatRef').value,
-                productDescription: document.getElementById('productDescription').value,
-                caseLot: document.getElementById('caseLot').value,
-                dimensionL: document.getElementById('dimensionL').value,
-                dimensionW: document.getElementById('dimensionW').value,
-                dimensionH: document.getElementById('dimensionH').value,
-                masterCarton: document.getElementById('masterCarton').value,
-                innerPaddingDimension: document.getElementById('innerPaddingDimension').value,
-                innerCarton: document.getElementById('innerCarton').value,
-                grossWeight: document.getElementById('grossWeight').value,
-                heightTest: document.getElementById('heightTest').value,
-                glowTest: document.getElementById('glowTest').value,
-                remark: document.getElementById('remark').value,
-                testedBy: document.getElementById('testedBy').value,
-                approvedBy: document.getElementById('approvedBy').value,
-                // Add image data if needed
-                photoBeforeSrc: document.getElementById('photoPreviewBefore').src,
-                photoAfterSrc: document.getElementById('photoPreviewAfter').src,
-                // Collect test table data
-                testRows: collectTestTableData()
-            };
-
-            console.log('Form Data:', formData);
-
-            // TODO: Send formData to server via AJAX
-            $.ajax({
-                url: '@Url.Action("SaveDropTestReport", "ProductValidation")',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function (response) {
-                    alert('Drop Test Report saved successfully!');
-                    // Optionally redirect or update UI
-                },
-                error: function (xhr, status, error) {
-                    alert('Error saving report: ' + error);
-                }
-            });
+        function triggerFileInput(photoId) {
+            document.getElementById(`${photoId}_input`).click();
         }
+
+        function handlePhotoUpload(photoId) {
+            const input = document.getElementById(`${photoId}_input`);
+            const file = input.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(`${photoId}_preview`).src = e.target.result;
+                    document.getElementById(`${photoId}_preview`).style.display = 'block';
+                    document.getElementById(`${photoId}_space`).style.display = 'none';
+                    document.getElementById(`${photoId}_filename`).textContent = file.name;
+                    document.getElementById(`${photoId}_delete`).style.display = 'inline-block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function removePhotoRow(rowNumber) {
+            const tbody = document.getElementById('photoTableBody');
+            if (tbody.getElementsByTagName('tr').length <= 1) {
+                alert('At least one photo row is required.');
+                return;
+            }
+            if (confirm('Are you sure you want to remove this photo row?')) {
+                const row = document.getElementById(`photo_row_${rowNumber}`);
+                if (row) {
+                    row.remove();
+                    updatePhotoRowNumbers();
+                }
+            }
+        }
+
+        function removePhoto(photoId) {
+            if (confirm('Are you sure you want to remove this photo?')) {
+                // Hide preview and reset elements
+                document.getElementById(`${photoId}_preview`).src = '';
+                document.getElementById(`${photoId}_preview`).style.display = 'none';
+                document.getElementById(`${photoId}_space`).style.display = 'flex';
+                document.getElementById(`${photoId}_filename`).textContent = 'No file chosen';
+                document.getElementById(`${photoId}_input`).value = '';
+                document.getElementById(`${photoId}_delete`).style.display = 'none';
+            }
+        }
+
 
         function addTestRow() {
             const tbody = document.getElementById('testTableBody');
@@ -604,7 +678,7 @@
             newRow.innerHTML = `
                 <td contenteditable="true" style="text-align:center;">${newRowNumber}</td>
                 <td contenteditable="true"></td>
-                <td contenteditable="true" style="white-space:normal;"></td>
+                <td contenteditable="true" class="multi-line-text" style="white-space:pre-wrap;"></td>
                 <td contenteditable="true" style="white-space:normal;"></td>
                 <td contenteditable="true"></td>
                 <td style="text-align:center;">
@@ -621,7 +695,7 @@
         function deleteTestRow(button) {
             const row = button.closest('tr');
             const tbody = document.getElementById('testTableBody');
-            
+
             // Prevent deleting if only one row remains
             if (tbody.getElementsByTagName('tr').length <= 1) {
                 alert('At least one row is required.');
@@ -661,6 +735,92 @@
             }
 
             return testData;
+        }
+
+        function collectPhotoData() {
+            const photoData = [];
+            const tbody = document.getElementById('photoTableBody');
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+
+                // Before photo (left cell)
+                const beforePreview = cells[0].querySelector('.photo-preview-img');
+                const beforeFilename = cells[0].querySelector('span[id$="_filename"]');
+
+                // After photo (right cell)
+                const afterPreview = cells[1].querySelector('.photo-preview-img');
+                const afterFilename = cells[1].querySelector('span[id$="_filename"]');
+
+                photoData.push({
+                    rowNumber: i + 1,
+                    before: {
+                        src: beforePreview && beforePreview.style.display !== 'none' ? beforePreview.src : null,
+                        filename: beforeFilename ? beforeFilename.textContent : 'No file chosen'
+                    },
+                    after: {
+                        src: afterPreview && afterPreview.style.display !== 'none' ? afterPreview.src : null,
+                        filename: afterFilename ? afterFilename.textContent : 'No file chosen'
+                    }
+                });
+            }
+
+            return photoData;
+        }
+
+        function saveDropTest() {
+            // Collect all form data
+            const formData = {
+                reportNo: document.getElementById('reportNo').value,
+                reportDate: document.getElementById('reportDate').value,
+                revision: document.getElementById('revision').value,
+                productCatRef: document.getElementById('productCatRef').textContent,
+                productDescription: document.getElementById('productDescription').textContent,
+                caseLot: document.getElementById('caseLot').textContent,
+                masterCarton: {
+                    length: document.getElementById('masterCartonL').value,
+                    width: document.getElementById('masterCartonW').value,
+                    height: document.getElementById('masterCartonH').value
+                },
+                innerCarton: {
+                    length: document.getElementById('innerCartonL').value,
+                    width: document.getElementById('innerCartonW').value,
+                    height: document.getElementById('innerCartonH').value
+                },
+                innerPadding: {
+                    length: document.getElementById('innerPaddingL').value,
+                    width: document.getElementById('innerPaddingW').value,
+                    height: document.getElementById('innerPaddingH').value
+                },
+                grossWeight: document.getElementById('grossWeight').value,
+                heightTest: document.getElementById('heightTest').value,
+                glowTest: document.getElementById('glowTest').value,
+                testResult: document.getElementById('testResult').value,
+                remark: document.getElementById('remark').value,
+                testedBy: document.getElementById('testedBy').value,
+                approvedBy: document.getElementById('approvedBy').value,
+                testRows: collectTestTableData(),
+                photos: collectPhotoData()
+            };
+
+            console.log('Form Data:', formData);
+
+            // TODO: Send formData to server via AJAX
+            $.ajax({
+                url: '@Url.Action("SaveDropTestReport", "ProductValidation")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function (response) {
+                    alert('Drop Test Report saved successfully!');
+                    // Optionally redirect or update UI
+                },
+                error: function (xhr, status, error) {
+                    alert('Error saving report: ' + error);
+                }
+            });
         }
 
     </script>

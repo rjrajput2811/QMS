@@ -21,17 +21,34 @@ public class DropTestReport : SqlTable
     public string? InnerPaddingDimension { get; set; }
     public string? GrossWeight_Kg { get; set; }
     public string? HeightForTest_IS9000 { get; set; }
-    public string? GlowTest_Criteria { get; set; }
-    public string? DropTest_Observations { get; set; }
-    public string? RollingTest_Observations { get; set; }
-    public string? Photographs_Before1 { get; set; }
-    public string? Photographs_Before2 { get; set; }
-    public string? Photographs_After1 { get; set; }
-    public string? Photographs_After2 { get; set; }
+    public string? Glow_Test { get; set; }
+    public string? OverallResult { get; set; }
     public string? TestedBy { get; set; }
     public string? VerifiedBy { get; set; }
     public int AddedBy { get; set; }
     public DateTime AddedOn { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? UpdatedOn { get; set; }
+    public List<DropTestReportDetail>? Details { get; set; }
+    public List<DropTestReportImgDetail>? ImgDetails { get; set; }
 }
+
+[Table("tbl_DropTest_Details")]
+public class DropTestReportDetail : SqlTable
+{
+    public string? Test { get; set; }
+    public string? Parameter { get; set; }
+    public string? Acceptance_Criteria { get; set; }
+    public string? Observations { get; set; }
+    public int DropTest_Id { get; set; }
+}
+
+[Table("tbl_DropTest_ImgDetails")]
+public class DropTestReportImgDetail : SqlTable
+{
+    public string? Before_Img { get; set; }
+    public string? After_Img { get; set; }
+    public int DropTest_Id { get; set; }
+}
+
+

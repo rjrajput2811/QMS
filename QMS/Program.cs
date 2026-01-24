@@ -59,13 +59,14 @@ using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Repositories.SPMBuyRepository;
 using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.InstallationTrialRepository;
+using QMS.Core.Repositories.MergeTrackerRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
 builder.Services.AddDbContext<QMSDbContext>(Options => Options.UseSqlServer(connstring));
 
 builder.Services.AddTransient<IDbConnection>(sp =>
-    new SqlConnection(builder.Configuration.GetConnectionString("DefaultConnection")));
+    new SqlConnection(builder.Configuration.GetConnectionString("DbConnectionString")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews()
@@ -126,6 +127,7 @@ builder.Services.AddScoped<IInstallationTrialRepository, InstallationTrialReposi
 builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportRepository>();
 builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();
 builder.Services.AddTransient<IImpactTestRepository, ImpactTestRepository>();
+builder.Services.AddTransient<IMergeTrackerRepository, MergeTrackerRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

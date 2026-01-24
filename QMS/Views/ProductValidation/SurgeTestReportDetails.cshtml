@@ -211,8 +211,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                                                     TABLE / BORDER BASE
-                                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             TABLE / BORDER BASE
+                                                                                                                                                                                                                                                                          ============================*/
     /* Use this class on your surge tables (with/without SPD) */
     .surge-table {
         width: 100%;
@@ -253,8 +253,8 @@
     }
 
     /* ===========================
-                                                                                                                                                                                                                                                                     EDITABLE CELLS
-                                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             EDITABLE CELLS
+                                                                                                                                                                                                                                                                          ============================*/
     .editable-cell,
     td[contenteditable="true"] {
         background-color: #fff;
@@ -276,8 +276,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                                                     RESULT ROW (BOTTOM)
-                                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             RESULT ROW (BOTTOM)
+                                                                                                                                                                                                                                                                          ============================*/
     /* Apply this to the <tr> of your final result row */
     .result-row {
         font-weight: 700;
@@ -327,8 +327,8 @@
         }
 
     /* ===========================
-                                                                                                                                                                                                                                                                     UTILITIES (optional)
-                                                                                                                                                                                                                                                                  ============================*/
+                                                                                                                                                                                                                                                                             UTILITIES (optional)
+                                                                                                                                                                                                                                                                          ============================*/
     .text-center {
         text-align: center;
     }
@@ -904,12 +904,12 @@
                                         </label>
 
                                         <div style="display:flex; justify-content:center; align-items:center;">
-                                            <input type="file"
-                                                   id="photoUpload"
-                                                   name="photoUpload"
-                                                   accept="image/*"
-                                                   class="form-control"
-                                                   style="width:auto; background-color:#f5f7fa; border:none; border-bottom:2px solid #d0d7e6; border-radius:6px; font-size:14px; padding:4px 6px; text-align:center;" />
+                                            @Html.HiddenFor(m => m.Surge_Photo)
+                                            <span class="photo-text"></span>
+                                            <input type="file" id="photoUpload1" accept="image/*" name="Photo_SurgeFile" style="" />
+                                            <img id="preview1" alt="" src="@Model?.Surge_Photo"
+                                                 @(string.IsNullOrEmpty(Model?.Surge_Photo) ? "display:none;" : "display:block;")
+                                                 style="width:15%; height:15%;border:1px solid #aaa; border-radius:5px;">
                                         </div>
                                     </td>
                                 </tr>
@@ -945,282 +945,282 @@
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
     <script>
-        let searchTimeout;
+         let searchTimeout;
 
-        $(document).ready(function () {
-            initPhotoPreviews();
+         $(document).ready(function () {
+             initPhotoPreviews();
 
-           const inputElement = $("#prodCode_Search");
-           if (inputElement.length) {
+            const inputElement = $("#prodCode_Search");
+            if (inputElement.length) {
 
-                inputElement.on('input', function (event) {
-                handleProdCodeSearch(event);
-               });
-           }
-        });
-
-         function handleProdCodeSearch(event) {
-
-            const input = event.target;
-            if (!input) return;
-
-            let searchQuery = input.value.trim();
-
-            if (searchQuery.length < 4) {
-                clearTimeout(searchTimeout);
-                return;
-            }
-
-            const searchTerms = searchQuery.substring(0, 4);
-
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                pagedData = {};
-                fetchProdCodeRelatedData(searchTerms, input);
-            }, 300);
-        }
-
-         function fetchProdCodeRelatedData(productCatNo, inputField) {
-                debugger
-                $.ajax({
-                    url: '/Vendor/GetCodeSearch',
-                    type: 'GET',
-                    data: { search: productCatNo },
-                    dataType: 'json',
-                    success: function (data) {
-                        if (data && data.length > 0) {
-                            displayProdCodeSuggestions(data, inputField);
-                        } else {
-                            showDangerAlert('No data found for the entered Product Cat No.');
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('Error fetching data:', error);
-                    }
+                 inputElement.on('input', function (event) {
+                 handleProdCodeSearch(event);
                 });
             }
+         });
 
-         function displayProdCodeSuggestions(data, inputField) {
+          function handleProdCodeSearch(event) {
 
-                    removeExistingDropdown(inputField);
+             const input = event.target;
+             if (!input) return;
 
-                    const parent = inputField.parentElement;
-                    if (getComputedStyle(parent).position === "static") {
-                        parent.style.position = "relative";
-                    }
+             let searchQuery = input.value.trim();
 
-                    const dropdown = document.createElement('div');
-                    dropdown.className = 'suggestion-dropdown';
-                    dropdown.style.position = 'absolute';
-                    dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
-                    dropdown.style.left = inputField.offsetLeft + 'px';
-                    dropdown.style.backgroundColor = 'white';
-                    dropdown.style.border = '1px solid #ccc';
-                    dropdown.style.zIndex = 1000;
-                    dropdown.style.overflowY = 'auto';
-                    dropdown.style.maxHeight = '300px';
-                    dropdown.style.width = inputField.offsetWidth + 'px';
-                    dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+             if (searchQuery.length < 4) {
+                 clearTimeout(searchTimeout);
+                 return;
+             }
 
-                    data.forEach(item => {
-                        const code = (item.oldPart_No || "").toString().trim();
-                        const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+             const searchTerms = searchQuery.substring(0, 4);
 
-                        const option = document.createElement('div');
-                        option.className = 'suggestion-item';
-                        option.textContent = desc ? `${code} | ${desc}` : code;
-                        option.style.padding = '8px';
-                        option.style.cursor = 'pointer';
+             clearTimeout(searchTimeout);
+             searchTimeout = setTimeout(() => {
+                 pagedData = {};
+                 fetchProdCodeRelatedData(searchTerms, input);
+             }, 300);
+         }
 
-                        option.addEventListener('mouseover', () => {
-                            option.style.backgroundColor = '#4682B4';
-                            option.style.color = '#fff';
-                        });
-                        option.addEventListener('mouseout', () => {
-                            option.style.backgroundColor = '';
-                            option.style.color = '';
-                        });
+          function fetchProdCodeRelatedData(productCatNo, inputField) {
+                 debugger
+                 $.ajax({
+                     url: '/Vendor/GetCodeSearch',
+                     type: 'GET',
+                     data: { search: productCatNo },
+                     dataType: 'json',
+                     success: function (data) {
+                         if (data && data.length > 0) {
+                             displayProdCodeSuggestions(data, inputField);
+                         } else {
+                             showDangerAlert('No data found for the entered Product Cat No.');
+                         }
+                     },
+                     error: function (xhr, status, error) {
+                         console.error('Error fetching data:', error);
+                     }
+                 });
+             }
 
-                        option.addEventListener('click', () => {
+          function displayProdCodeSuggestions(data, inputField) {
 
-                            const productCatRefInput = document.getElementById('ProductCatRef');
-                            if (productCatRefInput) {
-                                productCatRefInput.value = code ?? '';
-                            }
+                     removeExistingDropdown(inputField);
 
-                            const productDescInput = document.getElementById('ProductDescription');
-                            if (productDescInput) {
-                                productDescInput.value = desc ?? '';
-                            }
+                     const parent = inputField.parentElement;
+                     if (getComputedStyle(parent).position === "static") {
+                         parent.style.position = "relative";
+                     }
 
-                            const searchBox = document.getElementById('prodCode_Search');
-                            if (searchBox) {
-                                searchBox.value = code;
-                            }
+                     const dropdown = document.createElement('div');
+                     dropdown.className = 'suggestion-dropdown';
+                     dropdown.style.position = 'absolute';
+                     dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+                     dropdown.style.left = inputField.offsetLeft + 'px';
+                     dropdown.style.backgroundColor = 'white';
+                     dropdown.style.border = '1px solid #ccc';
+                     dropdown.style.zIndex = 1000;
+                     dropdown.style.overflowY = 'auto';
+                     dropdown.style.maxHeight = '300px';
+                     dropdown.style.width = inputField.offsetWidth + 'px';
+                     dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
 
-                            dropdown.remove();
-                        });
+                     data.forEach(item => {
+                         const code = (item.oldPart_No || "").toString().trim();
+                         const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
 
-                        dropdown.appendChild(option);
-                    });
+                         const option = document.createElement('div');
+                         option.className = 'suggestion-item';
+                         option.textContent = desc ? `${code} | ${desc}` : code;
+                         option.style.padding = '8px';
+                         option.style.cursor = 'pointer';
 
-                    parent.appendChild(dropdown);
-                }
+                         option.addEventListener('mouseover', () => {
+                             option.style.backgroundColor = '#4682B4';
+                             option.style.color = '#fff';
+                         });
+                         option.addEventListener('mouseout', () => {
+                             option.style.backgroundColor = '';
+                             option.style.color = '';
+                         });
 
-         function removeExistingDropdown(inputField) {
-                const existingDropdown = document.querySelector('.suggestion-dropdown');
-                if (existingDropdown) {
-                    existingDropdown.remove();
-                }
-            }
+                         option.addEventListener('click', () => {
 
-         document.addEventListener('click', function (e) {
-                if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
-                    removeExistingDropdown();
-                }
-            });
+                             const productCatRefInput = document.getElementById('ProductCatRef');
+                             if (productCatRefInput) {
+                                 productCatRefInput.value = code ?? '';
+                             }
 
-       function setupPreview(inputId, imgId) {
-            const inp = document.getElementById(inputId);
-            const img = document.getElementById(imgId);
+                             const productDescInput = document.getElementById('ProductDescription');
+                             if (productDescInput) {
+                                 productDescInput.value = desc ?? '';
+                             }
 
-            if (!inp || !img) return;
+                             const searchBox = document.getElementById('prodCode_Search');
+                             if (searchBox) {
+                                 searchBox.value = code;
+                             }
 
-            inp.addEventListener('change', () => {
-                const file = inp.files && inp.files[0];
+                             dropdown.remove();
+                         });
 
-                if (!file) {
-                    img.src = '';
-                    img.style.display = 'none';
-                    return;
-                }
+                         dropdown.appendChild(option);
+                     });
 
-                const reader = new FileReader();
-                reader.onload = e => {
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                };
+                     parent.appendChild(dropdown);
+                 }
 
-                reader.readAsDataURL(file);
-            });
-        }
+          function removeExistingDropdown(inputField) {
+                 const existingDropdown = document.querySelector('.suggestion-dropdown');
+                 if (existingDropdown) {
+                     existingDropdown.remove();
+                 }
+             }
 
-        function initPhotoPreviews() {
-            setupPreview('photoUpload1', 'preview1');
-        }
+          document.addEventListener('click', function (e) {
+                 if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+                     removeExistingDropdown();
+                 }
+             });
 
-        function insertSurgeTest() {
+        function setupPreview(inputId, imgId) {
+             const inp = document.getElementById(inputId);
+             const img = document.getElementById(imgId);
 
-        Blockloadershow();
+             if (!inp || !img) return;
 
-            $('td[contenteditable="true"]').each(function () {
-            var value = $(this).text().trim();
-            var fieldName = $(this).data('name'); // e.g. Voltage_KV
+             inp.addEventListener('change', () => {
+                 const file = inp.files && inp.files[0];
 
-            if (fieldName !== undefined) {
-                // Find the closest hidden input for the same field
-                var hiddenInput = $(this).closest('tr').find('input[name$=".' + fieldName + '"]');
+                 if (!file) {
+                     img.src = '';
+                     img.style.display = 'none';
+                     return;
+                 }
 
-                if (hiddenInput.length > 0) {
-                    hiddenInput.val(value);
-                }
-            }
-        });
+                 const reader = new FileReader();
+                 reader.onload = e => {
+                     img.src = e.target.result;
+                     img.style.display = 'block';
+                 };
 
-                    const requiredFields = [
-                        { name: 'ReportDate', label: 'Report Date' },
-                        { name: 'ReportNo', label: 'Report No' },
-                        { name: 'BatchCode', label: 'Batch Code' },
-                        { name: 'ProductCatRef', label: 'Product Cat Ref' },
-                        { name: 'ProductDescription', label: 'Product Description' },
-                        { name: 'DriverCode', label: 'Driver Code' },
-                        { name: 'SPDCode', label: 'SPD Code' },
-                        { name: 'LEDConfiguration', label: 'LED Configuration' },
-                        { name: 'PKDCode', label: 'PKD Code' }
+                 reader.readAsDataURL(file);
+             });
+         }
 
-                    ];
+         function initPhotoPreviews() {
+             setupPreview('photoUpload1', 'preview1');
+         }
 
-                    let isValid = true;
-                    let missingFields = [];
+         function insertSurgeTest() {
 
-                    requiredFields.forEach(field => {
-                       const value = $(`[name="${field.name}"]`).val();
+         Blockloadershow();
 
-                        if (!value || value.trim() === '') {
-                            isValid = false;
-                            missingFields.push(field.name);
-                        }
-                    });
+             $('td[contenteditable="true"]').each(function () {
+             var value = $(this).text().trim();
+             var fieldName = $(this).data('name'); // e.g. Voltage_KV
 
-                    if (!isValid) {
-                        const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
-                        const alertMessage = `
-                                <p>Please fill out the following required field(s):</p>
-                                <ul>${missingFieldsList}</ul>
-                            `;
-                        showDangerAlert(alertMessage);
-                        Blockloaderhide();
-                        return false;
-                    }
-                    $("#Id").val(@Model.Id);
-                   const form = $('#surgeTest-form')[0];
-                    const formData = new FormData(form);
+             if (fieldName !== undefined) {
+                 // Find the closest hidden input for the same field
+                 var hiddenInput = $(this).closest('tr').find('input[name$=".' + fieldName + '"]');
 
-                    // $('#surgeTest-form [contenteditable="true"]').each(function () {
+                 if (hiddenInput.length > 0) {
+                     hiddenInput.val(value);
+                 }
+             }
+         });
 
-                    //     const dataName = $(this).data('name');
-                    //     const content = $(this).text().trim();
+                     const requiredFields = [
+                         { name: 'ReportDate', label: 'Report Date' },
+                         { name: 'ReportNo', label: 'Report No' },
+                         { name: 'BatchCode', label: 'Batch Code' },
+                         { name: 'ProductCatRef', label: 'Product Cat Ref' },
+                         { name: 'ProductDescription', label: 'Product Description' },
+                         { name: 'DriverCode', label: 'Driver Code' },
+                         { name: 'SPDCode', label: 'SPD Code' },
+                         { name: 'LEDConfiguration', label: 'LED Configuration' },
+                         { name: 'PKDCode', label: 'PKD Code' }
 
-                    //     if (dataName) {
-                    //         formData.append(dataName, content);
-                    //     }
+                     ];
 
-                    // });
+                     let isValid = true;
+                     let missingFields = [];
 
-                    $.ajax({
-                        url: $('#surgeTest-form').attr('action'),
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function (response) {
-                            Blockloaderhide();
+                     requiredFields.forEach(field => {
+                        const value = $(`[name="${field.name}"]`).val();
 
-                            if (!response.success) {
-                                 var errorMessg = "";
-                    if (response.errors != undefined) {
-                        for (var error of response.errors) {
-                            errorMessg += error + "\n";
-                        }
-                        if (errorMessg != "") {
-                            showDangerAlert(errorMessg);
-                        }
-                    }
-                    else {
-                        showDangerAlert(response.message);
-                    }
-                    return false;
-                }
+                         if (!value || value.trim() === '') {
+                             isValid = false;
+                             missingFields.push(field.name);
+                         }
+                     });
 
-                else {
-                    if ($("#Id").val() > 0) {
-                        showSuccessAlert("Updated Successfully.");
-                    }
-                    else {
-                        showSuccessAlert("Saved Successfully.");
-                    }
-                    setTimeout(function () {
-                        window.open('@Url.Action("SurgeTestReport", "ProductValidation")', '_self');
-                    }, 2500);
-                }
+                     if (!isValid) {
+                         const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                         const alertMessage = `
+                                 <p>Please fill out the following required field(s):</p>
+                                 <ul>${missingFieldsList}</ul>
+                             `;
+                         showDangerAlert(alertMessage);
+                         Blockloaderhide();
+                         return false;
+                     }
+                     $("#Id").val(@Model.Id);
+                    const form = $('#surgeTest-form')[0];
+                     const formData = new FormData(form);
 
-                  },
-                        error: function (xhr, status, error) {
-                            Blockloaderhide();
-                            showDangerAlert("Error saving data: " + error);
-                        }
-                    });
-                }
+                     // $('#surgeTest-form [contenteditable="true"]').each(function () {
+
+                     //     const dataName = $(this).data('name');
+                     //     const content = $(this).text().trim();
+
+                     //     if (dataName) {
+                     //         formData.append(dataName, content);
+                     //     }
+
+                     // });
+
+                     $.ajax({
+                         url: $('#surgeTest-form').attr('action'),
+                         type: 'POST',
+                         data: formData,
+                         processData: false,
+                         contentType: false,
+                         success: function (response) {
+                             Blockloaderhide();
+
+                             if (!response.success) {
+                                  var errorMessg = "";
+                     if (response.errors != undefined) {
+                         for (var error of response.errors) {
+                             errorMessg += error + "\n";
+                         }
+                         if (errorMessg != "") {
+                             showDangerAlert(errorMessg);
+                         }
+                     }
+                     else {
+                         showDangerAlert(response.message);
+                     }
+                     return false;
+                 }
+
+                 else {
+                     if ($("#Id").val() > 0) {
+                         showSuccessAlert("Updated Successfully.");
+                     }
+                     else {
+                         showSuccessAlert("Saved Successfully.");
+                     }
+                     setTimeout(function () {
+                         window.open('@Url.Action("SurgeTestReport", "ProductValidation")', '_self');
+                     }, 2500);
+                 }
+
+                   },
+                         error: function (xhr, status, error) {
+                             Blockloaderhide();
+                             showDangerAlert("Error saving data: " + error);
+                         }
+                     });
+                 }
 
 
     </script>

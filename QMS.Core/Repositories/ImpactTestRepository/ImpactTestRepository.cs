@@ -264,7 +264,7 @@ namespace QMS.Core.Repositories.ImpactTestRepository
             }
         }
 
-        public async Task<List<ImpactTestViewModel>> GetImpactTestReportAsync()
+        public async Task<List<ImpactTestViewModel>> GetImpactTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
@@ -293,6 +293,16 @@ namespace QMS.Core.Repositories.ImpactTestRepository
                         AddedBy = x.AddedBy
                     })
                     .ToList());
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    var s = startDate.Value.Date;
+                    var e = endDate.Value.Date;
+
+                    result = result
+                        .Where(d => d.ReportDate?.Date >= s && d.ReportDate?.Date <= e)
+                        .ToList();
+                }
 
                 foreach (var rec in result)
                 {
@@ -393,7 +403,7 @@ namespace QMS.Core.Repositories.ImpactTestRepository
                         Observation_DamageObserved = x.Observation_DamageObserved,
                         Observation_LivePartsAccessibility = x.Observation_LivePartsAccessibility,
                         TestResult = x.TestResult,
-
+                        Observation_Photo=x.Observation_Photo,
                         VerifiedBy = x.VerifiedBy,
                         TestedBy = x.TestedBy,
                     })
@@ -413,6 +423,44 @@ namespace QMS.Core.Repositories.ImpactTestRepository
             {
                 var result = await base.DeleteAsync<ImpectTestReport>(Id);
                 return result;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<bool> CheckDuplicate(string searchText, int Id)
+        {
+            try
+            {
+                bool existingflag = false;
+                int? existingId = null;
+
+                IQueryable<int> query = _dbContext.ImpectTestReports
+                    .Where(x => x.Deleted == false && x.ReportNo == searchText)
+                    .Select(x => x.Id);
+
+                // Add additional condition if Id is not 0
+                if (Id != 0)
+                {
+                    query = _dbContext.ImpectTestReports
+                        .Where(x => x.Deleted == false &&
+                               x.ReportNo == searchText
+                               && x.Id != Id)
+                        .Select(x => x.Id);
+                }
+
+
+                existingId = await query.FirstOrDefaultAsync();
+
+                if (existingId != null && existingId > 0)
+                {
+                    existingflag = true;
+                }
+
+                return existingflag;
             }
             catch (Exception ex)
             {

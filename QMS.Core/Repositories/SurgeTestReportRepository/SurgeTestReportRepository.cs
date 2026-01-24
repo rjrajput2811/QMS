@@ -116,7 +116,8 @@ public class SurgeTestReportRepository : SqlTableRepository, ISurgeTestReportRep
                     AddedBy = x.AddedBy,
                     AddedOn = x.AddedOn,
                     CheckedBy = x.CheckedBy,
-                    VerifiedBy = x.VerifiedBy
+                    VerifiedBy = x.VerifiedBy,
+                    Surge_Photo=x.Surge_Photo
                 })
                 .FirstOrDefault());
 

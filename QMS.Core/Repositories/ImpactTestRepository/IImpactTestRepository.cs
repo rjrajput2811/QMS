@@ -10,9 +10,9 @@ namespace QMS.Core.Repositories.ImpactTestRepository
     {
         Task<OperationResult> InsertImpactTestReportAsync(ImpactTestViewModel model);
         Task<OperationResult> UpdateImpactTestReportAsync(ImpactTestViewModel model);
-        Task<List<ImpactTestViewModel>> GetImpactTestReportAsync();
+        Task<List<ImpactTestViewModel>> GetImpactTestReportAsync(DateTime? startDate = null, DateTime? endDate = null);
         Task<ImpactTestViewModel> GetImpactTestReportByIdAsync(int Id);
-
         Task<OperationResult> DeleteImpactTestAsync(int Id);
+        Task<bool> CheckDuplicate(string searchText, int Id);
     }
 }

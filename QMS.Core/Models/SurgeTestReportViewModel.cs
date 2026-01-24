@@ -74,7 +74,7 @@ namespace QMS.Core.Models
         public DateTime? UpdatedOn { get; set; }
         public string? User { get; set; }
 
-        public IFormFile? Photo_Surge { get; set; }
+        public IFormFile? Photo_SurgeFile { get; set; }
     }
 
     public class SurgeTestDetailVM

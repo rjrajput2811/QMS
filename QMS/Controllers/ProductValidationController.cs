@@ -27,6 +27,9 @@ using System.Drawing;
 using System.Threading.Tasks;
 using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Services.SystemLogs;
+using QMS.Core.Repositories.IngressProtectionRepository;
+using QMS.Core.DatabaseContext;
+using QMS.Core.Repositories.DropTestRepository;
 
 namespace QMS.Controllers;
 
@@ -43,6 +46,8 @@ public class ProductValidationController : Controller
     private readonly IRegulatoryRequirementRepository _regulatoryRequirementRepository;
     private readonly IInstallationTrialRepository _installationTrialRepository;
     private readonly ISystemLogService _systemLogService;
+    private readonly IIngressProtectionRepository _ingressProtectionRepository;
+    private readonly IDropTestRepository _dropTestRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -55,7 +60,9 @@ public class ProductValidationController : Controller
         IImpactTestRepository impactTestRepository,
         ISystemLogService systemLogService,
         IInstallationTrialRepository installationTrialRepository,
-        IRegulatoryRequirementRepository regulatoryRequirementRepository)
+        IRegulatoryRequirementRepository regulatoryRequirementRepository,
+        IIngressProtectionRepository ingressProtectionRepository,
+        IDropTestRepository dropTestRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
@@ -68,6 +75,8 @@ public class ProductValidationController : Controller
         _impactTestRepository = impactTestRepository;
         _systemLogService = systemLogService;
         _regulatoryRequirementRepository = regulatoryRequirementRepository;
+        _ingressProtectionRepository = ingressProtectionRepository;
+        _dropTestRepository = dropTestRepository;
     }
 
 
@@ -1657,6 +1666,8 @@ public class ProductValidationController : Controller
     }
     #endregion
 
+
+
     #region PhotometryTestReport 
     public IActionResult PhotometryTestReport()
     {
@@ -2112,7 +2123,208 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-    #region IngressProtection
+
+    #region DropTestReport
+    //public IActionResult DroptTestDetails()
+    //{
+
+    //    return View();
+    //}
+    public IActionResult DropTestReport()
+    {
+        return View();
+    }
+    public async Task<ActionResult> GetDropTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _dropTestRepository.GetDropTestAsync();
+        return Json(result);
+    }
+
+    public async Task<IActionResult> DroptTestDetails(int Id)
+    {
+        var model = new DropTestViewModel();
+        if (Id > 0)
+        {
+            model = await _dropTestRepository.GetDropTestByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateDropTestAsync(DropTestReport vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            // Optional: if you still want MVC validations
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var fullName = HttpContext.Session.GetString("FullName") ?? "System";
+
+            // ---- Map ViewModel -> Entity used by repository ----
+            var model = new DropTestReport
+            {
+                Id = vm.Id,
+
+                ReportNo = vm.ReportNo?.Trim(),
+                ReportDate = vm.ReportDate,
+
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                CaseLot = vm.CaseLot,
+
+                PackingBox_MasterCarton_Dimension = vm.PackingBox_MasterCarton_Dimension,
+                PackingBox_InnerCarton_Dimension = vm.PackingBox_InnerCarton_Dimension,
+                InnerPaddingDimension = vm.InnerPaddingDimension,
+
+                GrossWeight_Kg = vm.GrossWeight_Kg,
+                HeightForTest_IS9000 = vm.HeightForTest_IS9000,
+
+                OverallResult = vm.OverallResult,
+                TestedBy = vm.TestedBy,
+                VerifiedBy = vm.VerifiedBy,
+
+                Glow_Test = vm.Glow_Test,
+
+                // TVP Lists (null-safe)
+                Details = vm.Details ?? new List<DropTestReportDetail>(),
+                ImgDetails = vm.ImgDetails ?? new List<DropTestReportImgDetail>()
+            };
+
+            // ---- Save Images into ImgDetails (Before_Img / After_Img) ----
+            // IMPORTANT: This assumes your DropTestViewModel.ImgDetails has IFormFile properties (shown below)
+            if (model.ImgDetails != null && model.ImgDetails.Count > 0)
+            {
+                for (int i = 0; i < model.ImgDetails.Count; i++)
+                {
+                    var row = model.ImgDetails[i];
+                    if (row == null) continue;
+
+                    // Before image
+                    if (row.Before_ImgFile != null && row.Before_ImgFile.Length > 0)
+                    {
+                        row.Before_Img = await SaveImageAsync(
+                            row.Before_ImgFile,
+                            baseFolder: "DropTest_Attach",
+                            prefix: "Before",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+
+                    // After image
+                    if (row.After_ImgFile != null && row.After_ImgFile.Length > 0)
+                    {
+                        row.After_Img = await SaveImageAsync(
+                            row.After_ImgFile,
+                            baseFolder: "DropTest_Attach",
+                            prefix: "After",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+                }
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                // UPDATE: exclude same Id record
+                exists = await _dropTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                // INSERT: check if complaint already used anywhere
+                exists = await _dropTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            // ---- Insert / Update ----
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+
+                result = await _dropTestRepository.UpdateDropTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Drop Test Report updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+
+                result = await _dropTestRepository.InsertDropTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Drop Test Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save Drop Test report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteDropTestAsync(int Id)
+    {
+        var result = await _dropTestRepository.DeleteDropTestAsync(Id);
+        return Json(result);
+    }
+
+
+
+    #endregion
+
+    #region ImpactTest
 
     public IActionResult impactTest()
     {
@@ -2203,16 +2415,193 @@ public class ProductValidationController : Controller
     }
 
     #endregion
+
     #region IngressProtection
 
     public IActionResult IngressProtetction()
     {
         return View();
     }
-    public IActionResult IngressProtetctionDetails()
+
+    public async Task<ActionResult> GetIngressProtectionAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        return View();
+        var result = await _ingressProtectionRepository.GetIngressProtectionAsync();
+        return Json(result);
     }
+
+    public async Task<IActionResult> IngressProtetctionDetails(int Id)
+    {
+        var model = new IngressProtectionTestViewModel();
+        if (Id > 0)
+        {
+            model = await _ingressProtectionRepository.GetIngressProtectionByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateIngressProtetction(IngressProtectionTestReport vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            // Optional: if you still want MVC validations
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var fullName = HttpContext.Session.GetString("FullName") ?? "System";
+
+            // ---- Map ViewModel -> Entity used by repository ----
+            var model = new IngressProtectionTestReport
+            {
+                Id = vm.Id,
+
+                ReportNo = vm.ReportNo?.Trim(),
+                ReportDate = vm.ReportDate,
+
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                BatchCode = vm.BatchCode,
+
+                Quantity = vm.Quantity,
+                IPRating = vm.IPRating,
+                PKD = vm.PKD,
+                TestResult = vm.TestResult,
+                TestedBy = vm.TestedBy,
+                VerifiedBy = vm.VerifiedBy,
+
+                // TVP Lists (null-safe)
+                Details = vm.Details ?? new List<IngressProtectionTest_Detail>()
+            };
+
+            // ---- Save Images into ImgDetails (Before_Img / After_Img) ----
+            // IMPORTANT: This assumes your DropTestViewModel.ImgDetails has IFormFile properties (shown below)
+            if (model.Details != null && model.Details.Count > 0)
+            {
+                for (int i = 0; i < model.Details.Count; i++)
+                {
+                    var row = model.Details[i];
+                    if (row == null) continue;
+
+                    // Before image
+                    if (row.Photo_During_TestFile != null && row.Photo_During_TestFile.Length > 0)
+                    {
+                        row.Photo_During_Test = await SaveImageAsync(
+                            row.Photo_During_TestFile,
+                            baseFolder: "IngressProt_Attach",
+                            prefix: "During",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+
+                    // After image
+                    if (row.Photo_After_TestFile != null && row.Photo_After_TestFile.Length > 0)
+                    {
+                        row.Photo_After_Test = await SaveImageAsync(
+                            row.Photo_After_TestFile,
+                            baseFolder: "IngressProt_Attach",
+                            prefix: "After",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+                }
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                // UPDATE: exclude same Id record
+                exists = await _ingressProtectionRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                // INSERT: check if complaint already used anywhere
+                exists = await _ingressProtectionRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            // ---- Insert / Update ----
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+
+                result = await _ingressProtectionRepository.UpdateIngressProtectionAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Ingress Protection Report updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+
+                result = await _ingressProtectionRepository.InsertIngressProtectionAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Ingress Protection Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save Drop Test report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteIngressProtectionAsync(int Id)
+    {
+        var result = await _ingressProtectionRepository.DeleteIngressProtectionAsync(Id);
+        return Json(result);
+    }
+
 
     #endregion
 
@@ -2433,19 +2822,9 @@ public class ProductValidationController : Controller
     {
         return View();
     }
-
-    #region DropTestReport
-    public IActionResult DroptTestDetails()
-    {
-
-        return View();
-    }
-    public IActionResult DropTestReport()
-    {
-        return View();
-    }
-
     #endregion
+
+    
 
     #region GeneralObservation
     public IActionResult GeneralObservationDetails()
@@ -2486,7 +2865,7 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-    #endregion
+    
 }
 
 

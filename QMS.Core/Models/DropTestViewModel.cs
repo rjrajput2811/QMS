@@ -1,6 +1,8 @@
-﻿using QMS.Core.DatabaseContext;
+﻿using Microsoft.AspNetCore.Http;
+using QMS.Core.DatabaseContext;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -53,6 +55,9 @@ namespace QMS.Core.Models
         public string? Before_Img { get; set; }
         public string? After_Img { get; set; }
         public int DropTest_Id { get; set; }
+
+        public IFormFile? Before_ImgFile { get; set; }
+         public IFormFile? After_ImgFile { get; set; }
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using QMS.Core.DatabaseContext.Shared;
+﻿using Microsoft.AspNetCore.Http;
+using QMS.Core.DatabaseContext.Shared;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -49,6 +50,8 @@ public class DropTestReportImgDetail : SqlTable
     public string? Before_Img { get; set; }
     public string? After_Img { get; set; }
     public int DropTest_Id { get; set; }
+    [NotMapped] public IFormFile? Before_ImgFile { get; set; }
+    [NotMapped] public IFormFile? After_ImgFile { get; set; }
 }
 
 

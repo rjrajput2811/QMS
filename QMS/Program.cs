@@ -59,6 +59,9 @@ using System.Data;
 using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Repositories.MergeTrackerRepository;
+using QMS.Core.Services.HydraulicTestReportService;
+using QMS.Core.Repositories.HydraulicTestObservationRepository;
+using QMS.Core.Repositories.HydraulicTestRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -127,8 +130,10 @@ builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportReposit
 builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();
 builder.Services.AddTransient<IImpactTestRepository, ImpactTestRepository>();
 builder.Services.AddTransient<IRegulatoryRequirementRepository, RegulatoryRequirementRepository>();
-
 builder.Services.AddTransient<IMergeTrackerRepository, MergeTrackerRepository>();
+builder.Services.AddTransient<IHydraulicTestRepository, HydraulicTestRepository>();
+builder.Services.AddTransient<IHydraulicTestObservationRepository, HydraulicTestObservationRepository>();
+builder.Services.AddTransient<IHydraulicTestReportService, HydraulicTestReportService>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

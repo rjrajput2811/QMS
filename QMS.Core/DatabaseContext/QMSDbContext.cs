@@ -71,6 +71,7 @@ namespace QMS.Core.DatabaseContext
         public DbSet<LegalRegulatoryReport> LegalRegulatoryReports { get; set; }
         public DbSet<GlowWireTestReport> GlowWireTestReports { get; set; }
         public DbSet<HydraulicTestReport> HydraulicTestReports { get; set; }
+        public DbSet<HydraulicTestObservationReport> HydraulicTestObservationReports { get; set; }
         public DbSet<GeneralObservationReport> GeneralObservationReports { get; set; }
         public DbSet<NeedleFlameTestReport> NeedleFlameTestReports { get; set; }
         public DbSet<MainValidationReport> MainValidationReports { get; set; }

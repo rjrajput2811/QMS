@@ -1,13 +1,317 @@
-﻿@{
+﻿@using QMS.Core.Models
+@model TemperatureRiseTestViewModel
+@{
     ViewData["Title"] = "Temperature Rise Test of Luminaire";
 }
 
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="~/lib/bootstrap/dist/css/LitePicker.css" />
 
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/noty.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<script src="~/lib/bootstrap/dist/js/LitePicker.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+
+<script type="text/javascript">
+     $(document).ready(function () {
+
+
+            const inputElement = $("#prodCode_Search");
+            if (inputElement.length) {
+                // Attach the keydown event handler
+                    inputElement.on('input', function (event) {
+                    handleProdCodeSearch(event);
+                });
+            }
+    });
+
+    function handleProdCodeSearch(event) {
+        debugger
+        const input = event.target;
+        if (!input) return;
+
+        let searchQuery = input.value.trim();
+
+        // 🔴 Clear suggestions if less than 4 chars
+        if (searchQuery.length < 4) {
+            clearTimeout(searchTimeout);
+            // optional: hide suggestion dropdown here
+            // hideBisSuggestions();
+            return;
+        }
+
+        // ✅ Take first 4 characters only
+        const searchTerms = searchQuery.substring(0, 4);
+
+        // 🟡 Debounce API call
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            pagedData = {}; // Clear cached data
+            fetchProdCodeRelatedData(searchTerms, input);
+        }, 300);
+    }
+
+    function fetchProdCodeRelatedData(productCatNo, inputField) {
+
+        $.ajax({
+            url: '/Vendor/GetCodeSearch', // API endpoint
+            type: 'GET', // HTTP method
+            data: { search: productCatNo }, // Query parameters
+            dataType: 'json', // Expected response data type
+            success: function (data) {
+                if (data && data.length > 0) {
+                    displayProdCodeSuggestions(data, inputField);
+                } else {
+                    showDangerAlert('No data found for the entered Product Cat No.');
+                }
+            },
+            error: function (xhr, status, error) {
+                showDangerAlert('Error fetching data:', error);
+            }
+        });
+    }
+
+// Function to display suggestions in a dropdown
+    function displayProdCodeSuggestions(data, inputField) {
+        // Remove any existing dropdown (if any)
+        removeExistingDropdown(inputField);
+
+        // Ensure parent can anchor absolute dropdown
+        const parent = inputField.parentElement;
+        if (getComputedStyle(parent).position === "static") {
+            parent.style.position = "relative";
+        }
+
+        const dropdown = document.createElement('div');
+        dropdown.className = 'suggestion-dropdown';
+        dropdown.style.position = 'absolute';
+        dropdown.style.top = (inputField.offsetTop + inputField.offsetHeight) + 'px';
+        dropdown.style.left = inputField.offsetLeft + 'px';
+        dropdown.style.backgroundColor = 'white';
+        dropdown.style.border = '1px solid #ccc';
+        dropdown.style.zIndex = 1000;
+        dropdown.style.overflowY = 'auto';
+        dropdown.style.maxHeight = '300px';
+        dropdown.style.width = inputField.offsetWidth + 'px';
+        dropdown.style.boxShadow = '0px 4px 6px rgba(0, 0, 0, 0.1)';
+
+        data.forEach(item => {
+            const code = (item.oldPart_No || "").toString().trim();
+            // change these keys as per your API response:
+            const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
+
+            const option = document.createElement('div');
+            option.className = 'suggestion-item';
+            option.textContent = desc ? `${code} | ${desc}` : code;
+            option.style.padding = '8px';
+            option.style.cursor = 'pointer';
+
+            option.addEventListener('mouseover', () => {
+                option.style.backgroundColor = '#4682B4';
+                option.style.color = '#fff';
+            });
+            option.addEventListener('mouseout', () => {
+                option.style.backgroundColor = '';
+                option.style.color = '';
+            });
+
+            option.addEventListener('click', () => {
+
+                const productCatRefInput = document.getElementById('ProductCatRef');
+                if (productCatRefInput) {
+                    productCatRefInput.value = code ?? '';
+                }
+
+                const productDescInput = document.getElementById('ProductDescription');
+                if (productDescInput) {
+                    productDescInput.value = desc ?? '';
+                }
+
+                // optional: also set search box to just code
+                const searchBox = document.getElementById('prodCode_Search');
+                if (searchBox) {
+                    searchBox.value = code;
+                }
+
+                dropdown.remove();
+            });
+
+            dropdown.appendChild(option);
+        });
+
+        parent.appendChild(dropdown);
+    }
+
+
+
+    // Function to remove any existing dropdowns
+    function removeExistingDropdown(inputField) {
+        const existingDropdown = document.querySelector('.suggestion-dropdown');
+        if (existingDropdown) {
+            existingDropdown.remove();
+        }
+    }
+
+    // Remove dropdown on outside click
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('.suggestion-dropdown') && !e.target.closest('#prodCode_Search')) {
+            removeExistingDropdown();
+        }
+    });
+
+     function saveElectricalPerformance() {
+
+        // ================= HEADER =================
+        var idVal = $('#Id').val();
+        idVal = idVal ? parseInt(idVal) : 0;
+
+        var model = {
+            Id: idVal,   // VERY IMPORTANT
+            ProductCatRef: $('#ProductCatRef').val(),
+            ProductDescription: $('#ProductDescription').val(),
+            ReportNo: $('#ReportNo').val(),
+            ReportDate: $('#ReportDate').val(),
+            PKD: $('#PKD').val(),
+            TestingLocation: $('#TestingLocation').val(),
+            BatchCode: $('#BatchCode').val(),
+            HeatSinkMaterial: $('#HeatSinkMaterial').val(),
+            HeatSinkWeight: $('#HeatSinkWeight').val(),
+            LensDetails: $('#LensDetails').val(),
+            ThermalPasteDetails: $('#ThermalPasteDetails').val(),
+            NominalOperatingVoltage: $('#NominalOperatingVoltage').val(),
+
+            DriverUsed: $('#DriverUsed').val(),
+            LedUsed: $('#LedUsed').val(),
+            NoOfDrivers: $('#NoOfDrivers').val(),
+            DriverOutputVoltage: $('#DriverOutputVoltage').val(),
+            NoOfLedsInSeries: $('#NoOfLedsInSeries').val(),
+            DriverAllowableTc: $('#DriverAllowableTc').val(),
+            LedRjTH: $('#LedRjTH').val(),
+
+            DriverAllowableTa: $('#DriverAllowableTa').val(),
+            LedVf: $('#LedVf').val(),
+            PcbMaterialMake: $('#PcbMaterialMake').val(),
+            LedIf: $('#LedIf').val(),
+            PcbSizeQty: $('#PcbSizeQty').val(),
+            LedWdc: $('#LedWdc').val(),
+            ProbeT1_Desc: $('#ProbeT1_Desc').val(),
+
+            ProbeT2_Desc: $('#ProbeT2_Desc').val(),
+            ProbeT3_Desc: $('#ProbeT3_Desc').val(),
+            ProbeT4_Desc: $('#ProbeT4_Desc').val(),
+            ProbeT5_Desc: $('#ProbeT5_Desc').val(),
+            ProbeT6_Desc: $('#ProbeT6_Desc').val(),
+            ProbeT7_Desc: $('#ProbeT7_Desc').val(),
+            ProbeT8_Desc: $('#ProbeT8_Desc').val(),
+
+            ProbeT9_Desc: $('#ProbeT9_Desc').val(),
+            ProbeT10_Desc: $('#ProbeT10_Desc').val(),
+            ProbeT11_Desc: $('#ProbeT11_Desc').val(),
+            ProbeT12_Desc: $('#ProbeT12_Desc').val(),
+            ProbeT13_Desc: $('#ProbeT13_Desc').val(),
+            ProbeT14_Desc: $('#ProbeT14_Desc').val(),
+            ProbeT15_Desc: $('#ProbeT15_Desc').val(),
+            ProbeT16_Desc: $('#ProbeT16_Desc').val(),
+
+            Conclusion_MaxRecordedTJ: $('#Conclusion_MaxRecordedTJ').val(),
+            Conclusion_AllowableTJ: $('#Conclusion_AllowableTJ').val(),
+            Conclusion_MaxRecordedDriverTc: $('#Conclusion_MaxRecordedDriverTc').val(),
+            Conclusion_AllowableDriverTc: $('#Conclusion_AllowableDriverTc').val(),
+            Conclusion_MaxRecordedLensTemp: $('#Conclusion_MaxRecordedLensTemp').val(),
+            Conclusion_OverThermalCutoff: $('#Conclusion_OverThermalCutoff').val(),
+
+            ConductedBy: $('#ConductedBy').val(),
+            WitnessBy: $('#WitnessBy').val(),
+            ApprovedBy: $('#ApprovedBy').val(),
+            ConductedBySecnd: $('#ConductedBySecnd').val(),
+            WitnessBySecnd: $('#WitnessBySecnd').val(),
+            ApprovedBySecnd: $('#ApprovedBySecnd').val(),
+
+
+
+            //ElectricalDetails: ""
+        };
+
+        // ================= TABLE LOOP =================
+        // var rows = [];
+        // var map = {};
+
+        // $('input[name^="Details["]').each(function () {
+
+        //     var name = $(this).attr('name'); // Details[0].Vac
+        //     var match = name.match(/Details\[(\d+)\]\.(.+)/);
+        //     if (!match) return;
+
+        //     var index = match[1];
+        //     var field = match[2];
+        //     var value = $(this).val() || '';
+
+        //     if (!map[index]) map[index] = {};
+        //     map[index][field] = value;
+        // });
+
+        // Object.keys(map).sort(function (a, b) {
+        //     return a - b;
+        // }).forEach(function (i) {
+
+        //     var d = map[i];
+
+        //     var row =
+        //         (d.SampleNo || '') + '^' +
+        //         (d.ConditionType || '') + '^' +
+        //         (d.RowNo || '') + '^' +
+
+        //         (d.Vac || '') + '^' +
+        //         (d.IacA || '') + '^' +
+        //         (d.Wac || '') + '^' +
+        //         (d.PF || '') + '^' +
+        //         (d.ATHD || '') + '^' +
+
+        //         (d.Vdc || '') + '^' +
+        //         (d.IdcA || '') + '^' +
+        //         (d.Wdc || '') + '^' +
+        //         (d.Eff || '') + '^' +
+        //         (d.NoLoadV || '') + '^' +
+        //         (d.StartV || '') + '^' +
+
+        //         (d.Result || '');
+
+        //     rows.push(row);
+        // });
+
+        // model.ElectricalDetails = rows.join('~');
+
+        // ================= AJAX =================
+        $.ajax({
+                url: '/ProductValidation/InsertUpdateTemperatureRiseDetails',
+            type: 'POST',
+            data: model,
+            success: function (res) {
+                if (model.Id > 0) {
+                    showSuccessAlert("Updated Successfully.");
+                } else {
+                    showSuccessAlert("Saved Successfully.");
+                }
+            },
+            error: function (xhr, status, error) {
+            Blockloaderhide();
+            showDangerAlert('Error saving data: ' + error);
+            }
+        });
+      }
+</script>
+ 
 
 <style>
-
-
-
     /* 🔹 Enhanced underline input style */
     .underline-input {
         border: 0;
@@ -166,639 +470,711 @@
 
 
 <div class="content">
-    <div class="row">
-        <div class="col-12">
+ 
 
-            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
-                    <div>
-                        <b style="font-size:large; color:#4682B4;">
-                            Temperature Rise Test of Luminaire (TRT)
-                        </b>
-                    </div>
-
-                    <div>
-                        <button id="addTemperatureButton"
-                                type="button"
-                                class="btn btn-outline-success legitRipple mr-2"
-                                onclick="insertTemperatureTest()"
-                                style="width:120px; font-size:15px;">
-                            <i class="fas fa-save mr-1"></i>Save
-                        </button>
-
-                        <a href='@Url.Action("TemperatureRiseTestOfLuminaire", "ProductValidation")'
-                           class="btn btn-outline-primary"
-                           style="width:120px; font-size:15px;">
-                            <i class="fas fa-arrow-left"></i> BACK
-                        </a>
-                    </div>
-                </div>
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+        <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+            <div>
+                <b style="font-size:large; color:#4682B4;">
+                    Temperature Rise Test of Luminaire (TRT)
+                </b>
             </div>
 
+            <div>
+                <button id="addTemperatureButton"
+                        type="button"
+                        class="btn btn-outline-success legitRipple mr-2"
+                        onclick="insertTemperatureTest()"
+                        style="width:120px; font-size:15px;">
+                    <i class="fas fa-save mr-1"></i>Save
+                </button>
 
-            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:13px;">
-                            <colgroup>
-                                <col style="width:25%;">
-                                <col style="width:25%;">
-                                <col style="width:25%;">
-                                <col style="width:25%;">
-                            </colgroup>
-                            <tbody>
-                                <!-- Row 1 -->
-                                <tr>
-                                    <td>
-                                        <b>Testing Location :</b> <em class="req">*</em>
-                                        <input type="text" name="TestingLocation"
-                                               class="underline-input"
-                                               placeholder="Enter location" required />
-                                    </td>
-
-                                    <td>
-                                        <b>Report No. :</b> <em class="req">*</em>
-                                        <input type="text" name="ReportNo"
-                                               inputmode="numeric" pattern="\d*"
-                                               class="underline-input"
-                                               placeholder="Enter Report No" required />
-                                    </td>
-
-                                    <td>
-                                        <b>Date :</b> <em class="req">*</em>
-                                        <input type="text" name="ReportDate"
-                                               class="underline-input"
-                                               placeholder="dd-mm-yyyy"
-                                               pattern="\d{2}-\d{2}-\d{4}"
-                                               title="Enter date as dd-mm-yyyy"
-                                               required />
-                                    </td>
-
-                                    <td><span style="opacity:.6;">&nbsp;</span></td>
-                                </tr>
-
-                                <!-- Row 2 -->
-                                <tr>
-                                    <td>
-                                        <b>Product Cat Ref. :</b> <em class="req">*</em>
-                                        <input type="text" name="ProductCatRef"
-                                               class="underline-input"
-                                               placeholder="Enter Product Ref" required />
-                                    </td>
-
-                                    <td>
-                                        <b>Product Description :</b> <em class="req">*</em>
-                                        <input type="text" name="ProductDescription"
-                                               class="underline-input"
-                                               placeholder="Enter Description" required />
-                                    </td>
-
-                                    <td>
-                                        <b>Batch Code :</b> <em class="req">*</em>
-                                        <input type="text" name="BatchCode"
-                                               class="underline-input"
-                                               placeholder="Enter Batch Code" required />
-                                    </td>
-
-                                    <td>
-                                        <b>PKD :</b> <em class="req">*</em>
-                                        <input type="text" name="PKD"
-                                               class="underline-input"
-                                               placeholder="Enter PKD" required />
-                                    </td>
-                                </tr>
-
-                                <!-- Row 3 -->
-                                <tr>
-                                    <td colspan="2" style="vertical-align:middle;">
-                                        <b>Heat sink material -</b> <em class="req">*</em>
-                                        <input type="text" name="HeatSinkMaterial"
-                                               class="underline-input"
-                                               placeholder="e.g., Aluminum" required />
-                                    </td>
-
-                                    <td colspan="2" style="vertical-align:middle;">
-                                        <b>Heat sink material Weight -</b> <em class="req">*</em>
-                                        <input type="text" name="HeatSinkWeight"
-                                               class="underline-input"
-                                               placeholder="e.g., 320 g" required />
-                                    </td>
-                                </tr>
-
-                                <!-- Row 4 -->
-                                <tr>
-                                    <td colspan="2">
-                                        <b>LENS details :</b> <em class="req">*</em>
-                                        <input type="text" name="LensDetails"
-                                               class="underline-input"
-                                               placeholder="Enter lens details" required />
-                                    </td>
-
-                                    <td colspan="2">
-                                        <b>Thermal paste Details -</b> <em class="req">*</em>
-                                        <input type="text" name="ThermalPasteDetailsRow2"
-                                               class="underline-input"
-                                               placeholder="Enter thermal paste details" required />
-                                    </td>
-                                </tr>
-                            </tbody>
-
-                        </table>
-                    </div>
-                </div>
-
-
-
-
-                <div class="card-body">
-
-                    <div class="d-flex justify-content-end align-items-center mb-3">
-                        <b style="font-size:15px; color:#000;">NOMINAL OPERATING VOLTAGE&nbsp;</b>
-                        <input type="text"
-                               name="NominalOperatingVoltage"
-                               class="underline-input"
-                               style="width:200px; font-size:14px;"
-                               placeholder="" />
-                    </div>
-
-
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px;">
-                                <thead>
-                                    <tr>
-                                        <th colspan="3" style="text-align:left; background:#f8f9fa; font-weight:700;">
-                                            PART II: DRIVER / PCB DETAILS
-                                        </th>
-                                        <th colspan="3" style="text-align:left; background:#f8f9fa; font-weight:700;">
-                                            PART III: LED DETAILS
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="width:38px; text-align:center;">1</td>
-                                        <td>Driver Used</td>
-                                        <td><input type="text" class="underline-input" placeholder="" /></td>
-
-                                        <td style="width:38px; text-align:center;">1</td>
-                                        <td>LED Used</td>
-                                        <td><input type="text" class="underline-input" placeholder="" /></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td style="text-align:center;">2</td>
-                                        <td>No. of Drivers</td>
-                                        <td><input type="text" class="underline-input" /></td>
-
-                                        <td style="text-align:center;">2</td>
-                                        <td>No. of LEDs</td>
-                                        <td><input type="text" class="underline-input" /></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td style="text-align:center;">3</td>
-                                        <td>Driver O/P Voltage</td>
-                                        <td><input type="text" class="underline-input" /></td>
-
-                                        <td style="text-align:center;">3</td>
-                                        <td>No. of LEDs in Series</td>
-                                        <td><input type="text" class="underline-input" /></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td style="text-align:center;">4</td>
-                                        <td>Driver O/P Current (A)</td>
-                                        <td><input type="text" class="underline-input" /></td>
-
-                                        <td style="text-align:center;">4</td>
-                                        <td>No. of LEDs in Parallel</td>
-                                        <td><input type="text" class="underline-input" /></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td style="text-align:center;">5</td>
-                                        <td>Driver Allowable Tc</td>
-                                        <td><input type="text" class="underline-input" /></td>
-
-                                        <td style="text-align:center;">5</td>
-                                        <td>LED RθJH (°C/W)*</td>
-                                        <td><input type="text" class="underline-input" /></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td style="text-align:center;">6</td>
-                                        <td>Driver Allowable Ta</td>
-                                        <td><input type="text" class="underline-input" /></td>
-
-                                        <td style="text-align:center;">6</td>
-                                        <td>Vf (V)</td>
-                                        <td><input type="text" class="underline-input" /></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td style="text-align:center;">7</td>
-                                        <td>PCB Material / Make</td>
-                                        <td><input type="text" class="underline-input" /></td>
-
-                                        <td style="text-align:center;">7</td>
-                                        <td>If (A)</td>
-                                        <td><input type="text" class="underline-input" /></td>
-                                    </tr>
-
-                                    <tr>
-                                        <td style="text-align:center;">8</td>
-                                        <td>PCB Size & Qty</td>
-                                        <td><input type="text" class="underline-input" /></td>
-
-                                        <td style="text-align:center;">8</td>
-                                        <td>W(dc) = Vf × If</td>
-                                        <td><input type="text" class="underline-input" /></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-12 mb-3">
-                            <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px;">
-                                <thead>
-                                    <tr>
-                                        <th colspan="4" style="text-align:left; background:#f8f9fa; font-weight:700;">
-                                            PART IV: PROBE PLACEMENT DETAILS
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-
-                                        <td style="width:50%; vertical-align:top; border-right:2px solid #000;">
-                                            <table class="table table-bordered mb-0" style="width:100%; border-collapse:collapse; font-size:14px;">
-                                                <tbody>
-                                                    <tr>
-                                                        <td style="width:65px; background:#e9ecef; font-weight:600; text-align:center;">T1</td>
-                                                        <td><input type="text" name="T1" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T2</td>
-                                                        <td><input type="text" name="T2" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T3</td>
-                                                        <td><input type="text" name="T3" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T4</td>
-                                                        <td><input type="text" name="T4" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T5</td>
-                                                        <td><input type="text" name="T5" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T6</td>
-                                                        <td><input type="text" name="T6" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T7</td>
-                                                        <td><input type="text" name="T7" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T8</td>
-                                                        <td><input type="text" name="T8" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T9</td>
-                                                        <td><input type="text" name="T9" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-
-                                        <!-- Right half: T10–T16 -->
-                                        <td style="width:50%; vertical-align:top;">
-                                            <table class="table table-bordered mb-0" style="width:100%; border-collapse:collapse; font-size:14px;">
-                                                <tbody>
-                                                    <tr>
-                                                        <td style="width:65px; background:#e9ecef; font-weight:600; text-align:center;">T10</td>
-                                                        <td><input type="text" name="T10" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T11</td>
-                                                        <td><input type="text" name="T11" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T12</td>
-                                                        <td><input type="text" name="T12" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T13</td>
-                                                        <td><input type="text" name="T13" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T14</td>
-                                                        <td><input type="text" name="T14" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T15</td>
-                                                        <td><input type="text" name="T15" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td style="background:#e9ecef; font-weight:600; text-align:center;">T16</td>
-                                                        <td><input type="text" name="T16" class="form-control underline-input" placeholder="" /></td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <!-- ====== PART V & VI: THERMAL / ELECTRICAL READINGS ====== -->
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:13px; text-align:center;">
-                            <thead>
-                                <!-- Header band titles -->
-                                <tr>
-                                    <th colspan="17" style="text-align:left; background:#f8f9fa; font-weight:700;">
-                                        PART V: THERMAL READINGS:
-                                    </th>
-                                    <th colspan="4" style="text-align:left; background:#f8f9fa; font-weight:700;">
-                                        PART VI: ELEC. READINGS:
-                                    </th>
-                                </tr>
-
-                                <!-- Column headers -->
-                                <tr style="background:#e9ecef; font-weight:600;">
-                                    <th style="min-width:90px;">Time (Hrs)</th>
-                                    <th>T1 (°C)</th>
-                                    <th>T2 (°C)</th>
-                                    <th>T3 (°C)</th>
-                                    <th>T4 (°C)</th>
-                                    <th>T5 (°C)</th>
-                                    <th>T6 (°C)</th>
-                                    <th>T7 (°C)</th>
-                                    <th>T8 (°C)</th>
-                                    <th>T9 (°C)</th>
-                                    <th>T10 (°C)</th>
-                                    <th>T11 (°C)</th>
-                                    <th>T12 (°C)</th>
-                                    <th>T13 (°C)</th>
-                                    <th>T14 (°C)</th>
-                                    <th>T15 (°C)</th>
-                                    <th>T16 (°C)</th>
-                                    <th>VIN (V)</th>
-                                    <th>IIN (A)</th>
-                                    <th>PIN (W)</th>
-                                    <th>TJ</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <!-- Example data rows (unchanged) -->
-                                <tr>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                </tr>
-                                <!-- (rows truncated in this snippet for brevity but unchanged in your file) -->
-                                <!-- Editable Maximum Values row -->
-                                <tr style="background:#f1f3f5; font-weight:600;">
-                                    <td style="text-align:center;">Maximum<br />Values</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="white-space:nowrap; text-align:left; padding-left:10px;">
-                                        <b></b>
-                                        <input type="text" class="underline-input"
-                                               style="width:40px; margin-left:8px; border-bottom:none;"
-                                               placeholder="" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                    </div>
-                </div>
-                <!-- ====== PART VII: CONCLUSIONS / REMARKS + SIGN-OFF ====== -->
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-bordered"
-                               style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px; text-align:left;">
-                            <thead>
-                                <tr>
-                                    <th colspan="5" style="background:#f8f9fa; font-weight:700;">
-                                        PART VII: CONCLUSIONS / REMARKS
-                                    </th>
-                                </tr>
-                                <tr style="background:#e9ecef; font-weight:600;">
-                                    <th style="width:60px;">Sr No.</th>
-                                    <th style="width:35%;">Parameter</th>
-                                    <th style="width:20%;">Measured</th>
-                                    <th style="width:25%;">Allowable / Remark</th>
-                                    <th style="width:20%;">Value / Unit</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <!-- Row 1 -->
-                                <tr>
-                                    <td>1</td>
-                                    <td>Maximum Recorded TJ</td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                    <td><b>*</b> Maximum Allowable TJ from Data Sheet</td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                </tr>
-
-                                <!-- Row 2 -->
-                                <tr>
-                                    <td>2</td>
-                                    <td>Maximum Recorded Driver Tc / Tx</td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                    <td>Maximum Allowable Tc from Data Sheet</td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                </tr>
-
-                                <!-- Row 3 -->
-                                <tr>
-                                    <td>3</td>
-                                    <td>Maximum Recorded Lens Temperature</td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-
-                                </tr>
-
-                                <!-- Row 4 -->
-                                <tr>
-                                    <td>4</td>
-                                    <td>Over Thermal Cut-Off / Fold Back</td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-
-                                </tr>
-
-                                <!-- Row 5 -->
-                                <tr>
-                                    <td>5</td>
-                                    <td colspan="4" class="result-cell">
-                                        Result ( Pass / Fail ) :
-                                        <select class="result-dropdown">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                        </select>
-                                    </td>
-
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-
-                <!-- Signature / Approval blocks -->
-                <div class="card-body">
-                    <div class="table-responsive mt-3">
-                        <table class="table table-bordered"
-                               style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px; text-align:left;">
-                            <colgroup>
-                                <col style="width:33.33%;">
-                                <col style="width:33.33%;">
-                                <col style="width:33.33%;">
-                            </colgroup>
-
-                            <thead>
-                                <tr style="background:#f8f9fa; font-weight:700; text-align:left;">
-                                    <th>CONDUCTED BY:</th>
-                                    <th>WITNESSED BY:</th>
-                                    <th>APPROVED BY:</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-                                <!-- Row 1: Name / Signature -->
-                                <tr>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                </tr>
-
-                                <!-- Row 2: Designation / Date -->
-                                <tr>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                    <td><input type="text" class="underline-input" placeholder="" /></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-
-
-                </div>
+                <a href='@Url.Action("TemperatureRiseTestOfLuminaire", "ProductValidation")'
+                    class="btn btn-outline-primary"
+                    style="width:120px; font-size:15px;">
+                    <i class="fas fa-arrow-left"></i> BACK
+                </a>
             </div>
         </div>
     </div>
+
+    @using (Html.BeginForm("InsertUpdateTemperatureRiseDetails", "ProductValidation", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+    @Html.HiddenFor(m => m.Id)
+    <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:13px;">
+                    <colgroup>
+                        <col style="width:25%;">
+                        <col style="width:25%;">
+                        <col style="width:25%;">
+                        <col style="width:25%;">
+                    </colgroup>
+                    <tbody>
+                        <!-- Row 1 -->
+                        <tr>
+                            <td>
+                                <b>Testing Location :</b> <em class="req">*</em>
+                                    @Html.TextBoxFor(m => m.TestingLocation, new {@class = "inline-input",
+                                    placeholder = "Enter TestingLocation",required = "required",type = "text"})
+                            </td>
+
+                            <td>
+                                <b>Report No. :</b> <em class="req">*</em>
+
+                                @Html.TextBoxFor(m => m.ReportNo, new {@class = "inline-input",
+                                                                placeholder = "Enter ReportNo",required = "required",type = "text"})
+                            </td>
+
+                            <td>
+                                <b>Date :</b> <em class="req">*</em>
+                                  @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new { @class = "inline-date", placeholder = "dd-mm-yyyy" ,required = "required",type = "date" })
+                            </td>
+
+                            <td><span style="opacity:.6;">&nbsp;</span></td>
+                        </tr>
+
+                        <!-- Row 2 -->
+                        <tr>
+                            <td>
+                                <b>Product Cat Ref. :</b> <em class="req">*</em>
+                                <input type="text"
+                                       name="prodCode_Search"
+                                       id="prodCode_Search"
+                                       class="inline-input form-control col-md-3"
+                                       placeholder="Search Code"
+                                       aria-label="Search Code"
+                                       oninput="handleProdCodeSearch(this)"
+                                       style="text-transform: uppercase;width: 175px;" />
+                                @Html.TextBoxFor(m => m.ProductCatRef, new {@class = "inline-input",
+                                                                placeholder = "Enter Product Cat Ref",required = "required",type = "text"})
+
+                            </td>
+
+                            <td>
+                                <b>Product Description :</b> <em class="req">*</em>
+
+                                @Html.TextBoxFor(m => m.ProductDescription, new {@class = "inline-input",
+                                                                placeholder = "Enter Product Description",required = "required",type = "text"})
+                            </td>
+
+                            <td>
+                                <b>Batch Code :</b> <em class="req">*</em>
+
+                                @Html.TextBoxFor(m => m.BatchCode, new {@class = "inline-input",
+                                                                placeholder = "Enter BatchCode",required = "required",type = "text"})
+                            </td>
+
+                            <td>
+                                <b>PKD :</b> <em class="req">*</em>
+
+                                @Html.TextBoxFor(m => m.PKD, new {@class = "inline-input",
+                                                                placeholder = "Enter PKD",required = "required",type = "text"})
+                            </td>
+                        </tr>
+
+                        <!-- Row 3 -->
+                        <tr>
+                            <td colspan="2" style="vertical-align:middle;">
+                                <b>Heat sink material -</b> <em class="req">*</em>
+
+                                @Html.TextBoxFor(m => m.HeatSinkMaterial, new {@class = "inline-input",
+                                                                placeholder = "Enter Heat Sink Material",required = "required",type = "text"})
+                            </td>
+
+                            <td colspan="2" style="vertical-align:middle;">
+                                <b>Heat sink material Weight -</b> <em class="req">*</em>
+
+                                @Html.TextBoxFor(m => m.HeatSinkWeight, new {@class = "inline-input",
+                                                                placeholder = "Enter Heat Sink Weight",required = "required",type = "text"})
+                            </td>
+                        </tr>
+
+                        <!-- Row 4 -->
+                        <tr>
+                            <td colspan="2">
+                                <b>LENS details :</b> <em class="req">*</em>
+
+                                @Html.TextBoxFor(m => m.LensDetails, new {@class = "inline-input",
+                                                                placeholder = "Enter Lens Details",required = "required",type = "text"})
+                            </td>
+
+                            <td colspan="2">
+                                <b>Thermal paste Details -</b> <em class="req">*</em>
+                                @Html.TextBoxFor(m => m.ThermalPasteDetails, new {@class = "inline-input",
+                                                                placeholder = "Enter Thermal Paste Details",required = "required",type = "text"})
+
+                            </td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+
+
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-end align-items-center mb-3">
+                <b style="font-size:15px; color:#000;">NOMINAL OPERATING VOLTAGE&nbsp;</b>
+               @Html.TextBoxFor(m => m.NominalOperatingVoltage, new {@class = "inline-input",
+                                                                placeholder = "Enter Thermal Paste Details",required = "required",type = "text"})
+
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr>
+                                <th colspan="3" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                    PART II: DRIVER / PCB DETAILS
+                                </th>
+                                <th colspan="3" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                    PART III: LED DETAILS
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="width:38px; text-align:center;">1</td>
+                                <td>Driver Used</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.DriverUsed, new {@class = "inline-input",
+                                                                        placeholder = "Enter Driver Used",type = "text"})
+
+                                </td>
+
+                                <td style="width:38px; text-align:center;">1</td>
+                                <td>LED Used</td>
+                                <td><input type="text" class="underline-input" placeholder="" />
+                                    @Html.TextBoxFor(m => m.LedUsed, new {@class = "inline-input",
+                                                                        placeholder = "Enter LED Used",type = "text"})
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">2</td>
+                                <td>No. of Drivers</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.NoOfDrivers, new {@class = "inline-input",
+                                                                        placeholder = "Enter No. of Drivers",type = "text"})
+                                </td>
+
+                                <td style="text-align:center;">2</td>
+                                <td>No. of LEDs</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.NoOfLeds, new {@class = "inline-input",
+                                                                        placeholder = "Enter No. of LEDs",type = "text"})
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">3</td>
+                                <td>Driver O/P Voltage</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.DriverOutputVoltage, new {@class = "inline-input",
+                                                                        placeholder = "Enter Driver O/P Voltage",type = "text"})
+                                </td>
+
+                                <td style="text-align:center;">3</td>
+                                <td>No. of LEDs in Series</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.NoOfLedsInSeries, new {@class = "inline-input",
+                                                                        placeholder = "Enter TestingLocation",type = "text"})
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">4</td>
+                                <td>Driver O/P Current (A)</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.DriverOutputCurrent, new {@class = "inline-input",
+                                                                        placeholder = "Enter Driver O/P Current (A)",type = "text"})
+                                </td>
+
+                                <td style="text-align:center;">4</td>
+                                <td>No. of LEDs in Parallel</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.NoOfLedsInParallel, new {@class = "inline-input",
+                                                                        placeholder = "Enter No. of LEDs in Parallel",type = "text"})
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">5</td>
+                                <td>Driver Allowable Tc</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.DriverAllowableTc, new {@class = "inline-input",
+                                                                        placeholder = "Enter Driver Allowable",type = "text"})
+                                </td>
+
+                                <td style="text-align:center;">5</td>
+                                <td>LED RJH (°C/W)*</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.LedRjTH, new {@class = "inline-input",
+                                                                        placeholder = "Enter LED RθJH",type = "text"})
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">6</td>
+                                <td>Driver Allowable Ta</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.DriverAllowableTa, new {@class = "inline-input",
+                                                                        placeholder = "Enter Driver Allowable Ta",type = "text"})
+                                </td>
+
+                                <td style="text-align:center;">6</td>
+                                <td>Vf (V)</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.LedVf, new {@class = "inline-input",
+                                                                        placeholder = "Enter Vf (V)",type = "text"})
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">7</td>
+                                <td>PCB Material / Make</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.PcbMaterialMake, new {@class = "inline-input",
+                                                                        placeholder = "Enter PCB Material / Make",type = "text"})
+                                </td>
+
+                                <td style="text-align:center;">7</td>
+                                <td>If (A)</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.LedIf, new {@class = "inline-input",
+                                                                        placeholder = "Enter If (A)",type = "text"})
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td style="text-align:center;">8</td>
+                                <td>PCB Size & Qty</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.PcbSizeQty, new {@class = "inline-input",
+                                                                        placeholder = "Enter PCB Size & Qty",type = "text"})
+                                </td>
+
+                                <td style="text-align:center;">8</td>
+                                <td>W(dc) = Vf × If</td>
+                                <td>
+                                    @Html.TextBoxFor(m => m.LedWdc, new {@class = "inline-input",
+                                                                        placeholder = "",type = "text"})
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <table class="table table-bordered" style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px;">
+                        <thead>
+                            <tr>
+                                <th colspan="4" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                    PART IV: PROBE PLACEMENT DETAILS
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+
+                                <td style="width:50%; vertical-align:top; border-right:2px solid #000;">
+                                    <table class="table table-bordered mb-0" style="width:100%; border-collapse:collapse; font-size:14px;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width:65px; background:#e9ecef; font-weight:600; text-align:center;">T1</td>
+                                                <td>
+                                                    @Html.TextBoxFor(m => m.ProbeT1_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T2</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT2_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T3</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT3_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                             </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T4</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT4_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T5</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT5_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T6</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT6_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T7</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT7_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T8</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT8_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T9</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT9_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+
+                                <!-- Right half: T10–T16 -->
+                                <td style="width:50%; vertical-align:top;">
+                                    <table class="table table-bordered mb-0" style="width:100%; border-collapse:collapse; font-size:14px;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width:65px; background:#e9ecef; font-weight:600; text-align:center;">T10</td>
+                                                <td>
+                                                    @Html.TextBoxFor(m => m.ProbeT10_Desc, new {@class = "inline-input",
+                                                     placeholder = "",type = "text"})</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T11</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT11_Desc, new {@class = "inline-input",
+                                                                        placeholder = "",type = "text"})</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T12</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT12_Desc, new {@class = "inline-input",
+                                                                        placeholder = "",type = "text"})</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T13</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT13_Desc, new {@class = "inline-input",
+                                                                        placeholder = "",type = "text"})</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T14</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT14_Desc, new {@class = "inline-input",
+                                                                                                        placeholder = "",type = "text"})
+                                                    </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T15</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT15_Desc, new {@class = "inline-input",
+                                                                        placeholder = "",type = "text"})</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="background:#e9ecef; font-weight:600; text-align:center;">T16</td>
+                                                <td> 
+                                                    @Html.TextBoxFor(m => m.ProbeT16_Desc, new {@class = "inline-input",
+                                                                        placeholder = "",type = "text"})</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- ====== PART V & VI: THERMAL / ELECTRICAL READINGS ====== -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:13px; text-align:center;">
+                    <thead>
+                        <!-- Header band titles -->
+                        <tr>
+                            <th colspan="17" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                PART V: THERMAL READINGS:
+                            </th>
+                            <th colspan="4" style="text-align:left; background:#f8f9fa; font-weight:700;">
+                                PART VI: ELEC. READINGS:
+                            </th>
+                        </tr>
+
+                        <!-- Column headers -->
+                        <tr style="background:#e9ecef; font-weight:600;">
+                            <th style="min-width:90px;">Time (Hrs)</th>
+                            <th>T1 (°C)</th>
+                            <th>T2 (°C)</th>
+                            <th>T3 (°C)</th>
+                            <th>T4 (°C)</th>
+                            <th>T5 (°C)</th>
+                            <th>T6 (°C)</th>
+                            <th>T7 (°C)</th>
+                            <th>T8 (°C)</th>
+                            <th>T9 (°C)</th>
+                            <th>T10 (°C)</th>
+                            <th>T11 (°C)</th>
+                            <th>T12 (°C)</th>
+                            <th>T13 (°C)</th>
+                            <th>T14 (°C)</th>
+                            <th>T15 (°C)</th>
+                            <th>T16 (°C)</th>
+                            <th>VIN (V)</th>
+                            <th>IIN (A)</th>
+                            <th>PIN (W)</th>
+                            <th>TJ</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Example data rows (unchanged) -->
+                        <tr>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                        </tr>
+                        <!-- (rows truncated in this snippet for brevity but unchanged in your file) -->
+                        <!-- Editable Maximum Values row -->
+                        <tr style="background:#f1f3f5; font-weight:600;">
+                            <td style="text-align:center;">Maximum<br />Values</td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td contenteditable="true"></td>
+                            <td style="white-space:nowrap; text-align:left; padding-left:10px;">
+                                <b></b>
+                                <input type="text" class="underline-input"
+                                        style="width:40px; margin-left:8px; border-bottom:none;"
+                                        placeholder="" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+        <!-- ====== PART VII: CONCLUSIONS / REMARKS + SIGN-OFF ====== -->
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered"
+                        style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px; text-align:left;">
+                    <thead>
+                        <tr>
+                            <th colspan="5" style="background:#f8f9fa; font-weight:700;">
+                                PART VII: CONCLUSIONS / REMARKS
+                            </th>
+                        </tr>
+                        <tr style="background:#e9ecef; font-weight:600;">
+                            <th style="width:60px;">Sr No.</th>
+                            <th style="width:35%;">Parameter</th>
+                            <th style="width:20%;">Measured</th>
+                            <th style="width:25%;">Allowable / Remark</th>
+                            <th style="width:20%;">Value / Unit</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Row 1 -->
+                        <tr>
+                            <td>1</td>
+                            <td>Maximum Recorded TJ</td>
+                            <td>
+                                @Html.TextBoxFor(m => m.Conclusion_MaxRecordedTJ, new {@class = "inline-input",
+                                                                placeholder = "Maximum Recorded TJ",type = "text"})
+                            </td>
+                            <td><b>*</b> Maximum Allowable TJ from Data Sheet</td>
+                            <td>
+                                @Html.TextBoxFor(m => m.Conclusion_AllowableTJ, new {@class = "inline-input",
+                                                                placeholder = "Maximum Allowable TJ",type = "text"})
+                            </td>
+                        </tr>
+
+                        <!-- Row 2 -->
+                        <tr>
+                            <td>2</td>
+                            <td>Maximum Recorded Driver Tc / Tx</td>
+                            <td>
+                                @Html.TextBoxFor(m => m.Conclusion_MaxRecordedDriverTc, new {@class = "inline-input",
+                                                                placeholder = "Maximum Recorded Driver Tc",type = "text"})
+                            </td>
+                            <td>Maximum Allowable Tc from Data Sheet</td>
+                            <td>
+                                @Html.TextBoxFor(m => m.Conclusion_AllowableDriverTc, new {@class = "inline-input",
+                                                                placeholder = "Maximum Allowable Tc",type = "text"})
+                            </td>
+                        </tr>
+
+                        <!-- Row 3 -->
+                        <tr>
+                            <td>3</td>
+                            <td>Maximum Recorded Lens Temperature</td>
+                            <td>
+                                @Html.TextBoxFor(m => m.Conclusion_MaxRecordedLensTemp, new {@class = "inline-input",
+                                                                placeholder = "Maximum Recorded Lens",type = "text"})
+                            </td>
+
+                        </tr>
+
+                        <!-- Row 4 -->
+                        <tr>
+                            <td>4</td>
+                            <td>Over Thermal Cut-Off / Fold Back</td>
+                            <td>
+                                @Html.TextBoxFor(m => m.Conclusion_OverThermalCutoff, new {@class = "inline-input",
+                                                                placeholder = "Over Thermal Cut-Off",type = "text"})
+                            </td>
+
+                        </tr>
+
+                        <!-- Row 5 -->
+                        <tr>
+                            <td>5</td>
+                            <td colspan="4" class="result-cell">
+                                Result ( Pass / Fail ) :
+                                @Html.DropDownListFor(m => m.Conclusion_Result,
+                                    new List<SelectListItem>
+                                    {
+                                    new SelectListItem { Value = "", Text = "Select" },
+                                    new SelectListItem { Value = "Pass", Text = "Pass" },
+                                    new SelectListItem { Value = "Fail", Text = "Fail" }
+                                    },
+                                    new { @class = "result-dropdown" })
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+        <!-- Signature / Approval blocks -->
+        <div class="card-body">
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered"
+                        style="width:100%; border:1px solid #000; border-collapse:collapse; font-size:14px; text-align:left;">
+                    <colgroup>
+                        <col style="width:33.33%;">
+                        <col style="width:33.33%;">
+                        <col style="width:33.33%;">
+                    </colgroup>
+
+                    <thead>
+                        <tr style="background:#f8f9fa; font-weight:700; text-align:left;">
+                            <th>CONDUCTED BY:</th>
+                            <th>WITNESSED BY:</th>
+                            <th>APPROVED BY:</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <!-- Row 1: Name / Signature -->
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(m => m.ConductedBy, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(m => m.WitnessBy, new {@class = "inline-input",
+                                                                placeholder = "WITNESSED BY:",type = "text"})
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(m => m.ApprovedBy, new {@class = "inline-input",
+                                                                placeholder = "APPROVED BY:",type = "text"})
+                            </td>
+                        </tr>
+
+                        <!-- Row 2: Designation / Date -->
+                        <tr>
+                            <td>
+                                @Html.TextBoxFor(m => m.ConductedBySecnd, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(m => m.WitnessBySecnd, new {@class = "inline-input",
+                                                                placeholder = "WITNESSED BY:",type = "text"})
+                            </td>
+                            <td>
+                                @Html.TextBoxFor(m => m.ApprovedBySecnd, new {@class = "inline-input",
+                                                                placeholder = "APPROVED BY:",type = "text"})
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+
+        </div>
+    </div>
+ }
 </div>
 
 @section HideSidebar { }
 
-@section Scripts {
-    <script>
-        // Safe, defensive version of the auto-calc for W(dc) = Vf * If
-        (function () {
-            function attachListenersAndCalc() {
-                var vfEl = document.getElementById('LED_Vf');
-                var ifEl = document.getElementById('LED_If');
-                var wEl = document.getElementById('LED_Wdc');
 
-                function calcW() {
-                    // guard in case elements disappear
-                    if (!vfEl || !ifEl) return;
-                    var vf = parseFloat(vfEl.value) || 0;
-                    var i = parseFloat(ifEl.value) || 0;
-                    var w = vf * i;
-                    if (wEl) wEl.value = w ? w.toFixed(3) : '';
-                }
-
-                // only attach if elements are present
-                if (vfEl && ifEl) {
-                    // prevent duplicate listeners by using a marker
-                    if (!vfEl._wListenerAttached) {
-                        vfEl.addEventListener('input', calcW);
-                        vfEl._wListenerAttached = true;
-                    }
-                    if (!ifEl._wListenerAttached) {
-                        ifEl.addEventListener('input', calcW);
-                        ifEl._wListenerAttached = true;
-                    }
-                    // one-time calculation at attach
-                    calcW();
-                    return true;
-                }
-                return false;
-            }
-
-            // Try to attach on DOMContentLoaded
-            document.addEventListener('DOMContentLoaded', function () {
-                if (attachListenersAndCalc()) return;
-
-                // If inputs are not yet in DOM (e.g. dynamically inserted or hidden), observe for them.
-                var observer = new MutationObserver(function (mutations, obs) {
-                    if (attachListenersAndCalc()) {
-                        obs.disconnect();
-                    }
-                });
-                observer.observe(document.body, { childList: true, subtree: true });
-
-                // Safety timeout: stop observing after 10s
-                setTimeout(function () {
-                    try { observer.disconnect(); } catch (e) { /* ignore */ }
-                }, 10000);
-            });
-
-            // Also attempt immediate attach in case the script runs after DOM is ready already
-            try { attachListenersAndCalc(); } catch (e) { /* ignore errors */ }
-        })();
-    </script>
-}

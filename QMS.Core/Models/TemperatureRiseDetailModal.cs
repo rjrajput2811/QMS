@@ -8,7 +8,7 @@ namespace QMS.Core.Models
 {
     public class TemperatureRiseDetailModal
     {
-
+        public int? TRId { get; set; }
         public decimal?  TimeHrs { get; set; }
         public decimal? T1 { get; set; }
         public decimal? T2 { get; set; }
@@ -49,5 +49,7 @@ namespace QMS.Core.Models
         public decimal? MaxVal_T15 { get; set; }
         public decimal? MaxVal_T16 { get; set; }
         public decimal? MaxVal_TJ { get; set; }
+
+        public List<TemperatureRiseDetailModal> Details { get; set; } = new();
     }
 }

@@ -54,6 +54,7 @@ using QMS.Core.Repositories.VendorRepository;
 using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.DeviationNoteService;
 using QMS.Core.Services.SystemLogs;
+using QMS.Core.Repositories.TemperatureRiseTestRepo;
 using System.Data;
 using QMS.Core.Repositories.SPMMakeRepository;
 using QMS.Core.Repositories.SPMBuyRepository;
@@ -126,7 +127,7 @@ builder.Services.AddScoped<IInstallationTrialRepository, InstallationTrialReposi
 builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportRepository>();
 builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();
 builder.Services.AddTransient<IImpactTestRepository, ImpactTestRepository>();
-
+builder.Services.AddTransient<ITemperatureRiseTestRepository, TemperatureRiseTestRepository>();
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 

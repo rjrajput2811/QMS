@@ -121,7 +121,7 @@
                         }
                     },
                     error: function (xhr, status, error) {
-                        console.error('Error fetching data:', error);
+                        showDangerAlert('Error fetching data:', error);
                     }
                 });
             }
@@ -213,6 +213,8 @@
                     removeExistingDropdown();
                 }
             });
+
+
             function saveElectricalPerformance() {
 
                 // ================= HEADER =================
@@ -298,14 +300,14 @@
                     data: model,
                     success: function (res) {
                         if (model.Id > 0) {
-                            alert('Updated successfully');
+                            showSuccessAlert("Updated Successfully.");
                         } else {
-                            alert('Inserted successfully');
+                            showSuccessAlert("Saved Successfully.");
                         }
                     },
-                    error: function (err) {
-                        console.error(err);
-                        alert('Error while saving');
+                    error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
                     }
                 });
             }

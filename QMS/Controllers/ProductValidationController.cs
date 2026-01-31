@@ -25,6 +25,7 @@ using QMS.Core.Repositories.SurgeTestReportRepository;
 using System.Drawing;
 using System.Threading.Tasks;
 using QMS.Core.Repositories.InstallationTrialRepository;
+using QMS.Core.Repositories.TemperatureRiseTestRepo;
 using QMS.Core.Services.SystemLogs;
 
 namespace QMS.Controllers;
@@ -41,6 +42,7 @@ public class ProductValidationController : Controller
     private readonly IImpactTestRepository _impactTestRepository;
     private readonly IInstallationTrialRepository _installationTrialRepository;
     private readonly ISystemLogService _systemLogService;
+    private readonly ITemperatureRiseTestRepository _temperatureRiseTestRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -51,8 +53,9 @@ public class ProductValidationController : Controller
         ISurgeTestReportRepository surgeTestRepository ,
         IPhotometryTestRepository photometryTestRepository,
         IImpactTestRepository impactTestRepository,
-         ISystemLogService systemLogService,
-        IInstallationTrialRepository installationTrialRepository)
+        ISystemLogService systemLogService,
+        IInstallationTrialRepository installationTrialRepository,
+        ITemperatureRiseTestRepository temperatureRiseTestRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
@@ -64,6 +67,7 @@ public class ProductValidationController : Controller
         _photometryTestRepository = photometryTestRepository;
         _impactTestRepository = impactTestRepository;
         _systemLogService = systemLogService;
+        _temperatureRiseTestRepository = temperatureRiseTestRepository;
     }
 
 
@@ -1616,17 +1620,7 @@ public class ProductValidationController : Controller
 
     #endregion
 
-    #region TemperatureRiseTestOfLuminaire
-    public IActionResult TemperatureRiseTestOfLuminaire()
-    {
 
-        return View();
-    }
-    public IActionResult TemperatureRiseTestOfLuminaireDetails()
-    {
-        return View();
-    }
-    #endregion
 
     #region PhotometryTestReport 
     public IActionResult PhotometryTestReport()
@@ -2126,6 +2120,70 @@ public class ProductValidationController : Controller
 
     #endregion
 
+
+
+    public IActionResult TemperatureRiseTestOfLuminaire()
+    {
+        return View();
+    }
+
+    public async Task<ActionResult> GetTemperatureRiseList(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _electricalPerformanceRepository.GetElectricalPerformancesAsync(startDate, endDate);
+        return Json(result);
+    }
+
+    public async Task<IActionResult> TemperatureRiseTestOfLuminaireDetails(int Id)
+    {
+        var model = new TemperatureRiseTestViewModel();
+
+        if (Id > 0)
+        {
+            model = await _temperatureRiseTestRepository.GetTemperatureRiseTestByIdAsync(Id);
+
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+
+        return View(model);
+    }
+
+
+    [HttpPost]
+    public async Task<ActionResult> InsertUpdateTemperatureRiseDetails(TemperatureRiseTestViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors)
+                                          .Select(e => e.ErrorMessage)
+                                          .ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _temperatureRiseTestRepository.UpdateTemperatureRiseTestAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _temperatureRiseTestRepository.InsertTemperatureRiseTestAsync(model);
+            return Json(result);
+        }
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> DeleteTemperatureRise(int id)
+    {
+        var result = await _temperatureRiseTestRepository.DeleteTemperatureRiseTestAsync(id);
+        return Json(result);
+    }
 
 
     //#endregion

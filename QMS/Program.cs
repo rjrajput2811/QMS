@@ -58,6 +58,8 @@ using QMS.Core.Services.SystemLogs;
 using System.Data;
 using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.InstallationTrialRepository;
+using QMS.Core.Repositories.DropTestRepository;
+using QMS.Core.Repositories.IngressProtectionRepository;
 using QMS.Core.Repositories.MergeTrackerRepository;
 using QMS.Core.Services.HydraulicTestReportService;
 using QMS.Core.Repositories.HydraulicTestObservationRepository;
@@ -134,6 +136,8 @@ builder.Services.AddTransient<IMergeTrackerRepository, MergeTrackerRepository>()
 builder.Services.AddTransient<IHydraulicTestRepository, HydraulicTestRepository>();
 builder.Services.AddTransient<IHydraulicTestObservationRepository, HydraulicTestObservationRepository>();
 builder.Services.AddTransient<IHydraulicTestReportService, HydraulicTestReportService>();
+builder.Services.AddTransient<IDropTestRepository, DropTestRepository>();
+builder.Services.AddTransient<IIngressProtectionRepository, IngressProtectionRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

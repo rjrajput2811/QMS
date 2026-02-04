@@ -52,6 +52,7 @@ public class ProductValidationController : Controller
     private readonly IIngressProtectionRepository _ingressProtectionRepository;
     private readonly IDropTestRepository _dropTestRepository;
     private readonly IGlowWireTestRepository _glowWireTestRepository;
+    private readonly HydraulicTestReportService _hydraulicTestReportService;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -67,7 +68,8 @@ public class ProductValidationController : Controller
         IRegulatoryRequirementRepository regulatoryRequirementRepository,
         IIngressProtectionRepository ingressProtectionRepository,
         IDropTestRepository dropTestRepository,
-        IGlowWireTestRepository glowWireTestRepository)
+        IGlowWireTestRepository glowWireTestRepository,
+        HydraulicTestReportService hydraulicTestReportService)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
@@ -83,6 +85,7 @@ public class ProductValidationController : Controller
         _ingressProtectionRepository = ingressProtectionRepository;
         _dropTestRepository = dropTestRepository;
         _glowWireTestRepository = glowWireTestRepository;
+        _hydraulicTestReportService = hydraulicTestReportService;
     }
 
 

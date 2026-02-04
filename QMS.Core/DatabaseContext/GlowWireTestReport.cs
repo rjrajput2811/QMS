@@ -1,4 +1,5 @@
-﻿using QMS.Core.DatabaseContext.Shared;
+﻿using Microsoft.AspNetCore.Http;
+using QMS.Core.DatabaseContext.Shared;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QMS.Core.DatabaseContext;
@@ -15,10 +16,6 @@ public class GlowWireTestReport : SqlTable
     public int Quantity { get; set; }
     public string? PartDescription { get; set; }
     public string? PKD { get; set; }
-    public string? ResistanceToFlame_Observation { get; set; }
-    public string? ResistanceToFlame_Result { get; set; }
-    public string? ResistanceToFlame_PhotoBeforeTest { get; set; }
-    public string? ResistanceToFlame_PhotoAfterTest { get; set; }
     public string? TestResult { get; set; }
     public string? TestedBy { get; set; }
     public string? VerifiedBy { get; set; }
@@ -26,4 +23,22 @@ public class GlowWireTestReport : SqlTable
     public DateTime AddedOn { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? UpdatedOn { get; set; }
+    public List<GlowWireTestReportDetail>? Details { get; set; }
+}
+
+[Table("tbl_GlowWireTest_Details")]
+public class GlowWireTestReportDetail : SqlTable
+{
+    public string? Photo_During_Test { get; set; }
+    public string? Photo_After_Test { get; set; }
+    public string? Test_Ref { get; set; }
+    public string? Specified_Req { get; set; }
+    public string? Observation   { get; set; }
+    public string? Result { get; set; }
+    public int GlowTest_Id { get; set; }
+
+    [Column("IsDeleted")]
+    public override bool Deleted { get; set; }
+    [NotMapped] public IFormFile? Photo_During_TestFile { get; set; }
+    [NotMapped] public IFormFile? Photo_After_TestFile { get; set; }
 }

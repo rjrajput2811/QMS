@@ -61,6 +61,7 @@ using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Repositories.DropTestRepository;
 using QMS.Core.Repositories.IngressProtectionRepository;
 using QMS.Core.Repositories.MergeTrackerRepository;
+using QMS.Core.Repositories.GlowWireTestRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -133,6 +134,7 @@ builder.Services.AddTransient<IRegulatoryRequirementRepository, RegulatoryRequir
 builder.Services.AddTransient<IMergeTrackerRepository, MergeTrackerRepository>();
 builder.Services.AddTransient<IDropTestRepository, DropTestRepository>();
 builder.Services.AddTransient<IIngressProtectionRepository, IngressProtectionRepository>();
+builder.Services.AddTransient<IGlowWireTestRepository, GlowWireTestRepository>();
 
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));

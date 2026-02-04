@@ -14,21 +14,21 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QMS.Core.Repositories.DropTestRepository
+namespace QMS.Core.Repositories.GlowWireTestRepository
 {
-    public class DropTestRepository : SqlTableRepository, IDropTestRepository
+    public class GlowWireTestRepository : SqlTableRepository , IGlowWireTestRepository
     {
         private new readonly QMSDbContext _dbContext;
         private readonly ISystemLogService _systemLogService;
         private readonly string _connStr;
-        public DropTestRepository(QMSDbContext dbContext, ISystemLogService systemLogService, IConfiguration configuration) : base(dbContext)
+        public GlowWireTestRepository(QMSDbContext dbContext, ISystemLogService systemLogService, IConfiguration configuration) : base(dbContext)
         {
             _dbContext = dbContext;
             _systemLogService = systemLogService;
             _connStr = configuration.GetConnectionString("DefaultConnection")!;
         }
 
-        public async Task<List<DropTestViewModel>> GetDropTestAsync(DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<List<GlowWireTestReportViewModel>> GetGlowWireTestAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
@@ -40,28 +40,27 @@ namespace QMS.Core.Repositories.DropTestRepository
                 }
             };
 
-                var sql = @"EXEC sp_Get_DropTestReport";
+                var sql = @"EXEC sp_Get_GlowWireTestReport";
 
-                var result = await Task.Run(() => _dbContext.DropTestReports.FromSqlRaw(sql, parameters)
+                var result = await Task.Run(() => _dbContext.GlowWireTestReports.FromSqlRaw(sql, parameters)
                     .AsEnumerable()
-                    .Select(x => new DropTestViewModel
+                    .Select(x => new GlowWireTestReportViewModel
                     {
                         Id = x.Id,
                         ReportNo = x.ReportNo,
                         ReportDate = x.ReportDate,
                         ProductCatRef = x.ProductCatRef,
                         ProductDescription = x.ProductDescription,
-                        CaseLot = x.CaseLot,
-                        PackingBox_MasterCarton_Dimension = x.PackingBox_MasterCarton_Dimension,
-                        PackingBox_InnerCarton_Dimension = x.PackingBox_InnerCarton_Dimension,
-                        InnerPaddingDimension = x.InnerPaddingDimension,
-                        GrossWeight_Kg = x.GrossWeight_Kg,
-                        HeightForTest_IS9000 = x.HeightForTest_IS9000,
-                        Glow_Test = x.Glow_Test,
-                        OverallResult = x.OverallResult,
+                        BatchCode = x.BatchCode,
+                        Quantity = x.Quantity,
+                        PKD = x.PKD,
+                        TestResult = x.TestResult,
                         TestedBy = x.TestedBy,
                         VerifiedBy = x.VerifiedBy,
-                        AddedBy = x.AddedBy
+                        AddedBy = x.AddedBy,
+                        UpdatedBy = x.UpdatedBy,
+                        UpdatedOn = x.UpdatedOn,
+                        AddedOn = x.AddedOn
                     })
                     .ToList());
 
@@ -89,9 +88,9 @@ namespace QMS.Core.Repositories.DropTestRepository
             }
         }
 
-        public async Task<DropTestViewModel?> GetDropTestByIdAsync(int id)
+        public async Task<GlowWireTestReportViewModel?> GetGlowWireTestByIdAsync(int id)
         {
-            await using var con = new SqlConnection(_connStr);
+            await using var con = _dbContext.Database.GetDbConnection();
 
             var param = new DynamicParameters();
             param.Add("@Id", id, DbType.Int32);
@@ -99,84 +98,75 @@ namespace QMS.Core.Repositories.DropTestRepository
             await con.OpenAsync();
 
             using var multi = await con.QueryMultipleAsync(
-                "dbo.sp_Get_DropTestReport_ById",
+                "dbo.sp_Get_GlowWireTestReport_ById",
                 param,
                 commandType: CommandType.StoredProcedure
             );
 
             // 1) Parent (single row)
-            var parent = await multi.ReadFirstOrDefaultAsync<DropTestViewModel>();
+            var parent = await multi.ReadFirstOrDefaultAsync<GlowWireTestReportViewModel>();
             if (parent == null) return null;
 
             // 2) Details (list)
-            var details = (await multi.ReadAsync<DropTestReportDetailViewModel>()).AsList();
+            var details = (await multi.ReadAsync<GlowWireTestReportDetailViewModel>()).AsList();
 
-            // 3) ImageDetails (list)
-            var images = (await multi.ReadAsync<DropTestReportImgDetailViewModel>()).AsList();
-
+            
             parent.Details = details;
-            parent.ImgDetails = images;
 
             return parent;
         }
 
-        public async Task<OperationResult> InsertDropTestAsync(DropTestReport model)
+        public async Task<OperationResult> InsertGlowWireTestAsync(GlowWireTestReport model)
         {
             var result = new OperationResult();
 
             try
             {
                 if (model == null) throw new ArgumentNullException(nameof(model));
-                if (string.IsNullOrWhiteSpace(model.ReportNo)) throw new Exception("ReportNo is required.");
+                if (string.IsNullOrWhiteSpace(model.ReportNo))
+                    throw new Exception("ReportNo is required.");
 
-                // 1) Build TVP DataTables (null safe)
-                var dtDetails = BuildDetailsTvp(model.Details ?? new List<DropTestReportDetail>());
-                var dtImgs = BuildImgsTvp(model.ImgDetails ?? new List<DropTestReportImgDetail>());
+                // 1) Build TVP DataTable (null safe)
+                var dtDetails = BuildGlowWireDetailsTvp(model.Details ?? new List<GlowWireTestReportDetail>());
 
-                //await using var con = new SqlConnection(_connStr);
+                // 2) Get EF connection and open
                 var con = _dbContext.Database.GetDbConnection();
-                await con.OpenAsync();
+                if (con.State != ConnectionState.Open)
+                    await con.OpenAsync();
 
                 var param = new DynamicParameters();
 
-                // Parent params (same names as SP)
+                // ✅ Parent params (MUST match SP parameters)
                 param.Add("@ReportNo", model.ReportNo, DbType.String);
+                param.Add("@CustomerProjectName", model.CustomerProjectName, DbType.String);
 
-                // IMPORTANT: send DBNull when null
-                param.Add("@ReportDate", model.ReportDate?.Date, DbType.Date);
+                // Send null safely (Dapper handles null as DBNull)
+                param.Add("@ReportDate", model.ReportDate, DbType.DateTime);
 
                 param.Add("@ProductCatRef", model.ProductCatRef, DbType.String);
                 param.Add("@ProductDescription", model.ProductDescription, DbType.String);
-                param.Add("@CaseLot", model.CaseLot, DbType.String);
-
-                param.Add("@PackingBox_MasterCarton_Dimension", model.PackingBox_MasterCarton_Dimension, DbType.String);
-                param.Add("@PackingBox_InnerCarton_Dimension", model.PackingBox_InnerCarton_Dimension, DbType.String);
-                param.Add("@InnerPaddingDimension", model.InnerPaddingDimension, DbType.String);
-
-                param.Add("@GrossWeight_Kg", model.GrossWeight_Kg, DbType.String);
-                param.Add("@HeightForTest_IS9000", model.HeightForTest_IS9000, DbType.String);
-
-                param.Add("@OverallResult", model.OverallResult, DbType.String);
+                param.Add("@BatchCode", model.BatchCode, DbType.String);
+                param.Add("@Quantity", model.Quantity, DbType.Int32);
+                param.Add("@PartDescription", model.PartDescription, DbType.String);
+                param.Add("@PKD", model.PKD, DbType.String);
+                param.Add("@TestResult", model.TestResult, DbType.String);
                 param.Add("@TestedBy", model.TestedBy, DbType.String);
                 param.Add("@VerifiedBy", model.VerifiedBy, DbType.String);
-
-                param.Add("@Glow_Test", model.Glow_Test, DbType.String);
                 param.Add("@AddedBy", model.AddedBy, DbType.Int32);
 
-                // TVP params
-                param.Add("@Details", dtDetails.AsTableValuedParameter("dbo.DropTestDetails_TVP"));
-                param.Add("@ImgDetails", dtImgs.AsTableValuedParameter("dbo.DropTestImgDetails_TVP"));
+                // ✅ TVP param (MUST match TVP type name in SQL)
+                param.Add("@Details", dtDetails.AsTableValuedParameter("dbo.GlowWireTestDetail_TVP"));
 
-                // SP returns: SELECT @DropTest_Id AS DropTest_Id;
+                // 3) Execute SP and return new Id
                 var insertedId = await con.ExecuteScalarAsync<int?>(
-                    "dbo.sp_Insert_DropTestReport",
+                    "dbo.sp_Insert_GlowWireTestReport",
                     param,
                     commandType: CommandType.StoredProcedure,
                     commandTimeout: 120
                 );
 
                 if (!insertedId.HasValue || insertedId.Value <= 0)
-                    throw new Exception("Insert failed. No DropTest_Id returned from stored procedure.");
+                    throw new Exception("Insert failed. No GlowTestId returned from stored procedure.");
 
                 result.Success = true;
                 result.ObjectId = insertedId.Value;
@@ -185,58 +175,42 @@ namespace QMS.Core.Repositories.DropTestRepository
             catch (Exception ex)
             {
                 result.Success = false;
-                result.Message = ex.Message; // keep whatever property you use
+                result.Message = ex.Message;
                 return result;
             }
         }
 
-        private static DataTable BuildDetailsTvp(List<DropTestReportDetail> rows)
+        private static DataTable BuildGlowWireDetailsTvp(List<GlowWireTestReportDetail> rows)
         {
             var dt = new DataTable();
 
-            // MUST match TVP definition in SQL
-            dt.Columns.Add("Test", typeof(string));
-            dt.Columns.Add("Parameter", typeof(string));
-            dt.Columns.Add("Acceptance_Criteria", typeof(string));
-            dt.Columns.Add("Observations", typeof(string));
+            // ✅ MUST match dbo.GlowWireTestDetail_TVP columns EXACTLY (name + order + type)
+            dt.Columns.Add("Test_Ref", typeof(string));
+            dt.Columns.Add("Specified_Req", typeof(string));
+            dt.Columns.Add("Observation", typeof(string));
+            dt.Columns.Add("Result", typeof(string));
+            dt.Columns.Add("Photo_During_Test", typeof(string));
+            dt.Columns.Add("Photo_After_Test", typeof(string));
 
-            if (rows == null || rows.Count == 0) return dt;
+            if (rows == null || rows.Count == 0)
+                return dt;
 
             foreach (var r in rows)
             {
                 var dr = dt.NewRow();
-                dr["Test"] = (object?)r?.Test ?? DBNull.Value;
-                dr["Parameter"] = (object?)r?.Parameter ?? DBNull.Value;
-                dr["Acceptance_Criteria"] = (object?)r?.Acceptance_Criteria ?? DBNull.Value;
-                dr["Observations"] = (object?)r?.Observations ?? DBNull.Value;
+                dr["Test_Ref"] = (object?)r?.Test_Ref ?? DBNull.Value;
+                dr["Specified_Req"] = (object?)r?.Specified_Req ?? DBNull.Value;
+                dr["Observation"] = (object?)r?.Observation ?? DBNull.Value;
+                dr["Result"] = (object?)r?.Result ?? DBNull.Value;
+                dr["Photo_During_Test"] = (object?)r?.Photo_During_Test ?? DBNull.Value;
+                dr["Photo_After_Test"] = (object?)r?.Photo_After_Test ?? DBNull.Value;
                 dt.Rows.Add(dr);
             }
 
             return dt;
         }
 
-        private static DataTable BuildImgsTvp(List<DropTestReportImgDetail> rows)
-        {
-            var dt = new DataTable();
-
-            // MUST match TVP definition in SQL
-            dt.Columns.Add("Before_Img", typeof(string));
-            dt.Columns.Add("After_Img", typeof(string));
-
-            if (rows == null || rows.Count == 0) return dt;
-
-            foreach (var r in rows)
-            {
-                var dr = dt.NewRow();
-                dr["Before_Img"] = (object?)r?.Before_Img ?? DBNull.Value;
-                dr["After_Img"] = (object?)r?.After_Img ?? DBNull.Value;
-                dt.Rows.Add(dr);
-            }
-
-            return dt;
-        }
-
-        public async Task<OperationResult> UpdateDropTestAsync(DropTestReport model)
+        public async Task<OperationResult> UpdateGlowWireTestAsync(GlowWireTestReport model)
         {
             var result = new OperationResult();
 
@@ -247,10 +221,9 @@ namespace QMS.Core.Repositories.DropTestRepository
                 if (string.IsNullOrWhiteSpace(model.ReportNo)) throw new Exception("ReportNo is required.");
 
                 // Build TVP tables (null safe)
-                var dtDetails = BuildDetailsTvp(model.Details ?? new List<DropTestReportDetail>());
-                var dtImgs = BuildImgsTvp(model.ImgDetails ?? new List<DropTestReportImgDetail>());
+                var dtDetails = BuildGlowWireDetailsTvp(model.Details ?? new List<GlowWireTestReportDetail>());
 
-                await using var con = new SqlConnection(_connStr);
+                await using var con = _dbContext.Database.GetDbConnection();
                 await con.OpenAsync();
 
                 var param = new DynamicParameters();
@@ -260,40 +233,35 @@ namespace QMS.Core.Repositories.DropTestRepository
 
                 // Parent params (same names as SP)
                 param.Add("@ReportNo", model.ReportNo, DbType.String);
-                param.Add("@ReportDate", model.ReportDate?.Date, DbType.Date);
+                param.Add("@CustomerProjectName", model.CustomerProjectName, DbType.String);
+
+                // Send null safely (Dapper handles null as DBNull)
+                param.Add("@ReportDate", model.ReportDate, DbType.DateTime);
 
                 param.Add("@ProductCatRef", model.ProductCatRef, DbType.String);
                 param.Add("@ProductDescription", model.ProductDescription, DbType.String);
-                param.Add("@CaseLot", model.CaseLot, DbType.String);
-
-                param.Add("@PackingBox_MasterCarton_Dimension", model.PackingBox_MasterCarton_Dimension, DbType.String);
-                param.Add("@PackingBox_InnerCarton_Dimension", model.PackingBox_InnerCarton_Dimension, DbType.String);
-                param.Add("@InnerPaddingDimension", model.InnerPaddingDimension, DbType.String);
-
-                param.Add("@GrossWeight_Kg", model.GrossWeight_Kg, DbType.String);
-                param.Add("@HeightForTest_IS9000", model.HeightForTest_IS9000, DbType.String);
-
-                param.Add("@OverallResult", model.OverallResult, DbType.String);
+                param.Add("@BatchCode", model.BatchCode, DbType.String);
+                param.Add("@Quantity", model.Quantity, DbType.Int32);
+                param.Add("@PartDescription", model.PartDescription, DbType.String);
+                param.Add("@PKD", model.PKD, DbType.String);
+                param.Add("@TestResult", model.TestResult, DbType.String);
                 param.Add("@TestedBy", model.TestedBy, DbType.String);
                 param.Add("@VerifiedBy", model.VerifiedBy, DbType.String);
-
-                param.Add("@Glow_Test", model.Glow_Test, DbType.String);
                 param.Add("@UpdatedBy", model.UpdatedBy, DbType.Int32);
 
                 // TVP params
-                param.Add("@Details", dtDetails.AsTableValuedParameter("dbo.DropTestDetails_TVP"));
-                param.Add("@ImgDetails", dtImgs.AsTableValuedParameter("dbo.DropTestImgDetails_TVP"));
+                param.Add("@Details", dtDetails.AsTableValuedParameter("dbo.GlowWireTestDetail_TVP"));
 
-                // SP returns: SELECT @Id AS DropTest_Id;
+                // SP returns: SELECT @Id AS GlowWireTest_Id;
                 var updatedId = await con.ExecuteScalarAsync<int?>(
-                    "dbo.sp_Update_DropTestReport",
+                    "dbo.sp_Update_GlowWireTestReport",
                     param,
                     commandType: CommandType.StoredProcedure,
                     commandTimeout: 120
                 );
 
                 if (!updatedId.HasValue || updatedId.Value <= 0)
-                    throw new Exception("Update failed. No DropTest_Id returned from stored procedure.");
+                    throw new Exception("Update failed. No GlowWireTestId returned from stored procedure.");
 
                 result.Success = true;
                 result.ObjectId = updatedId.Value;
@@ -307,7 +275,7 @@ namespace QMS.Core.Repositories.DropTestRepository
             }
         }
 
-        public async Task<OperationResult> DeleteDropTestAsync(int id)
+        public async Task<OperationResult> DeleteGlowWireTestAsync(int id)
         {
             var result = new OperationResult();
 
@@ -315,14 +283,14 @@ namespace QMS.Core.Repositories.DropTestRepository
             {
                 if (id <= 0) throw new Exception("Invalid Id.");
 
-                await using var con = new SqlConnection(_connStr);
+                await using var con = _dbContext.Database.GetDbConnection();
                 await con.OpenAsync();
 
                 var param = new DynamicParameters();
                 param.Add("@Id", id, DbType.Int32);
 
                 var deletedId = await con.ExecuteScalarAsync<int?>(
-                    "dbo.sp_Delete_DropTestReport",
+                    "dbo.sp_Delete_GlowWireTestReport",
                     param,
                     commandType: CommandType.StoredProcedure,
                     commandTimeout: 120
@@ -350,14 +318,14 @@ namespace QMS.Core.Repositories.DropTestRepository
                 bool existingflag = false;
                 int? existingId = null;
 
-                IQueryable<int> query = _dbContext.DropTestReports
+                IQueryable<int> query = _dbContext.GlowWireTestReports
                     .Where(x => x.Deleted == false && x.ReportNo == searchText)
                     .Select(x => x.Id);
 
                 // Add additional condition if Id is not 0
                 if (Id != 0)
                 {
-                    query = _dbContext.DropTestReports
+                    query = _dbContext.GlowWireTestReports
                         .Where(x => x.Deleted == false &&
                                x.ReportNo == searchText
                                && x.Id != Id)

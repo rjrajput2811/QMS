@@ -1,4 +1,7 @@
-﻿@{
+﻿@using QMS.Core.Models
+@model GlowWireTestReportViewModel
+
+@{
     ViewData["Title"] = "Glow Wire Test Report";
 }
 
@@ -126,10 +129,10 @@
                     </div>
 
                     <div>
-                        <button id="saveChangeNoteButton"
+                        <button id="saveGlowWireTestButton"
                                 type="button"
                                 class="btn btn-outline-success legitRipple mr-2"
-                                onclick="saveChangeNote()"
+                                onclick="saveGlowWireTest()"
                                 style="width:120px; font-size:15px;">
                             <i class="fas fa-save mr-1"></i>Save
                         </button>
@@ -145,199 +148,226 @@
 
             <!-- MAIN CARD -->
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body">
+                <form id="glowWireTest_form" method="post" asp-action="InsertUpdateGlowWireTest" asp-controller="ProductValidation" enctype="multipart/form-data">
+                    @Html.HiddenFor(m => m.Id)
+                    <div class="card-body">
+                        <!-- HEADER TABLES -->
+                        <table class="header-table" style="margin:0;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align:center; padding:10px 12px;">
+                                        <span class="field-label">Reference Standard IS10322 </span>
+                                        @* <input type="text"
+                                               name="ReferenceStandard"
+                                               class="inline-input"
+                                               placeholder="Enter Reference Standard"
+                                               style="width:20%; text-align:center;" />
+                                        @Html.TextBoxFor(m => m.re, new { @class = "underline-input form-control", placeholder = "Enter Report Number", required = "required" }) *@
+                                    </td>
+                                </tr>
 
-                    <!-- HEADER TABLES -->
-                    <table class="header-table" style="margin:0;">
-                        <tbody>
-                            <tr>
-                                <td colspan="4" style="text-align:center; padding:10px 12px;">
-                                    <span class="field-label">Reference Standard :</span>
-                                    <input type="text"
-                                           name="ReferenceStandard"
-                                           class="inline-input"
-                                           placeholder="Enter Reference Standard"
-                                           style="width:20%; text-align:center;" />
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3"></td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Report No.:</span>
+                                       @*  <input type="text"
+                                               name="ReportNo"
+                                               class="inline-input"
+                                               style="width:60%;"
+                                               placeholder="Enter Report No." /> *@
+                                        @Html.TextBoxFor(m => m.ReportNo, new { @class = "inline-input", style="width:60%;", placeholder = "Enter Report Number", required = "required" })
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td colspan="3"></td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Report No.:</span>
-                                    <input type="text"
-                                           name="ReportNo"
-                                           class="inline-input"
-                                           style="width:60%;"
-                                           placeholder="Enter Report No." />
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="3" style="padding:10px 12px;">
+                                        <span class="field-label">Customer / Project Name :</span>
+                                       @*  <input type="text"
+                                               name="CustomerProjectName"
+                                               class="inline-input"
+                                               style="width:70%;"
+                                               placeholder="Enter Customer / Project" /> *@
+                                        @Html.TextBoxFor(m => m.CustomerProjectName, new { @class = "inline-input", placeholder = "Enter Customer / Project", style = "width:70%;" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Date :</span>
+                                        @* <input type="date"
+                                               name="ReportDate"
+                                               class="inline-date"
+                                               style="width:70%;" /> *@
+                                        @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new
+                                        {
+                                            @class = "inline-date",
+                                                                                style = "width:70%; font-size:13px;",
+                                                                                placeholder = "dd-mm-yyyy",
+                                                                                title = "Enter date as dd-mm-yyyy",
+                                                                                required = "required",
+                                                                                type = "date"
+                                                                                })
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td colspan="3" style="padding:10px 12px;">
-                                    <span class="field-label">Customer / Project Name :</span>
-                                    <input type="text"
-                                           name="CustomerName"
-                                           class="inline-input"
-                                           style="width:70%;"
-                                           placeholder="Enter Customer / Project" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Date :</span>
-                                    <input type="date"
-                                           name="ReportDate"
-                                           class="inline-date"
-                                           style="width:70%;" />
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Product Cat Ref :</span>
+                                       @*  <input type="text"
+                                               name="ProductCatRef"
+                                               class="inline-input"
+                                               placeholder="Enter Product Cat Ref"
+                                               style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "inline-input", placeholder = "Enter Product Reference", required = "required", style = "width:50%;" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Product Description :</span>
+                                       @*  <input type="text"
+                                               name="ProductDescription"
+                                               class="inline-input"
+                                               placeholder="Enter Product Description"
+                                               style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.ProductDescription, new { @class = "inline-input", placeholder = "Enter Product Description",style="width:50%;", required = "required" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Batch Code :</span>
+                                        @* <input type="text"
+                                               name="BatchCode"
+                                               class="inline-input"
+                                               placeholder="Enter Batch Code"
+                                               style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.BatchCode, new { @class = "inline-input", placeholder = "Enter Batch Code",style="width:50%;" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Quantity :</span>
+                                        @* <input type="number"
+                                               name="Quantity"
+                                               class="inline-input"
+                                               placeholder="0"
+                                               style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.Quantity, new { type="number", @class = "inline-input", placeholder = "Enter Quantity",style="width:50%;" })
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Product Cat Ref :</span>
-                                    <input type="text"
-                                           name="ProductCatRef"
-                                           class="inline-input"
-                                           placeholder="Enter Product Cat Ref"
-                                           style="width:50%;" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Product Description :</span>
-                                    <input type="text"
-                                           name="ProductDescription"
-                                           class="inline-input"
-                                           placeholder="Enter Product Description"
-                                           style="width:50%;" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Batch Code :</span>
-                                    <input type="text"
-                                           name="BatchCode"
-                                           class="inline-input"
-                                           placeholder="Enter Batch Code"
-                                           style="width:50%;" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Quantity :</span>
-                                    <input type="number"
-                                           name="Quantity"
-                                           class="inline-input"
-                                           placeholder="0"
-                                           style="width:50%;" />
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td colspan="2" style="padding:10px 12px;">
+                                        <span class="field-label">Part Description :</span>
+                                        @* <input type="text"
+                                               name="PartDescription"
+                                               class="inline-input"
+                                               placeholder="Enter Part Description"
+                                               style="width:70%;" /> *@
+                                        @Html.TextBoxFor(m => m.PartDescription, new { @class = "inline-input", placeholder = "Enter Part Description",style="width:70%;" })
+                                    </td>
+                                    <td colspan="2" style="padding:10px 12px;">
+                                        <span class="field-label">PKD :</span>
+                                       @*  <input type="text"
+                                               name="PKD"
+                                               class="inline-input"
+                                               placeholder="Enter PKD"
+                                               style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.PKD, new { @class = "inline-input", placeholder = "Enter PKD",style="width:60%;" })
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                            <tr>
-                                <td colspan="2" style="padding:10px 12px;">
-                                    <span class="field-label">Part Description :</span>
-                                    <input type="text"
-                                           name="PartDescription"
-                                           class="inline-input"
-                                           placeholder="Enter Part Description"
-                                           style="width:70%;" />
-                                </td>
-                                <td colspan="2" style="padding:10px 12px;">
-                                    <span class="field-label">PKD :</span>
-                                    <input type="text"
-                                           name="PKD"
-                                           class="inline-input"
-                                           placeholder="Enter PKD"
-                                           style="width:60%;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <table class="header-table" style="margin-top:-1px;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                        <button id="addTestRowBtn"
+                                                type="button"
+                                                class="btn btn-outline-success"
+                                                style="width:120px; font-size:15px;">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                    <table class="header-table" style="margin-top:-1px;">
-                        <tbody>
-                            <tr>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <button id="addTestRowBtn"
-                                            type="button"
-                                            class="btn btn-outline-success"
-                                            style="width:120px; font-size:15px;">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <!-- COMBINED TEST + PHOTO TABLES -->
+                        <table class="pv-table" id="glowCombinedTable" style="margin-top:0;">
+                            <thead>
+                                <tr>
+                                    <th style="width:6%; text-align:center;">Sr. No.</th>
+                                    <th style="width:36%; text-align:center;">TESTS WITH CLAUSE REFERENCE</th>
+                                    <th style="width:28%; text-align:center;">SPECIFIED REQUIREMENTS</th>
+                                    <th style="width:18%; text-align:center;">Observation</th>
+                                    <th style="width:12%; text-align:center; color:#c0392b;">Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="glowCombinedTbody">
+                                <!-- rows added by script -->
+                            </tbody>
+                        </table>
 
-                    <!-- COMBINED TEST + PHOTO TABLES -->
-                    <table class="pv-table" id="glowCombinedTable" style="margin-top:0;">
-                        <thead>
-                            <tr>
-                                <th style="width:6%; text-align:center;">Sr. No.</th>
-                                <th style="width:36%; text-align:center;">TESTS WITH CLAUSE REFERENCE</th>
-                                <th style="width:28%; text-align:center;">SPECIFIED REQUIREMENTS</th>
-                                <th style="width:18%; text-align:center;">Observation</th>
-                                <th style="width:12%; text-align:center; color:#c0392b;">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody id="glowCombinedTbody">
-                            <!-- rows added by script -->
-                        </tbody>
-                    </table>
+                        <!-- (kept for structure – empty for now) -->
+                        <table class="pv-table" id="glowPhotosTable" style="margin-top:0;">
+                            <thead>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
 
-                    <!-- (kept for structure – empty for now) -->
-                    <table class="pv-table" id="glowPhotosTable" style="margin-top:0;">
-                        <thead>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                        <!-- FINAL RESULT -->
+                        <table class="pv-table" style="margin-top:0; width:100%; border-collapse:collapse;">
+                            <tbody>
+                                <tr>
+                                    <td style="padding:10px 12px; white-space:nowrap;">
+                                        <span style="color:#c0392b; font-weight:700; margin-right:20px;">
+                                            Test Result:
+                                        </span>
 
-                    <!-- FINAL RESULT -->
-                    <table class="pv-table" style="margin-top:0; width:100%; border-collapse:collapse;">
-                        <tbody>
-                            <tr>
-                                <td style="padding:10px 12px; white-space:nowrap;">
-                                    <span style="color:#c0392b; font-weight:700; margin-right:20px;">
-                                        Test Result:
-                                    </span>
+                                       @*  <select id="finalTestResult" class="result-select" style="width:180px;">
+                                            <option value="">Select</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                        </select> *@
+                                        <select class="result-select" data-name="TestResult" style="width:180px;">
+                                            <option value="" selected="@(Model.TestResult == "")">Select</option>
+                                            <option value="Pass" selected="@(Model.TestResult == "Pass")">Pass</option>
+                                            <option value="Fail" selected="@(Model.TestResult == "Fail")">Fail</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                    <select id="finalTestResult" class="result-select" style="width:180px;">
-                                        <option value="">Select</option>
-                                        <option value="Pass">Pass</option>
-                                        <option value="Fail">Fail</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <!-- SIGNATURE ROW -->
+                        <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
+                                        <span class="field-label">Tested By :</span>
+                                        @* <input type="text"
+                                               name="TestedBy"
+                                               class="inline-input"
+                                               placeholder="Enter Name"
+                                               style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.TestedBy, new { @class = "inline-input", placeholder = "Enter name",style="width:60%;" })
+                                    </td>
 
-                    <!-- SIGNATURE ROW -->
-                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
-                        <tbody>
-                            <tr>
-                                <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
-                                    <span class="field-label">Tested By :</span>
-                                    <input type="text"
-                                           name="TestedBy"
-                                           class="inline-input"
-                                           placeholder="Enter Name"
-                                           style="width:60%;" />
-                                </td>
+                                    <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                        <span class="field-label">Verified By :</span>
+                                       @*  <input type="text"
+                                               name="VerifiedBy"
+                                               class="inline-input"
+                                               placeholder="Enter Name"
+                                               style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "inline-input", placeholder = "Enter name",style="width:60%;" })
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
-                                    <span class="field-label">Verified By :</span>
-                                    <input type="text"
-                                           name="VerifiedBy"
-                                           class="inline-input"
-                                           placeholder="Enter Name"
-                                           style="width:60%;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-
-                </div>
+                    </div>
+                </form>
             </div>
 
         </div>
     </div>
 </div>
 
-@section Scripts {
+@* @section Scripts {
     <script>
         // glow wire globals
         let glowTbody;
@@ -363,11 +393,11 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </td>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
+                        <td contenteditable="true" data-name="Test_Ref"></td>
+                        <td contenteditable="true" data-name="Specified_Req"></td>
+                        <td contenteditable="true" data-name="Observation"></td>
                         <td style="text-align:center;">
-                            <select class="result-select">
+                            <select class="result-select" data-name="Result">
                                 <option value="">Select</option>
                                 <option>Pass</option>
                                 <option>Fail</option>
@@ -477,6 +507,825 @@
             } else {
                 glowRefreshSerials();
             }
+        }
+
+        function saveGlowWireTest() {
+            Blockloadershow();
+
+            // ✅ Validate required fields using correct IDs generated by Html.TextBoxFor
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+                { id: 'ProductDescription', name: 'Product Description' },
+                { id: 'ReportDate', name: 'Report Date' }
+            ];
+
+            let missingFields = [];
+            requiredFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value || !el.value.trim()) {
+                    missingFields.push(f.name);
+                }
+            });
+
+            if (missingFields.length) {
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${missingFields.map(x => `<li>${x}</li>`).join('')}</ul>`
+                );
+                Blockloaderhide();
+                return false;
+            }
+
+            // ✅ Get form and create FormData
+            const form = $('#glowWireTest_form')[0];
+            const formData = new FormData(form);
+
+            // ✅ Get TestResult (overall result)
+            const testResult = $('.result-select[data-name="TestResult"]').val();
+            formData.set('TestResult', (testResult || '').toString().trim());
+
+            // ✅ Collect Details from table rows
+            const testRows = $('#glowCombinedTbody .group-test-row');
+            let detailIndex = 0;
+
+            testRows.each(function () {
+                const $row = $(this);
+                const groupId = $row.data('group');
+
+                // Get contenteditable cell values
+                const tds = $row.find('td');
+                const testWithClause = $(tds[1]).text().trim();
+                const specifiedRequirements = $(tds[2]).text().trim();
+                const observation = $(tds[3]).text().trim();
+                const result = $row.find('.result-select').val() || '';
+
+                // Skip completely empty rows
+                if (!testWithClause && !specifiedRequirements && !observation && !result) {
+                    return; // continue to next iteration
+                }
+
+                // Set detail data
+                formData.set(`Details[${detailIndex}].Id`, '0'); // Always 0 for new entries, or handle existing IDs if editing
+                formData.set(`Details[${detailIndex}].SrNo`, detailIndex + 1);
+                formData.set(`Details[${detailIndex}].Test_Ref`, testWithClause);
+                formData.set(`Details[${detailIndex}].Specified_Req`, specifiedRequirements);
+                formData.set(`Details[${detailIndex}].Observation`, observation);
+                formData.set(`Details[${detailIndex}].Result`, result);
+
+                // Get corresponding photo row
+                const photoRow = $(`#glowCombinedTbody .group-photo-input-row[data-group="${groupId}"]`);
+
+                if (photoRow.length) {
+                    const photoDuringInput = photoRow.find('.photo-input-left')[0];
+                    const photoAfterInput = photoRow.find('.photo-input-right')[0];
+
+                    // Add photo files if selected
+                    if (photoDuringInput && photoDuringInput.files && photoDuringInput.files.length > 0) {
+                        formData.append(`Details[${detailIndex}].Photo_During_TestFile`, photoDuringInput.files[0]);
+                    }
+
+                    if (photoAfterInput && photoAfterInput.files && photoAfterInput.files.length > 0) {
+                        formData.append(`Details[${detailIndex}].Photo_After_TestFile`, photoAfterInput.files[0]);
+                    }
+                }
+
+                detailIndex++;
+            });
+
+            // ✅ AJAX call to save
+            $.ajax({
+                url: $('#glowWireTest_form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        let errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg) {
+                                showDangerAlert(errorMessg);
+                            }
+                        } else {
+                            showDangerAlert(response.message || "Error saving Glow Wire Test Report");
+                        }
+                        return false;
+                    }
+
+                    // Success message
+                    if ($("#Id").val() > 0) {
+                        showSuccessAlert("Glow Wire Test Report Updated Successfully.");
+                    } else {
+                        showSuccessAlert("Glow Wire Test Report Saved Successfully.");
+                    }
+
+                    // Redirect after success
+                    setTimeout(function () {
+                        window.open('@Url.Action("GlowWireTestReport", "ProductValidation")', '_self');
+                    }, 2500);
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving Glow Wire Test Report: ' + error);
+                    console.error('Save error:', xhr.responseText);
+                }
+            });
+        }
+    </script>
+} *@
+
+@* @section Scripts {
+    <script>
+        // glow wire globals
+        let glowTbody;
+        let glowAddBtn;
+        let glowGroupCounter = 0;
+
+        // init on document ready
+        $(document).ready(function () {
+            try { initGlowWire(); } catch (e) { console.error(e); }
+        });
+
+        // create main test row (with delete + result)
+        function glowCreateTestRow(groupId, detailData = null) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-test-row';
+
+            // Store detail ID if editing
+            if (detailData && detailData.Id) {
+                tr.dataset.detailId = detailData.Id;
+            }
+
+            tr.innerHTML = `
+                <td style="text-align:center;">
+                    <span class="srno-test"></span>
+                    <button type="button" class="delete-group"
+                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+                <td contenteditable="true" data-name="Test_Ref">${detailData ? (detailData.test_Ref || '') : ''}</td>
+                <td contenteditable="true" data-name="Specified_Req">${detailData ? (detailData.specified_Req || '') : ''}</td>
+                <td contenteditable="true" data-name="Observation">${detailData ? (detailData.observation || '') : ''}</td>
+                <td style="text-align:center;">
+                    <select class="result-select" data-name="Result">
+                        <option value="">Select</option>
+                        <option ${detailData && detailData.result === 'Pass' ? 'selected' : ''}>Pass</option>
+                        <option ${detailData && detailData.result === 'Fail' ? 'selected' : ''}>Fail</option>
+                        <option ${detailData && detailData.result === 'Not Applicable' ? 'selected' : ''}>Not Applicable</option>
+                    </select>
+                </td>
+            `;
+            return tr;
+        }
+
+        // create photo header row
+        function glowCreatePhotoHeaderRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-photo-header-row';
+
+            tr.innerHTML = `
+                <td style="background:#f8f9fa;"></td>
+                <td colspan="1" style="width:50%; text-align:center; font-weight:700; background:#f8f9fa;">
+                    Photo during testing
+                </td>
+                <td colspan="3" style="width:50%; text-align:center; font-weight:700; background:#f8f9fa;">
+                    Photo after testing
+                </td>
+            `;
+            return tr;
+        }
+
+        // create photo input row with existing photos
+        function glowCreatePhotoInputRow(groupId, detailData = null) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-photo-input-row';
+
+            // Build photo during section
+            let photoDuringHtml = '<input type="file" accept="image/*" class="photo-input-left" />';
+            if (detailData && detailData.photo_During_Test) {
+                photoDuringHtml += `
+                    <div style="margin-top:8px;">
+                        <a href="${detailData.photo_During_Test}" target="_blank" style="color:#4682B4; text-decoration:none;">
+                            <i class="fas fa-image"></i> View Existing Photo
+                        </a>
+                        <input type="hidden" class="existing-photo-during" value="${detailData.Photo_During_Test}" />
+                    </div>
+                `;
+            }
+
+            // Build photo after section
+            let photoAfterHtml = '<input type="file" accept="image/*" class="photo-input-right" />';
+            if (detailData && detailData.photo_After_Test) {
+                photoAfterHtml += `
+                    <div style="margin-top:8px;">
+                        <a href="${detailData.photo_After_Test}" target="_blank" style="color:#4682B4; text-decoration:none;">
+                            <i class="fas fa-image"></i> View Existing Photo
+                        </a>
+                        <input type="hidden" class="existing-photo-after" value="${detailData.Photo_After_Test}" />
+                    </div>
+                `;
+            }
+
+            tr.innerHTML = `
+                <td></td>
+                <td colspan="1" style="width:50%; padding:10px;">
+                    <div class="photo-input-wrap-left">
+                        ${photoDuringHtml}
+                    </div>
+                </td>
+                <td colspan="3" style="width:50%; padding:10px;">
+                    <div class="photo-input-wrap-right">
+                        ${photoAfterHtml}
+                    </div>
+                </td>
+            `;
+            return tr;
+        }
+
+        // add one full group (test + photos)
+        function glowAddGroup(detailData = null) {
+            const gid = "g" + (++glowGroupCounter);
+
+            const rowA = glowCreateTestRow(gid, detailData);
+            const rowB = glowCreatePhotoHeaderRow(gid);
+            const rowC = glowCreatePhotoInputRow(gid, detailData);
+
+            glowTbody.appendChild(rowA);
+            glowTbody.appendChild(rowB);
+            glowTbody.appendChild(rowC);
+
+            glowRefreshSerials();
+
+            if (!detailData) {
+                const editCell = rowA.querySelector('td[contenteditable="true"]');
+                if (editCell) editCell.focus();
+            }
+        }
+
+        // remove all rows for one group
+        function glowRemoveGroup(groupId) {
+            const rows = glowTbody.querySelectorAll(`tr[data-group="${groupId}"]`);
+            rows.forEach(r => r.remove());
+            glowRefreshSerials();
+        }
+
+        // renumber Sr. No.
+        function glowRefreshSerials() {
+            const rows = glowTbody.querySelectorAll('.group-test-row');
+            rows.forEach((tr, index) => {
+                const sn = tr.querySelector('.srno-test');
+                if (sn) sn.textContent = index + 1;
+            });
+        }
+
+        // init table + events
+        function initGlowWire() {
+            glowTbody = document.getElementById('glowCombinedTbody');
+            glowAddBtn = document.getElementById('addTestRowBtn');
+
+            if (!glowTbody || !glowAddBtn) {
+                console.error("Glow Wire table or Add button missing.");
+                return;
+            }
+
+            glowAddBtn.addEventListener('click', () => glowAddGroup());
+
+            glowTbody.addEventListener('click', function (e) {
+                const del = e.target.closest('.delete-group');
+                if (!del) return;
+                const tr = del.closest('tr');
+                const gid = tr.dataset.group;
+                glowRemoveGroup(gid);
+            });
+
+            // Load existing details if in edit mode
+            @if (Model.Details != null && Model.Details.Any())
+            {
+                    <text>
+                    const existingDetails = @Html.Raw(Json.Serialize(Model.Details));
+
+                    if (existingDetails && existingDetails.length > 0) {
+                        existingDetails.forEach(detail => {
+                            glowAddGroup(detail);
+                        });
+                    } 
+                    else {
+                        glowAddGroup();
+                    }
+                    </text>
+            }
+            else
+            {
+                    <text>
+                    // Add one empty row for new form
+                    if (glowTbody.children.length === 0) 
+                    {
+                        glowAddGroup();
+                    } 
+                    else {
+                        glowRefreshSerials();
+                    }
+                    </text>
+            }
+        }
+
+        function saveGlowWireTest() {
+            Blockloadershow();
+
+            // ✅ Validate required fields using correct IDs generated by Html.TextBoxFor
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+                { id: 'ProductDescription', name: 'Product Description' },
+                { id: 'ReportDate', name: 'Report Date' }
+            ];
+
+            let missingFields = [];
+            requiredFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value || !el.value.trim()) {
+                    missingFields.push(f.name);
+                }
+            });
+
+            if (missingFields.length) {
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${missingFields.map(x => `<li>${x}</li>`).join('')}</ul>`
+                );
+                Blockloaderhide();
+                return false;
+            }
+
+            // ✅ Get form and create FormData
+            const form = $('#glowWireTest_form')[0];
+            const formData = new FormData(form);
+
+            // ✅ Get TestResult (overall result)
+            const testResult = $('.result-select[data-name="TestResult"]').val();
+            formData.set('TestResult', (testResult || '').toString().trim());
+
+            // ✅ Collect Details from table rows
+            const testRows = $('#glowCombinedTbody .group-test-row');
+            let detailIndex = 0;
+
+            testRows.each(function () {
+                const $row = $(this);
+                const groupId = $row.data('group');
+                const detailId = $row.data('detailId') || 0; // Get existing ID if editing
+
+                // Get contenteditable cell values
+                const tds = $row.find('td');
+                const testWithClause = $(tds[1]).text().trim();
+                const specifiedRequirements = $(tds[2]).text().trim();
+                const observation = $(tds[3]).text().trim();
+                const result = $row.find('.result-select').val() || '';
+
+                // Skip completely empty rows
+                if (!testWithClause && !specifiedRequirements && !observation && !result) {
+                    return; // continue to next iteration
+                }
+
+                // Set detail data
+                formData.set(`Details[${detailIndex}].Id`, detailId);
+                formData.set(`Details[${detailIndex}].SrNo`, detailIndex + 1);
+                formData.set(`Details[${detailIndex}].Test_Ref`, testWithClause);
+                formData.set(`Details[${detailIndex}].Specified_Req`, specifiedRequirements);
+                formData.set(`Details[${detailIndex}].Observation`, observation);
+                formData.set(`Details[${detailIndex}].Result`, result);
+
+                // Get corresponding photo row
+                const photoRow = $(`#glowCombinedTbody .group-photo-input-row[data-group="${groupId}"]`);
+
+                if (photoRow.length) {
+                    const photoDuringInput = photoRow.find('.photo-input-left')[0];
+                    const photoAfterInput = photoRow.find('.photo-input-right')[0];
+
+                    // Add photo files if selected (new upload)
+                    if (photoDuringInput && photoDuringInput.files && photoDuringInput.files.length > 0) {
+                        formData.append(`Details[${detailIndex}].Photo_During_TestFile`, photoDuringInput.files[0]);
+                    } else {
+                        // Keep existing photo path if no new file selected
+                        const existingPhotoDuring = photoRow.find('.existing-photo-during').val();
+                        if (existingPhotoDuring) {
+                            formData.set(`Details[${detailIndex}].Photo_During_Test`, existingPhotoDuring);
+                        }
+                    }
+
+                    if (photoAfterInput && photoAfterInput.files && photoAfterInput.files.length > 0) {
+                        formData.append(`Details[${detailIndex}].Photo_After_TestFile`, photoAfterInput.files[0]);
+                    } else {
+                        // Keep existing photo path if no new file selected
+                        const existingPhotoAfter = photoRow.find('.existing-photo-after').val();
+                        if (existingPhotoAfter) {
+                            formData.set(`Details[${detailIndex}].Photo_After_Test`, existingPhotoAfter);
+                        }
+                    }
+                }
+
+                detailIndex++;
+            });
+
+            // ✅ AJAX call to save
+            $.ajax({
+                url: $('#glowWireTest_form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        let errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg) {
+                                showDangerAlert(errorMessg);
+                            }
+                        } else {
+                            showDangerAlert(response.message || "Error saving Glow Wire Test Report");
+                        }
+                        return false;
+                    }
+
+                    // Success message
+                    if ($("#Id").val() > 0) {
+                        showSuccessAlert("Glow Wire Test Report Updated Successfully.");
+                    } else {
+                        showSuccessAlert("Glow Wire Test Report Saved Successfully.");
+                    }
+
+                    // Redirect after success
+                    setTimeout(function () {
+                        window.open('@Url.Action("GlowWireTestReport", "ProductValidation")', '_self');
+                    }, 2500);
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving Glow Wire Test Report: ' + error);
+                    console.error('Save error:', xhr.responseText);
+                }
+            });
+        }
+    </script>
+} *@
+
+@section Scripts {
+    <script>
+        // glow wire globals
+        let glowTbody;
+        let glowAddBtn;
+        let glowGroupCounter = 0;
+
+        // init on document ready
+        $(document).ready(function () {
+            try { initGlowWire(); } catch (e) { console.error(e); }
+        });
+
+        // create main test row (with delete + result)
+        function glowCreateTestRow(groupId, detailData = null) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-test-row';
+
+            // Store detail ID if editing
+            if (detailData && detailData.Id) {
+                tr.dataset.detailId = detailData.Id;
+            }
+
+            tr.innerHTML = `
+                <td style="text-align:center;">
+                    <span class="srno-test"></span>
+                    <button type="button" class="delete-group"
+                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+                <td contenteditable="true" data-name="Test_Ref">${detailData ? (detailData.test_Ref || '') : ''}</td>
+                <td contenteditable="true" data-name="Specified_Req">${detailData ? (detailData.specified_Req || '') : ''}</td>
+                <td contenteditable="true" data-name="Observation">${detailData ? (detailData.observation || '') : ''}</td>
+                <td style="text-align:center;">
+                    <select class="result-select" data-name="Result">
+                        <option value="">Select</option>
+                        <option ${detailData && detailData.result === 'Pass' ? 'selected' : ''}>Pass</option>
+                        <option ${detailData && detailData.result === 'Fail' ? 'selected' : ''}>Fail</option>
+                        <option ${detailData && detailData.result === 'Not Applicable' ? 'selected' : ''}>Not Applicable</option>
+                    </select>
+                </td>
+            `;
+            return tr;
+        }
+
+        // create photo header row
+        function glowCreatePhotoHeaderRow(groupId) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-photo-header-row';
+
+            tr.innerHTML = `
+                <td style="background:#f8f9fa;"></td>
+                <td colspan="1" style="width:50%; text-align:center; font-weight:700; background:#f8f9fa;">
+                    Photo during testing
+                </td>
+                <td colspan="3" style="width:50%; text-align:center; font-weight:700; background:#f8f9fa;">
+                    Photo after testing
+                </td>
+            `;
+            return tr;
+        }
+
+        // create photo input row with existing photos stored in data attributes
+        function glowCreatePhotoInputRow(groupId, detailData = null) {
+            const tr = document.createElement('tr');
+            tr.dataset.group = groupId;
+            tr.className = 'group-photo-input-row';
+
+            // ✅ Store existing photo paths in data attributes
+            if (detailData) {
+                if (detailData.photo_During_Test) {
+                    tr.dataset.existingPhotoDuring = detailData.photo_During_Test;
+                }
+                if (detailData.photo_After_Test) {
+                    tr.dataset.existingPhotoAfter = detailData.photo_After_Test;
+                }
+            }
+
+            // Build photo during section
+            let photoDuringHtml = '<input type="file" accept="image/*" class="photo-input-left" />';
+            if (detailData && detailData.photo_During_Test) {
+                photoDuringHtml += `
+                    <div style="margin-top:8px;">
+                        <a href="${detailData.photo_During_Test}" target="_blank" style="color:#4682B4; text-decoration:none; font-size:13px;">
+                            <i class="fas fa-image"></i> View Current Photo
+                        </a>
+                    </div>
+                `;
+            }
+
+            // Build photo after section
+            let photoAfterHtml = '<input type="file" accept="image/*" class="photo-input-right" />';
+            if (detailData && detailData.photo_After_Test) {
+                photoAfterHtml += `
+                    <div style="margin-top:8px;">
+                        <a href="${detailData.photo_After_Test}" target="_blank" style="color:#4682B4; text-decoration:none; font-size:13px;">
+                            <i class="fas fa-image"></i> View Current Photo
+                        </a>
+                    </div>
+                `;
+            }
+
+            tr.innerHTML = `
+                <td></td>
+                <td colspan="1" style="width:50%; padding:10px;">
+                    <div class="photo-input-wrap-left">
+                        ${photoDuringHtml}
+                    </div>
+                </td>
+                <td colspan="3" style="width:50%; padding:10px;">
+                    <div class="photo-input-wrap-right">
+                        ${photoAfterHtml}
+                    </div>
+                </td>
+            `;
+            return tr;
+        }
+
+        // add one full group (test + photos)
+        function glowAddGroup(detailData = null) {
+            const gid = "g" + (++glowGroupCounter);
+
+            const rowA = glowCreateTestRow(gid, detailData);
+            const rowB = glowCreatePhotoHeaderRow(gid);
+            const rowC = glowCreatePhotoInputRow(gid, detailData);
+
+            glowTbody.appendChild(rowA);
+            glowTbody.appendChild(rowB);
+            glowTbody.appendChild(rowC);
+
+            glowRefreshSerials();
+
+            if (!detailData) {
+                const editCell = rowA.querySelector('td[contenteditable="true"]');
+                if (editCell) editCell.focus();
+            }
+        }
+
+        // remove all rows for one group
+        function glowRemoveGroup(groupId) {
+            const rows = glowTbody.querySelectorAll(`tr[data-group="${groupId}"]`);
+            rows.forEach(r => r.remove());
+            glowRefreshSerials();
+        }
+
+        // renumber Sr. No.
+        function glowRefreshSerials() {
+            const rows = glowTbody.querySelectorAll('.group-test-row');
+            rows.forEach((tr, index) => {
+                const sn = tr.querySelector('.srno-test');
+                if (sn) sn.textContent = index + 1;
+            });
+        }
+
+        // init table + events
+        function initGlowWire() {
+            glowTbody = document.getElementById('glowCombinedTbody');
+            glowAddBtn = document.getElementById('addTestRowBtn');
+
+            if (!glowTbody || !glowAddBtn) {
+                console.error("Glow Wire table or Add button missing.");
+                return;
+            }
+
+            glowAddBtn.addEventListener('click', () => glowAddGroup());
+
+            glowTbody.addEventListener('click', function (e) {
+                const del = e.target.closest('.delete-group');
+                if (!del) return;
+                const tr = del.closest('tr');
+                const gid = tr.dataset.group;
+                glowRemoveGroup(gid);
+            });
+
+            // ✅ Load existing details if in edit mode
+            @if (Model.Details != null && Model.Details.Any())
+            {
+                    <text>
+                    const existingDetails = @Html.Raw(Json.Serialize(Model.Details));
+
+                    if (existingDetails && existingDetails.length > 0) {
+                        existingDetails.forEach(detail => {
+                            glowAddGroup(detail);
+                        });
+                    } else {
+                        glowAddGroup();
+                    }
+                    </text>
+            }
+            else
+            {
+                    <text>
+                    // Add one empty row for new form
+                    if (glowTbody.children.length === 0) {
+                        glowAddGroup();
+                    } else {
+                        glowRefreshSerials();
+                    }
+                    </text>
+            }
+        }
+
+        function saveGlowWireTest() {
+            Blockloadershow();
+
+            // ✅ Validate required fields
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+                { id: 'ProductDescription', name: 'Product Description' },
+                { id: 'ReportDate', name: 'Report Date' }
+            ];
+
+            let missingFields = [];
+            requiredFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value || !el.value.trim()) {
+                    missingFields.push(f.name);
+                }
+            });
+
+            if (missingFields.length) {
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${missingFields.map(x => `<li>${x}</li>`).join('')}</ul>`
+                );
+                Blockloaderhide();
+                return false;
+            }
+
+            // ✅ Get form and create FormData
+            const form = $('#glowWireTest_form')[0];
+            const formData = new FormData(form);
+
+            // ✅ Get TestResult (overall result)
+            const testResult = $('.result-select[data-name="TestResult"]').val();
+            formData.set('TestResult', (testResult || '').toString().trim());
+
+            // ✅ Collect Details from table rows
+            const testRows = $('#glowCombinedTbody .group-test-row');
+            let detailIndex = 0;
+
+            testRows.each(function () {
+                const $row = $(this);
+                const groupId = $row.data('group');
+                const detailId = $row.data('detailId') || 0;
+
+                // Get contenteditable cell values
+                const tds = $row.find('td');
+                const testWithClause = $(tds[1]).text().trim();
+                const specifiedRequirements = $(tds[2]).text().trim();
+                const observation = $(tds[3]).text().trim();
+                const result = $row.find('.result-select').val() || '';
+
+                // Skip completely empty rows
+                if (!testWithClause && !specifiedRequirements && !observation && !result) {
+                    return;
+                }
+
+                // Set detail data
+                formData.set(`Details[${detailIndex}].Id`, detailId);
+                formData.set(`Details[${detailIndex}].SrNo`, detailIndex + 1);
+                formData.set(`Details[${detailIndex}].Test_Ref`, testWithClause);
+                formData.set(`Details[${detailIndex}].Specified_Req`, specifiedRequirements);
+                formData.set(`Details[${detailIndex}].Observation`, observation);
+                formData.set(`Details[${detailIndex}].Result`, result);
+
+                // Get corresponding photo row
+                const photoRow = $(`#glowCombinedTbody .group-photo-input-row[data-group="${groupId}"]`);
+
+                if (photoRow.length) {
+                    const photoRowElement = photoRow[0];
+                    const photoDuringInput = photoRow.find('.photo-input-left')[0];
+                    const photoAfterInput = photoRow.find('.photo-input-right')[0];
+
+                    // ✅ Get existing photo paths from data attributes
+                    const existingPhotoDuring = photoRowElement.dataset.existingPhotoDuring || '';
+                    const existingPhotoAfter = photoRowElement.dataset.existingPhotoAfter || '';
+
+                    // ✅ Handle Photo During Testing
+                    if (photoDuringInput && photoDuringInput.files && photoDuringInput.files.length > 0) {
+                        // New file selected - upload it
+                        formData.append(`Details[${detailIndex}].Photo_During_TestFile`, photoDuringInput.files[0]);
+                    } else if (existingPhotoDuring) {
+                        // No new file but existing photo exists - preserve it
+                        formData.set(`Details[${detailIndex}].Photo_During_Test`, existingPhotoDuring);
+                    }
+
+                    // ✅ Handle Photo After Testing
+                    if (photoAfterInput && photoAfterInput.files && photoAfterInput.files.length > 0) {
+                        // New file selected - upload it
+                        formData.append(`Details[${detailIndex}].Photo_After_TestFile`, photoAfterInput.files[0]);
+                    } else if (existingPhotoAfter) {
+                        // No new file but existing photo exists - preserve it
+                        formData.set(`Details[${detailIndex}].Photo_After_Test`, existingPhotoAfter);
+                    }
+                }
+
+                detailIndex++;
+            });
+
+            // ✅ AJAX call to save
+            $.ajax({
+                url: $('#glowWireTest_form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        let errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg) {
+                                showDangerAlert(errorMessg);
+                            }
+                        } else {
+                            showDangerAlert(response.message || "Error saving Glow Wire Test Report");
+                        }
+                        return false;
+                    }
+
+                    // Success message
+                    if ($("#Id").val() > 0) {
+                        showSuccessAlert("Glow Wire Test Report Updated Successfully.");
+                    } else {
+                        showSuccessAlert("Glow Wire Test Report Saved Successfully.");
+                    }
+
+                    // Redirect after success
+                    setTimeout(function () {
+                        window.open('@Url.Action("GlowWireTestReport", "ProductValidation")', '_self');
+                    }, 2500);
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving Glow Wire Test Report: ' + error);
+                    console.error('Save error:', xhr.responseText);
+                }
+            });
         }
     </script>
 }

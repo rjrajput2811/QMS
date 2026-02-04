@@ -30,6 +30,7 @@ using QMS.Core.Services.SystemLogs;
 using QMS.Core.Repositories.IngressProtectionRepository;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Repositories.DropTestRepository;
+using QMS.Core.Repositories.GlowWireTestRepository;
 
 namespace QMS.Controllers;
 
@@ -48,6 +49,7 @@ public class ProductValidationController : Controller
     private readonly ISystemLogService _systemLogService;
     private readonly IIngressProtectionRepository _ingressProtectionRepository;
     private readonly IDropTestRepository _dropTestRepository;
+    private readonly IGlowWireTestRepository _glowWireTestRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -62,7 +64,8 @@ public class ProductValidationController : Controller
         IInstallationTrialRepository installationTrialRepository,
         IRegulatoryRequirementRepository regulatoryRequirementRepository,
         IIngressProtectionRepository ingressProtectionRepository,
-        IDropTestRepository dropTestRepository)
+        IDropTestRepository dropTestRepository,
+        IGlowWireTestRepository glowWireTestRepository)
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
@@ -77,6 +80,7 @@ public class ProductValidationController : Controller
         _regulatoryRequirementRepository = regulatoryRequirementRepository;
         _ingressProtectionRepository = ingressProtectionRepository;
         _dropTestRepository = dropTestRepository;
+        _glowWireTestRepository = glowWireTestRepository;
     }
 
 
@@ -2789,9 +2793,189 @@ public class ProductValidationController : Controller
     {
         return View();
     }
-    public IActionResult GlowWireTestReportDetails()
+    //public IActionResult GlowWireTestReportDetails()
+    //{
+    //    return View();
+    //}
+
+    public async Task<IActionResult> GlowWireTestReportDetails(int Id)
     {
-        return View();
+        var model = new GlowWireTestReportViewModel();
+        if (Id > 0)
+        {
+            model = await _glowWireTestRepository.GetGlowWireTestByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> GetGlowWireTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _glowWireTestRepository.GetGlowWireTestAsync();
+        return Json(result);
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateGlowWireTestAsync(GlowWireTestReport vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            // Optional: if you still want MVC validations
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var fullName = HttpContext.Session.GetString("FullName") ?? "System";
+
+            // ---- Map ViewModel -> Entity used by repository ----
+            var model = new GlowWireTestReport
+            {
+                Id = vm.Id,
+
+                ReportNo = vm.ReportNo?.Trim(),
+                ReportDate = vm.ReportDate,
+
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                CustomerProjectName = vm.CustomerProjectName,
+
+                BatchCode = vm.BatchCode,
+                PKD = vm.PKD,
+                Quantity = vm.Quantity,
+
+                PartDescription = vm.PartDescription,
+                TestResult = vm.TestResult,
+                TestedBy = vm.TestedBy,
+                VerifiedBy = vm.VerifiedBy,
+                Details = vm.Details ?? new List<GlowWireTestReportDetail>(),
+            };
+
+            // ---- Save Images into ImgDetails (Before_Img / After_Img) ----
+            // IMPORTANT: This assumes your DropTestViewModel.ImgDetails has IFormFile properties (shown below)
+            if (model.Details != null && model.Details.Count > 0)
+            {
+                for (int i = 0; i < model.Details.Count; i++)
+                {
+                    var row = model.Details[i];
+                    if (row == null) continue;
+
+                    // Before image
+                    if (row.Photo_During_TestFile != null && row.Photo_During_TestFile.Length > 0)
+                    {
+                        row.Photo_During_Test = await SaveImageAsync(
+                            row.Photo_During_TestFile,
+                            baseFolder: "GlowWireTest_Attach",
+                            prefix: "Photo_During",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+
+                    // After image
+                    if (row.Photo_After_TestFile != null && row.Photo_After_TestFile.Length > 0)
+                    {
+                        row.Photo_After_Test = await SaveImageAsync(
+                            row.Photo_After_TestFile,
+                            baseFolder: "GlowWireTest_Attach",
+                            prefix: "Photo_After",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+                }
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                // UPDATE: exclude same Id record
+                exists = await _glowWireTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                // INSERT: check if complaint already used anywhere
+                exists = await _glowWireTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            // ---- Insert / Update ----
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+
+                result = await _glowWireTestRepository.UpdateGlowWireTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "GlowWire Test Report updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+
+                result = await _glowWireTestRepository.InsertGlowWireTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "GlowWire Test Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save GlowWire Test report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteGlowWireTestAsync(int Id)
+    {
+        var result = await _glowWireTestRepository.DeleteGlowWireTestAsync(Id);
+        return Json(result);
     }
 
     #endregion

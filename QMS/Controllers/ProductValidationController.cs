@@ -7,6 +7,7 @@ using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Draw;
 using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
@@ -16,17 +17,18 @@ using QMS.Core.Models;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ImpactTestRepository;
+using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Repositories.PhotometryRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
+using QMS.Core.Repositories.RegulatoryRequirementRepository;
 using QMS.Core.Repositories.RippleTestReportRepo;
+using QMS.Core.Repositories.SurgeTestReportRepository;
+using QMS.Core.Services.HydraulicTestReportService;
+using QMS.Core.Services.SystemLogs;
+using System.IO;
+using System.Threading.Tasks;
 using Color = System.Drawing.Color;
 using Path = System.IO.Path;
-using QMS.Core.Repositories.SurgeTestReportRepository;
-using QMS.Core.Repositories.RegulatoryRequirementRepository;
-using System.Drawing;
-using System.Threading.Tasks;
-using QMS.Core.Repositories.InstallationTrialRepository;
-using QMS.Core.Services.SystemLogs;
 using QMS.Core.Repositories.IngressProtectionRepository;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Repositories.DropTestRepository;
@@ -2984,14 +2986,243 @@ public class ProductValidationController : Controller
 
     public IActionResult HydraulicTestReport()
     {
-
         return View();
     }
 
-    public IActionResult HydraulicTestReportDetails()
+    public async Task<IActionResult> HydraulicTestReportListAsync()
     {
+        var result = await _hydraulicTestReportService.GetHydraulicTestReportListAsync();
+        return Json(result);
+    }
 
-        return View();
+    public async Task<IActionResult> HydraulicTestReportDetailsAsync(int Id)
+    {
+        var model = new HydraulicTestReportViewModel();
+        if(Id > 0)
+        {
+            model = await _hydraulicTestReportService.GetHydraulicTestReportDetailsAsync(Id);
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> InsertUpdateHydraulicTestReportAsync(HydraulicTestReportViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
+
+        string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "HydraulicTest_Attach", model.ReportNo.ToString());
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+        foreach(var obs in model.Observations)
+        {
+            if(obs.PhotoBeforeTestAttachedFile != null)
+            {
+                string fileName = obs.PhotoBeforeTestAttachedFile.FileName.Replace(",", "_");
+                string savePath = Path.Combine(folder, fileName);
+                using (var stream = new FileStream(savePath, FileMode.Create))
+                {
+                    await obs.PhotoBeforeTestAttachedFile.CopyToAsync(stream);
+                }
+                obs.PhotoBeforeTest = savePath;
+            }
+            if(obs.PhotoAfterTestAttachedFile != null)
+            {
+                string fileName = obs.PhotoAfterTestAttachedFile.FileName.Replace(",", "_");
+                string savePath = Path.Combine(folder, fileName);
+                using (var stream = new FileStream(savePath, FileMode.Create))
+                {
+                    await obs.PhotoAfterTestAttachedFile.CopyToAsync(stream);
+                }
+                obs.PhotoAfterTest = savePath;
+            }
+        }
+
+        if(model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _hydraulicTestReportService.UpdateHydraulicTestReportAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _hydraulicTestReportService.InsertHydraulicTestReportAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DeleteHydraulicTestReportAsync(int Id)
+    {
+        var result = await _hydraulicTestReportService.DeleteHydraulicTestReportAsync(Id);
+        return Json(result);
+    }
+
+    public async Task<ActionResult> ExportHydraulicTestReportToPDFAsync(int Id)
+    {
+        try
+        {
+            var model = await _hydraulicTestReportService.GetHydraulicTestReportDetailsAsync(Id);
+            var webRootPath = _hostEnvironment.WebRootPath;
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                PdfWriter writer = new PdfWriter(stream);
+                PdfDocument pdf = new PdfDocument(writer);
+                Document document = new Document(pdf, PageSize.A4);
+                document.SetMargins(20, 20, 20, 20);
+
+                PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+
+                // Create the Main Table (Wrapper) with 4 columns to handle the complex layout in your image
+                Table mainTable = new Table(new float[] { 1, 1, 1, 1 }).UseAllAvailableWidth();
+
+                // ================= HEADER SECTION (Report Title & Logo) =================
+                // Row 1: Title (Col 1-3) and Logo (Col 4)
+                mainTable.AddCell(new Cell(1, 3).Add(new Paragraph("Hydraulic TEST REPORT")
+                    .SetFont(boldFont).SetFontSize(16).SetTextAlignment(TextAlignment.CENTER))
+                    .SetVerticalAlignment(VerticalAlignment.MIDDLE));
+
+                var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png");
+                Cell logoCell = new Cell()
+                    .SetPadding(2) 
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetVerticalAlignment(VerticalAlignment.MIDDLE);
+
+                if (System.IO.File.Exists(imagePath))
+                {
+                    Image logo = new Image(ImageDataFactory.Create(imagePath));
+                    logo.SetWidth(70f); 
+                    logo.SetHorizontalAlignment(HorizontalAlignment.CENTER);
+    
+                    logoCell.Add(logo);
+                }
+                else
+                {
+                    logoCell.Add(new Paragraph("wipro")
+                        .SetFont(boldFont)
+                        .SetFontSize(14)
+                        .SetFontColor(ColorConstants.DARK_GRAY));
+                }
+
+                mainTable.AddCell(logoCell);
+
+                // Row 2: Design Docket Sub-header
+                mainTable.AddCell(new Cell(1, 4).Add(new Paragraph("Hydraulic Test Pressure as per Design Docket")
+                    .SetFont(boldFont).SetTextAlignment(TextAlignment.CENTER)).SetBackgroundColor(ColorConstants.WHITE));
+
+                // Row 3: Report No
+                mainTable.AddCell(new Cell(1, 2).SetBorderRight(Border.NO_BORDER));
+                mainTable.AddCell(new Cell(1, 2).Add(new Paragraph($"Report No . {model.ReportNo}"))
+                    .SetTextAlignment(TextAlignment.LEFT).SetBorderLeft(Border.NO_BORDER));
+
+                // Row 4: Customer Name and Date
+                mainTable.AddCell(new Cell(1, 3).Add(new Paragraph($"Customer/Project Name : {model.CustomerProjectName}")));
+                mainTable.AddCell(new Cell(1, 1).Add(new Paragraph($"Date: {model.ReportDate:dd/MM/yyyy}")));
+
+                // Row 5: Cat Ref, Description, Batch, Quantity
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Product Cat Ref\n{model.ProductCatRef}").SetFontSize(9)));
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Product Description\n{model.ProductDescription}").SetFontSize(9)));
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Batch Code\n{model.BatchCode}").SetFontSize(9)));
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Quantity :\n{model.Quantity}").SetFontSize(9)));
+
+                // Row 6: Test Pressure
+                mainTable.AddCell(new Cell(1, 4).Add(new Paragraph($"Hydraulic Test Pressure - {model.HydraulicTestPressure}")));
+
+                // ================= OBSERVATION TABLE SECTION =================
+                // We nest this to keep the "Main Table" border intact
+                Cell obsContainer = new Cell(1, 4).SetPadding(0);
+                Table obsTable = new Table(new float[] { 0.5f, 2, 2, 2, 1 }).UseAllAvailableWidth().SetBorder(Border.NO_BORDER);
+
+                string[] headers = { "Sr. No.", "Photo Before Test", "Photo After Test", "Observation", "Result" };
+                foreach (var h in headers)
+                {
+                    obsTable.AddCell(new Cell().Add(new Paragraph(h).SetFont(boldFont).SetFontSize(9)).SetBackgroundColor(ColorConstants.LIGHT_GRAY));
+                }
+
+                int sr = 1;
+                foreach (var item in model.Observations)
+                {
+                    obsTable.AddCell(new Cell().Add(new Paragraph(sr++.ToString())));
+                    obsTable.AddCell(CreateImageCell(item.PhotoBeforeTest, webRootPath));
+                    obsTable.AddCell(CreateImageCell(item.PhotoAfterTest, webRootPath));
+                    obsTable.AddCell(new Cell().Add(new Paragraph(item.Observation ?? "")));
+                    obsTable.AddCell(new Cell().Add(new Paragraph(item.Result ?? "")));
+                }
+                obsContainer.Add(obsTable);
+                mainTable.AddCell(obsContainer);
+
+                // ================= RESULT ROW (Below Table) =================
+                mainTable.AddCell(new Cell(1, 2).Add(new Paragraph("Result (Pass/Fail)")
+                    .SetFont(boldFont).SetFontColor(ColorConstants.RED)));
+                mainTable.AddCell(new Cell(1, 2).Add(new Paragraph(model.OverallResult ?? "")));
+
+                // ================= FOOTER SIGNATURES =================
+                mainTable.AddCell(CreateSignatureCell("Tested by", model.TestedBy, boldFont, 2));
+                mainTable.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, boldFont, 2));
+
+                document.Add(mainTable);
+                document.Close();
+                return File(stream.ToArray(), "application/pdf", $"HydraulicReport_{Id}.pdf");
+            }
+        }
+        catch (Exception ex) { return Json(new { Success = false, Message = ex.Message }); }
+    }
+
+    private Cell CreateImageCell(string path, string root)
+    {
+        Cell cell = new Cell().SetMinHeight(70).SetVerticalAlignment(VerticalAlignment.MIDDLE).SetTextAlignment(TextAlignment.CENTER);
+        try
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                string cleanPath = path.Replace("~/", "").Replace("/", Path.DirectorySeparatorChar.ToString());
+                string fullPath = Path.Combine(root, cleanPath);
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    iText.Layout.Element.Image img = new iText.Layout.Element.Image(ImageDataFactory.Create(fullPath))
+                        .SetAutoScale(true)
+                        .SetMaxHeight(60);
+                    cell.Add(img);
+                    return cell;
+                }
+            }
+        }
+        catch { /* Log Error */ }
+
+        cell.Add(new Paragraph("No Photo").SetFontSize(7).SetFontColor(ColorConstants.GRAY));
+        return cell;
+    }
+
+    private Cell CreateSignatureCell(string label, string name, PdfFont font, int colspan)
+    {
+        // 1. Create a cell with a fixed height to create the signature space
+        Cell cell = new Cell(1, colspan).SetHeight(60).SetPadding(5);
+
+        // 2. Set vertical alignment to BOTTOM so the name sits at the bottom of the box
+        cell.SetVerticalAlignment(VerticalAlignment.BOTTOM);
+
+        // 3. Add the Label (This will appear first/at the top of the cell content)
+        cell.Add(new Paragraph(label)
+            .SetFontSize(9)
+            .SetFont(font)
+            .SetMarginBottom(10)); // Adds space between the label and the name
+
+        // 4. Add the Name (This will be pushed to the bottom)
+        string displayName = !string.IsNullOrEmpty(name) ? name : "________________";
+        cell.Add(new Paragraph(displayName)
+            .SetFontSize(10)
+            .SetTextAlignment(TextAlignment.CENTER));
+
+        return cell;
     }
 
     #endregion

@@ -61,6 +61,9 @@ using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Repositories.DropTestRepository;
 using QMS.Core.Repositories.IngressProtectionRepository;
 using QMS.Core.Repositories.MergeTrackerRepository;
+using QMS.Core.Services.HydraulicTestReportService;
+using QMS.Core.Repositories.HydraulicTestObservationRepository;
+using QMS.Core.Repositories.HydraulicTestRepository;
 using QMS.Core.Repositories.GlowWireTestRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
@@ -130,8 +133,10 @@ builder.Services.AddTransient<ISurgeTestReportRepository, SurgeTestReportReposit
 builder.Services.AddTransient<IPhotometryTestRepository, PhotometryTestRepository>();
 builder.Services.AddTransient<IImpactTestRepository, ImpactTestRepository>();
 builder.Services.AddTransient<IRegulatoryRequirementRepository, RegulatoryRequirementRepository>();
-
 builder.Services.AddTransient<IMergeTrackerRepository, MergeTrackerRepository>();
+builder.Services.AddTransient<IHydraulicTestRepository, HydraulicTestRepository>();
+builder.Services.AddTransient<IHydraulicTestObservationRepository, HydraulicTestObservationRepository>();
+builder.Services.AddTransient<IHydraulicTestReportService, HydraulicTestReportService>();
 builder.Services.AddTransient<IDropTestRepository, DropTestRepository>();
 builder.Services.AddTransient<IIngressProtectionRepository, IngressProtectionRepository>();
 builder.Services.AddTransient<IGlowWireTestRepository, GlowWireTestRepository>();

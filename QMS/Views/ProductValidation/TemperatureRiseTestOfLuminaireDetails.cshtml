@@ -22,67 +22,87 @@
 <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
 <script type="text/javascript">
-     $(document).ready(function () {
+    let searchTimeout;
 
+    $(document).ready(function () {
+        console.log("Document ready - initializing search");
 
-            const inputElement = $("#prodCode_Search");
-            if (inputElement.length) {
-                // Attach the keydown event handler
-                    inputElement.on('input', function (event) {
-                    handleProdCodeSearch(event);
-                });
-            }
+        const inputElement = $("#prodCode_Search");
+        if (inputElement.length) {
+            console.log("prodCode_Search input found");
+
+            // Attach the input event handler
+            inputElement.on('input', function (event) {
+                handleProdCodeSearch(event);
+            });
+        } else {
+            console.error("prodCode_Search input NOT found");
+        }
     });
 
     function handleProdCodeSearch(event) {
-        debugger
+        console.log("handleProdCodeSearch called");
+
         const input = event.target;
-        if (!input) return;
-
-        let searchQuery = input.value.trim();
-
-        // 🔴 Clear suggestions if less than 4 chars
-        if (searchQuery.length < 4) {
-            clearTimeout(searchTimeout);
-            // optional: hide suggestion dropdown here
-            // hideBisSuggestions();
+        if (!input) {
+            console.error("Input element not found");
             return;
         }
 
-        // ✅ Take first 4 characters only
-        const searchTerms = searchQuery.substring(0, 4);
+        let searchQuery = input.value.trim();
+        console.log("Search query:", searchQuery);
 
-        // 🟡 Debounce API call
+        // Clear suggestions if less than 4 chars
+        if (searchQuery.length < 4) {
+            clearTimeout(searchTimeout);
+            removeExistingDropdown(input);
+            return;
+        }
+
+        // Take first 4 characters only
+        const searchTerms = searchQuery.substring(0, 4);
+        console.log("Search terms (first 4 chars):", searchTerms);
+
+        // Debounce API call
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            pagedData = {}; // Clear cached data
             fetchProdCodeRelatedData(searchTerms, input);
         }, 300);
     }
 
     function fetchProdCodeRelatedData(productCatNo, inputField) {
+        console.log("Fetching data for:", productCatNo);
 
         $.ajax({
-            url: '/Vendor/GetCodeSearch', // API endpoint
-            type: 'GET', // HTTP method
-            data: { search: productCatNo }, // Query parameters
-            dataType: 'json', // Expected response data type
+            url: '@Url.Action("GetCodeSearchAsync", "Vendor")',
+            type: 'GET',
+            data: { search: productCatNo },
+            dataType: 'json',
             success: function (data) {
+                console.log("Data received:", data);
+
                 if (data && data.length > 0) {
                     displayProdCodeSuggestions(data, inputField);
                 } else {
+                    console.log("No data found");
                     showDangerAlert('No data found for the entered Product Cat No.');
+                    removeExistingDropdown(inputField);
                 }
             },
             error: function (xhr, status, error) {
-                showDangerAlert('Error fetching data:', error);
+                console.error('AJAX Error - Status:', status);
+                console.error('Error:', error);
+                console.error('Response:', xhr.responseText);
+                showDangerAlert('Error fetching data: ' + error);
             }
         });
     }
 
-// Function to display suggestions in a dropdown
+    // Function to display suggestions in a dropdown
     function displayProdCodeSuggestions(data, inputField) {
-        // Remove any existing dropdown (if any)
+        console.log("Displaying suggestions, count:", data.length);
+
+        // Remove any existing dropdown
         removeExistingDropdown(inputField);
 
         // Ensure parent can anchor absolute dropdown
@@ -98,7 +118,7 @@
         dropdown.style.left = inputField.offsetLeft + 'px';
         dropdown.style.backgroundColor = 'white';
         dropdown.style.border = '1px solid #ccc';
-        dropdown.style.zIndex = 1000;
+        dropdown.style.zIndex = '1000';
         dropdown.style.overflowY = 'auto';
         dropdown.style.maxHeight = '300px';
         dropdown.style.width = inputField.offsetWidth + 'px';
@@ -106,7 +126,6 @@
 
         data.forEach(item => {
             const code = (item.oldPart_No || "").toString().trim();
-            // change these keys as per your API response:
             const desc = (item.description || item.prodDesc || item.prod_Desc || "").toString().trim();
 
             const option = document.createElement('div');
@@ -119,27 +138,31 @@
                 option.style.backgroundColor = '#4682B4';
                 option.style.color = '#fff';
             });
+
             option.addEventListener('mouseout', () => {
                 option.style.backgroundColor = '';
                 option.style.color = '';
             });
 
             option.addEventListener('click', () => {
+                console.log("Selected code:", code, "desc:", desc);
 
                 const productCatRefInput = document.getElementById('ProductCatRef');
                 if (productCatRefInput) {
                     productCatRefInput.value = code ?? '';
+                    console.log("Set ProductCatRef to:", code);
                 }
 
                 const productDescInput = document.getElementById('ProductDescription');
                 if (productDescInput) {
                     productDescInput.value = desc ?? '';
+                    console.log("Set ProductDescription to:", desc);
                 }
 
-                // optional: also set search box to just code
                 const searchBox = document.getElementById('prodCode_Search');
                 if (searchBox) {
                     searchBox.value = code;
+                    console.log("Set search box to:", code);
                 }
 
                 dropdown.remove();
@@ -149,15 +172,15 @@
         });
 
         parent.appendChild(dropdown);
+        console.log("Dropdown appended to parent");
     }
-
-
 
     // Function to remove any existing dropdowns
     function removeExistingDropdown(inputField) {
         const existingDropdown = document.querySelector('.suggestion-dropdown');
         if (existingDropdown) {
             existingDropdown.remove();
+            console.log("Existing dropdown removed");
         }
     }
 
@@ -168,14 +191,16 @@
         }
     });
 
-     function saveElectricalPerformance() {
+    function saveElectricalPerformance() {
+        console.log("saveElectricalPerformance called");
 
-        // ================= HEADER =================
+        // Get ID value
         var idVal = $('#Id').val();
         idVal = idVal ? parseInt(idVal) : 0;
+        console.log("ID:", idVal);
 
         var model = {
-            Id: idVal,   // VERY IMPORTANT
+            Id: idVal,
             ProductCatRef: $('#ProductCatRef').val(),
             ProductDescription: $('#ProductDescription').val(),
             ReportNo: $('#ReportNo').val(),
@@ -235,67 +260,16 @@
             ConductedBySecnd: $('#ConductedBySecnd').val(),
             WitnessBySecnd: $('#WitnessBySecnd').val(),
             ApprovedBySecnd: $('#ApprovedBySecnd').val(),
-
-
-
-            //ElectricalDetails: ""
         };
 
-        // ================= TABLE LOOP =================
-        // var rows = [];
-        // var map = {};
+        console.log("Model data:", model);
 
-        // $('input[name^="Details["]').each(function () {
-
-        //     var name = $(this).attr('name'); // Details[0].Vac
-        //     var match = name.match(/Details\[(\d+)\]\.(.+)/);
-        //     if (!match) return;
-
-        //     var index = match[1];
-        //     var field = match[2];
-        //     var value = $(this).val() || '';
-
-        //     if (!map[index]) map[index] = {};
-        //     map[index][field] = value;
-        // });
-
-        // Object.keys(map).sort(function (a, b) {
-        //     return a - b;
-        // }).forEach(function (i) {
-
-        //     var d = map[i];
-
-        //     var row =
-        //         (d.SampleNo || '') + '^' +
-        //         (d.ConditionType || '') + '^' +
-        //         (d.RowNo || '') + '^' +
-
-        //         (d.Vac || '') + '^' +
-        //         (d.IacA || '') + '^' +
-        //         (d.Wac || '') + '^' +
-        //         (d.PF || '') + '^' +
-        //         (d.ATHD || '') + '^' +
-
-        //         (d.Vdc || '') + '^' +
-        //         (d.IdcA || '') + '^' +
-        //         (d.Wdc || '') + '^' +
-        //         (d.Eff || '') + '^' +
-        //         (d.NoLoadV || '') + '^' +
-        //         (d.StartV || '') + '^' +
-
-        //         (d.Result || '');
-
-        //     rows.push(row);
-        // });
-
-        // model.ElectricalDetails = rows.join('~');
-
-        // ================= AJAX =================
         $.ajax({
-                url: '/ProductValidation/InsertUpdateTemperatureRiseDetails',
+            url: '/ProductValidation/InsertUpdateTemperatureRiseDetails',
             type: 'POST',
             data: model,
             success: function (res) {
+                console.log("Save response:", res);
                 if (model.Id > 0) {
                     showSuccessAlert("Updated Successfully.");
                 } else {
@@ -303,11 +277,19 @@
                 }
             },
             error: function (xhr, status, error) {
-            Blockloaderhide();
-            showDangerAlert('Error saving data: ' + error);
+                console.error("Save error:", error);
+                console.error("Response:", xhr.responseText);
+                Blockloaderhide();
+                showDangerAlert('Error saving data: ' + error);
             }
         });
-      }
+    }
+
+    // Function called by Save button - make sure this exists
+    function insertTemperatureTest() {
+        console.log("insertTemperatureTest called");
+        saveElectricalPerformance();
+    }
 </script>
  
 
@@ -547,7 +529,7 @@
                                        class="inline-input form-control col-md-3"
                                        placeholder="Search Code"
                                        aria-label="Search Code"
-                                       oninput="handleProdCodeSearch(this)"
+                                      
                                        style="text-transform: uppercase;width: 175px;" />
                                 @Html.TextBoxFor(m => m.ProductCatRef, new {@class = "inline-input",
                                                                 placeholder = "Enter Product Cat Ref",required = "required",type = "text"})

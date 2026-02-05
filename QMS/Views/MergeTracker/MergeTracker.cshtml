@@ -437,6 +437,10 @@
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
     <script>
+
+        var caGrid, customerRcaGrid, deviationGrid, bisGrid, paymentGrid,
+            walujGrid, tpiGrid, csatGrid, changeNoteGrid, npiValidationGrid, thirdPartyGrid;
+
         let filterStartPaymentDate = moment().startOf('month').format('YYYY-MM-DD');
         let filterEndPaymentDate = moment().endOf('month').format('YYYY-MM-DD');
 
@@ -459,6 +463,8 @@
                         filterStartPaymentDate = start.format('YYYY-MM-DD');
                         filterEndPaymentDate = end.format('YYYY-MM-DD');
                         $('#dateRangeMergeTracker').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+
+                        fetchAllActivitySummary();
                     });
 
                     picker.on('clear', () => {
@@ -483,50 +489,78 @@
                 picker.show();
             });
 
-            
             loadCAReportGrid();
+            loadCustomerRcaGrid();
+            loadDeviationGrid();
+            loadBisProjectGrid();
+            loadPaymentSummaryGrid();
+            loadWalujTestingGrid();
+            loadThirdPartyTestingGrid();
+            loadTpiGrid();
+            loadCsatSummaryGrid();
+            loadChangeNoteGrid();
+            loadNpiValidationGrid();
+            fetchAllActivitySummary();
 
-           
-            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
-                const tabId = e.target.id;
+            $('#exportMergeTrackerButton').on('click', function() {
+                // List all tables you want to include in the master file
+                const tablesToExport = [
+                    { instance: caGrid, sheetName: 'CA_Report' },
+                    { instance: customerRcaGrid, sheetName: 'Customer_RCA' },
+                    { instance: deviationGrid, sheetName: 'Deviation_Summary' },
+                    { instance: bisGrid, sheetName: 'BIS_Project' },
+                    { instance: paymentGrid, sheetName: 'Payment_Summary' },
+                    { instance: walujGrid, sheetName: 'Waluj_Testing' },
+                    { instance: thirdPartyGrid, sheetName: 'Third_Party_Testing' },
+                    { instance: tpiGrid, sheetName: 'TPI_Summary' },
+                    { instance: csatGrid, sheetName: 'CSAT_Summary' },
+                    { instance: changeNoteGrid, sheetName: 'Change_Note' },
+                    { instance: npiValidationGrid, sheetName: 'NPI_Validation' }
+                ];
 
-                if (tabId === "caReport-tab") {
-                    loadCAReportGrid();
-                }
-                else if (tabId === "customerRca-tab") {
-                    loadCustomerRcaGrid();
-                }
-                else if (tabId === "deviation-tab") {
-                    loadDeviationGrid();
-                }
-                else if (tabId === "bisProject-tab") {
-                    loadBisProjectGrid();
-                }
-                else if (tabId === "paymentSummary-tab") {
-                    loadPaymentSummaryGrid();
-                }
-                else if (tabId === "walujTesting-tab") {
-                    loadWalujTestingGrid();
-                }
-                else if (tabId === "thirdPartyTesting-tab") {
-                    loadThirdPartyTestingGrid();
-                }
-                else if (tabId === "tpi-tab") {
-                    loadTpiGrid();
-                }
-                else if (tabId === "csatSummary-tab") {
-                    loadCsatSummaryGrid();
-                }
-                else if (tabId === "changeNote-tab") {
-                    loadChangeNoteGrid();
-                }
-                else if (tabId === "npiValidation-tab") {      // ✅ LAST ONE ADDED
-                    loadNpiValidationGrid();
+                // Filter out any grids that haven't been initialized yet
+                const initializedTables = tablesToExport.filter(t => t.instance !== undefined);
+
+                if (initializedTables.length === 0) {
+                    alert("No data available to export. Please open the tabs to load data.");
+                    return;
                 }
 
-
-
+                exportAllTablesToSingleExcel(initializedTables, 'Merge_Tracker_Full_Report');
             });
+           
+            // 1. CA Report
+            $('#exportCAButton').on('click', () => exportTableToExcel(caGrid, 'CA_Report'));
+
+            // 2. Customer RCA
+            $('#exportCustomerRcaButton').on('click', () => exportTableToExcel(customerRcaGrid, 'Customer_RCA_Report'));
+
+            // 3. Deviation
+            $('#exportDeviationButton').on('click', () => exportTableToExcel(deviationGrid, 'Deviation_Report'));
+
+            // 4. BIS Project
+            $('#exportBisProjectButton').on('click', () => exportTableToExcel(bisGrid, 'BIS_Project_Report'));
+
+            // 5. Payment Summary
+            $('#exportPaymentSummaryButton').on('click', () => exportTableToExcel(paymentGrid, 'Payment_Summary_Report'));
+
+            // 6. Waluj Testing
+            $('#exportWalujTestingButton').on('click', () => exportTableToExcel(walujGrid, 'Waluj_Testing_Report'));
+
+            // 7. Third Party Testing
+            $('#exportThirdPartyTestingButton').on('click', () => exportTableToExcel(thirdPartyGrid, 'Third_Party_Testing_Report'));
+
+            // 8. TPI
+            $('#exportTpiButton').on('click', () => exportTableToExcel(tpiGrid, 'TPI_Report'));
+
+            // 9. CSAT
+            $('#exportCsatSummaryButton').on('click', () => exportTableToExcel(csatGrid, 'CSAT_Summary_Report'));
+
+            // 10. Change Note
+            $('#exportChangeNoteButton').on('click', () => exportTableToExcel(changeNoteGrid, 'Change_Note_Report'));
+
+            // 11. NPI Validation
+            $('#exportNpiValidationButton').on('click', () => exportTableToExcel(npiValidationGrid, 'NPI_Validation_Report'));
 
         });
 
@@ -566,633 +600,383 @@
             return menu;
         };
 
+        // ---------- DATA FETCHING ----------
+        function fetchAllActivitySummary() {
+            if (!filterStartPaymentDate || !filterEndPaymentDate) return;
 
-     
+            Blockloadershow();
+
+            $.ajax({
+                url: '@Url.Action("GetAllActivitySummary", "MergeTracker")',
+                type: 'GET',
+                data: {
+                    fromDate: filterStartPaymentDate,
+                    toDate: filterEndPaymentDate
+                },
+                success: function (response) {
+                    Blockloaderhide();
+                    if (response) {
+                        // Response.summary is a single object, Tabulator needs an array
+                        const summaryArray = response.summary ? [response.summary] : [];
+
+                        const formatDate = (dateStr) => {
+                            const dateObj = new Date(dateStr);
+                            return dateObj.toLocaleDateString("en-GB");
+                        };
+
+                        // 1. CA Report
+                        caGrid.setData(summaryArray.map(s => ({
+                            "From": formatDate(s.fromDate), "To": formatDate(s.toDate),
+                            "Total_Registered": s.caTotalComplaintRegistered,
+                            "Till_Open": s.caTillDateOpenComplaint,
+                            "Till_Closed": s.caTillDateClosedComplaint
+                        })));
+
+                        // 2. RCA Report
+                        customerRcaGrid.setData(summaryArray.map(s => ({
+                            "From": formatDate(s.fromDate), "To": formatDate(s.toDate),
+                            "Total_Registered": s.rcaTotalComplaintRegistered,
+                            "Till_Open": s.rcaTillDateOpenComplaint,
+                            "Till_Closed": s.rcaTillDateClosedComplaint
+                        })));
+
+                        // 3. Deviation
+                        deviationGrid.setData(summaryArray.map(s => ({
+                            "From": formatDate(s.fromDate), "To": formatDate(s.toDate),
+                            "Total_Deviation": s.totalDeviationRaised
+                        })));
+
+                        // 4. BIS Project
+                        bisGrid.setData(summaryArray.map(s => ({
+                            "From": s.fromMonth, "To": s.toMonth,
+                            "Total_Project": s.totalProject, "Model_Inclusion": s.modelInclusion,
+                            "Series_Addition": s.seriesAddition, "CCL_Updation": s.cclUpdation,
+                            "CCL_Series": s.cclSeries, "Others": s.othersProject
+                        })));
+
+                        // 5. Payment Summary
+                        paymentGrid.setData(summaryArray.map(s => ({
+                            "From": s.fromMonth, "To": s.toMonth,
+                            "Total_Payment": s.totalPayment
+                        })));
+
+                        //6. Third Party
+                        thirdPartyGrid.setData(summaryArray.map((f, i) => ({
+                            "From": f.fromMonth, "To": f.toMonth,
+                            "Total_Testing_Initiated": f.totalTestingInitiated, "Testing_Completed": f.testingCompleted, "Testing_Pending_To_Complete": f.testingPendingToComplete
+                        })));
+
+                        // 7. TPI
+                        tpiGrid.setData(summaryArray.map(s => ({
+                            "From": s.fromMonth, "To": s.toMonth,
+                            "Total_TPI": s.totalNumberOfTPI, "Project_Value": s.projectValue
+                        })));
+
+                        // 8. Change Note
+                        changeNoteGrid.setData(summaryArray.map(s => ({
+                            "From": s.fromMonth, "To": s.toMonth,
+                            "Total_Change_Note": s.totalChangeNoteRaised
+                        })));
+
+                        // 9. NPI Validation
+                        npiValidationGrid.setData(summaryArray.map(s => ({
+                            "From": s.fromMonth, "To": s.toMonth,
+                            "Total_Validation": s.totalValidation,
+                            "AsOn_Open_Validation": s.asOnOpenValidation,
+                            "AsOn_Close_Validation": s.asOnCloseValidation
+                        })));
+
+                        // 10. FIFO / Waluj (List)
+                        walujGrid.setData(response.fifoDetails.map((s, i) => ({
+                            "Sr_No": i + 1, "From": response.summary.fromMonth, "To": response.summary.toMonth,
+                            "Test": s.test, "Qty": s.qty, "Test_Completed": s.testCompleted, "Test_Pending": s.testPending
+                        })));
+
+                        // 11. CSAT (List)
+                        csatGrid.setData(response.csatDetails.map((c, i) => ({
+                            "Sr_No": i + 1, "FY": c.fy, "Quarter": c.quarter,
+                            "Request_Sent": c.requestSent, "Responses_Received": c.responsesReceived,
+                            "Promoters": c.promoters, "Percent_Collection": c.collection,
+                            "Detractors": c.detractors, "NPS": c.nps
+                        })));
+                    }
+                },
+                error: function (ex) {
+                    Blockloaderhide();
+                    showDangerAlert("Data Fetch Error:", ex);
+                }
+            });
+        }
+
+        // ---------- GRID DEFINITIONS ----------
+
         function loadCAReportGrid() {
-
-            let columns = [];
-            columns.push(
-                { title: "Sr No.", field: "Sr No.", width: 110, hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+            let columns = [
                 { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "Total Complaint Registered", field: "Total_Registered", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "Till Date Open Complaint", field: "Till_Open", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "Till Date Closed Complaint", field: "Till_Closed", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
-            );
-
-            new Tabulator("#caReport_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>",
-                columns: columns
-            });
+            ];
+            caGrid = new Tabulator("#caReport_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
-        function loadCustomerRcaGrid() {
 
-            let columns = [];
-            columns.push(
-                { title: "Sr No.", field: "Sr No.", width: 110, hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+        function loadCustomerRcaGrid() {
+            let columns = [
                 { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "Total Complaint Registered", field: "Total_Registered", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
-                {
-                    title: "Till Date Open Complaint",
-                    field: "Till_Open",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Till Date Closed Complaint",
-                    field: "Till_Closed",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#customerRca_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>",
-                columns: columns
-            });
+                { title: "Till Date Open Complaint", field: "Till_Open", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Till Date Closed Complaint", field: "Till_Closed", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            customerRcaGrid = new Tabulator("#customerRca_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
-        function loadDeviationGrid() {
 
-            let columns = [];
-            columns.push(
-                { title: "Sr No.", field: "Sr No.", width: 110, hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+        function loadDeviationGrid() {
+            let columns = [
                 { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
                 { title: "Total Deviation Raised", field: "Total_Deviation", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
-            );
-
-            new Tabulator("#deviation_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align:center; font-size:1rem; color:gray;'>No data available</div>",
-                columns: columns
-            });
-
+            ];
+            deviationGrid = new Tabulator("#deviation_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadBisProjectGrid() {
-
-            let columns = [];
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "From",
-                    field: "From",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "To",
-                    field: "To",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Total Project",
-                    field: "Total_Project",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Model Inclusion",
-                    field: "Model_Inclusion",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Series addition",
-                    field: "Series_Addition",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "CCL Updation",
-                    field: "CCL_Updation",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "CCL+Series",
-                    field: "CCL_Series",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Others",
-                    field: "Others",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#bisProject_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Total Project", field: "Total_Project", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Model Inclusion", field: "Model_Inclusion", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Series addition", field: "Series_Addition", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "CCL Updation", field: "CCL_Updation", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "CCL+Series", field: "CCL_Series", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Others", field: "Others", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            bisGrid = new Tabulator("#bisProject_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadPaymentSummaryGrid() {
-
-            let columns = [];
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "From",
-                    field: "From",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "To",
-                    field: "To",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Total Payment",
-                    field: "Total_Payment",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#paymentSummary_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder:
-                    "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Total Payment", field: "Total_Payment", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            paymentGrid = new Tabulator("#paymentSummary_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadWalujTestingGrid() {
-
-            let columns = [];
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "From",
-                    field: "From",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "To",
-                    field: "To",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Test",
-                    field: "Test",
-                    headerFilter: "input",
-                    hozAlign: "left",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Qty",
-                    field: "Qty",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#walujTesting_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "Sr No.", field: "Sr_No", width: 110, hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Test", field: "Test", headerFilter: "input", hozAlign: "left", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Qty", field: "Qty", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "TestCompleted", field: "Test_Completed", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Test Pending", field: "Test_Pending", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            walujGrid = new Tabulator("#walujTesting_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadThirdPartyTestingGrid() {
-
-            let columns = [];
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "From",
-                    field: "From",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "To",
-                    field: "To",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Test",
-                    field: "Test",
-                    headerFilter: "input",
-                    hozAlign: "left",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Lab",
-                    field: "Lab",
-                    headerFilter: "input",
-                    hozAlign: "left",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Qty",
-                    field: "Qty",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Testing Charges",
-                    field: "Testing_Charges",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#thirdPartyTesting_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Total Testing Initiated", field: "Total_Testing_Initiated", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Testing Completed", field: "Testing_Completed", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Testing Pending To Complete", field: "Testing_Pending_To_Complete", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            thirdPartyGrid = new Tabulator("#thirdPartyTesting_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadTpiGrid() {
-
-            let columns = [];
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "From",
-                    field: "From",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "To",
-                    field: "To",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Total Number of TPI",
-                    field: "Total_TPI",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Project Value",
-                    field: "Project_Value",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#tpi_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Total Number of TPI", field: "Total_TPI", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Project Value", field: "Project_Value", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            tpiGrid = new Tabulator("#tpi_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadCsatSummaryGrid() {
-
-            let columns = [];
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "FY",
-                    field: "FY",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Quarter",
-                    field: "Quarter",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Request Sent",
-                    field: "Request_Sent",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Responses Received",
-                    field: "Responses_Received",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Promoters",
-                    field: "Promoters",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "% Collection",
-                    field: "Percent_Collection",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Detractors",
-                    field: "Detractors",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "NPS",
-                    field: "NPS",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#csatSummary_Table", {
-                data: [], // plug CSAT data here
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "Sr No.", field: "Sr_No", width: 110, hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "FY", field: "FY", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Quarter", field: "Quarter", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Request Sent", field: "Request_Sent", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Responses Received", field: "Responses_Received", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Promoters", field: "Promoters", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "% Collection", field: "Percent_Collection", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Detractors", field: "Detractors", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "NPS", field: "NPS", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            csatGrid = new Tabulator("#csatSummary_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadChangeNoteGrid() {
-
-            let columns = [];
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "From",
-                    field: "From",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "To",
-                    field: "To",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Total Change Note Raised",
-                    field: "Total_Change_Note",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#changeNote_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder: "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Total Change Note Raised", field: "Total_Change_Note", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            changeNoteGrid = new Tabulator("#changeNote_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
+
         function loadNpiValidationGrid() {
-
-            let columns = [];
-
-            columns.push(
-                {
-                    title: "Sr No.",
-                    field: "Sr No.",
-                    width: 110,
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "From",
-                    field: "From",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "To",
-                    field: "To",
-                    headerFilter: "input",
-                    hozAlign: "center",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "Total Validation",
-                    field: "Total_Validation",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "As on Open Validation",
-                    field: "AsOn_Open_Validation",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                },
-                {
-                    title: "As on Close Validation",
-                    field: "AsOn_Close_Validation",
-                    headerFilter: "input",
-                    hozAlign: "right",
-                    headerHozAlign: "center",
-                    headerMenu: headerMenu
-                }
-            );
-
-            new Tabulator("#npiValidation_Table", {
-                data: [],
-                layout: "fitColumns",
-                movableColumns: true,
-                pagination: "local",
-                paginationSize: 10,
-                paginationSizeSelector: [10, 50, 100, 500],
-                paginationCounter: "rows",
-                placeholder:
-                    "<div style='text-align:center;font-size:1rem;color:gray;'>No data available</div>",
-                columns: columns
-            });
+            let columns = [
+                { title: "From", field: "From", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "To", field: "To", headerFilter: "input", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "Total Validation", field: "Total_Validation", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "As on Open Validation", field: "AsOn_Open_Validation", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu },
+                { title: "As on Close Validation", field: "AsOn_Close_Validation", headerFilter: "input", hozAlign: "right", headerHozAlign: "center", headerMenu: headerMenu }
+            ];
+            npiValidationGrid = new Tabulator("#npiValidation_Table", { data: [], layout: "fitColumns", movableColumns: true, pagination: "local", paginationSize: 10, columns: columns });
         }
 
+        async function exportTableToExcel(tableInstance, fileName) {
+            Blockloadershow();
+            if (!tableInstance) {
+                // Simple fallback if grid isn't initialized
+                console.error('Table data is not loaded yet.');
+                return;
+            }
+
+            const workbook = new ExcelJS.Workbook();
+            const sheetName = fileName.replace(/_/g, ' ').substring(0, 31);
+            const worksheet = workbook.addWorksheet(sheetName);
+
+            // 1. Get Columns from Tabulator (excluding internal ones)
+            const columns = tableInstance.getColumns();
+            const headerTitles = [];
+            const excelColumns = [];
+
+            columns.forEach(col => {
+                const def = col.getDefinition();
+                if (def.title && def.field) {
+                    headerTitles.push(def.title);
+                    excelColumns.push({ key: def.field, width: 20 });
+                }
+            });
+
+            worksheet.columns = excelColumns;
+
+            // 2. Add and Style Header Row
+            const headerRow = worksheet.addRow(headerTitles);
+            headerRow.eachCell((cell) => {
+                cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+                cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: '4472C4' } // Corporate Blue
+                };
+                cell.border = {
+                    top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'}
+                };
+            });
+
+            // 3. Add Data Rows (active filters/sorts respected)
+            const rowData = tableInstance.getData("active");
+            rowData.forEach(item => {
+                const rowValues = [];
+                columns.forEach(col => {
+                    const field = col.getDefinition().field;
+                    if (field) rowValues.push(item[field]);
+                });
+                const row = worksheet.addRow(rowValues);
+        
+                // Basic alignment for data
+                row.eachCell((cell) => {
+                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
+                    cell.border = {
+                        top: {style:'thin'}, left: {style:'thin'}, bottom: {style:'thin'}, right: {style:'thin'}
+                    };
+                });
+            });
+
+            // 4. Generate and Download
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = fileName + '.xlsx';
+            anchor.click();
+            window.URL.revokeObjectURL(url);
+            Blockloaderhide();
+        }
+
+        async function exportAllTablesToSingleExcel(tablesArray, finalFileName) {
+            Blockloadershow();
+            const workbook = new ExcelJS.Workbook();
+
+            for (const item of tablesArray) {
+                const table = item.instance;
+                const rawName = item.sheetName;
+
+                // Skip if table isn't initialized or has no data
+                if (!table) continue;
+
+                // 1. Clean Sheet Name (No underscores, max 31 chars)
+                const cleanSheetName = rawName.replace(/_/g, ' ').substring(0, 31);
+                const worksheet = workbook.addWorksheet(cleanSheetName);
+
+                // 2. Get Columns
+                const columns = table.getColumns();
+                const headerTitles = [];
+                const excelColumns = [];
+
+                columns.forEach(col => {
+                    const def = col.getDefinition();
+                    if (def.title && def.field) {
+                        headerTitles.push(def.title);
+                        excelColumns.push({ key: def.field, width: 20 });
+                    }
+                });
+
+                worksheet.columns = excelColumns;
+
+                // 3. Add and Style Header Row
+                const headerRow = worksheet.addRow(headerTitles);
+                headerRow.eachCell((cell) => {
+                    cell.font = { bold: true, color: { argb: 'FFFFFF' } };
+                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: '4472C4' } // Corporate Blue
+                    };
+                });
+
+                // 4. Add Data Rows
+                const rowData = table.getData("active");
+                rowData.forEach(dataItem => {
+                    const rowValues = [];
+                    columns.forEach(col => {
+                        const field = col.getDefinition().field;
+                        if (field) rowValues.push(dataItem[field]);
+                    });
+                    const row = worksheet.addRow(rowValues);
+                    row.eachCell(c => {
+                        c.border = {
+                            top: {style:'thin'}, left: {style:'thin'}, 
+                            bottom: {style:'thin'}, right: {style:'thin'}
+                        };
+                    });
+                });
+            }
+
+            // 5. Save the final single file
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            anchor.download = finalFileName + '.xlsx';
+            anchor.click();
+            window.URL.revokeObjectURL(url);
+            Blockloaderhide();
+        }
     </script>
 }
 

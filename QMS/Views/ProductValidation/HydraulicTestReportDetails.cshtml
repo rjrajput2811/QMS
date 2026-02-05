@@ -1,4 +1,8 @@
-﻿@{
+﻿@using QMS.Core.Models
+
+@model HydraulicTestReportViewModel
+
+@{
     ViewData["Title"] = "Hydraulic Test Report";
 }
 
@@ -30,6 +34,21 @@
         .add-btn:hover {
             background: #e9fbe9;
         }
+
+    .upload-label {
+        background: #007bff;
+        color: #fff;
+        padding: 6px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+
+    .img-wrapper {
+        position: relative; /* Needed to position the X button */
+        display: inline-block;
+    }
 
     .photo-table {
         width: 100%;
@@ -128,6 +147,10 @@
         .inline-date:focus {
             border-bottom-color: #4682B4;
         }
+
+    .photo-cell input[type="file"] {
+        display: none;
+    }
 </style>
 
 <div class="content">
@@ -147,7 +170,7 @@
                     <div>
                         <button id="saveHydraulicButton"
                                 type="button"
-                                onclick="saveHydraulicTest()"
+                                onclick="submitForm()"
                                 class="btn btn-outline-success mr-2"
                                 style="width:120px;">
                             <i class="fas fa-save mr-1"></i>Save
@@ -166,205 +189,264 @@
             <!-- BASIC FORM TABLE -->
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
                 <div class="card-body">
-
-                    <table class="header-table">
-                        <tbody>
-
-                            <!-- ROW 1: Title -->
-                            <tr>
-                                <td colspan="4" style="text-align:center; font-weight:700; font-size:15px;">
-                                    Hydraulic Test Pressure as per Design Docket
-                                </td>
-                            </tr>
-
-                            <!-- ROW 2: Report No -->
-                            <tr>
-                                <td colspan="3"></td>
-                                <td>
-                                    <span class="label-bold">Report No<span class="req">*</span> :</span>
-                                    <input type="text" class="input-underline" placeholder="Enter Report No" style="width:60%;" />
-                                </td>
-                            </tr>
-
-                            <!-- ROW 3: Customer / Project Name & Date -->
-                            <tr>
-                                <td colspan="3">
-                                    <span class="label-bold">Customer / Project Name<span class="req">*</span> :</span>
-                                    <input type="text" class="input-underline" placeholder="Enter Customer / Project" style="width:65%;" />
-                                </td>
-
-                                <td>
-                                    <span class="label-bold">Date<span class="req">*</span> :</span>
-                                    <input type="date" class="input-underline" />
-                                </td>
-                            </tr>
-
-                            <!-- ROW 4: Product Details -->
-                            <tr>
-                                <td>
-                                    <span class="label-bold">Product Cat Ref :</span>
-                                    <input type="text" class="input-underline" placeholder="Enter Ref" />
-                                </td>
-
-                                <td>
-                                    <span class="label-bold">Product Description :</span>
-                                    <input type="text" class="input-underline" placeholder="Enter Description" />
-                                </td>
-
-                                <td>
-                                    <span class="label-bold">Batch Code :</span>
-                                    <input type="text" class="input-underline" placeholder="Enter Batch Code" />
-                                </td>
-
-                                <td>
-                                    <span class="label-bold">Quantity :</span>
-                                    <input type="text" class="input-underline" placeholder="Enter Quantity" />
-                                </td>
-                            </tr>
-
-                            <!-- Hydraulic Pressure (Not mandatory) -->
-                            <tr>
-                                <td colspan="4">
-                                    <span class="label-bold">Hydraulic Test Pressure :</span>
-                                    <input type="text" class="input-underline" placeholder="Enter Pressure" style="width:50%;" />
-                                </td>
-                            </tr>
-
-
-
-                            <tr>
-                                <td colspan="6" style="padding:12px; text-align:left;">
-                                    <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-
-                    <div class="table-responsive">
-                        <table class="photo-table">
-                            <thead>
-                                <tr>
-                                    <th style="width:5%;">Sr. No.</th>
-                                    <th style="width:20%;">Photo Before Test</th>
-                                    <th style="width:20%;">Photo After Test</th>
-                                    <th style="width:25%;">Observation</th>
-                                    <th style="color:red; width:15%;">Result ( Pass/ Fail )</th>
-                                </tr>
-                            </thead>
-
-                            <tbody id="hydraulicPhotosTbody">
-                                <tr class="test-row">
-                                    <td style="width:8%; text-align:center;">
-                                        <span class="srno-number">1</span>
-                                        <button type="button" class="delete-row-btn"
-                                                style="border:none; background:none; cursor:pointer; margin-left:6px;">
-                                            <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
-                                        </button>
-                                    </td>
-
-                                    <td class="photo-cell">
-                                        <input type="file" style="border:none; width:100%;" />
-                                    </td>
-
-                                    <td class="photo-cell">
-                                        <input type="file" style="border:none; width:100%;" />
-                                    </td>
-
-                                    <td contenteditable="true"></td>
-
-                                    <td>
-                                        <select class="pretty-result-select">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <!-- SEPARATE TABLE FOR RESULT + SIGNATURES -->
-                        <table class="header-table" style="margin-top:0; width:100%;">
+                    <form id="hydraulicTest-form" method="post" asp-action="InsertUpdateHydraulicTestReport" asp-controller="ProductValidation">
+                        @Html.HiddenFor(m => m.Id)
+                        <table class="header-table">
                             <tbody>
 
-                                <!-- FINAL RESULT ROW -->
+                                <!-- ROW 1: Title -->
                                 <tr>
-                                    <td colspan="5" style="text-align:left; padding:12px;">
-                                        <span class="label-bold" style="color:red;">Result ( Pass / Fail ) :</span>
-                                        <select class="pretty-result-select" style="width:200px; margin-left:10px;">
-                                            <option value="">Select</option>
-                                            <option value="Pass">Pass</option>
-                                            <option value="Fail">Fail</option>
-                                        </select>
+                                    <td colspan="4" style="text-align:center; font-weight:700; font-size:15px;">
+                                        Hydraulic Test Pressure as per Design Docket
                                     </td>
                                 </tr>
 
-                                <!-- SIGNATURE ROW -->
+                                <!-- ROW 2: Report No -->
                                 <tr>
-                                    <td colspan="3" style="padding:12px;">
-                                        <span class="label-bold">Tested By :</span>
-                                        <input type="text" class="input-underline" placeholder="Enter Name" style="width:60%;" />
+                                    <td colspan="3"></td>
+                                    <td>
+                                        <span class="label-bold">Report No<span class="req">*</span> :</span>
+                                        <input type="text" asp-for="ReportNo" class="input-underline" placeholder="Enter Report No" style="width:60%;" />
+                                    </td>
+                                </tr>
+
+                                <!-- ROW 3: Customer / Project Name & Date -->
+                                <tr>
+                                    <td colspan="3">
+                                        <span class="label-bold">Customer / Project Name<span class="req">*</span> :</span>
+                                        <input type="text" asp-for="CustomerProjectName" class="input-underline" placeholder="Enter Customer / Project" style="width:65%;" />
                                     </td>
 
-                                    <td colspan="2" style="padding:12px;">
-                                        <span class="label-bold">Verified By :</span>
-                                        <input type="text" class="input-underline" placeholder="Enter Name" style="width:60%;" />
+                                    <td>
+                                        <span class="label-bold">Date<span class="req">*</span> :</span>
+                                        <input type="date" asp-for="ReportDate" class="input-underline" />
+                                    </td>
+                                </tr>
+
+                                <!-- ROW 4: Product Details -->
+                                <tr>
+                                    <td>
+                                        <span class="label-bold">Product Cat Ref :</span>
+                                        <input type="text" asp-for="ProductCatRef" class="input-underline" placeholder="Enter Ref" />
+                                    </td>
+
+                                    <td>
+                                        <span class="label-bold">Product Description :</span>
+                                        <input type="text" asp-for="ProductDescription" class="input-underline" placeholder="Enter Description" />
+                                    </td>
+
+                                    <td>
+                                        <span class="label-bold">Batch Code :</span>
+                                        <input type="text" asp-for="BatchCode" class="input-underline" placeholder="Enter Batch Code" />
+                                    </td>
+
+                                    <td>
+                                        <span class="label-bold">Quantity :</span>
+                                        <input type="text" asp-for="Quantity" class="input-underline" placeholder="Enter Quantity" />
+                                    </td>
+                                </tr>
+
+                                <!-- Hydraulic Pressure (Not mandatory) -->
+                                <tr>
+                                    <td colspan="4">
+                                        <span class="label-bold">Hydraulic Test Pressure :</span>
+                                        <input type="text" asp-for="HydraulicTestPressure" class="input-underline" placeholder="Enter Pressure" style="width:50%;" />
+                                    </td>
+                                </tr>
+
+
+
+                                <tr>
+                                    <td colspan="6" style="padding:12px; text-align:left;">
+                                        <button id="addRowBtn" type="button" class="btn btn-outline-success" onclick="hydraulicAddRow()" style="width:120px; font-size:15px; border-radius:6px;">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
                                     </td>
                                 </tr>
 
                             </tbody>
                         </table>
 
-                    </div>
+                        <div class="table-responsive">
+                            <table class="photo-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:5%;">Sr. No.</th>
+                                        <th style="width:20%;">Photo Before Test</th>
+                                        <th style="width:20%;">Photo After Test</th>
+                                        <th style="width:25%;">Observation</th>
+                                        <th style="color:red; width:15%;">Result ( Pass/ Fail )</th>
+                                    </tr>
+                                </thead>
 
+                                <tbody id="hydraulicPhotosTbody">
+                                    @{
+                                        var counter = 1;
+                                    }
+                                    @foreach (var obs in Model.Observations)
+                                    {
+                                        <tr class="test-row">
+                                            <td style="width:8%; text-align:center;">
+                                                <span class="srno-number">@counter</span>
+                                                <button type="button" class="delete-row-btn" style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                                    <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
+                                                </button>
+                                            </td>
 
+                                            <td class="photo-cell">
+                                                <label for="before_@obs.Id" class="upload-label">Upload Photo</label>
+                                                <input type="file" id="before_@obs.Id" class="photoUploadBefore" accept="image/*" style="border:none; width:100%;" onchange="previewSingleImage(this)" />
+                                                <input type="hidden" class="existingPhotoBefore" value="@obs.PhotoBeforeTest" />
+                                                <div class="img-wrapper">
+                                                    @if (!string.IsNullOrEmpty(obs.PhotoBeforeTest))
+                                                    {
+                                                        var displayPath = obs.PhotoBeforeTest.Contains("wwwroot")
+                                                        ? "~" + obs.PhotoBeforeTest.Split("wwwroot")[1].Replace("\\", "/")
+                                                        : obs.PhotoBeforeTest;
+
+                                                        <img src="@Url.Content(displayPath)" style="max-width:100px; height:auto;" />
+                                                    }
+                                                    <em style="color:#555; @(!string.IsNullOrEmpty(obs.PhotoBeforeTest) ? "display:none;" : "")">
+                                                        No photo uploaded
+                                                    </em>
+                                                </div>
+                                            </td>
+
+                                            <td class="photo-cell">
+                                                <label for="after_@obs.Id" class="upload-label">Upload Photo</label>
+                                                <input type="file" id="after_@obs.Id" class="photoUploadAfter" accept="image/*" style="border:none; width:100%;" onchange="previewSingleImage(this)" />
+                                                <input type="hidden" class="existingPhotoAfter" value="@obs.PhotoAfterTest" />
+                                                <div class="img-wrapper">
+                                                    @if (!string.IsNullOrEmpty(obs.PhotoAfterTest))
+                                                    {
+                                                        var displayPath = obs.PhotoAfterTest.Contains("wwwroot")
+                                                        ? "~" + obs.PhotoAfterTest.Split("wwwroot")[1].Replace("\\", "/")
+                                                        : obs.PhotoAfterTest;
+
+                                                        <img src="@Url.Content(displayPath)" style="max-width:100px; height:auto;" />
+                                                    }
+                                                    <em style="color:#555; @(!string.IsNullOrEmpty(obs.PhotoAfterTest) ? "display:none;" : "")">
+                                                        No photo uploaded
+                                                    </em>
+                                                </div>
+                                            </td>
+
+                                            <td contenteditable="true" data-name="Observation">@obs.Observation</td>
+
+                                            <td>
+                                                <select asp-for="@obs.Result" class="pretty-result-select">
+                                                    <option value="">Select</option>
+                                                    <option value="Pass">Pass</option>
+                                                    <option value="Fail">Fail</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        counter++;
+                                    }
+                                </tbody>
+                            </table>
+                            <!-- SEPARATE TABLE FOR RESULT + SIGNATURES -->
+                            <table class="header-table" style="margin-top:0; width:100%;">
+                                <tbody>
+
+                                    <!-- FINAL RESULT ROW -->
+                                    <tr>
+                                        <td colspan="5" style="text-align:left; padding:12px;">
+                                            <span class="label-bold" style="color:red;">Result ( Pass / Fail ) :</span>
+                                            <select asp-for="OverallResult" class="pretty-result-select" style="width:200px; margin-left:10px;">
+                                                <option value="">Select</option>
+                                                <option value="Pass">Pass</option>
+                                                <option value="Fail">Fail</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+
+                                    <!-- SIGNATURE ROW -->
+                                    <tr>
+                                        <td colspan="3" style="padding:12px;">
+                                            <span class="label-bold">Tested By :</span>
+                                            <input type="text" asp-for="TestedBy" class="input-underline" placeholder="Enter Name" style="width:60%;" />
+                                        </td>
+
+                                        <td colspan="2" style="padding:12px;">
+                                            <span class="label-bold">Verified By :</span>
+                                            <input type="text" asp-for="VerifiedBy" class="input-underline" placeholder="Enter Name" style="width:60%;" />
+                                        </td>
+                                    </tr>
+
+                                </tbody>
+                            </table>
+
+                        </div>
+                    </form>
                 </div>
             </div>
 
         </div>
     </div>
 </div>
-<script>
 
-    let hydraulicAddBtn;
-    let hydraulicTbody;
+@section Scripts {
+    <script>
 
-    $(document).ready(function () {
-        
-        try { initElectricalTests(); } catch (e) { console.error(e); }
-        try { initDimensions(); } catch (e) { console.error(e); }
-        try { initHydraulicPhotos(); } catch (e) { console.error(e); }
-    });
+        let hydraulicAddBtn;
+        let hydraulicTbody;
 
-    function hydraulicRefreshSerials() {
-        const rows = hydraulicTbody.querySelectorAll('tr.test-row');
-        rows.forEach((tr, idx) => {
-            const snSpan = tr.querySelector('.srno-number');
-            if (snSpan) snSpan.textContent = idx + 1;
+        $(document).ready(function () {
+            $('#hydraulicPhotosTbody').on('click', '.delete-row-btn', function () {
+                const rowCount = $('#hydraulicPhotosTbody tr').length;
+                if (rowCount > 1) {
+                    $(this).closest('tr').remove();
+                    hydraulicRefreshSerials();
+                }
+            });
         });
-    }
 
-    function hydraulicAddRow() {
-        const tr = document.createElement('tr');
-        tr.className = 'test-row';
+        function hydraulicRefreshSerials() {
+            const rows = document.querySelectorAll('#hydraulicPhotosTbody tr.test-row');
+            rows.forEach((tr, idx) => {
+                const snSpan = tr.querySelector('.srno-number');
+                if (snSpan) snSpan.textContent = idx + 1;
+            });
+        }
 
-        tr.innerHTML = `
+        function hydraulicAddRow() {
+            const hydraulicTbody = document.getElementById('hydraulicPhotosTbody');
+            const tr = document.createElement('tr');
+            tr.className = 'test-row';
+            const uniqueIdBefore = 'before_' + Date.now();
+            const uniqueIdAfter = 'after_' + Date.now();
+
+            tr.innerHTML = `
                 <td style="width:8%; text-align:center;">
                     <span class="srno-number"></span>
                     <button type="button" class="delete-row-btn"
-                            style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                            style="border:none; background:none; cursor:pointer; margin-left:6px;"
+                            onclick="this.closest('tr').remove(); updateSerialNumbers();">
                         <i class="fas fa-trash" style="color:#c0392b; font-size:16px;"></i>
                     </button>
                 </td>
+
                 <td class="photo-cell">
-                    <input type="file" style="border:none; width:100%;" />
+                    <label for="${uniqueIdBefore}" class="upload-label">Upload Photo</label>
+                    <input type="file" id="${uniqueIdBefore}" class="photoUploadBefore" accept="image/*"
+                           style="border:none; width:100%;" onchange="previewSingleImage(this)" />
+                    <div class="img-wrapper">
+                        <em style="color:#555;">No photo uploaded</em>
+                    </div>
                 </td>
+
                 <td class="photo-cell">
-                    <input type="file" style="border:none; width:100%;" />
+                    <label for="${uniqueIdAfter}" class="upload-label">Upload Photo</label>
+                    <input type="file" id="${uniqueIdAfter}" class="photoUploadAfter" accept="image/*"
+                           style="border:none; width:100%;" onchange="previewSingleImage(this)" />
+                    <div class="img-wrapper">
+                        <em style="color:#555;">No photo uploaded</em>
+                    </div>
                 </td>
-                <td contenteditable="true"></td>
+
+                <td contenteditable="true" data-name="Observation"></td>
+
                 <td>
                     <select class="pretty-result-select">
                         <option value="">Select</option>
@@ -374,34 +456,145 @@
                 </td>
             `;
 
-        hydraulicTbody.appendChild(tr);
-        hydraulicRefreshSerials();
-    }
-
-    function initHydraulicPhotos() {
-        hydraulicAddBtn = document.getElementById('addRowBtn');
-        hydraulicTbody = document.getElementById('hydraulicPhotosTbody');
-
-        if (!hydraulicAddBtn || !hydraulicTbody) {
-            console.error('Add button or hydraulicPhotosTbody not found.');
-            return;
+            hydraulicTbody.appendChild(tr);
+            hydraulicRefreshSerials();
         }
 
-        // delegated delete handler
-        hydraulicTbody.addEventListener('click', function (e) {
-            const delBtn = e.target.closest('.delete-row-btn');
-            if (!delBtn) return;
+        function previewSingleImage(input) {
+            const previewDiv = input.nextElementSibling; // The .photo-preview div
+            previewDiv.innerHTML = ""; // Clear existing
 
-            const tr = delBtn.closest('tr.test-row');
-            if (tr) tr.remove();
-            hydraulicRefreshSerials();
-        });
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgWrapper = document.createElement("div");
+                    imgWrapper.className = "img-wrapper";
 
-        hydraulicAddBtn.addEventListener('click', hydraulicAddRow);
-        hydraulicRefreshSerials();
-    }
-</script>
+                    const img = document.createElement("img");
+                    img.src = e.target.result;
+                    img.style.maxWidth = "100px";
+                    img.style.height = "auto";
 
+                    imgWrapper.appendChild(img);
+                    previewDiv.appendChild(imgWrapper);
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function submitForm(){
+            Blockloadershow();
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'CustomerProjectName', name: 'Customer Project Name' },
+                { id: 'ReportDate', name: 'Report Date' },
+                { id: 'Quantity', name: 'Quantity' },
+            ];
+
+            let isValid = true;
+            let missingFields = [];
+
+            requiredFields.forEach(field => {
+                const element = $('#' + field.id);
+                const value = element.val();
+
+                if (!value) {
+                    isValid = false;
+                    missingFields.push(field.name);
+                }
+                else if (field.id === 'Quantity' && parseFloat(value) <= 0) {
+                    isValid = false;
+                    missingFields.push(field.name + " (must be greater than 0)");
+                }
+            });
+
+            if (!isValid) {
+                const missingFieldsList = missingFields.map(field => `<li>${field}</li>`).join('');
+                const alertMessage = `
+                        <p>Please fill out the following required field(s):</p>
+                        <ul>${missingFieldsList}</ul>
+                    `;
+                showDangerAlert(alertMessage);
+                Blockloaderhide();
+                return false;
+            }
+
+            $("#Id").val(@Model.Id);
+
+            const form = $('#hydraulicTest-form')[0];
+            const formData = new FormData(form);
+
+            $('#hydraulicPhotosTbody tr.test-row').each(function (index, row) {
+                const rowId = $(row).find('.row-id').val() || 0; 
+                const observation = $(row).find('td[data-name="Observation"]').text().trim();
+                const result = $(row).find('.pretty-result-select').val();
+
+                const fileBefore = $(row).find('.photoUploadBefore')[0].files[0];
+                const fileAfter = $(row).find('.photoUploadAfter')[0].files[0];
+
+                const existingPathBefore = $(row).find('.existingPhotoBefore').val();
+                const existingPathAfter = $(row).find('.existingPhotoAfter').val();
+
+                formData.append(`Observations[${index}].Id`, rowId);
+                formData.append(`Observations[${index}].Observation`, observation);
+                formData.append(`Observations[${index}].Result`, result);
+
+                if (fileBefore) {
+                    formData.append(`Observations[${index}].PhotoBeforeTestAttachedFile`, fileBefore);
+                } else {
+                    formData.append(`Observations[${index}].PhotoBeforeTest`, existingPathBefore);
+                }
+
+                if (fileAfter) {
+                    formData.append(`Observations[${index}].PhotoAfterTestAttachedFile`, fileAfter);
+                } else {
+                    formData.append(`Observations[${index}].PhotoAfterTest`, existingPathAfter);
+                }
+            });
+
+            $.ajax({
+                url: $('#hydraulicTest-form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+                    if (!response.success) {
+                        var errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg != "") {
+                                showDangerAlert(errorMessg);
+                            }
+                        }
+                        else {
+                            showDangerAlert(response.message);
+                        }
+                        return false;
+                    }
+                    else {
+                        if ($("#Id").val() > 0) {
+                            showSuccessAlert("Updated Successfully.");
+                        }
+                        else {
+                            showSuccessAlert("Saved Successfully.");
+                        }
+                        setTimeout(function () {
+                            window.open('@Url.Action("HydraulicTestReport", "ProductValidation")', '_self');
+                        }, 2500);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
+        }
+    </script>
+}
 
 @section HideSidebar { }
 

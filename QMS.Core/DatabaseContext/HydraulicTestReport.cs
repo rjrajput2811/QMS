@@ -19,14 +19,6 @@ public class HydraulicTestReport : SqlTable
     public string? BatchCode { get; set; }
     public int Quantity { get; set; }
     public string? HydraulicTestPressure { get; set; }
-    public string? First_PhotoBeforeTest { get; set; }
-    public string? First_PhotoAfterTest { get; set; }
-    public string? First_Observation { get; set; }
-    public string? First_Result { get; set; }
-    public string? Second_PhotoBeforeTest { get; set; }
-    public string? Second_PhotoAfterTest { get; set; }
-    public string? Second_Observation { get; set; }
-    public string? Second_Result { get; set; }
     public string? OverallResult { get; set; }
     public string? TestedBy { get; set; }
     public string? VerifiedBy { get; set; }
@@ -34,4 +26,6 @@ public class HydraulicTestReport : SqlTable
     public DateTime AddedOn { get; set; }
     public int? UpdatedBy { get; set; }
     public DateTime? UpdatedOn { get; set; }
+
+
 }

@@ -7,6 +7,7 @@ using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
+using iText.Kernel.Pdf.Canvas.Draw;
 using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
@@ -16,17 +17,21 @@ using QMS.Core.Models;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ImpactTestRepository;
+using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Repositories.PhotometryRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
+using QMS.Core.Repositories.RegulatoryRequirementRepository;
 using QMS.Core.Repositories.RippleTestReportRepo;
-using Color = System.Drawing.Color;
-using Path = System.IO.Path;
 using QMS.Core.Repositories.SurgeTestReportRepository;
 using System.Drawing;
 using System.Threading.Tasks;
 using QMS.Core.Repositories.InstallationTrialRepository;
 using QMS.Core.Repositories.TemperatureRiseTestRepo;
 using QMS.Core.Services.SystemLogs;
+using System.IO;
+using System.Threading.Tasks;
+using Color = System.Drawing.Color;
+using Path = System.IO.Path;
 
 namespace QMS.Controllers;
 
@@ -40,6 +45,7 @@ public class ProductValidationController : Controller
     private readonly ISurgeTestReportRepository _surgeTestRepository;
     private readonly IPhotometryTestRepository _photometryTestRepository;
     private readonly IImpactTestRepository _impactTestRepository;
+    private readonly IRegulatoryRequirementRepository _regulatoryRequirementRepository;
     private readonly IInstallationTrialRepository _installationTrialRepository;
     private readonly ISystemLogService _systemLogService;
     private readonly ITemperatureRiseTestRepository _temperatureRiseTestRepository;
@@ -50,9 +56,12 @@ public class ProductValidationController : Controller
         IWebHostEnvironment hostEnvironment,
         IElectricalProtectionRepository electricalProtectionRepository,
         IRippleTestReportRepository rippleTestReportRepository,
-        ISurgeTestReportRepository surgeTestRepository ,
+        ISurgeTestReportRepository surgeTestRepository,
         IPhotometryTestRepository photometryTestRepository,
         IImpactTestRepository impactTestRepository,
+        ISystemLogService systemLogService,
+        IInstallationTrialRepository installationTrialRepository,
+        IRegulatoryRequirementRepository regulatoryRequirementRepository)
         ISystemLogService systemLogService,
         IInstallationTrialRepository installationTrialRepository,
         ITemperatureRiseTestRepository temperatureRiseTestRepository)
@@ -68,6 +77,7 @@ public class ProductValidationController : Controller
         _impactTestRepository = impactTestRepository;
         _systemLogService = systemLogService;
         _temperatureRiseTestRepository = temperatureRiseTestRepository;
+        _regulatoryRequirementRepository = regulatoryRequirementRepository;
     }
 
 
@@ -313,7 +323,7 @@ public class ProductValidationController : Controller
         }
     }
 
-    
+
 
     public async Task<ActionResult> DeletePhysicalCheckAndVisualInspectionAsync(int Id)
     {
@@ -500,43 +510,32 @@ public class ProductValidationController : Controller
                 mainTable.AddCell(resultValueCell);
 
                 // ================= FOOTER SIGNATURES =================
-                Cell footerContainer = new Cell(1, 2).SetPadding(0);
-                Table innerFooter = new Table(new float[] { 1, 1 }).UseAllAvailableWidth();
-
-                // Helper to Create Signature Cells
+                // 1. Helper to Create Signature Cells
                 Cell CreateSignatureCell(string label, string name, bool addRightBorder)
                 {
                     Cell cell = new Cell();
-                    cell.SetHeight(45); // INCREASED HEIGHT from 50 to 65 to prevent clipping
+                    cell.SetHeight(45);
 
-                    // 1. Label at the TOP
+                    // Label at the TOP
                     cell.Add(new Paragraph(label).SetFontSize(10).SetFont(boldFont));
 
-
-                    // 3. Name at the BOTTOM (Use check for null)
+                    // Name at the BOTTOM
                     string displayName = !string.IsNullOrEmpty(name) ? name : "____________________";
                     cell.Add(new Paragraph(displayName).SetFontSize(11));
 
                     // Styling
-                    cell.SetVerticalAlignment(VerticalAlignment.BOTTOM); // Aligns the last element to bottom
-                    cell.SetBorder(Border.NO_BORDER);
-
-                    if (addRightBorder)
-                    {
-                        cell.SetBorderRight(new SolidBorder(ColorConstants.BLACK, 1));
-                    }
+                    cell.SetVerticalAlignment(VerticalAlignment.BOTTOM);
 
                     return cell;
                 }
 
-                // Add Tested By (Left)
-                innerFooter.AddCell(CreateSignatureCell("Tested By", model.TestedBy, true));
+                // 2. Add cells DIRECTLY to mainTable (No nested table, no footerContainer)
 
-                // Add Verified By (Right)
-                innerFooter.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, false));
+                // Add Tested By -> Goes into Column 1 (Aligns with "Result" label)
+                mainTable.AddCell(CreateSignatureCell("Tested By", model.TestedBy, true));
 
-                footerContainer.Add(innerFooter);
-                mainTable.AddCell(footerContainer);
+                // Add Verified By -> Goes into Column 2 (Aligns with Result value)
+                mainTable.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, false));
 
                 // Add the single main table to doc
                 document.Add(mainTable);
@@ -1577,20 +1576,56 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public async Task<ActionResult> GetSurgeTestReportList()
+    public async Task<ActionResult> GetSurgeTestReportList(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _surgeTestRepository.GetSurgeTestReportAsync();
+        var result = await _surgeTestRepository.GetSurgeTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
     [HttpPost]
     public async Task<ActionResult> InsertUpdateSurgeTestReport(SurgeTestReportViewModel model)
     {
+        if (model == null)
+        {
+            return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+        }
+
+        if (model.Photo_SurgeFile != null && model.Photo_SurgeFile.Length > 0)
+        {
+            model.Surge_Photo = await SaveImageAsync(
+                model.Photo_SurgeFile, "SurgeTest_Attach", "SurgeDriver", model.ReportNo);
+        }
+
         if (!ModelState.IsValid)
         {
             var errors = ModelState.Values.SelectMany(v => v.Errors)
                             .Select(e => e.ErrorMessage).ToList();
             return Json(new { Success = false, Errors = errors });
+        }
+
+        bool exists;
+        if (model.Id > 0)
+        {
+            exists = await _surgeTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            exists = await _surgeTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
         }
 
         int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
@@ -1622,6 +1657,8 @@ public class ProductValidationController : Controller
 
 
 
+
+
     #region PhotometryTestReport 
     public IActionResult PhotometryTestReport()
     {
@@ -1649,6 +1686,34 @@ public class ProductValidationController : Controller
             return Json(new { Success = false, Errors = errors });
         }
 
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            // UPDATE: exclude same Id record
+            exists = await _photometryTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _photometryTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
+        }
+
         if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
@@ -1665,9 +1730,9 @@ public class ProductValidationController : Controller
         }
     }
 
-    public async Task<ActionResult> GetPhotometryTestReportAsync()
+    public async Task<ActionResult> GetPhotometryTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _photometryTestRepository.GetPhotometryTestReportAsync();
+        var result = await _photometryTestRepository.GetPhotometryTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -1833,7 +1898,7 @@ public class ProductValidationController : Controller
             if (model.Photo_WithLoadFile != null && model.Photo_WithLoadFile.Length > 0)
             {
                 model.Photo_WithLoad = await SaveImageAsync(
-                    model.Photo_WithLoadFile,"InstallationTrial_Attach", "WithLoad", model.ReportNo);
+                    model.Photo_WithLoadFile, "InstallationTrial_Attach", "WithLoad", model.ReportNo);
             }
 
             if (model.Photo_WithoutLoadFile != null && model.Photo_WithoutLoadFile.Length > 0)
@@ -1841,7 +1906,7 @@ public class ProductValidationController : Controller
                 model.Photo_WithoutLoad = await SaveImageAsync(
                     model.Photo_WithoutLoadFile, "InstallationTrial_Attach", "WithoutLoad", model.ReportNo);
             }
-           
+
             // ------------------------------------------------------------
 
             if (!ModelState.IsValid)
@@ -1974,7 +2039,7 @@ public class ProductValidationController : Controller
         var safeRefNo = MakeSafe(referenceNo);
 
         // Physical: wwwroot/{baseFolder}/{safeRefNo}
-        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), baseFolder, safeRefNo);
+        var folderPhysical = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", baseFolder, safeRefNo);
 
         if (!Directory.Exists(folderPhysical))
             Directory.CreateDirectory(folderPhysical);
@@ -2042,7 +2107,6 @@ public class ProductValidationController : Controller
     //    return $"/InstallationTrial_Attach/{installationTrialId}/{fileName}";
     //}
 
-
     public async Task<ActionResult> DeleteInstallationTrailAsync(int Id)
     {
         var result = await _installationTrialRepository.DeleteInstallationTrailAsync(Id);
@@ -2050,7 +2114,208 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-    #region IngressProtection
+
+    #region DropTestReport
+    //public IActionResult DroptTestDetails()
+    //{
+
+    //    return View();
+    //}
+    public IActionResult DropTestReport()
+    {
+        return View();
+    }
+    public async Task<ActionResult> GetDropTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _dropTestRepository.GetDropTestAsync();
+        return Json(result);
+    }
+
+    public async Task<IActionResult> DroptTestDetails(int Id)
+    {
+        var model = new DropTestViewModel();
+        if (Id > 0)
+        {
+            model = await _dropTestRepository.GetDropTestByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateDropTestAsync(DropTestReport vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            // Optional: if you still want MVC validations
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var fullName = HttpContext.Session.GetString("FullName") ?? "System";
+
+            // ---- Map ViewModel -> Entity used by repository ----
+            var model = new DropTestReport
+            {
+                Id = vm.Id,
+
+                ReportNo = vm.ReportNo?.Trim(),
+                ReportDate = vm.ReportDate,
+
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                CaseLot = vm.CaseLot,
+
+                PackingBox_MasterCarton_Dimension = vm.PackingBox_MasterCarton_Dimension,
+                PackingBox_InnerCarton_Dimension = vm.PackingBox_InnerCarton_Dimension,
+                InnerPaddingDimension = vm.InnerPaddingDimension,
+
+                GrossWeight_Kg = vm.GrossWeight_Kg,
+                HeightForTest_IS9000 = vm.HeightForTest_IS9000,
+
+                OverallResult = vm.OverallResult,
+                TestedBy = vm.TestedBy,
+                VerifiedBy = vm.VerifiedBy,
+
+                Glow_Test = vm.Glow_Test,
+
+                // TVP Lists (null-safe)
+                Details = vm.Details ?? new List<DropTestReportDetail>(),
+                ImgDetails = vm.ImgDetails ?? new List<DropTestReportImgDetail>()
+            };
+
+            // ---- Save Images into ImgDetails (Before_Img / After_Img) ----
+            // IMPORTANT: This assumes your DropTestViewModel.ImgDetails has IFormFile properties (shown below)
+            if (model.ImgDetails != null && model.ImgDetails.Count > 0)
+            {
+                for (int i = 0; i < model.ImgDetails.Count; i++)
+                {
+                    var row = model.ImgDetails[i];
+                    if (row == null) continue;
+
+                    // Before image
+                    if (row.Before_ImgFile != null && row.Before_ImgFile.Length > 0)
+                    {
+                        row.Before_Img = await SaveImageAsync(
+                            row.Before_ImgFile,
+                            baseFolder: "DropTest_Attach",
+                            prefix: "Before",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+
+                    // After image
+                    if (row.After_ImgFile != null && row.After_ImgFile.Length > 0)
+                    {
+                        row.After_Img = await SaveImageAsync(
+                            row.After_ImgFile,
+                            baseFolder: "DropTest_Attach",
+                            prefix: "After",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+                }
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                // UPDATE: exclude same Id record
+                exists = await _dropTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                // INSERT: check if complaint already used anywhere
+                exists = await _dropTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            // ---- Insert / Update ----
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+
+                result = await _dropTestRepository.UpdateDropTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Drop Test Report updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+
+                result = await _dropTestRepository.InsertDropTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Drop Test Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save Drop Test report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteDropTestAsync(int Id)
+    {
+        var result = await _dropTestRepository.DeleteDropTestAsync(Id);
+        return Json(result);
+    }
+
+
+
+    #endregion
+
+    #region ImpactTest
 
     public IActionResult impactTest()
     {
@@ -2070,9 +2335,9 @@ public class ProductValidationController : Controller
         return View(model);
     }
 
-    public async Task<ActionResult> GetImpactTestReportAsync()
+    public async Task<ActionResult> GetImpactTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        var result = await _impactTestRepository.GetImpactTestReportAsync();
+        var result = await _impactTestRepository.GetImpactTestReportAsync(startDate, endDate);
         return Json(result);
     }
 
@@ -2082,6 +2347,40 @@ public class ProductValidationController : Controller
         {
             var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
             return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.Observation_PhotoFile != null && model.Observation_PhotoFile.Length > 0)
+        {
+            model.Observation_Photo = await SaveImageAsync(
+                model.Observation_PhotoFile, "ImpactTest_Attach", "ImpactTestObs", model.ReportNo);
+        }
+
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            // UPDATE: exclude same Id record
+            exists = await _impactTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _impactTestRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
         }
 
         if (model.Id > 0)
@@ -2107,16 +2406,193 @@ public class ProductValidationController : Controller
     }
 
     #endregion
+
     #region IngressProtection
 
     public IActionResult IngressProtetction()
     {
         return View();
     }
-    public IActionResult IngressProtetctionDetails()
+
+    public async Task<ActionResult> GetIngressProtectionAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
-        return View();
+        var result = await _ingressProtectionRepository.GetIngressProtectionAsync();
+        return Json(result);
     }
+
+    public async Task<IActionResult> IngressProtetctionDetails(int Id)
+    {
+        var model = new IngressProtectionTestViewModel();
+        if (Id > 0)
+        {
+            model = await _ingressProtectionRepository.GetIngressProtectionByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateIngressProtetction(IngressProtectionTestReport vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            // Optional: if you still want MVC validations
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var fullName = HttpContext.Session.GetString("FullName") ?? "System";
+
+            // ---- Map ViewModel -> Entity used by repository ----
+            var model = new IngressProtectionTestReport
+            {
+                Id = vm.Id,
+
+                ReportNo = vm.ReportNo?.Trim(),
+                ReportDate = vm.ReportDate,
+
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                BatchCode = vm.BatchCode,
+
+                Quantity = vm.Quantity,
+                IPRating = vm.IPRating,
+                PKD = vm.PKD,
+                TestResult = vm.TestResult,
+                TestedBy = vm.TestedBy,
+                VerifiedBy = vm.VerifiedBy,
+
+                // TVP Lists (null-safe)
+                Details = vm.Details ?? new List<IngressProtectionTest_Detail>()
+            };
+
+            // ---- Save Images into ImgDetails (Before_Img / After_Img) ----
+            // IMPORTANT: This assumes your DropTestViewModel.ImgDetails has IFormFile properties (shown below)
+            if (model.Details != null && model.Details.Count > 0)
+            {
+                for (int i = 0; i < model.Details.Count; i++)
+                {
+                    var row = model.Details[i];
+                    if (row == null) continue;
+
+                    // Before image
+                    if (row.Photo_During_TestFile != null && row.Photo_During_TestFile.Length > 0)
+                    {
+                        row.Photo_During_Test = await SaveImageAsync(
+                            row.Photo_During_TestFile,
+                            baseFolder: "IngressProt_Attach",
+                            prefix: "During",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+
+                    // After image
+                    if (row.Photo_After_TestFile != null && row.Photo_After_TestFile.Length > 0)
+                    {
+                        row.Photo_After_Test = await SaveImageAsync(
+                            row.Photo_After_TestFile,
+                            baseFolder: "IngressProt_Attach",
+                            prefix: "After",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+                }
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                // UPDATE: exclude same Id record
+                exists = await _ingressProtectionRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                // INSERT: check if complaint already used anywhere
+                exists = await _ingressProtectionRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            // ---- Insert / Update ----
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+
+                result = await _ingressProtectionRepository.UpdateIngressProtectionAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Ingress Protection Report updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+
+                result = await _ingressProtectionRepository.InsertIngressProtectionAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Ingress Protection Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save Drop Test report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteIngressProtectionAsync(int Id)
+    {
+        var result = await _ingressProtectionRepository.DeleteIngressProtectionAsync(Id);
+        return Json(result);
+    }
+
 
     #endregion
 
@@ -2194,11 +2670,173 @@ public class ProductValidationController : Controller
 
         return View();
     }
-
-    public IActionResult RegulatoryRequirementsDetails()
+    public async Task<ActionResult> RegulatoryRequirementsDetails(int Id)
     {
-        return View();
+        var model = new RegulatoryRequirementViewModel();
+        if (Id > 0)
+        {
+            model = await _regulatoryRequirementRepository.GetRegulatoryRequirementByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
     }
+
+    public async Task<ActionResult> GetRegulatoryRequirementAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _regulatoryRequirementRepository.GetRegulatoryRequirementAsync(startDate, endDate);
+        return Json(result);
+    }
+    public async Task<ActionResult> InsertUpdateLegalRegulatoryAsync(RegulatoryRequirementViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        if (model.DriverBIS_Photo != null && model.DriverBIS_Photo.Length > 0)
+        {
+            model.DriverBIS_UploadFile = await SaveImageAsync(
+                model.DriverBIS_Photo, "RegulatoryRequirement_Attach", "DriverBIS", model.ReportNo);
+        }
+
+        if (model.LuminairesBIS_Photo != null && model.LuminairesBIS_Photo.Length > 0)
+        {
+            model.LuminairesBIS_UploadFile = await SaveImageAsync(
+                model.LuminairesBIS_Photo, "RegulatoryRequirement_Attach", "LuminairesBIS", model.ReportNo);
+        }
+
+        if (model.CCL_Photo != null && model.CCL_Photo.Length > 0)
+        {
+            model.CCL_UploadFile = await SaveImageAsync(
+                model.CCL_Photo, "RegulatoryRequirement_Attach", "CCL", model.ReportNo);
+        }
+
+        if (model.NPIBuySheet_Photo != null && model.NPIBuySheet_Photo.Length > 0)
+        {
+            model.NPIBuySheet_UploadFile = await SaveImageAsync(
+                model.NPIBuySheet_Photo, "RegulatoryRequirement_Attach", "NPIBuySheet", model.ReportNo);
+        }
+
+        if (model.CPS_Photo != null && model.CPS_Photo.Length > 0)
+        {
+            model.CPS_UploadFile = await SaveImageAsync(
+                model.CPS_Photo, "RegulatoryRequirement_Attach", "CPS", model.ReportNo);
+        }
+
+        if (model.PPS_Photo != null && model.PPS_Photo.Length > 0)
+        {
+            model.PPS_UploadFile = await SaveImageAsync(
+                model.PPS_Photo, "RegulatoryRequirement_Attach", "PPS", model.ReportNo);
+        }
+
+        if (model.TDS_Photo != null && model.TDS_Photo.Length > 0)
+        {
+            model.TDS_UploadFile = await SaveImageAsync(
+                model.TDS_Photo, "RegulatoryRequirement_Attach", "TDS", model.ReportNo);
+        }
+
+        if (model.DesignDocket_Photo != null && model.DesignDocket_Photo.Length > 0)
+        {
+            model.DesignDocket_UploadFile = await SaveImageAsync(
+                model.DesignDocket_Photo, "RegulatoryRequirement_Attach", "DesignDocket", model.ReportNo);
+        }
+
+        if (model.InstallationSheet_Photo != null && model.InstallationSheet_Photo.Length > 0)
+        {
+            model.InstallationSheet_UploadFile = await SaveImageAsync(
+                model.InstallationSheet_Photo, "RegulatoryRequirement_Attach", "InstallationSheet", model.ReportNo);
+        }
+
+        if (model.ROHSCompliance_Photo != null && model.ROHSCompliance_Photo.Length > 0)
+        {
+            model.ROHSCompliance_UploadFile = await SaveImageAsync(
+                model.ROHSCompliance_Photo, "RegulatoryRequirement_Attach", "ROHSCompliance", model.ReportNo);
+        }
+
+        if (model.CIMFR_Photo != null && model.CIMFR_Photo.Length > 0)
+        {
+            model.CIMFR_UploadFile = await SaveImageAsync(
+                model.CIMFR_Photo, "RegulatoryRequirement_Attach", "CIMFR", model.ReportNo);
+        }
+
+        if (model.PESO_Photo != null && model.PESO_Photo.Length > 0)
+        {
+            model.PESO_UploadFile = await SaveImageAsync(
+                model.PESO_Photo, "RegulatoryRequirement_Attach", "PESO", model.ReportNo);
+        }
+
+        if (model.BOM_Photo != null && model.BOM_Photo.Length > 0)
+        {
+            model.BOM_UploadFile = await SaveImageAsync(
+                model.BOM_Photo, "RegulatoryRequirement_Attach", "BOM", model.ReportNo);
+        }
+
+        if (model.SpareCodeSAP_Photo != null && model.SpareCodeSAP_Photo.Length > 0)
+        {
+            model.SpareCodeSAP_UploadFile = await SaveImageAsync(
+                model.SpareCodeSAP_Photo, "RegulatoryRequirement_Attach", "SpareCodeSAP", model.ReportNo);
+        }
+
+        if (model.CERegistration_Photo != null && model.CERegistration_Photo.Length > 0)
+        {
+            model.CERegistration_UploadFile = await SaveImageAsync(
+                model.CERegistration_Photo, "RegulatoryRequirement_Attach", "CERegistration", model.ReportNo);
+        }
+
+
+        bool exists;
+
+        if (model.Id > 0)
+        {
+            exists = await _regulatoryRequirementRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                model.Id
+            );
+        }
+        else
+        {
+            // INSERT: check if complaint already used anywhere
+            exists = await _regulatoryRequirementRepository.CheckDuplicate(
+                model.ReportNo!.Trim(),
+                0
+            );
+        }
+
+        if (exists)
+        {
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+            });
+        }
+
+        if (model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _regulatoryRequirementRepository.UpdateRegulatoryRequirementAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _regulatoryRequirementRepository.InsertRegulatoryRequirementAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DeleteRegulatoryRequirementAsync(int Id)
+    {
+        var result = await _regulatoryRequirementRepository.DeleteRegulatoryRequirementAsync(Id);
+        return Json(result);
+    }
+
     #endregion
 
     #region GlowWireTestReport
@@ -2217,14 +2855,243 @@ public class ProductValidationController : Controller
 
     public IActionResult HydraulicTestReport()
     {
-
         return View();
     }
 
-    public IActionResult HydraulicTestReportDetails()
+    public async Task<IActionResult> HydraulicTestReportListAsync()
     {
+        var result = await _hydraulicTestReportService.GetHydraulicTestReportListAsync();
+        return Json(result);
+    }
 
-        return View();
+    public async Task<IActionResult> HydraulicTestReportDetailsAsync(int Id)
+    {
+        var model = new HydraulicTestReportViewModel();
+        if(Id > 0)
+        {
+            model = await _hydraulicTestReportService.GetHydraulicTestReportDetailsAsync(Id);
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> InsertUpdateHydraulicTestReportAsync(HydraulicTestReportViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        string[] allowedExtensions = { ".png", ".jpg", ".jpeg" };
+
+        string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "HydraulicTest_Attach", model.ReportNo.ToString());
+        if (!Directory.Exists(folder))
+            Directory.CreateDirectory(folder);
+
+        foreach(var obs in model.Observations)
+        {
+            if(obs.PhotoBeforeTestAttachedFile != null)
+            {
+                string fileName = obs.PhotoBeforeTestAttachedFile.FileName.Replace(",", "_");
+                string savePath = Path.Combine(folder, fileName);
+                using (var stream = new FileStream(savePath, FileMode.Create))
+                {
+                    await obs.PhotoBeforeTestAttachedFile.CopyToAsync(stream);
+                }
+                obs.PhotoBeforeTest = savePath;
+            }
+            if(obs.PhotoAfterTestAttachedFile != null)
+            {
+                string fileName = obs.PhotoAfterTestAttachedFile.FileName.Replace(",", "_");
+                string savePath = Path.Combine(folder, fileName);
+                using (var stream = new FileStream(savePath, FileMode.Create))
+                {
+                    await obs.PhotoAfterTestAttachedFile.CopyToAsync(stream);
+                }
+                obs.PhotoAfterTest = savePath;
+            }
+        }
+
+        if(model.Id > 0)
+        {
+            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
+            model.UpdatedOn = DateTime.Now;
+            var result = await _hydraulicTestReportService.UpdateHydraulicTestReportAsync(model);
+            return Json(result);
+        }
+        else
+        {
+            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
+            model.AddedOn = DateTime.Now;
+            var result = await _hydraulicTestReportService.InsertHydraulicTestReportAsync(model);
+            return Json(result);
+        }
+    }
+
+    public async Task<ActionResult> DeleteHydraulicTestReportAsync(int Id)
+    {
+        var result = await _hydraulicTestReportService.DeleteHydraulicTestReportAsync(Id);
+        return Json(result);
+    }
+
+    public async Task<ActionResult> ExportHydraulicTestReportToPDFAsync(int Id)
+    {
+        try
+        {
+            var model = await _hydraulicTestReportService.GetHydraulicTestReportDetailsAsync(Id);
+            var webRootPath = _hostEnvironment.WebRootPath;
+
+            using (MemoryStream stream = new MemoryStream())
+            {
+                PdfWriter writer = new PdfWriter(stream);
+                PdfDocument pdf = new PdfDocument(writer);
+                Document document = new Document(pdf, PageSize.A4);
+                document.SetMargins(20, 20, 20, 20);
+
+                PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+
+                // Create the Main Table (Wrapper) with 4 columns to handle the complex layout in your image
+                Table mainTable = new Table(new float[] { 1, 1, 1, 1 }).UseAllAvailableWidth();
+
+                // ================= HEADER SECTION (Report Title & Logo) =================
+                // Row 1: Title (Col 1-3) and Logo (Col 4)
+                mainTable.AddCell(new Cell(1, 3).Add(new Paragraph("Hydraulic TEST REPORT")
+                    .SetFont(boldFont).SetFontSize(16).SetTextAlignment(TextAlignment.CENTER))
+                    .SetVerticalAlignment(VerticalAlignment.MIDDLE));
+
+                var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png");
+                Cell logoCell = new Cell()
+                    .SetPadding(2) 
+                    .SetTextAlignment(TextAlignment.CENTER)
+                    .SetVerticalAlignment(VerticalAlignment.MIDDLE);
+
+                if (System.IO.File.Exists(imagePath))
+                {
+                    Image logo = new Image(ImageDataFactory.Create(imagePath));
+                    logo.SetWidth(70f); 
+                    logo.SetHorizontalAlignment(HorizontalAlignment.CENTER);
+    
+                    logoCell.Add(logo);
+                }
+                else
+                {
+                    logoCell.Add(new Paragraph("wipro")
+                        .SetFont(boldFont)
+                        .SetFontSize(14)
+                        .SetFontColor(ColorConstants.DARK_GRAY));
+                }
+
+                mainTable.AddCell(logoCell);
+
+                // Row 2: Design Docket Sub-header
+                mainTable.AddCell(new Cell(1, 4).Add(new Paragraph("Hydraulic Test Pressure as per Design Docket")
+                    .SetFont(boldFont).SetTextAlignment(TextAlignment.CENTER)).SetBackgroundColor(ColorConstants.WHITE));
+
+                // Row 3: Report No
+                mainTable.AddCell(new Cell(1, 2).SetBorderRight(Border.NO_BORDER));
+                mainTable.AddCell(new Cell(1, 2).Add(new Paragraph($"Report No . {model.ReportNo}"))
+                    .SetTextAlignment(TextAlignment.LEFT).SetBorderLeft(Border.NO_BORDER));
+
+                // Row 4: Customer Name and Date
+                mainTable.AddCell(new Cell(1, 3).Add(new Paragraph($"Customer/Project Name : {model.CustomerProjectName}")));
+                mainTable.AddCell(new Cell(1, 1).Add(new Paragraph($"Date: {model.ReportDate:dd/MM/yyyy}")));
+
+                // Row 5: Cat Ref, Description, Batch, Quantity
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Product Cat Ref\n{model.ProductCatRef}").SetFontSize(9)));
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Product Description\n{model.ProductDescription}").SetFontSize(9)));
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Batch Code\n{model.BatchCode}").SetFontSize(9)));
+                mainTable.AddCell(new Cell().Add(new Paragraph($"Quantity :\n{model.Quantity}").SetFontSize(9)));
+
+                // Row 6: Test Pressure
+                mainTable.AddCell(new Cell(1, 4).Add(new Paragraph($"Hydraulic Test Pressure - {model.HydraulicTestPressure}")));
+
+                // ================= OBSERVATION TABLE SECTION =================
+                // We nest this to keep the "Main Table" border intact
+                Cell obsContainer = new Cell(1, 4).SetPadding(0);
+                Table obsTable = new Table(new float[] { 0.5f, 2, 2, 2, 1 }).UseAllAvailableWidth().SetBorder(Border.NO_BORDER);
+
+                string[] headers = { "Sr. No.", "Photo Before Test", "Photo After Test", "Observation", "Result" };
+                foreach (var h in headers)
+                {
+                    obsTable.AddCell(new Cell().Add(new Paragraph(h).SetFont(boldFont).SetFontSize(9)).SetBackgroundColor(ColorConstants.LIGHT_GRAY));
+                }
+
+                int sr = 1;
+                foreach (var item in model.Observations)
+                {
+                    obsTable.AddCell(new Cell().Add(new Paragraph(sr++.ToString())));
+                    obsTable.AddCell(CreateImageCell(item.PhotoBeforeTest, webRootPath));
+                    obsTable.AddCell(CreateImageCell(item.PhotoAfterTest, webRootPath));
+                    obsTable.AddCell(new Cell().Add(new Paragraph(item.Observation ?? "")));
+                    obsTable.AddCell(new Cell().Add(new Paragraph(item.Result ?? "")));
+                }
+                obsContainer.Add(obsTable);
+                mainTable.AddCell(obsContainer);
+
+                // ================= RESULT ROW (Below Table) =================
+                mainTable.AddCell(new Cell(1, 2).Add(new Paragraph("Result (Pass/Fail)")
+                    .SetFont(boldFont).SetFontColor(ColorConstants.RED)));
+                mainTable.AddCell(new Cell(1, 2).Add(new Paragraph(model.OverallResult ?? "")));
+
+                // ================= FOOTER SIGNATURES =================
+                mainTable.AddCell(CreateSignatureCell("Tested by", model.TestedBy, boldFont, 2));
+                mainTable.AddCell(CreateSignatureCell("Verified By", model.VerifiedBy, boldFont, 2));
+
+                document.Add(mainTable);
+                document.Close();
+                return File(stream.ToArray(), "application/pdf", $"HydraulicReport_{Id}.pdf");
+            }
+        }
+        catch (Exception ex) { return Json(new { Success = false, Message = ex.Message }); }
+    }
+
+    private Cell CreateImageCell(string path, string root)
+    {
+        Cell cell = new Cell().SetMinHeight(70).SetVerticalAlignment(VerticalAlignment.MIDDLE).SetTextAlignment(TextAlignment.CENTER);
+        try
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                string cleanPath = path.Replace("~/", "").Replace("/", Path.DirectorySeparatorChar.ToString());
+                string fullPath = Path.Combine(root, cleanPath);
+
+                if (System.IO.File.Exists(fullPath))
+                {
+                    iText.Layout.Element.Image img = new iText.Layout.Element.Image(ImageDataFactory.Create(fullPath))
+                        .SetAutoScale(true)
+                        .SetMaxHeight(60);
+                    cell.Add(img);
+                    return cell;
+                }
+            }
+        }
+        catch { /* Log Error */ }
+
+        cell.Add(new Paragraph("No Photo").SetFontSize(7).SetFontColor(ColorConstants.GRAY));
+        return cell;
+    }
+
+    private Cell CreateSignatureCell(string label, string name, PdfFont font, int colspan)
+    {
+        // 1. Create a cell with a fixed height to create the signature space
+        Cell cell = new Cell(1, colspan).SetHeight(60).SetPadding(5);
+
+        // 2. Set vertical alignment to BOTTOM so the name sits at the bottom of the box
+        cell.SetVerticalAlignment(VerticalAlignment.BOTTOM);
+
+        // 3. Add the Label (This will appear first/at the top of the cell content)
+        cell.Add(new Paragraph(label)
+            .SetFontSize(9)
+            .SetFont(font)
+            .SetMarginBottom(10)); // Adds space between the label and the name
+
+        // 4. Add the Name (This will be pushed to the bottom)
+        string displayName = !string.IsNullOrEmpty(name) ? name : "________________";
+        cell.Add(new Paragraph(displayName)
+            .SetFontSize(10)
+            .SetTextAlignment(TextAlignment.CENTER));
+
+        return cell;
     }
 
     #endregion
@@ -2239,19 +3106,9 @@ public class ProductValidationController : Controller
     {
         return View();
     }
-
-    #region DropTestReport
-    public IActionResult DroptTestDetails()
-    {
-
-        return View();
-    }
-    public IActionResult DropTestReport()
-    {
-        return View();
-    }
-
     #endregion
+
+    
 
     #region GeneralObservation
     public IActionResult GeneralObservationDetails()
@@ -2292,7 +3149,7 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-    #endregion
+    
 }
 
 

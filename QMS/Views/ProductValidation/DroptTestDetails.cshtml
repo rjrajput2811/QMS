@@ -1,15 +1,17 @@
+﻿@using QMS.Core.Models
+@model DropTestViewModel
+
 @{
     ViewData["Title"] = "Drop Test Report";
 }
 
 <style>
-
     .underline-input {
         border: 0;
         border-bottom: 1.5px solid #666;
         border-radius: 0;
         background: transparent;
-        width: 50%;
+        width: 80%;
         font-size: 15px;
         padding: 2px 6px;
         outline: none;
@@ -19,6 +21,24 @@
     }
 
         .underline-input:focus {
+            border-bottom: 1.5px solid #4682B4;
+        }
+
+    .underline-input-Cert {
+        border: 0;
+        border-bottom: 1.5px solid #666;
+        border-radius: 0;
+        background: transparent;
+        width: 100%;
+        font-size: 15px;
+        padding: 2px 6px;
+        outline: none;
+        box-shadow: none;
+        vertical-align: middle;
+        transition: border-color 0.2s ease-in-out;
+    }
+
+        .underline-input-Cert :focus {
             border-bottom: 1.5px solid #4682B4;
         }
 
@@ -151,14 +171,13 @@
         }
 
     .chooseFileBtn {
-        padding: 4px 10px;
+        padding: 6px 12px;
         border-radius: 4px;
         border: 1px solid #ccc;
         background-color: #f8f9fa;
         cursor: pointer;
         font-size: 13px;
         color: #000;
-        margin-bottom: 6px;
         transition: all 0.2s ease-in-out;
     }
 
@@ -231,223 +250,527 @@
             background-color: #c82333;
             border-color: #bd2130;
         }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+    }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #004085;
+        }
+
+    .photo-preview-container {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .photo-preview-img {
+        max-width: 100%;
+        max-height: 250px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px;
+        display: none;
+        margin: 0 auto;
+    }
+
+    .photo-space {
+        width: 100%;
+        height: 250px;
+        border: 2px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 13px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+
+    .multi-line-text {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    /* Photo table specific styles */
+    .photo-row {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .photo-cell {
+        padding: 15px;
+        text-align: center;
+        vertical-align: top;
+        width: 50%;
+    }
+
+   /*  .photo-cell-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    } */
+
+    .photo-controls {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .photo-cell-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+ /*    .photo-space {
+        width: 100%;
+        height: 250px;
+        border: 2px dashed #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #999;
+        font-size: 13px;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    } */
+
+/*     .photo-preview-img {
+        max-width: 100%;
+        max-height: 250px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px;
+        display: none;
+        margin: 0 auto;
+    } */
+
+    /* .photo-controls {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 10px;
+    } */
+
+    .chooseFileBtn {
+        padding: 6px 12px;
+        border-radius: 4px;
+        border: 1px solid #ccc;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        font-size: 13px;
+        color: #000;
+    }
+
+        .chooseFileBtn:hover {
+            background-color: #e9ecef;
+            border-color: #bbb;
+        }
 </style>
 
-<div class="container-fluid" style="padding:20px;">
-    <div class="row">
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
         <div class="col-12">
-
-            <!-- Header Card -->
-            <div class="card shadow-sm mb-3">
-                <div class="card-body d-flex justify-content-between align-items-center py-3" style="min-height:80px;">
+            <div class="card shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center bg-white py-3">
+                    <span class="header-title">DROP TEST REPORT</span>
                     <div>
-                        <b class="header-title">Drop Test Report</b>
-                    </div>
-                    <div>
-                        <button id="saveDropTestButton"
-                                type="button"
-                                class="btn btn-outline-success legitRipple mr-2 header-btn"
-                                onclick="saveDropTest()">
-                            <i class="fas fa-save mr-1"></i>Save
+                        <button type="button" class="btn btn-primary header-btn me-2" onclick="saveDropTest()">
+                            <i class="fas fa-save"></i> Save
                         </button>
-                        <a href='@Url.Action("DropTestReport", "ProductValidation")'
-                           class="btn btn-outline-primary header-btn">
-                            <i class="fas fa-arrow-left"></i> BACK
-                        </a>
+                        <button type="button" class="btn btn-secondary header-btn" onclick="@Url.Action("DropTestReport", "ProductValidation")">
+                            <i class="fas fa-times"></i> Back
+                        </button>
                     </div>
                 </div>
-            </div>
 
-            <!-- Main Content Card -->
-            <div class="card shadow-sm">
-                <div class="card-body" style="padding:25px;">
-
-                    <!-- Title and Report Details -->
-                    <div class="table-responsive">
-                        <table class="table table-bordered info-table">
-                            <tbody>
-                                <tr>
-                                    <td colspan="4" style="text-align:center; font-size:18px; font-weight:700; background-color:#f7f8fa;">
-                                        DROP TEST REPORT
-                                    </td>
-                                    <td style="white-space:normal;">
-                                        <b>Report No:</b>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="reportNo" />
-                                    </td>
-                                    <td style="white-space:normal;">
-                                        <b>Date:</b>
-                                        <input type="date" class="underline-input" style="width:60%; margin-left:8px;" id="reportDate" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="6" style="white-space:normal;">
-                                        <b>PRODUCT Cat Ref:</b>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="productCatRef" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="6" style="white-space:normal;">
-                                        <b>PRODUCT Description:</b>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="productDescription" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="6" style="white-space:normal;">
-                                        <b>Case Lot:</b>
-                                        <input type="text" class="underline-input" style="width:80%; margin-left:8px;" id="caseLot" />
-                                    </td>
-                                </tr>
-
-                                <!-- Criteria Section -->
-                                <tr>
-                                    <td colspan="6" style="background-color:#f7f8fa; font-weight:700;">
-                                        CRITERIA FOR DROP TEST
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Dimension Of Packing Box:</b><br />
-                                        <div class="mt-2">
-                                            <input type="text" placeholder="L (cm)" class="underline-input" style="width:30%; margin-right:5px;" id="dimensionL" />
-                                            <input type="text" placeholder="W (cm)" class="underline-input" style="width:30%; margin-right:5px;" id="dimensionW" />
-                                            <input type="text" placeholder="H (cm)" class="underline-input" style="width:30%;" id="dimensionH" />
-                                        </div>
-                                    </td>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Master Carton:</b>
-                                        <input type="text" class="underline-input" style="width:65%; margin-left:8px;" id="masterCarton" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Inner Padding Dimension:</b>
-                                        <input type="text" class="underline-input" style="width:55%; margin-left:8px;" id="innerPaddingDimension" />
-                                    </td>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Inner Carton:</b>
-                                        <input type="text" class="underline-input" style="width:65%; margin-left:8px;" id="innerCarton" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Gross Weight (Kg):</b>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="grossWeight" />
-                                    </td>
-                                    <td colspan="3" rowspan="2"></td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Height for test (As per IS 9000-7-3:1979):</b>
-                                        <input type="text" class="underline-input" style="width:40%; margin-left:8px;" id="heightTest" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Glow Test:</b>
-                                        <input type="text" class="underline-input" style="width:70%; margin-left:8px;" id="glowTest" />
-                                    </td>
-                                    <td colspan="3" style="white-space:normal;">
-                                        <b>Product must Glow post Drop/Roll Test</b>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Test Details Table -->
-                    <div class="table-responsive mt-3">
-                        <div class="mb-2 text-right">
-                            <button type="button" class="btn btn-sm btn-success" onclick="addTestRow()" style="font-size:13px;">
-                                <i class="fas fa-plus"></i> Add Row
-                            </button>
+                <div class="card-body">
+                    <form id="dropTest_form" method="post" asp-action="InsertUpdateDropTest" asp-controller="ProductValidation" enctype="multipart/form-data">
+                        @Html.HiddenFor(m => m.Id)
+                        <!-- Product Information -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <b>Report No:</b>
+                                            @* <input type="text" class="underline-input" id="reportNo" placeholder="" /> *@
+                                            @Html.TextBoxFor(m => m.ReportNo, new { @class = "underline-input form-control", placeholder = "Enter Report Number", required = "required" })
+                                        </td>
+                                        <td>
+                                            <b>Date:</b>
+                                            @* <input type="date" class="underline-input" id="reportDate" /> *@
+                                            @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new
+                                                {
+                                                    @class = "underline-input d-underline-block",
+                                                    style = "width:60%; font-size:13px;",
+                                                    placeholder = "dd-mm-yyyy",
+                                                    title = "Enter date as dd-mm-yyyy",
+                                                    required = "required",
+                                                    type = "date"
+                                                })
+                                        </td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="white-space:normal;">
+                                            <b>PRODUCT Cat Ref:</b>
+                                            @* <div contenteditable="true" class="ce-field" id="productCatRef"></div> *@
+                                            @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "underline-input form-control", placeholder = "Enter Product Reference", required = "required", style = "width:230px;" })
+                                        </td>
+                                        <td style="white-space:normal;">
+                                            <b>PRODUCT Description:</b>
+                                            @* <div contenteditable="true" class="ce-field" id="productDescription"></div> *@
+                                            @Html.TextBoxFor(m => m.ProductDescription, new { @class = "underline-input form-control", placeholder = "Enter Product Description", required = "required" })
+                                        </td>
+                                        <td style="white-space:normal;">
+                                            <b>Case Lot:</b>
+                                            @* <div contenteditable="true" class="ce-field" id="caseLot"></div> *@
+                                            @Html.TextBoxFor(m => m.CaseLot, new { @class = "underline-input form-control", placeholder = "Enter Case Lot" })
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
-                        <table class="table table-bordered" id="testTable">
-                            <thead>
-                                <tr>
-                                    <th style="width:8%;">Sr. No.</th>
-                                    <th style="width:15%;">Test</th>
-                                    <th style="width:30%;">Parameter / Specification</th>
-                                    <th style="width:20%;">Acceptance Criteria</th>
-                                    <th style="width:17%;">Observations</th>
-                                    <th style="width:10%;">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="testTableBody">
-                                <tr>
-                                    <td contenteditable="true" style="text-align:center;">1</td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true" style="white-space:normal;">
-                                      
-                                    </td>
-                                    <td contenteditable="true"></td>
-                                    <td contenteditable="true"></td>
-                                    <td style="text-align:center;">
-                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteTestRow(this)" title="Delete Row">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
 
-                                
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Photographs Section -->
-                    <div class="table-responsive mt-3">
-                        <table class="table table-bordered">
-                            <tbody>
-                                <tr>
-                                    <td colspan="2" style="background-color:#f7f8fa; font-weight:700; text-align:center;">
-                                        PHOTOGRAPHS (Before and After)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="width:50%; vertical-align:top; padding:18px;">
-                                        <b>Before Test:</b><br /><br />
-                                        <div id="photoContainerBefore" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
-                                            <div id="photoSpaceBefore">
-                                                <div style="font-size:18px; font-weight:600;">Space For Photo</div>
-                                                <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
+                        <!-- Criteria for Drop Test -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td rowspan="5" style="text-align:center; background-color:#e9ecef; vertical-align:middle; width:20%; font-weight:600; font-size:14px;">
+                                            CRITERIA FOR DROP TEST
+                                        </td>
+                                        <td style="width:30%; white-space:normal; font-weight:600;">
+                                            Dimension Of Packing Box
+                                        </td>
+                                        <td style="width:50%; white-space:normal;">
+                                            <div style="margin-bottom:8px;">
+                                                <span style="font-weight:600;">Master Carton:</span>
+                                                @* <input type="text" class="underline-input-Cert" id="masterCarton" placeholder="" /> *@
+                                                @Html.TextBoxFor(m => m.PackingBox_MasterCarton_Dimension, new { @class = "underline-input-Cert form-control", placeholder = "Enter Master Carton" })
                                             </div>
-                                            <img id="photoPreviewBefore" style="max-width:100%; max-height:100%; display:none;" />
-                                        </div>
-                                        <div class="mt-2">
-                                            <button type="button" id="chooseFileBtnBefore" class="chooseFileBtn">Choose file</button>
-                                            <input type="file" id="photoInputBefore" accept="image/*" style="display:none" />
-                                            <span id="fileNameBefore">No file chosen</span>
-                                        </div>
-                                    </td>
-
-                                    <td style="width:50%; vertical-align:top; padding:18px;">
-                                        <b>After Test:</b><br /><br />
-                                        <div id="photoContainerAfter" style="height:240px; border:1px dashed #ccc; display:flex; align-items:center; justify-content:center;">
-                                            <div id="photoSpaceAfter">
-                                                <div style="font-size:18px; font-weight:600;">Space For Photo</div>
-                                                <div style="font-size:12px; color:#888;">(Max 5 MB, JPG/PNG)</div>
+                                            <div>
+                                                <span style="font-weight:600;">Inner Carton:-</span>
+                                                @* <input type="text" class="underline-input-Cert" id="innerCarton" placeholder="" /> *@
+                                                @Html.TextBoxFor(m => m.PackingBox_InnerCarton_Dimension, new { @class = "underline-input-Cert form-control", placeholder = "Enter Inner Carton" })
                                             </div>
-                                            <img id="photoPreviewAfter" style="max-width:100%; max-height:100%; display:none;" />
-                                        </div>
-                                        <div class="mt-2">
-                                            <button type="button" id="chooseFileBtnAfter" class="chooseFileBtn">Choose file</button>
-                                            <input type="file" id="photoInputAfter" accept="image/*" style="display:none" />
-                                            <span id="fileNameAfter">No file chosen</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="white-space:normal; font-weight:600;">
+                                            Inner Padding Dimension
+                                        </td>
+                                        <td style="white-space:normal;">
+                                            @* <input type="text" class="underline-input-Cert" id="innerPaddingDim" placeholder="" /> *@
+                                            @Html.TextBoxFor(m => m.InnerPaddingDimension, new { @class = "underline-input-Cert form-control", placeholder = "Enter Inner Padding Dimension" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="white-space:normal; font-weight:600;">
+                                            Gross Weight ( Kg )
+                                        </td>
+                                        <td>
+                                            @* <input type="text" class="underline-input-Cert" id="grossWeight" placeholder="" /> *@
+                                            @Html.TextBoxFor(m => m.GrossWeight_Kg, new { @class = "underline-input-Cert form-control", placeholder = "Enter Gross Weight" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="white-space:normal; font-weight:600;">
+                                            Height for test (As per IS 9000-7-3:1979)
+                                        </td>
+                                        <td>
+                                            @* <input type="text" class="underline-input-Cert" id="heightTest" placeholder="" /> *@
+                                            @Html.TextBoxFor(m => m.HeightForTest_IS9000, new { @class = "underline-input-Cert form-control", placeholder = "Enter HeightForTest IS9000" })
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="white-space:normal; font-weight:600; text-align:center;">
+                                            Glow Test
+                                        </td>
+                                        <td style="white-space:normal; text-align:center;font-weight:600;">
+                                            @* <input type="text" class="underline-input-Cert" id="glowTest" placeholder="Product must Glow post Drop/ Roll Test" /> *@
+                                            @Html.TextBoxFor(m => m.Glow_Test, new { @class = "underline-input-Cert form-control", placeholder = "Product must Glow post Drop/ Roll Test" })
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
 
-                    <!-- Remark Section -->
+                        <!-- Test Parameters Table -->
+                        <div class="table-responsive mt-2">
+                            <div class="mt-1">
+                                <button type="button" class="btn btn-sm btn-success" onclick="addTestRow()">
+                                    <i class="fas fa-plus"></i> Add Row
+                                </button>
+                            </div>
+                            @if (Model?.Details != null && Model.Details.Count > 0)
+                            {
+                                for (int i = 0; i < Model.Details.Count; i++)
+                                {
+                                    @Html.HiddenFor(m => m.Details[i].Id)
+                                }
+                            }
+                            <table class="table table-bordered mt-1" id="details">
+                                <thead>
+                                    <tr>
+                                        <th style="width:8%; text-align:center;">Sr. No.</th>
+                                        <th style="width:15%; text-align:center;">Test</th>
+                                        <th style="width:30%; text-align:center;">Parameter / Specification</th>
+                                        <th style="width:25%; text-align:center;">Acceptance Criteria</th>
+                                        <th style="width:17%; text-align:center;">Observations</th>
+                                        <th style="width:5%; text-align:center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="testTableBody">
+                                    @{
+                                        var details = Model?.Details ?? new List<QMS.Core.Models.DropTestReportDetailViewModel>();
+                                    }
+
+                                    @if (details.Any())
+                                    {
+                                        for (int i = 0; i < details.Count; i++)
+                                        {
+                                            <tr style="height:120px;">
+                                                @Html.HiddenFor(m => m.Details[i].Id)
+
+                                                <td class="sr-cell" style="border:1.5px solid #000; text-align:center; vertical-align:top;">
+                                                    @(i + 1)
+                                                </td>
+
+                                                <!-- Test -->
+                                                <td contenteditable="true"
+                                                    data-name="Test"
+                                                    style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(details[i].Test ?? "")
+                                                </td>
+
+                                                <!-- Parameter / Specification -->
+                                                <td contenteditable="true"
+                                                    data-name="Parameter"
+                                                    style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(details[i].Parameter ?? "")
+                                                </td>
+
+                                                <!-- Acceptance Criteria -->
+                                                <td contenteditable="true"
+                                                    data-name="Acceptance_Criteria"
+                                                    style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(details[i].Acceptance_Criteria ?? "")
+                                                </td>
+
+                                                <!-- Observations -->
+                                                <td contenteditable="true"
+                                                    data-name="Observations"
+                                                    style="border:1.5px solid #000; vertical-align:top;">
+                                                    @(details[i].Observations ?? "")
+                                                </td>
+
+                                                <!-- Action -->
+                                                <td style="border:1.5px solid #000; text-align:center; vertical-align:middle;">
+                                                    <button type="button" class="btn btn-sm btn-danger row-del-btn" title="Delete row">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <!-- Blank first row -->
+                                        <tr style="height:120px;">
+                                            <td style="border:1.5px solid #000; text-align:center; vertical-align:top;">1</td>
+
+                                            <td contenteditable="true" data-name="Test"
+                                                style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                                            <td contenteditable="true" data-name="Parameter"
+                                                style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                                            <td contenteditable="true" data-name="Acceptance_Criteria"
+                                                style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                                            <td contenteditable="true" data-name="Observations"
+                                                style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                                            <td style="border:1.5px solid #000; text-align:center; vertical-align:middle;">
+                                                <button type="button" class="btn btn-sm btn-danger row-del-btn" title="Delete row">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                        <!-- Photographs Section (Before and After) - Horizontal Layout -->
+                        <div class="table-responsive mt-3">
+                            <div class="add-photo-btn-container mt-3" style="text-align:center; padding:10px;">
+                                <button type="button" class="btn btn-success" onclick="addPhotoRow()">
+                                    <i class="fas fa-plus"></i> Add Photo Row
+                                </button>
+                            </div>
+                            <table class="table table-bordered mt-2">
+                                <thead>
+                                    <tr>
+                                        <th style="width:5%; text-align:center;">Sr. No.</th>
+                                        <th style="width:42%; text-align:center;">Before Test</th>
+                                        <th style="width:42%; text-align:center;">After Test</th>
+                                        <th style="width:11%; text-align:center;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="photoTableBody">
+                                    @{
+                                        var imgs = Model?.ImgDetails ?? new List<DropTestReportImgDetailViewModel>();
+                                        if (!imgs.Any())
+                                        {
+                                            imgs.Add(new DropTestReportImgDetailViewModel()); // ensure 1 row
+                                        }
+                                    }
+
+                                    @for (int i = 0; i < imgs.Count; i++)
+                                    {
+                                        var before = imgs[i].Before_Img;
+                                        var after = imgs[i].After_Img;
+
+                                        <tr class="photo-row" data-index="@i">
+                                            @Html.HiddenFor(m => m.ImgDetails[i].Id)
+                                            @Html.HiddenFor(m => m.ImgDetails[i].Before_Img)
+                                            @Html.HiddenFor(m => m.ImgDetails[i].After_Img)
+                                            @Html.HiddenFor(m => m.ImgDetails[i].Deleted, new { @class = "hdDeleted" })
+
+                                            <td class="srNo text-center align-middle fw-bold">@(i + 1)</td>
+
+                                            <!-- BEFORE -->
+                                            <td class="photo-cell">
+                                                <div class="photo-cell-content">
+                                                    <div id="before_@(i)_space" class="photo-space @(string.IsNullOrWhiteSpace(before) ? "" : "d-none")">
+                                                        <span>Before Test - No Image</span>
+                                                    </div>
+
+                                                    <img id="before_@(i)_preview"
+                                                         class="photo-preview-img @(string.IsNullOrWhiteSpace(before) ? "" : "")"
+                                                         src="@(string.IsNullOrWhiteSpace(before) ? "" : before)"
+                                                         style="@(string.IsNullOrWhiteSpace(before) ? "display:none;" : "display:block;")"
+                                                         alt="Before Preview" />
+
+                                                    <div class="photo-controls">
+                                                        <button type="button" class="chooseFileBtn" onclick="triggerFileInput('before', @i)">
+                                                            <i class="fas fa-upload"></i> Choose File
+                                                        </button>
+
+                                                        <button type="button" class="btn btn-sm btn-danger"
+                                                                id="before_@(i)_delete"
+                                                                style="@(string.IsNullOrWhiteSpace(before) ? "display:none;" : "display:inline-block;")"
+                                                                onclick="removePhoto('before', @i)"
+                                                                title="Remove Photo">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+
+                                                        <!-- IMPORTANT: name must be ImgDetails[i].Before_ImgFile -->
+                                                        <input type="file"
+                                                               id="before_@(i)_input"
+                                                               name="ImgDetails[@i].Before_ImgFile"
+                                                               accept=".jpg,.jpeg,.png,.bmp"
+                                                               style="display:none"
+                                                               onchange="handlePhotoUpload('before', @i)" />
+                                                    </div>
+
+                                                    <span id="before_@(i)_filename" class="muted">
+                                                        @(string.IsNullOrWhiteSpace(before) ? "No file chosen" : System.IO.Path.GetFileName(before))
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            <!-- AFTER -->
+                                            <td class="photo-cell">
+                                                <div class="photo-cell-content">
+                                                    <div id="after_@(i)_space" class="photo-space @(string.IsNullOrWhiteSpace(after) ? "" : "d-none")">
+                                                        <span>After Test - No Image</span>
+                                                    </div>
+
+                                                    <img id="after_@(i)_preview"
+                                                         class="photo-preview-img"
+                                                         src="@(string.IsNullOrWhiteSpace(after) ? "" : after)"
+                                                         style="@(string.IsNullOrWhiteSpace(after) ? "display:none;" : "display:block;")"
+                                                         alt="After Preview" />
+
+                                                    <div class="photo-controls">
+                                                        <button type="button" class="chooseFileBtn" onclick="triggerFileInput('after', @i)">
+                                                            <i class="fas fa-upload"></i> Choose File
+                                                        </button>
+
+                                                        <button type="button" class="btn btn-sm btn-danger"
+                                                                id="after_@(i)_delete"
+                                                                style="@(string.IsNullOrWhiteSpace(after) ? "display:none;" : "display:inline-block;")"
+                                                                onclick="removePhoto('after', @i)"
+                                                                title="Remove Photo">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+
+                                                        <!-- IMPORTANT: name must be ImgDetails[i].After_ImgFile -->
+                                                        <input type="file"
+                                                               id="after_@(i)_input"
+                                                               name="ImgDetails[@i].After_ImgFile"
+                                                               accept=".jpg,.jpeg,.png,.bmp"
+                                                               style="display:none"
+                                                               onchange="handlePhotoUpload('after', @i)" />
+                                                    </div>
+
+                                                    <span id="after_@(i)_filename" class="muted">
+                                                        @(string.IsNullOrWhiteSpace(after) ? "No file chosen" : System.IO.Path.GetFileName(after))
+                                                    </span>
+                                                </div>
+                                            </td>
+
+                                            <!-- ACTION -->
+                                            <td class="text-center align-middle">
+                                                <button type="button" class="btn btn-danger btn-sm btnDelPhotoRow" title="Delete Row">
+                                                    <i class="fa fa-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Test Result -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td class="result-cell">
+                                            <b>Test Result:</b>
+                                            @* <select class="result-dropdown" id="testResult">
+                                            <option value="">-- Select --</option>
+                                            <option value="Pass">Pass</option>
+                                            <option value="Fail">Fail</option>
+                                        </select> *@
+                                            <select class="result-select" data-name="OverallResult">
+                                                <option value="" selected="@(Model.OverallResult == "")">Select</option>
+                                                <option value="Pass" selected="@(Model.OverallResult == "Pass")">Pass</option>
+                                                <option value="Fail" selected="@(Model.OverallResult == "Fail")">Fail</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        @*  <!-- Remark Section -->
                     <div class="table-responsive">
                         <table class="table table-bordered">
                             <tbody>
@@ -460,140 +783,277 @@
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Signature Section -->
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <tbody>
-                                <tr>
-                                    <td>
-                                        <b>Tested By:</b>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="testedBy" />
-                                    </td>
-                                    <td>
-                                        <b>Approved By:</b>
-                                        <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="approvedBy" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
+ *@
+                        <!-- Signature Section -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tbody>
+                                    <tr>
+                                        <td style="width:50%;">
+                                            <b>TESTED BY:</b>
+                                            @* <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="testedBy" /> *@
+                                            @Html.TextBoxFor(m => m.TestedBy, new { @class = "underline-input form-control", placeholder = "Enter name", style = "width:60%; margin-left:8px;" })
+                                        </td>
+                                        <td style="width:50%;">
+                                            <b>APPROVED BY:</b>
+                                            @* <input type="text" class="underline-input" style="width:60%; margin-left:8px;" id="approvedBy" /> *@
+                                            @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "underline-input form-control", placeholder = "Enter name", style = "width:60%; margin-left:8px;" })
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
+        let photoRowCounter = 0;
 
         $(document).ready(function () {
-            initPhotoSelect();
             setTodayDate();
+            // Add initial photo row
         });
 
         function setTodayDate() {
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('reportDate').value = today;
+            const el = document.getElementById('ReportDate'); // ✅ correct
+            if (el && !el.value) el.value = today;
         }
 
-        function initPhotoSelect() {
-            // Before Photo
-            initSinglePhoto('chooseFileBtnBefore', 'photoInputBefore', 'fileNameBefore', 'photoPreviewBefore', 'photoSpaceBefore');
-            
-            // After Photo
-            initSinglePhoto('chooseFileBtnAfter', 'photoInputAfter', 'fileNameAfter', 'photoPreviewAfter', 'photoSpaceAfter');
+            function addPhotoRow() {
+            const tbody = document.getElementById('photoTableBody');
+            const index = tbody.querySelectorAll('tr.photo-row').length;
+
+            const tr = document.createElement('tr');
+            tr.className = 'photo-row';
+            tr.setAttribute('data-index', index);
+
+            tr.innerHTML = `
+                <input type="hidden" name="ImgDetails[${index}].Id" value="0" />
+                <input type="hidden" name="ImgDetails[${index}].Before_Img" value="" />
+                <input type="hidden" name="ImgDetails[${index}].After_Img" value="" />
+                <input type="hidden" name="ImgDetails[${index}].Deleted" value="false" class="hdDeleted" />
+
+                <td class="srNo text-center align-middle fw-bold">${index + 1}</td>
+
+                <td class="photo-cell">
+                    <div class="photo-cell-content">
+                        <div id="before_${index}_space" class="photo-space">
+                            <span>Before Test - No Image</span>
+                        </div>
+
+                        <img id="before_${index}_preview" class="photo-preview-img" style="display:none;" src="" alt="Before Preview" />
+
+                        <div class="photo-controls">
+                            <button type="button" class="chooseFileBtn" onclick="triggerFileInput('before', ${index})">
+                                <i class="fas fa-upload"></i> Choose File
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-danger"
+                                    id="before_${index}_delete" style="display:none;"
+                                    onclick="removePhoto('before', ${index})" title="Remove Photo">
+                                <i class="fas fa-times"></i>
+                            </button>
+
+                            <input type="file"
+                                   id="before_${index}_input"
+                                   name="ImgDetails[${index}].Before_ImgFile"
+                                   accept=".jpg,.jpeg,.png,.bmp"
+                                   style="display:none"
+                                   onchange="handlePhotoUpload('before', ${index})" />
+                        </div>
+
+                        <span id="before_${index}_filename" class="muted">No file chosen</span>
+                    </div>
+                </td>
+
+                <td class="photo-cell">
+                    <div class="photo-cell-content">
+                        <div id="after_${index}_space" class="photo-space">
+                            <span>After Test - No Image</span>
+                        </div>
+
+                        <img id="after_${index}_preview" class="photo-preview-img" style="display:none;" src="" alt="After Preview" />
+
+                        <div class="photo-controls">
+                            <button type="button" class="chooseFileBtn" onclick="triggerFileInput('after', ${index})">
+                                <i class="fas fa-upload"></i> Choose File
+                            </button>
+
+                            <button type="button" class="btn btn-sm btn-danger"
+                                    id="after_${index}_delete" style="display:none;"
+                                    onclick="removePhoto('after', ${index})" title="Remove Photo">
+                                <i class="fas fa-times"></i>
+                            </button>
+
+                            <input type="file"
+                                   id="after_${index}_input"
+                                   name="ImgDetails[${index}].After_ImgFile"
+                                   accept=".jpg,.jpeg,.png,.bmp"
+                                   style="display:none"
+                                   onchange="handlePhotoUpload('after', ${index})" />
+                        </div>
+
+                        <span id="after_${index}_filename" class="muted">No file chosen</span>
+                    </div>
+                </td>
+
+                <td class="text-center align-middle">
+                    <button type="button" class="btn btn-danger btn-sm btnDelPhotoRow" title="Delete Row">
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+            updatePhotoRowNumbers();
         }
 
-        function initSinglePhoto(btnId, inputId, fileNameId, previewId, spaceId) {
-            const chooseBtn = document.getElementById(btnId);
-            const fileInput = document.getElementById(inputId);
-            const fileNameEl = document.getElementById(fileNameId);
-            const preview = document.getElementById(previewId);
-            const photoSpace = document.getElementById(spaceId);
+            $(document).on('click', '.btnDelPhotoRow', function () {
+            const tbody = $('#photoTableBody');
+            const row = $(this).closest('tr.photo-row');
 
-            if (!chooseBtn || !fileInput) return;
-
-            chooseBtn.addEventListener('click', function () {
-                fileInput.click();
+            // must keep 1 visible row
+            const visibleRows = tbody.find('tr.photo-row').filter(function () {
+                return $(this).css('display') !== 'none';
             });
 
-            fileInput.addEventListener('change', function (e) {
-                const file = e.target.files[0];
+            if (visibleRows.length <= 1) {
+                alert('At least one photo row is required.');
+                return;
+            }
 
-                if (!file) {
-                    fileNameEl.textContent = "No file chosen";
-                    preview.style.display = "none";
-                    photoSpace.style.display = "block";
-                    return;
-                }
+            const idInput = row.find('input[name$=".Id"]');
+            const delInput = row.find('.hdDeleted');
+            const idVal = parseInt(idInput.val() || "0", 10);
 
-                if (file.size > 5 * 1024 * 1024) {
-                    alert("File is too large. Max 5MB.");
-                    fileInput.value = "";
-                    return;
-                }
+            if (idVal > 0) {
+                // existing -> mark deleted and hide
+                delInput.val('true');
+                row.hide();
+            } else {
+                // new -> remove
+                row.remove();
+            }
 
-                fileNameEl.textContent = file.name;
+            // reindex remaining visible rows to avoid binder skipping
+            reindexPhotoRows();
+            updatePhotoRowNumbers();
+        });
 
-                if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = function (ev) {
-                        preview.src = ev.target.result;
-                        preview.style.display = "block";
-                        photoSpace.style.display = "none";
-                    };
-                    reader.readAsDataURL(file);
-                }
+            function reindexPhotoRows() {
+            const rows = $('#photoTableBody tr.photo-row').filter(function () {
+                return $(this).css('display') !== 'none';
+            });
+
+            rows.each(function (newIndex) {
+                $(this).attr('data-index', newIndex);
+
+                // update hidden + file input names inside row
+                $(this).find('[name]').each(function () {
+                    const oldName = $(this).attr('name');
+                    if (!oldName) return;
+
+                    const updated = oldName.replace(/ImgDetails\[\d+\]/g, `ImgDetails[${newIndex}]`);
+                    $(this).attr('name', updated);
+                });
+
+                // update IDs for before/after UI elements
+                // (so triggerFileInput & handlePhotoUpload still work)
+                $(this).find('[id]').each(function () {
+                    const oldId = $(this).attr('id');
+                    if (!oldId) return;
+
+                    const updatedId = oldId
+                        .replace(/before_\d+/g, `before_${newIndex}`)
+                        .replace(/after_\d+/g, `after_${newIndex}`);
+
+                    $(this).attr('id', updatedId);
+                });
+
+                // also update onclick handlers which contain index number
+                $(this).find('button[onclick], input[onchange]').each(function () {
+                    const attr = $(this).attr('onclick') ? 'onclick' : 'onchange';
+                    const val = $(this).attr(attr);
+                    if (!val) return;
+
+                    const updated = val.replace(/\(\s*'?(before|after)'?\s*,\s*\d+\s*\)/g, `('$1', ${newIndex})`);
+                    $(this).attr(attr, updated);
+                });
             });
         }
 
-        function saveDropTest() {
-            // Collect all form data
-            const formData = {
-                reportNo: document.getElementById('reportNo').value,
-                reportDate: document.getElementById('reportDate').value,
-                productCatRef: document.getElementById('productCatRef').value,
-                productDescription: document.getElementById('productDescription').value,
-                caseLot: document.getElementById('caseLot').value,
-                dimensionL: document.getElementById('dimensionL').value,
-                dimensionW: document.getElementById('dimensionW').value,
-                dimensionH: document.getElementById('dimensionH').value,
-                masterCarton: document.getElementById('masterCarton').value,
-                innerPaddingDimension: document.getElementById('innerPaddingDimension').value,
-                innerCarton: document.getElementById('innerCarton').value,
-                grossWeight: document.getElementById('grossWeight').value,
-                heightTest: document.getElementById('heightTest').value,
-                glowTest: document.getElementById('glowTest').value,
-                remark: document.getElementById('remark').value,
-                testedBy: document.getElementById('testedBy').value,
-                approvedBy: document.getElementById('approvedBy').value,
-                // Add image data if needed
-                photoBeforeSrc: document.getElementById('photoPreviewBefore').src,
-                photoAfterSrc: document.getElementById('photoPreviewAfter').src,
-                // Collect test table data
-                testRows: collectTestTableData()
+        function updatePhotoRowNumbers() {
+            const rows = document.querySelectorAll('#photoTableBody tr.photo-row:not([style*="display: none"])');
+            rows.forEach((r, i) => {
+                const srCell = r.querySelector('td.srNo');
+                if (srCell) srCell.textContent = (i + 1);
+            });
+        }
+
+            function triggerFileInput(type, index) {
+            document.getElementById(`${type}_${index}_input`).click();
+        }
+
+        function handlePhotoUpload(type, index) {
+            const input = document.getElementById(`${type}_${index}_input`);
+            const file = input.files && input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const preview = document.getElementById(`${type}_${index}_preview`);
+                const space = document.getElementById(`${type}_${index}_space`);
+                const filename = document.getElementById(`${type}_${index}_filename`);
+                const delBtn = document.getElementById(`${type}_${index}_delete`);
+
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                space.style.display = 'none';
+                filename.textContent = file.name;
+                delBtn.style.display = 'inline-block';
             };
-
-            console.log('Form Data:', formData);
-
-            // TODO: Send formData to server via AJAX
-            $.ajax({
-                url: '@Url.Action("SaveDropTestReport", "ProductValidation")',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function (response) {
-                    alert('Drop Test Report saved successfully!');
-                    // Optionally redirect or update UI
-                },
-                error: function (xhr, status, error) {
-                    alert('Error saving report: ' + error);
-                }
-            });
+            reader.readAsDataURL(file);
         }
+
+        function removePhotoRow(rowNumber) {
+            const tbody = document.getElementById('photoTableBody');
+            if (tbody.getElementsByTagName('tr').length <= 1) {
+                alert('At least one photo row is required.');
+                return;
+            }
+            if (confirm('Are you sure you want to remove this photo row?')) {
+                const row = document.getElementById(`photo_row_${rowNumber}`);
+                if (row) {
+                    row.remove();
+                    updatePhotoRowNumbers();
+                }
+            }
+        }
+
+        function removePhoto(type, index) {
+            if (!confirm('Remove this photo?')) return;
+
+            const input = document.getElementById(`${type}_${index}_input`);
+            const preview = document.getElementById(`${type}_${index}_preview`);
+            const space = document.getElementById(`${type}_${index}_space`);
+            const filename = document.getElementById(`${type}_${index}_filename`);
+            const delBtn = document.getElementById(`${type}_${index}_delete`);
+
+            // reset UI
+            input.value = '';
+            preview.src = '';
+            preview.style.display = 'none';
+            space.style.display = 'flex';
+            filename.textContent = 'No file chosen';
+            delBtn.style.display = 'none';
+        }
+
 
         function addTestRow() {
             const tbody = document.getElementById('testTableBody');
@@ -604,7 +1064,7 @@
             newRow.innerHTML = `
                 <td contenteditable="true" style="text-align:center;">${newRowNumber}</td>
                 <td contenteditable="true"></td>
-                <td contenteditable="true" style="white-space:normal;"></td>
+                <td contenteditable="true" class="multi-line-text" style="white-space:pre-wrap;"></td>
                 <td contenteditable="true" style="white-space:normal;"></td>
                 <td contenteditable="true"></td>
                 <td style="text-align:center;">
@@ -621,7 +1081,7 @@
         function deleteTestRow(button) {
             const row = button.closest('tr');
             const tbody = document.getElementById('testTableBody');
-            
+
             // Prevent deleting if only one row remains
             if (tbody.getElementsByTagName('tr').length <= 1) {
                 alert('At least one row is required.');
@@ -661,6 +1121,320 @@
             }
 
             return testData;
+        }
+
+        function collectPhotoData() {
+            const photoData = [];
+            const tbody = document.getElementById('photoTableBody');
+            const rows = tbody.getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+
+                // Before photo (left cell)
+                const beforePreview = cells[0].querySelector('.photo-preview-img');
+                const beforeFilename = cells[0].querySelector('span[id$="_filename"]');
+
+                // After photo (right cell)
+                const afterPreview = cells[1].querySelector('.photo-preview-img');
+                const afterFilename = cells[1].querySelector('span[id$="_filename"]');
+
+                photoData.push({
+                    rowNumber: i + 1,
+                    before: {
+                        src: beforePreview && beforePreview.style.display !== 'none' ? beforePreview.src : null,
+                        filename: beforeFilename ? beforeFilename.textContent : 'No file chosen'
+                    },
+                    after: {
+                        src: afterPreview && afterPreview.style.display !== 'none' ? afterPreview.src : null,
+                        filename: afterFilename ? afterFilename.textContent : 'No file chosen'
+                    }
+                });
+            }
+
+            return photoData;
+        }
+
+        // function saveDropTest() {
+        //     // Collect all form data
+        //     const formData = {
+        //         reportNo: document.getElementById('reportNo').value,
+        //         reportDate: document.getElementById('reportDate').value,
+        //         revision: document.getElementById('revision').value,
+        //         productCatRef: document.getElementById('productCatRef').textContent,
+        //         productDescription: document.getElementById('productDescription').textContent,
+        //         caseLot: document.getElementById('caseLot').textContent,
+        //         masterCarton: {
+        //             length: document.getElementById('masterCartonL').value,
+        //             width: document.getElementById('masterCartonW').value,
+        //             height: document.getElementById('masterCartonH').value
+        //         },
+        //         innerCarton: {
+        //             length: document.getElementById('innerCartonL').value,
+        //             width: document.getElementById('innerCartonW').value,
+        //             height: document.getElementById('innerCartonH').value
+        //         },
+        //         innerPadding: {
+        //             length: document.getElementById('innerPaddingL').value,
+        //             width: document.getElementById('innerPaddingW').value,
+        //             height: document.getElementById('innerPaddingH').value
+        //         },
+        //         grossWeight: document.getElementById('grossWeight').value,
+        //         heightTest: document.getElementById('heightTest').value,
+        //         glowTest: document.getElementById('glowTest').value,
+        //         testResult: document.getElementById('testResult').value,
+        //         remark: document.getElementById('remark').value,
+        //         testedBy: document.getElementById('testedBy').value,
+        //         approvedBy: document.getElementById('approvedBy').value,
+        //         testRows: collectTestTableData(),
+        //         photos: collectPhotoData()
+        //     };
+
+        //     console.log('Form Data:', formData);
+
+        //     // TODO: Send formData to server via AJAX
+        //     $.ajax({
+        //         url: '@Url.Action("SaveDropTestReport", "ProductValidation")',
+        //         type: 'POST',
+        //         contentType: 'application/json',
+        //         data: JSON.stringify(formData),
+        //         success: function (response) {
+        //             alert('Drop Test Report saved successfully!');
+        //             // Optionally redirect or update UI
+        //         },
+        //         error: function (xhr, status, error) {
+        //             alert('Error saving report: ' + error);
+        //         }
+        //     });
+        // }
+
+        // function saveDropTest() {
+        //     Blockloadershow();
+
+        //     // ✅ validate using correct IDs generated by Html.TextBoxFor
+        //     const requiredFields = [
+        //         { id: 'ReportNo', name: 'Report No' },
+        //         { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+        //         { id: 'ProductDescription', name: 'Product Description' }
+        //     ];
+
+        //     let missingFields = [];
+        //     requiredFields.forEach(f => {
+        //         const el = document.getElementById(f.id);
+        //         if (!el || !el.value || !el.value.trim()) missingFields.push(f.name);
+        //     });
+
+        //     if (missingFields.length) {
+        //         showDangerAlert(
+        //             `<p>Please fill out the following required field(s):</p><ul>${missingFields.map(x => `<li>${x}</li>`).join('')}</ul>`
+        //         );
+        //         Blockloaderhide();
+        //         return false;
+        //     }
+
+        //     // ✅ correct form id
+        //     const form = $('#dropTest_form')[0];
+        //     const formData = new FormData(form);
+
+        //     // ✅ OverallResult (your select is not strongly bound)
+        //     const overall = $('.result-select[data-name="OverallResult"]').val();
+        //     formData.set('OverallResult', (overall || '').toString().trim());
+
+        //     // ✅ Collect Details table -> MVC binding keys
+        //     // NOTE: we skip rows that are completely empty (optional)
+        //     const rows = $('#testTableBody tr');
+        //     let dIndex = 0;
+
+        //     rows.each(function () {
+        //         const tds = $(this).find('td');
+
+        //         // structure: [0]=sr, [1]=Test, [2]=Parameter, [3]=Acceptance, [4]=Observations, [5]=Action
+        //         const test = $(tds[1]).text().trim();
+        //         const param = $(tds[2]).text().trim();
+        //         const acc  = $(tds[3]).text().trim();
+        //         const obs  = $(tds[4]).text().trim();
+
+        //         // if fully empty, skip
+        //         if (!test && !param && !acc && !obs) return;
+
+        //         // if you have hidden Id rendered by Razor, try read it (else 0)
+        //         const hiddenId = $(this).find('input[type="hidden"]').first().val();
+        //         const idVal = hiddenId ? hiddenId : "0";
+
+        //         formData.set(`Details[${dIndex}].Id`, idVal);
+        //         formData.set(`Details[${dIndex}].Test`, test);
+        //         formData.set(`Details[${dIndex}].Parameter`, param);
+        //         formData.set(`Details[${dIndex}].Acceptance_Criteria`, acc);
+        //         formData.set(`Details[${dIndex}].Observations`, obs);
+
+        //         dIndex++;
+        //     });
+
+        //     // ✅ ImgDetails: files will auto go because inputs have correct names:
+        //     // ImgDetails[i].Before_ImgFile and ImgDetails[i].After_ImgFile
+        //     // Hidden values (Before_Img / After_Img / Deleted / Id) also go automatically
+        //     //
+        //     // Optional: ensure hidden Deleted is posted as true/false string:
+        //     $('#photoTableBody tr.photo-row').each(function () {
+        //         const del = $(this).find('.hdDeleted');
+        //         if (del.length && !del.val()) del.val('false');
+        //     });
+
+        //     $.ajax({
+        //         url: $('#dropTest_form').attr('action'),
+        //         type: 'POST',
+        //         data: formData,
+        //         processData: false,
+        //         contentType: false,
+        //         success: function (response) {
+        //             Blockloaderhide();
+
+        //             if (!response.success) {
+        //                 let errorMessg = "";
+        //                 if (response.errors != undefined) {
+        //                     for (var error of response.errors) errorMessg += error + "\n";
+        //                     if (errorMessg) showDangerAlert(errorMessg);
+        //                 } else {
+        //                     showDangerAlert(response.message || "Error");
+        //                 }
+        //                 return false;
+        //             }
+
+        //             if ($("#Id").val() > 0) showSuccessAlert("Updated Successfully.");
+        //             else showSuccessAlert("Saved Successfully.");
+
+        //             setTimeout(function () {
+        //                 window.open('@Url.Action("DropTestReport", "ProductValidation")', '_self');
+        //             }, 2500);
+        //         },
+        //         error: function (xhr, status, error) {
+        //             Blockloaderhide();
+        //             showDangerAlert('Error saving data: ' + error);
+        //         }
+        //     });
+        // }
+
+        function saveDropTest() {
+            Blockloadershow();
+
+            // ✅ validate using correct IDs generated by Html.TextBoxFor
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+                { id: 'ProductDescription', name: 'Product Description' }
+            ];
+
+            let missingFields = [];
+            requiredFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value || !el.value.trim()) missingFields.push(f.name);
+            });
+
+            if (missingFields.length) {
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${missingFields.map(x => `<li>${x}</li>`).join('')}</ul>`
+                );
+                Blockloaderhide();
+                return false;
+            }
+
+            // ✅ IMPORTANT: ensure photo rows are indexed 0..n before submit
+            // (so binder doesn't miss ImgDetails when a middle row is deleted)
+            if (typeof reindexPhotoRows === "function") {
+                reindexPhotoRows();
+            }
+
+            // ✅ correct form id
+            const form = $('#dropTest_form')[0];
+            const formData = new FormData(form);
+
+            // ✅ OverallResult (your select is not strongly bound)
+            const overall = $('.result-select[data-name="OverallResult"]').val();
+            formData.set('OverallResult', (overall || '').toString().trim());
+
+            // ✅ Collect Details table -> MVC binding keys
+            const rows = $('#testTableBody tr');
+            let dIndex = 0;
+
+            rows.each(function () {
+                const tds = $(this).find('td');
+
+                const test = $(tds[1]).text().trim();
+                const param = $(tds[2]).text().trim();
+                const acc = $(tds[3]).text().trim();
+                const obs = $(tds[4]).text().trim();
+
+                if (!test && !param && !acc && !obs) return;
+
+                const hiddenId = $(this).find('input[type="hidden"]').first().val();
+                const idVal = hiddenId ? hiddenId : "0";
+
+                formData.set(`Details[${dIndex}].Id`, idVal);
+                formData.set(`Details[${dIndex}].Test`, test);
+                formData.set(`Details[${dIndex}].Parameter`, param);
+                formData.set(`Details[${dIndex}].Acceptance_Criteria`, acc);
+                formData.set(`Details[${dIndex}].Observations`, obs);
+
+                dIndex++;
+            });
+
+            // ✅ ImgDetails handling
+            // Ensure Deleted has value, and OPTIONAL: if a new row has no files and no old paths, mark it Deleted=true
+            $('#photoTableBody tr.photo-row').each(function () {
+                const $row = $(this);
+
+                const del = $row.find('.hdDeleted');
+                if (del.length && !del.val()) del.val('false');
+
+                const idVal = parseInt($row.find('input[name$=".Id"]').val() || "0", 10);
+                const beforePath = ($row.find('input[name$=".Before_Img"]').val() || "").trim();
+                const afterPath = ($row.find('input[name$=".After_Img"]').val() || "").trim();
+
+                const beforeFile = $row.find('input[type="file"][name$=".Before_ImgFile"]')[0];
+                const afterFile = $row.find('input[type="file"][name$=".After_ImgFile"]')[0];
+
+                const hasBeforeFile = beforeFile && beforeFile.files && beforeFile.files.length > 0;
+                const hasAfterFile = afterFile && afterFile.files && afterFile.files.length > 0;
+
+                // ✅ Optional cleanup: if it's a NEW row with nothing selected and nothing existing, mark Deleted=true
+                if (idVal === 0 && !hasBeforeFile && !hasAfterFile && !beforePath && !afterPath) {
+                    del.val('true');
+                }
+            });
+
+            $.ajax({
+                url: $('#dropTest_form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        let errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) errorMessg += error + "\n";
+                            if (errorMessg) showDangerAlert(errorMessg);
+                        } else {
+                            showDangerAlert(response.message || "Error");
+                        }
+                        return false;
+                    }
+
+                    if ($("#Id").val() > 0) showSuccessAlert("Updated Successfully.");
+                    else showSuccessAlert("Saved Successfully.");
+
+                    setTimeout(function () {
+                        window.open('@Url.Action("DropTestReport", "ProductValidation")', '_self');
+                    }, 2500);
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving data: ' + error);
+                }
+            });
         }
 
     </script>

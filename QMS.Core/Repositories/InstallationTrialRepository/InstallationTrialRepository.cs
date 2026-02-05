@@ -68,7 +68,7 @@ namespace QMS.Core.Repositories.InstallationTrialRepository
                     var e = endDate.Value.Date;
 
                     query = query
-                        .Where(d => d.AddedOn.Date >= s && d.AddedOn.Date <= e)
+                        .Where(d => d.ReportDate?.Date >= s && d.ReportDate?.Date <= e)
                         .ToList();
                 }
 

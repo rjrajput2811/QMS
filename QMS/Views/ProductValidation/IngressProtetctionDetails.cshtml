@@ -1,442 +1,820 @@
-﻿@{
+@using QMS.Core.Models
+@model IngressProtectionTestViewModel
+
+@{
     ViewData["Title"] = "Ingress Protection (IP) Test Report";
 }
 
 <style>
-    .card {
-        border-radius: 8px;
-        border: 1px solid #ccc;
-        background: #fff;
-        margin-bottom: 16px;
+    * {
+        box-sizing: border-box;
     }
 
-    .header-card {
-        border-radius: 8px;
-        border: 1px solid #ccc;
+    .card-header-custom {
         background: #fff;
-    }
-
-    .d-flex {
+        padding: 15px 20px;
         display: flex;
-    }
-
-    .justify-between {
         justify-content: space-between;
-    }
-
-    .align-center {
         align-items: center;
     }
 
-    .table, .table-surge {
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 14px;
-        text-align: center;
-        border-top: 1.5px solid #000;
+    .header-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #000;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
-        .table th, .table td, .table-surge th, .table-surge td {
-            border: 1.5px solid #000;
-            padding: 6px 8px;
-            vertical-align: middle;
-            box-sizing: border-box;
+    .btn-group-header {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-custom {
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        border: 2px solid;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-save {
+        background: #28a745;
+        border-color: #28a745;
+        color: #fff;
+    }
+
+        .btn-save:hover {
+            background: #218838;
+            border-color: #1e7e34;
         }
 
-    /* 🔹 Title same visual size as Electrical Protection */
-    .header-title {
-        font-size: large;
-        color: #4682B4;
+    .btn-back {
+        background: #fff;
+        border-color: #007bff;
+        color: #007bff;
+    }
+
+        .btn-back:hover {
+            background: #007bff;
+            color: #fff;
+        }
+
+    .card-body-custom {
+        padding: 25px;
+    }
+
+    /* Excel-style table */
+    .excel-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+
+        .excel-table td {
+            border: 1px solid #000;
+            padding: 8px 12px;
+            vertical-align: middle;
+        }
+
+        .excel-table th {
+            border: 2px solid #000;
+            padding: 10px 12px;
+            background: #f8f9fa;
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .label-bold {
+        font-weight: 700;
+        margin-right: 5px;
+    }
+
+    .label-red {
+        color: #dc3545;
         font-weight: 700;
     }
 
-    .underline-input {
-        border: 0;
-        border-bottom: 1.5px solid #666;
-        border-radius: 0;
-        background: transparent;
-        width: 50%;
-        font-size: 15px;
-        padding: 2px 6px;
-        outline: none;
-        box-shadow: none;
-        vertical-align: middle;
-        transition: border-color 0.2s ease-in-out;
-    }
-
-        .underline-input:focus {
-            border-bottom: 1.5px solid #4682B4;
-        }
-
-    .soft-select {
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-        display: inline-block;
-        width: 95%;
-        min-width: 140px;
-        padding: 8px 32px 8px 10px;
-        font-size: 14px;
-        line-height: 1.2;
-        color: #111;
-        background-color: #fff;
+    .input-underline {
         border: none;
-        border-bottom: 1.8px solid #cfd9e3;
-        border-radius: 0 0 6px 6px;
-        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 20 20' fill='none'><path d='M5 7l5 5 5-5' stroke='%23666' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
-        background-repeat: no-repeat;
-        background-position: right 10px center;
-        background-size: 12px;
-        transition: border-color 0.2s ease-in-out;
-        cursor: pointer;
-        vertical-align: middle;
-        box-sizing: border-box;
+        border-bottom: 1px solid #000;
+        background: transparent;
+        outline: none;
+        padding: 2px 5px;
+        font-size: 14px;
+        width: auto;
     }
 
-        .soft-select:hover {
-            border-bottom-color: #b0c9e6;
+        .input-underline:focus {
+            border-bottom: 2px solid #007bff;
         }
 
-        .soft-select:focus {
-            outline: none;
-            border-bottom-color: #4a90e2;
+    .select-custom {
+        border: 1px solid #000;
+        padding: 4px 8px;
+        font-size: 14px;
+        background: #fff;
+        outline: none;
+        cursor: pointer;
+    }
+
+        .select-custom:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
         }
 
-        .soft-select.small {
-            padding: 6px 26px 6px 8px;
-            font-size: 13px;
-            border-radius: 0 0 5px 5px;
+    /* IP Test Dynamic Table */
+    .ip-test-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 14px;
+    }
+
+        .ip-test-table th {
+            border: 2px solid #000;
+            padding: 10px;
+            background: #e9ecef;
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
         }
 
-    select.soft-select::-ms-expand {
+        .ip-test-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            vertical-align: middle;
+        }
+
+            .ip-test-table td[contenteditable="true"] {
+                min-height: 30px;
+                cursor: text;
+                background: #fff;
+            }
+
+                .ip-test-table td[contenteditable="true"]:hover {
+                    background: #f8f9fa;
+                }
+
+                .ip-test-table td[contenteditable="true"]:focus {
+                    background: #e7f3ff;
+                    outline: 2px solid #007bff;
+                }
+
+    .btn-add-row {
+        background: #28a745;
+        color: #fff;
+        border: 2px solid #28a745;
+        padding: 8px 20px;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 15px 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+        .btn-add-row:hover {
+            background: #218838;
+            border-color: #1e7e34;
+        }
+
+    .btn-delete-row {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 12px;
+        margin-left: 8px;
+    }
+
+        .btn-delete-row:hover {
+            background: #c82333;
+        }
+
+    /* Image Upload Styling */
+    .image-upload-cell {
+        text-align: center;
+        vertical-align: top;
+        padding: 10px;
+    }
+
+    .image-upload-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .image-preview {
+        max-width: 200px;
+        max-height: 150px;
+        border: 2px dashed #ccc;
+        border-radius: 4px;
+        display: none;
+        margin-top: 8px;
+    }
+
+        .image-preview.show {
+            display: block;
+        }
+
+    .btn-upload {
+        background: #007bff;
+        color: #fff;
+        border: 2px solid #007bff;
+        padding: 6px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+        .btn-upload:hover {
+            background: #0056b3;
+            border-color: #0056b3;
+        }
+
+    .btn-remove-image {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 11px;
         display: none;
     }
 
-    .ip-rating-select {
-        width: 80px;
-        margin-left: 6px;
-        text-align: center;
-        border-bottom: 1.8px solid #cfd9e3;
-        border-radius: 0 0 6px 6px;
-    }
-
-    .btn-rectangle {
-        display: inline-block;
-        min-width: 260px;
-        height: 60px;
-        border: 1.5px solid #000;
-        border-radius: 6px;
-        background: #fff;
-        vertical-align: middle;
-        padding: 6px 10px;
-        box-sizing: border-box;
-    }
-
-        .btn-rectangle .inner {
-            display: flex;
-            align-items: center;
-            justify-content: space-around;
-            height: 100%;
+        .btn-remove-image.show {
+            display: inline-block;
         }
 
-    .btn-outline-success, .btn-outline-danger {
-        transition: all .18s ease-in-out;
-    }
-
-        .btn-outline-success:hover, .btn-outline-danger:hover {
-            transform: scale(1.05);
+        .btn-remove-image:hover {
+            background: #c82333;
         }
 
-    .row-del-btn {
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        margin-left: 6px;
-        padding: 0;
-        color: red;
-        font-size: 16px;
+    .file-input-hidden {
+        display: none;
     }
 
-        .row-del-btn:hover {
-            color: darkred;
-            transform: scale(1.1);
-        }
+    .image-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
 
-    .card .table thead th {
-        background: #f8f9fa;
+    .section-title {
+        background: #f0f0f0;
+        border: 1px solid #000;
+        padding: 8px 12px;
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    .signature-section {
+        border-top: 2px solid #000;
+        margin-top: 20px;
+        padding-top: 15px;
+    }
+
+    .signature-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+    }
+
+    .signature-item {
+        flex: 1;
+    }
+
+    .report-number {
+        text-align: right;
         font-weight: 700;
     }
 
-    .table td select.soft-select {
-        max-width: 220px;
-    }
-
-    td[contenteditable="true"] {
-        min-height: 36px;
-        text-align: left;
-    }
-
-    .text-center {
-        text-align: center;
+    @@media print {
+        .btn-group-header,
+        .btn-add-row,
+        .btn-delete-row,
+        .btn-upload,
+        .btn-remove-image {
+            display: none !important;
+        }
     }
 </style>
 
-<div class="content">
-    <div class="row">
-        <div class="col-12">
 
-            <!-- HEADER CARD -->
-            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body d-flex justify-between align-center" style="padding:18px;">
-                    <div style="flex:1; text-align:left;">
-                        <span class="header-title">Ingress Protection (IP) Test Report</span>
-                    </div>
+<div class="card">
+    <!-- Header Section -->
+    <div class="card-header-custom">
 
-                    <div style="display:flex; gap:10px;">
-                        <button id="saveBtn" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                            <i class="fas fa-save" aria-hidden="true"></i> Save
-                        </button>
-                        <a href="@Url.Action("IngressProtetction","ProductValidation")"
-                           class="btn btn-outline-primary"
-                           style="width:120px; font-size:15px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center;">
-                            <i class="fas fa-arrow-left" aria-hidden="true"></i> BACK
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- MAIN CARD -->
-            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc; margin:0;">
-                <div class="card-body" style="padding:16px;">
-
-                    <!-- Top info table -->
-                    <div class="table-responsive">
-                        <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-bottom:0;">
-                            <thead>
-                                <tr>
-                                    <th colspan="4" style="text-align:center; padding:10px; border-top:1.5px solid #000;">
-                                        Resistance to Dust and Moisture: As per IS10322
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr style="border-top:1.5px solid #000;">
-                                    <td colspan="2" style="border-top:1.5px solid #000;"></td>
-                                    <td colspan="2" style="vertical-align:top; padding:10px 10px 10px 0; padding-left:0;">
-                                        <span style="font-weight:700; display:inline-block; margin-left:-4px;">Report No :</span>
-                                        <input type="text" class="underline-input"
-                                               style="width:85%; margin-left:4px;"
-                                               placeholder="Enter report number" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="vertical-align:top; padding:10px 10px 10px 0; padding-left:0;">
-                                        <span style="font-weight:700; display:inline-block; margin-left:-1px;">Customer/Project Name :</span>
-                                        <input type="text" class="underline-input"
-                                               style="width:83.5%; margin-left:1px;"
-                                               placeholder="Enter customer or project name" />
-                                    </td>
-                                    <td colspan="1" style="vertical-align:top; padding:10px 10px 10px 0; padding-left:0;">
-                                        <span style="font-weight:700; display:inline-block; margin-left:-1px;">Date :</span>
-                                        <input type="text" class="underline-input"
-                                               style="width:83%; margin-left:1px;"
-                                               placeholder="dd-mm-yyyy" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td style="padding:10px 10px 10px 0; padding-left:0;">
-                                        <span style="font-weight:700; display:inline-block; margin-left:-4px;">Product Cat Ref :</span>
-                                        <input type="text" class="underline-input"
-                                               placeholder="Enter product reference"
-                                               style="width:64%; margin-left:4px; border-bottom:1.5px solid #000;" />
-                                    </td>
-
-                                    <td style="padding:10px 10px 10px 0; padding-left:0;">
-                                        <span style="font-weight:700; display:inline-block; margin-left:-4px;">Product Description :</span>
-                                        <input type="text" class="underline-input"
-                                               placeholder="Enter description"
-                                               style="width:60%; margin-left:4px; border-bottom:1.5px solid #000;" />
-                                    </td>
-
-                                    <td style="padding:10px 10px 10px 0; padding-left:0;">
-                                        <span style="font-weight:700; display:inline-block; margin-left:-4px;">Batch Code :</span>
-                                        <input type="text" class="underline-input"
-                                               style="width:70%; margin-left:4px;"
-                                               placeholder="Batch" />
-                                    </td>
-
-                                    <td style="padding:10px 10px 10px 0; padding-left:0;">
-                                        <span style="font-weight:700; display:inline-block; margin-left:-4px;">Quantity :</span>
-                                        <input type="text" class="underline-input"
-                                               style="width:73%; margin-left:4px;"
-                                               placeholder="Qty" />
-                                    </td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="3" style="padding:10px; text-align:left;">
-                                        <span style="font-weight:700; color:red;">IP Rating -</span>
-                                        <select id="ipRating" class="soft-select small ip-rating-select">
-                                            <option value="">Select</option>
-                                            <option value="20">20</option>
-                                            <option value="40">40</option>
-                                            <option value="44">44</option>
-                                            <option value="54">54</option>
-                                            <option value="65">65</option>
-                                            <option value="66">66</option>
-                                            <option value="67">67</option>
-                                            <option value="68">68</option>
-                                        </select>
-                                    </td>
-                                    <td style="padding:10px 10px 10px 0; padding-left:0;">
-                                        <b style="font-weight:700; display:inline-block; margin-left:-4px;">PKD -</b>
-                                        <input type="text" class="underline-input"
-                                               style="width:82%; margin-left:4px;"
-                                               placeholder="Enter PKD" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Add button row -->
-                    <div class="table-responsive" style="margin:0; padding:0;">
-                        <table class="table table-bordered" style="width:100%; margin-bottom:0;">
-                            <tbody>
-                                <tr>
-                                    <td colspan="6" style="padding:12px; text-align:left;">
-                                        <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px; font-size:15px; border-radius:6px;">
-                                            <i class="fas fa-plus"></i> Add
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- IP Test table -->
-                    <div class="table-responsive" style="margin:0;">
-                        <table id="ipTestTable" class="table table-surge" style="width:100%;">
-                            <thead>
-                                <tr>
-                                    <th style="width:5%;">Sr. No.</th>
-                                    <th style="width:20%;">Description</th>
-                                    <th style="width:20%;">IP Test</th>
-                                    <th style="width:20%;">IP Condition</th>
-                                    <th style="width:20%;">Observation</th>
-                                    <th style="width:10%; color:red;">Result</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!-- Fixed "Tested / Verified" row stays at top of tbody -->
-                                <tr data-fixed="true">
-                                    <td colspan="3" style="text-align:left;">
-                                        <strong>Tested By :</strong>
-                                        <input type="text" class="underline-input"
-                                               placeholder="Enter name"
-                                               style="width:65%; margin-left:10px; border-bottom:1.5px solid #000;" />
-                                    </td>
-                                    <td colspan="3" style="text-align:left;">
-                                        <strong>Verified By :</strong>
-                                        <input type="text" class="underline-input"
-                                               placeholder="Enter name"
-                                               style="width:65%; margin-left:10px; border-bottom:1.5px solid #000;" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                </div>
-            </div>
-
+        <b style="font-size: large; color: #4682B4;">Ingress Protection (IP) Test Report</b>
+        <div class="btn-group-header">
+            <button id="saveBtn" class="btn-custom btn-save" onclick="saveIngressTest()">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="@Url.Action("IngressProtetction","ProductValidation")" class="btn-custom btn-back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
     </div>
 </div>
 
+<div class="card">
+    <form id="dropTest_form" method="post" asp-action="InsertUpdateDropTest" asp-controller="ProductValidation" enctype="multipart/form-data">
+        @Html.HiddenFor(m => m.Id)
+        <div class="card-body-custom">
+            <!-- Subtitle Section -->
+            <div class="section-title">
+                Resistance to Dust and Moisture: As per IS10322
+            </div>
+
+            <!-- Main Information Table -->
+            <table class="excel-table" style="margin-top: 15px;">
+                <tbody>
+                    <!-- Report Number and Date Row -->
+                    <tr>
+                        <td colspan="3" style="text-align: left;">
+                            <span class="label-bold">Customer/Project Name:</span>
+                            @* <input type="text" class="input-underline" style="width: 65%;" placeholder="Enter customer/project name" /> *@
+                            @Html.TextBoxFor(m => m.CustomerProjectName, new { @class = "input-underline", placeholder = "Enter customer/project name", style = "width: 65%;" })
+                        </td>
+                        <td colspan="2" class="report-number">
+                            <span class="label-bold">Report No.:</span>
+                            @* <input type="text" class="input-underline" style="width: 150px;" placeholder="Report number" /> *@
+                            @Html.TextBoxFor(m => m.ReportNo, new { @class = "input-underline", placeholder = "Enter Report Number", required = "required" })
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="5" style="text-align: right; padding: 8px 12px;">
+                            <span class="label-bold">Date:</span>
+                            @* <input type="date" class="input-underline" style="width: 150px;" placeholder="dd-mm-yyyy" /> *@
+                            @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new
+                                {
+                                    @class = "input-underline",
+                                    style = "width:15%; font-size:13px;",
+                                    placeholder = "dd-mm-yyyy",
+                                    title = "Enter date as dd-mm-yyyy",
+                                    required = "required",
+                                    type = "date"
+                                })
+                        </td>
+                    </tr>
+
+                    <!-- Product Details Row -->
+                    <tr>
+                        <td style="width: 25%;">
+                            <span class="label-bold">Product Cat Ref:</span><br />
+                            @* <input type="text" class="input-underline" style="width: 95%;" placeholder="Enter reference" /> *@
+                            @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "input-underline", placeholder = "Enter reference", style = "width: 95%;" })
+                        </td>
+                        <td colspan="2" style="width: 35%;">
+                            <span class="label-bold">Product Description:</span><br />
+                            @* <input type="text" class="input-underline" style="width: 95%;" placeholder="Enter description" /> *@
+                            @Html.TextBoxFor(m => m.ProductDescription, new { @class = "input-underline", placeholder = "Enter description", style = "width: 95%;" })
+                        </td>
+                        <td style="width: 20%;">
+                            <span class="label-bold">Batch Code:</span><br />
+                            @* <input type="text" class="input-underline" style="width: 90%;" placeholder="Batch code" /> *@
+                            @Html.TextBoxFor(m => m.BatchCode, new { @class = "input-underline", placeholder = "Enter Batch code", style = "width: 90%;" })
+                        </td>
+                        <td style="width: 20%;">
+                            <span class="label-bold">Quantity:</span><br />
+                            @* <input type="text" class="input-underline" style="width: 90%;" placeholder="Quantity" /> *@
+                            @Html.TextBoxFor(m => m.Quantity, new { @class = "input-underline", placeholder = "Enter Quantity", style = "width: 90%;" })
+                        </td>
+                    </tr>
+
+                    <!-- IP Rating and PKD Row -->
+                    <tr>
+                        <td colspan="3">
+                            <span class="label-red">IP Rating:</span>
+                            @* <input type="text" id="ipRating" class="input-underline" style="width: 230px; margin-left: 8px;" placeholder="e.g., 20/40/44/54/65/66/67/68" /> *@
+                            @Html.TextBoxFor(m => m.IPRating, new { @class = "input-underline", placeholder = "Enter e.g., 20/40/44/54/65/66/67/68", style = "width: 230px; margin-left: 8px;" })
+                        </td>
+                        <td colspan="2">
+                            <span class="label-bold">PKD:</span>
+                            @* <input type="text" class="input-underline" style="width: 70%;" placeholder="Enter PKD" /> *@
+                            @Html.TextBoxFor(m => m.PKD, new { @class = "input-underline", placeholder = "Enter PKD", style = "width: 70%;" })
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Add Row Button -->
+            <button id="addRowBtn" type="button" class="btn-add-row">
+                <i class="fas fa-plus"></i> Add Row
+            </button>
+
+            <!-- IP Test Dynamic Table -->
+            <table id="ipTestTable" class="ip-test-table">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">Sr. No.</th>
+                        <th style="width: 20%;">Description</th>
+                        <th style="width: 15%;">IP Test</th>
+                        <th style="width: 17%;">Photo During Testing</th>
+                        <th style="width: 17%;">Photo After Testing</th>
+                        <th style="width: 15%;">Observation</th>
+                        <th style="width: 8%;">Result</th>
+                    </tr>
+                </thead>
+                <tbody id="photoTableBody">
+                    @{
+                        var details = Model?.Details ?? new List<QMS.Core.Models.IngressProtectionTestDetailViewModel>();
+                    }
+
+                    @if (details.Any())
+                    {
+                        for (int i = 0; i < details.Count; i++)
+                        {
+                            <tr style="height:120px;" data-index="@i">
+                                @Html.HiddenFor(m => m.Details[i].Id)
+
+                                <!-- Sr No + Delete -->
+                                <td class="sr-no-cell" style="border:1.5px solid #000; text-align:center; vertical-align:top;">
+                                    <span class="sr-number">@(i + 1)</span>
+                                    <button type="button" class="btn-delete-row" onclick="deleteIPRow(this)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+
+                                <!-- Description -->
+                                <td contenteditable="true"
+                                    class="editable-cell"
+                                    data-name="Description"
+                                    style="border:1.5px solid #000; vertical-align:top;">
+                                    @(details[i].Description ?? "")
+                                </td>
+
+                                <!-- IP Test -->
+                                <td contenteditable="true"
+                                    class="editable-cell"
+                                    data-name="IPTest"
+                                    style="border:1.5px solid #000; vertical-align:top;">
+                                    @(details[i].Ip_Test ?? "")
+                                </td>
+
+                                <!-- Photo During Testing -->
+                                <td class="image-upload-cell" style="border:1.5px solid #000; vertical-align:top;">
+                                    <div class="image-upload-wrapper">
+                                        <input type="file"
+                                               class="file-input-hidden"
+                                               accept="image/*"
+                                               onchange="handleImageUpload(this, 'during')">
+
+                                        <button type="button" class="btn-upload" onclick="this.previousElementSibling.click()">
+                                            <i class="fas fa-camera"></i> Upload
+                                        </button>
+
+                                        <img class="image-preview"
+                                             alt="Preview"
+                                             src="@(details[i].Photo_During_Test ?? "")"
+                                             style="@(string.IsNullOrWhiteSpace(details[i].Photo_During_Test) ? "display:none;" : "display:block;")" />
+
+                                        <button type="button"
+                                                class="btn-remove-image"
+                                                onclick="removeImage(this)"
+                                                style="@(string.IsNullOrWhiteSpace(details[i].Photo_During_Test) ? "display:none;" : "display:inline-block;")">
+                                            <i class="fas fa-times"></i> Remove
+                                        </button>
+
+                                        @Html.HiddenFor(m => m.Details[i].Photo_During_Test, new { @class = "hidden-path", data_name = "Photo_During_Test" })
+                                    </div>
+                                </td>
+
+                                <!-- Photo After Testing -->
+                                <td class="image-upload-cell" style="border:1.5px solid #000; vertical-align:top;">
+                                    <div class="image-upload-wrapper">
+                                        <input type="file"
+                                               class="file-input-hidden"
+                                               accept="image/*"
+                                               onchange="handleImageUpload(this, 'after')">
+
+                                        <button type="button" class="btn-upload" onclick="this.previousElementSibling.click()">
+                                            <i class="fas fa-camera"></i> Upload
+                                        </button>
+
+                                        <img class="image-preview"
+                                             alt="Preview"
+                                             src="@(details[i].Photo_After_Test ?? "")"
+                                             style="@(string.IsNullOrWhiteSpace(details[i].Photo_After_Test) ? "display:none;" : "display:block;")" />
+
+                                        <button type="button"
+                                                class="btn-remove-image"
+                                                onclick="removeImage(this)"
+                                                style="@(string.IsNullOrWhiteSpace(details[i].Photo_After_Test) ? "display:none;" : "display:inline-block;")">
+                                            <i class="fas fa-times"></i> Remove
+                                        </button>
+
+                                        @Html.HiddenFor(m => m.Details[i].Photo_After_Test, new { @class = "hidden-path", data_name = "Photo_After_Test" })
+                                    </div>
+                                </td>
+
+                                <!-- Observation -->
+                                <td contenteditable="true"
+                                    class="editable-cell"
+                                    data-name="Observation"
+                                    style="border:1.5px solid #000; vertical-align:top;">
+                                    @(details[i].Observation ?? "")
+                                </td>
+
+                                <!-- Result -->
+                                <td style="border:1.5px solid #000; vertical-align:top;">
+                                    <select class="select-custom" style="width: 100%;" name="Details[@i].Result">
+                                        <option value="" selected="@(string.IsNullOrWhiteSpace(details[i].Result))">Select</option>
+                                        <option value="Pass" selected="@(details[i].Result == "Pass")">Pass</option>
+                                        <option value="Fail" selected="@(details[i].Result == "Fail")">Fail</option>
+                                        <option value="Not Applicable" selected="@(details[i].Result == "Not Applicable")">Not Applicable</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <!-- Sample row (clone for new rows) -->
+                        <tr class="sample-row" style="display: none; height:120px;">
+                            <td class="sr-no-cell">
+                                <span class="sr-number">1</span>
+                                <button type="button" class="btn-delete-row" onclick="deleteIPRow(this)">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+
+                            <td contenteditable="true" class="editable-cell" data-name="Description"></td>
+                            <td contenteditable="true" class="editable-cell" data-name="IPTest"></td>
+
+                            <td class="image-upload-cell">
+                                <div class="image-upload-wrapper">
+                                    <input type="file" class="file-input-hidden" accept="image/*" onchange="handleImageUpload(this, 'during')">
+                                    <button type="button" class="btn-upload" onclick="this.previousElementSibling.click()">
+                                        <i class="fas fa-camera"></i> Upload
+                                    </button>
+                                    <img class="image-preview" alt="Preview" style="display:none;">
+                                    <button type="button" class="btn-remove-image" onclick="removeImage(this)" style="display:none;">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                    <input type="hidden" class="hidden-path" data-name="PhotoDuringPath" />
+                                </div>
+                            </td>
+
+                            <td class="image-upload-cell">
+                                <div class="image-upload-wrapper">
+                                    <input type="file" class="file-input-hidden" accept="image/*" onchange="handleImageUpload(this, 'after')">
+                                    <button type="button" class="btn-upload" onclick="this.previousElementSibling.click()">
+                                        <i class="fas fa-camera"></i> Upload
+                                    </button>
+                                    <img class="image-preview" alt="Preview" style="display:none;">
+                                    <button type="button" class="btn-remove-image" onclick="removeImage(this)" style="display:none;">
+                                        <i class="fas fa-times"></i> Remove
+                                    </button>
+                                    <input type="hidden" class="hidden-path" data-name="PhotoAfterPath" />
+                                </div>
+                            </td>
+
+                            <td contenteditable="true" class="editable-cell" data-name="Observation"></td>
+
+                            <td>
+                                <select class="select-custom" style="width: 100%;" data-name="Result">
+                                    <option value="">Select</option>
+                                    <option value="Pass">Pass</option>
+                                    <option value="Fail">Fail</option>
+                                    <option value="Not Applicable">Not Applicable</option>
+                                </select>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Test Result Section -->
+            <div style="border: 1px solid #000; padding: 15px; margin-top: 20px; background: #f8f9fa;">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span class="label-bold" style="font-size: 16px;">Test Result:</span>
+                    <select class="result-select" data-name="OverallResult">
+                        <option value="" selected="@(Model.TestResult == "")">Select</option>
+                        <option value="Pass" selected="@(Model.TestResult == "Pass")">Pass</option>
+                        <option value="Fail" selected="@(Model.TestResult == "Fail")">Fail</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Signature Section -->
+            <div class="signature-section">
+                <div class="signature-row">
+                    <div class="signature-item">
+                        <span class="label-bold">Tested by:</span>
+                        @* <input type="text" class="input-underline" style="width: 70%;" placeholder="Enter name" /> *@
+                        @Html.TextBoxFor(m => m.TestedBy, new { @class = "input-underline", placeholder = "Enter name", style = "width: 70%;" })
+                    </div>
+                    <div class="signature-item" style="text-align: right;">
+                        <span class="label-bold">Verified By:</span>
+                        @* <input type="text" class="input-underline" style="width: 70%;" placeholder="Enter name" /> *@
+                        @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "input-underline", placeholder = "Enter name", style = "width: 70%;" })
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+
 <script>
+    // Initialize with one row on page load
     $(document).ready(function () {
-        const addBtn = document.getElementById('addRowBtn');
-        if (addBtn) {
-            addBtn.addEventListener('click', ipAddRow);
-        }
+        addIPRow();
     });
 
-    function ipCreateRow() {
-        const tr = document.createElement('tr');
-
-        // Sr No + delete button
-        const tdSr = document.createElement('td');
-        tdSr.textContent = '0 ';
-        tdSr.appendChild(ipCreateDeleteButton());
-        tr.appendChild(tdSr);
-
-        // Description, IP Test, IP Condition, Observation
-        for (let i = 0; i < 4; i++) {
-            const td = document.createElement('td');
-            td.contentEditable = true;
-            td.style.textAlign = 'left';
-            tr.appendChild(td);
-        }
-
-        // Result select
-        const tdLast = document.createElement('td');
-        tdLast.innerHTML = `
-                <select class="soft-select" style="width:95%">
-                    <option value="">Select</option>
-                    <option>Pass</option>
-                    <option>Fail</option>
-                    <option>Not Applicable</option>
-                </select>`;
-        tr.appendChild(tdLast);
-
-        return tr;
-    }
-
-    function ipCreateDeleteButton() {
-        const btn = document.createElement('button');
-        btn.className = 'row-del-btn';
-        btn.innerHTML = '<i class="fa fa-trash"></i>';
-        btn.onclick = () => {
-            btn.closest('tr').remove();
-            ipRenumber();
-        };
-        return btn;
-    }
-
-    // All dynamic rows (exclude the fixed Tested/Verified row)
-    function ipGetRows() {
+    // Add new IP test row
+    function addIPRow() {
         const tbody = document.querySelector('#ipTestTable tbody');
-        return Array.from(tbody.querySelectorAll('tr'))
-            .filter(r => !r.hasAttribute('data-fixed'));
+        const sampleRow = tbody.querySelector('.sample-row');
+        const newRow = sampleRow.cloneNode(true);
+
+        newRow.classList.remove('sample-row');
+        newRow.style.display = '';
+
+        // Reset contenteditable cells
+        newRow.querySelectorAll('[contenteditable="true"]').forEach(cell => {
+            cell.textContent = '';
+        });
+
+        // Reset select
+        const select = newRow.querySelector('select');
+        if (select) select.selectedIndex = 0;
+
+        // Reset image previews and file inputs
+        newRow.querySelectorAll('.file-input-hidden').forEach(input => {
+            input.value = '';
+        });
+        newRow.querySelectorAll('.image-preview').forEach(img => {
+            img.src = '';
+            img.classList.remove('show');
+        });
+        newRow.querySelectorAll('.btn-remove-image').forEach(btn => {
+            btn.classList.remove('show');
+        });
+
+        tbody.appendChild(newRow);
+        renumberRows();
     }
 
-    function ipRenumber() {
-        ipGetRows().forEach((r, i) => {
-            const td = r.cells[0];
-            const delBtn = td.querySelector('.row-del-btn');
-            td.textContent = (i + 1) + ' ';
-            td.appendChild(delBtn);
+    // Delete IP test row
+    function deleteIPRow(btn) {
+        const row = btn.closest('tr');
+        const tbody = row.closest('tbody');
+
+        // Ensure at least one row remains
+        const visibleRows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('sample-row'));
+        if (visibleRows.length > 1) {
+            row.remove();
+            renumberRows();
+        } else {
+            alert('At least one test row is required.');
+        }
+    }
+
+    // Renumber all rows
+    function renumberRows() {
+        const tbody = document.querySelector('#ipTestTable tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('sample-row'));
+
+        rows.forEach((row, index) => {
+            const srCell = row.querySelector('.sr-number');
+            if (srCell) {
+                srCell.textContent = index + 1;
+            }
         });
     }
 
-    function ipAddRow() {
-        const tbody = document.querySelector('#ipTestTable tbody');
-        const newRow = ipCreateRow();
+    // Handle image upload
+    function handleImageUpload(input, type) {
+        const file = input.files[0];
+        if (file) {
+            // Validate file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size should not exceed 5MB');
+                input.value = '';
+                return;
+            }
 
-        const fixedRow = tbody.querySelector('tr[data-fixed="true"]');
-        if (fixedRow && fixedRow.nextSibling) {
-            tbody.insertBefore(newRow, fixedRow.nextSibling);
-        } else if (fixedRow) {
-            tbody.appendChild(newRow);
-        } else {
-            tbody.appendChild(newRow);
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select a valid image file');
+                input.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const wrapper = input.closest('.image-upload-wrapper');
+                const preview = wrapper.querySelector('.image-preview');
+                const removeBtn = wrapper.querySelector('.btn-remove-image');
+
+                preview.src = e.target.result;
+                preview.classList.add('show');
+                removeBtn.classList.add('show');
+            };
+            reader.readAsDataURL(file);
         }
-
-        ipRenumber();
     }
+
+    // Remove uploaded image
+    function removeImage(btn) {
+        const wrapper = btn.closest('.image-upload-wrapper');
+        const input = wrapper.querySelector('.file-input-hidden');
+        const preview = wrapper.querySelector('.image-preview');
+
+        input.value = '';
+        preview.src = '';
+        preview.classList.remove('show');
+        btn.classList.remove('show');
+    }
+
+    // Save button handler
+    document.getElementById('saveBtn').addEventListener('click', function() {
+        const formData = collectFormData();
+        console.log('Form Data:', formData);
+
+        // TODO: Implement actual save logic
+        // Example AJAX call:
+        /*
+        $.ajax({
+            url: '@Url.Action("SaveIPTestReport", "ProductValidation")',
+            type: 'POST',
+            data: JSON.stringify(formData),
+            contentType: 'application/json',
+            success: function(response) {
+                alert('Report saved successfully!');
+            },
+            error: function(error) {
+                alert('Error saving report: ' + error.responseText);
+            }
+        });
+        */
+
+        alert('Save functionality - Please implement server-side logic');
+    });
+
+    // Collect all form data
+    function collectFormData() {
+        const data = {
+            customerProject: document.querySelector('input[placeholder="Enter customer/project name"]').value,
+            reportNo: document.querySelector('input[placeholder="Report number"]').value,
+            date: document.querySelector('input[placeholder="dd-mm-yyyy"]').value,
+            productCatRef: document.querySelector('input[placeholder="Enter reference"]').value,
+            productDescription: document.querySelector('input[placeholder="Enter description"]').value,
+            batchCode: document.querySelector('input[placeholder="Batch code"]').value,
+            quantity: document.querySelector('input[placeholder="Quantity"]').value,
+            ipRating: document.getElementById('ipRating').value,
+            pkd: document.querySelector('input[placeholder="Enter PKD"]').value,
+            testResult: document.getElementById('testResult').value,
+            testedBy: document.querySelectorAll('input[placeholder="Enter name"]')[0].value,
+            verifiedBy: document.querySelectorAll('input[placeholder="Enter name"]')[1].value,
+            testRows: []
+        };
+
+        // Collect test rows
+        const tbody = document.querySelector('#ipTestTable tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('sample-row'));
+
+        rows.forEach((row, index) => {
+            const cells = row.querySelectorAll('td');
+            const rowData = {
+                srNo: index + 1,
+                description: cells[1].textContent.trim(),
+                ipTest: cells[2].textContent.trim(),
+                photoDuring: cells[3].querySelector('.image-preview').src || null,
+                photoAfter: cells[4].querySelector('.image-preview').src || null,
+                observation: cells[5].textContent.trim(),
+                result: cells[6].querySelector('select').value
+            };
+            data.testRows.push(rowData);
+        });
+
+        return data;
+    }
+
+    // Add row button event
+    document.getElementById('addRowBtn').addEventListener('click', addIPRow);
 </script>
 
 @section HideSidebar { }

@@ -33,6 +33,8 @@ using QMS.Core.Repositories.IngressProtectionRepository;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Repositories.DropTestRepository;
 using QMS.Core.Repositories.GlowWireTestRepository;
+using QMS.Core.Repositories.NeedleFlameTestRepository;
+using QMS.Core.Repositories.GeneralObservationRepository;
 
 namespace QMS.Controllers;
 
@@ -52,7 +54,9 @@ public class ProductValidationController : Controller
     private readonly IIngressProtectionRepository _ingressProtectionRepository;
     private readonly IDropTestRepository _dropTestRepository;
     private readonly IGlowWireTestRepository _glowWireTestRepository;
-    private readonly HydraulicTestReportService _hydraulicTestReportService;
+    private readonly IHydraulicTestReportService _hydraulicTestReportService;
+    private readonly INeedleFlameTestRepository _needleFlameTestRepository;
+    private readonly IGeneralObservationRepository _generalObservationRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -69,7 +73,10 @@ public class ProductValidationController : Controller
         IIngressProtectionRepository ingressProtectionRepository,
         IDropTestRepository dropTestRepository,
         IGlowWireTestRepository glowWireTestRepository,
-        HydraulicTestReportService hydraulicTestReportService)
+        IHydraulicTestReportService hydraulicTestReportService,
+        INeedleFlameTestRepository needleFlameTestRepository,
+        IGeneralObservationRepository generalObservationRepository
+        )
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
@@ -86,6 +93,8 @@ public class ProductValidationController : Controller
         _dropTestRepository = dropTestRepository;
         _glowWireTestRepository = glowWireTestRepository;
         _hydraulicTestReportService = hydraulicTestReportService;
+        _needleFlameTestRepository = needleFlameTestRepository;
+        _generalObservationRepository = generalObservationRepository;
     }
 
 
@@ -2143,6 +2152,7 @@ public class ProductValidationController : Controller
     {
         return View();
     }
+
     public async Task<ActionResult> GetDropTestReportAsync(DateTime? startDate = null, DateTime? endDate = null)
     {
         var result = await _dropTestRepository.GetDropTestAsync();
@@ -3231,28 +3241,362 @@ public class ProductValidationController : Controller
     #endregion
 
     #region NeedleFlameTestReport
-    public IActionResult NeedleFlameTestReportDetails()
-    {
 
-        return View();
+    //public IActionResult NeedleFlameTestReportDetails()
+    //{
+    //    return View();
+    //}
+
+    public async Task<IActionResult> NeedleFlameTestReportDetails(int Id)
+    {
+        var model = new NeedleFlameTestViewModel();
+        if (Id > 0)
+        {
+            model = await _needleFlameTestRepository.GetNeedleFlameTestByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> GetNeedleFlameTestAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _needleFlameTestRepository.GetNeedleFlameTestAsync();
+        return Json(result);
     }
     public IActionResult NeedleFlameTestReport()
     {
         return View();
     }
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateNeedleFlameTest(NeedleFlameTestReport vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            // Optional: if you still want MVC validations
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var fullName = HttpContext.Session.GetString("FullName") ?? "System";
+
+            var model = new NeedleFlameTestReport
+            {
+                Id = vm.Id,
+
+                ReportNo = vm.ReportNo?.Trim(),
+                ReportDate = vm.ReportDate,
+
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                CustomerProjectName = vm.CustomerProjectName,
+
+                BatchCode = vm.BatchCode,
+                PKD = vm.PKD,
+                Quantity = vm.Quantity,
+
+                PartDescription = vm.PartDescription,
+                TestResult = vm.TestResult,
+                TestedBy = vm.TestedBy,
+                VerifiedBy = vm.VerifiedBy,
+
+                // TVP Lists (null-safe)
+                Details = vm.Details ?? new List<NeedleFlameTestReportDetail>()
+            };
+
+            if (model.Details != null && model.Details.Count > 0)
+            {
+                for (int i = 0; i < model.Details.Count; i++)
+                {
+                    var row = model.Details[i];
+                    if (row == null) continue;
+
+                    // Before image
+                    if (row.Photo_During_TestFile != null && row.Photo_During_TestFile.Length > 0)
+                    {
+                        row.Photo_During_Test = await SaveImageAsync(
+                            row.Photo_During_TestFile,
+                            baseFolder: "NeedleFlame_Attach",
+                            prefix: "During",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+
+                    // After image
+                    if (row.After_During_TestFile != null && row.After_During_TestFile.Length > 0)
+                    {
+                        row.After_During_Test = await SaveImageAsync(
+                            row.After_During_TestFile,
+                            baseFolder: "NeedleFlame_Attach",
+                            prefix: "After",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+                }
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                exists = await _needleFlameTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                exists = await _needleFlameTestRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            // ---- Insert / Update ----
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+
+                result = await _needleFlameTestRepository.UpdateNeedleFlameTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Needle Flame TestReport updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+
+                result = await _needleFlameTestRepository.InsertNeedleFlameTestAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Needle Flame Test Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save Needle Flame Test report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteNeedleFlameTestAsync(int Id)
+    {
+        var result = await _needleFlameTestRepository.DeleteNeedleFlameTestAsync(Id);
+        return Json(result);
+    }
+
     #endregion
 
-    
+
 
     #region GeneralObservation
-    public IActionResult GeneralObservationDetails()
-    {
+    //public IActionResult GeneralObservationDetails()
+    //{
 
-        return View();
-    }
+    //    return View();
+    //}
     public IActionResult GeneralObservation()
     {
         return View();
+    }
+
+    public async Task<IActionResult> GeneralObservationDetails(int Id)
+    {
+        var model = new GeneralObservationViewModel();
+        if (Id > 0)
+        {
+            model = await _generalObservationRepository.GetGeneralObservationByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> GetGeneralObservationAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _generalObservationRepository.GetGeneralObservationAsync();
+        return Json(result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateGeneralObservation(GeneralObservationReport vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            // Optional: if you still want MVC validations
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var fullName = HttpContext.Session.GetString("FullName") ?? "System";
+
+            var model = new GeneralObservationReport
+            {
+                Id = vm.Id,
+
+                ReportNo = vm.ReportNo?.Trim(),
+                ReportDate = vm.ReportDate,
+
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                VerifiedBy = vm.VerifiedBy,
+                CheckedBy = vm.CheckedBy,
+                // TVP Lists (null-safe)
+                Details = vm.Details ?? new List<GeneralObservationReportDetail>()
+            };
+
+            if (model.Details != null && model.Details.Count > 0)
+            {
+                for (int i = 0; i < model.Details.Count; i++)
+                {
+                    var row = model.Details[i];
+                    if (row == null) continue;
+
+                    // Before image
+                    if (row.AttachmentFile != null && row.AttachmentFile.Length > 0)
+                    {
+                        row.Attachment = await SaveImageAsync(
+                            row.AttachmentFile,
+                            baseFolder: "GenObse_Attach",
+                            prefix: "Attachment",
+                            referenceNo: model.ReportNo
+                        );
+                    }
+                    
+                }
+            }
+
+            bool exists;
+
+            if (model.Id > 0)
+            {
+                exists = await _generalObservationRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    model.Id
+                );
+            }
+            else
+            {
+                exists = await _generalObservationRepository.CheckDuplicate(
+                    model.ReportNo!.Trim(),
+                    0
+                );
+            }
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            // ---- Insert / Update ----
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+
+                result = await _generalObservationRepository.UpdateGeneralObservationAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "General Observation TestReport updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+
+                result = await _generalObservationRepository.InsertGeneralObservationAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "General ObservationTest Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save Needle Flame Test report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteGeneralObservationAsync(int Id)
+    {
+        var result = await _generalObservationRepository.DeleteGeneralObservationAsync(Id);
+        return Json(result);
     }
 
     #endregion

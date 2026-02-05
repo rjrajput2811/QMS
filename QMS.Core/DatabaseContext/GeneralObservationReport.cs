@@ -1,4 +1,5 @@
-﻿using QMS.Core.DatabaseContext.Shared;
+﻿using Microsoft.AspNetCore.Http;
+using QMS.Core.DatabaseContext.Shared;
 using QMS.Core.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -29,4 +30,5 @@ public class GeneralObservationReportDetail : SqlTable
     public string? Closure_Respons { get; set; }
     public string? Attachment { get; set; }
     public int GenObs_Id { get; set; }
+    [NotMapped] public IFormFile? AttachmentFile { get; set; }
 }

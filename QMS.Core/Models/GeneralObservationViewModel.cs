@@ -1,6 +1,8 @@
-﻿using QMS.Core.DatabaseContext;
+﻿using Microsoft.AspNetCore.Http;
+using QMS.Core.DatabaseContext;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +24,7 @@ namespace QMS.Core.Models
         public DateTime? UpdatedOn { get; set; }
         public string? User { get; set; }
         public bool Deleted { get; set; }
-        public List<GeneralObservationReportDetail>? Details { get; set; } = new();
+        public List<GeneralObservationDetailViewModel>? Details { get; set; } = new();
     }
 
     public class GeneralObservationDetailViewModel
@@ -35,6 +37,7 @@ namespace QMS.Core.Models
         public string? Closure_Respons { get; set; }
         public string? Attachment { get; set; }
         public int GenObs_Id { get; set; }
+        [NotMapped] public IFormFile? AttachmentFile { get; set; }
     }
 
 }

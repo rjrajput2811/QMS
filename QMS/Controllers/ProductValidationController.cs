@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using ClosedXML.Excel.Drawings;
+using DocumentFormat.OpenXml.Drawing;
 using iText.IO.Font;
 using iText.IO.Font.Constants;
 using iText.IO.Image;
@@ -13,11 +14,18 @@ using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
+using QMS.Core.Repositories.DropTestRepository;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
+using QMS.Core.Repositories.GeneralObservationRepository;
+using QMS.Core.Repositories.GlowWireTestRepository;
 using QMS.Core.Repositories.ImpactTestRepository;
+using QMS.Core.Repositories.IngressProtectionRepository;
 using QMS.Core.Repositories.InstallationTrialRepository;
+using QMS.Core.Repositories.NeedleFlameTestRepository;
 using QMS.Core.Repositories.PhotometryRepository;
 using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.RegulatoryRequirementRepository;
@@ -25,16 +33,15 @@ using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.SurgeTestReportRepository;
 using QMS.Core.Services.HydraulicTestReportService;
 using QMS.Core.Services.SystemLogs;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Color = System.Drawing.Color;
+using Paragraph = iText.Layout.Element.Paragraph;
 using Path = System.IO.Path;
-using QMS.Core.Repositories.IngressProtectionRepository;
-using QMS.Core.DatabaseContext;
-using QMS.Core.Repositories.DropTestRepository;
-using QMS.Core.Repositories.GlowWireTestRepository;
-using QMS.Core.Repositories.NeedleFlameTestRepository;
-using QMS.Core.Repositories.GeneralObservationRepository;
+using Table = iText.Layout.Element.Table;
+using Text = iText.Layout.Element.Text;
 
 namespace QMS.Controllers;
 
@@ -57,6 +64,7 @@ public class ProductValidationController : Controller
     private readonly IHydraulicTestReportService _hydraulicTestReportService;
     private readonly INeedleFlameTestRepository _needleFlameTestRepository;
     private readonly IGeneralObservationRepository _generalObservationRepository;
+    private readonly IWebHostEnvironment _env;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -75,7 +83,7 @@ public class ProductValidationController : Controller
         IGlowWireTestRepository glowWireTestRepository,
         IHydraulicTestReportService hydraulicTestReportService,
         INeedleFlameTestRepository needleFlameTestRepository,
-        IGeneralObservationRepository generalObservationRepository
+        IGeneralObservationRepository generalObservationRepository, IWebHostEnvironment env
         )
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
@@ -95,6 +103,7 @@ public class ProductValidationController : Controller
         _hydraulicTestReportService = hydraulicTestReportService;
         _needleFlameTestRepository = needleFlameTestRepository;
         _generalObservationRepository = generalObservationRepository;
+        _env = env;
     }
 
 
@@ -1694,6 +1703,456 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
+
+    //[HttpGet]
+    //public async Task<IActionResult> ExportSurgeTestToExcel(int id)
+    //{
+    //    var model = await _surgeTestRepository.GetSurgeTestReportByIdAsync(id);
+    //    if (model == null)
+    //        return NotFound();
+
+    //    var templatePath = Path.Combine(_env.WebRootPath, "templates", "V5. SURGE Test Report_V");
+
+    //    if (!System.IO.File.Exists(templatePath))
+    //        return NotFound("SURGE template not found at " + templatePath);
+
+    //    using var wb = new XLWorkbook(templatePath);
+    //    var ws = wb.Worksheet(1);  
+
+    //    ws.Cell("M2").Value = "Report No. :- " + model.ReportNo ?? "";
+
+    //    ws.Cell("A3").Value = "Product Cat Ref :-" + model.ProductCatRef ?? "";
+
+    //    ws.Cell("F3").Value = "Product Description :-" + model.ProductDescription ?? "";
+
+    //    ws.Cell("M3").Value = "Date :" + model.ReportDate?.ToString("dd-MMM-yyyy") ?? "";
+
+
+    //    // Customer Name & Location
+    //    ws.Cell("A4").Value = "Driver Code :-  " + model.DriverCode ?? "";
+
+    //    // Source of Complaint
+    //    ws.Cell("D4").Value = "SPD Code :-" + model.SPDCode ?? "";
+
+    //    ws.Cell("I4").Value = "LED Configuration :- " + model.LEDConfiguration ?? "";
+
+    //    ws.Cell("N4").Value = "Batch Code  :- " + model.BatchCode ?? "";
+
+    //    ws.Cell("N5").Value = "PKD:- " + model.PKDCode ?? "";
+
+    //    // Build dynamic text
+    //    string referenceStandard = model.ReferenceStandard ?? "IEC 61000";
+    //    string acceptanceNorm = model.AcceptanceNorm ?? "As per TDS";
+
+    //    string greenBlockText =
+    //        $"1.Reference Standard for Testing - {referenceStandard} \n" +
+    //        $"2.Acceptance Norm: {acceptanceNorm}";
+
+    //    // Target range as per template
+    //    var refRange = ws.Range("A6:N6");
+
+    //    // Merge only if not already merged (safe)
+    //    if (!refRange.IsMerged())
+    //    {
+    //        refRange.Merge();
+    //    }
+
+    //    // Set value
+    //    refRange.Value = greenBlockText;
+
+    //    // EXACT alignment like Excel template
+    //    refRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+    //    refRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+    //    refRange.Style.Alignment.WrapText = true;
+
+    //    // Styling (optional, keep template look)
+    //    refRange.Style.Font.FontSize = 11;
+    //    refRange.Style.Font.Bold = false;
+
+    //    // Adjust height dynamically based on content
+    //    ws.Row(6).AdjustToContents();
+
+    //    // ---------------- OTHER FIELDS ----------------
+    //    ws.Cell("A18").Value = "Supplied Qty: - " + suppQty;
+    //    ws.Cell("G18").Value = "Failure Qty: - " + failQty;
+
+    //    ws.Cell("A19").Value = "% Failure - " + failurePct;
+    //    ws.Cell("G19").Value = "Age of Installation: " + ageInstall;
+
+    //    ws.Cell("A20").Value = siteObs;
+    //    ws.Cell("A22").Value = problemState;
+
+    //    ws.Cell("A28").Value = "Initial observations: \n" + initialObs;
+    //    ws.Cell("A28").Style.Alignment.WrapText = true;
+
+
+
+
+    //    // 3. Return file
+    //    using var stream = new MemoryStream();
+    //    wb.SaveAs(stream);
+    //    stream.Position = 0;
+
+    //    var fileName = $"Surge_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+    //    return File(stream.ToArray(),
+    //        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //        fileName);
+    //}
+
+
+    [HttpPost]
+    public async Task<IActionResult> ExportSurgeTestToExcel(int id)
+    {
+        var model = await _surgeTestRepository.GetSurgeTestReportByIdAsync(id);
+        if (model == null)
+            return NotFound();
+
+        var templatePath = Path.Combine(_env.WebRootPath, "templates", "V5. SURGE Test Report_V.xlsx");
+        if (!System.IO.File.Exists(templatePath))
+            return NotFound("SURGE template not found at " + templatePath);
+
+        using var wb = new XLWorkbook(templatePath);
+        var ws = wb.Worksheet(1);
+
+        // ========================================
+        // Header Information
+        // ========================================
+        ws.Cell("M2").Value = "Report No. :- " + (model.ReportNo ?? "");
+        ws.Cell("A3").Value = "Product Cat Ref :-" + (model.ProductCatRef ?? "");
+        ws.Cell("F3").Value = "Product Description :-" + (model.ProductDescription ?? "");
+        ws.Cell("M3").Value = "Date :" + (model.ReportDate?.ToString("dd-MMM-yyyy") ?? "");
+        ws.Cell("A4").Value = "Driver Code :-  " + (model.DriverCode ?? "");
+        ws.Cell("D4").Value = "SPD Code :-" + (model.SPDCode ?? "");
+        ws.Cell("I4").Value = "LED Configuration :- " + (model.LEDConfiguration ?? "");
+        ws.Cell("N4").Value = "Batch Code  :- " + (model.BatchCode ?? "");
+        ws.Cell("N5").Value = "PKD:- " + (model.PKDCode ?? "");
+
+        // Reference Standard Section (Green Block)
+        string referenceStandard = model.ReferenceStandard ?? "IEC 61000";
+        string acceptanceNorm = model.AcceptanceNorm ?? "As per TDS";
+        string greenBlockText =
+            $"1.Reference Standard for Testing - {referenceStandard}\n" +
+            $"2.Acceptance Norm: {acceptanceNorm}";
+
+        var refRange = ws.Range("A6:N6");
+        if (!refRange.IsMerged())
+        {
+            refRange.Merge();
+        }
+        refRange.Value = greenBlockText;
+        refRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+        refRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+        refRange.Style.Alignment.WrapText = true;
+        refRange.Style.Font.FontSize = 11;
+        refRange.Style.Font.Bold = false;
+        ws.Row(6).AdjustToContents();
+
+        // ========================================
+        // SECTION 1: Surge Driver without SPD
+        // ========================================
+        var details = model.DetailRows ?? new List<SurgeTestDetailVM>();
+
+        // Get data rows (not result rows) for WithoutSPD
+        var withoutSpdDataRows = details
+            .Where(x => string.Equals(x.TestType, "WithoutSPD", StringComparison.OrdinalIgnoreCase)
+                        && !x.IsResult)
+            .OrderBy(x => x.RowNo)
+            .ToList();
+
+        // Get result row for WithoutSPD
+        var withoutSpdResultRow = details
+            .FirstOrDefault(x => string.Equals(x.TestType, "WithoutSPD", StringComparison.OrdinalIgnoreCase)
+                                 && x.IsResult);
+
+        // Populate data rows (starting from row 8, up to 6 rows)
+        int withoutSpdStartRow = 12;
+        int withoutSpdMaxDataRows = 6; // Based on template
+
+        for (int i = 0; i < Math.Min(withoutSpdDataRows.Count, withoutSpdMaxDataRows); i++)
+        {
+            var row = withoutSpdDataRows[i];
+            int excelRow = withoutSpdStartRow + i;
+
+            // Column A - Voltage (KV)
+            ws.Cell(excelRow, 1).Value = row.Voltage_KV ?? "";
+
+            // Column B - Mode
+            ws.Cell(excelRow, 2).Value = row.Mode ?? "";
+
+            // Columns C-F: Line - Neutral (L-N) DM
+            ws.Cell(excelRow, 3).Value = row.L_N_DM_90 ?? "";   // ±90°
+            ws.Cell(excelRow, 4).Value = row.L_N_DM_180 ?? "";  // ±180°
+            ws.Cell(excelRow, 5).Value = row.L_N_DM_270 ?? "";  // ±270°
+            ws.Cell(excelRow, 6).Value = row.L_N_DM_0 ?? "";    // ±0°
+
+            // Columns G-J: Line - Earth (L-E) CM
+            ws.Cell(excelRow, 7).Value = row.L_E_CM_90 ?? "";   // ±90°
+            ws.Cell(excelRow, 8).Value = row.L_E_CM_180 ?? "";  // ±180°
+            ws.Cell(excelRow, 9).Value = row.L_E_CM_270 ?? "";  // ±270°
+            ws.Cell(excelRow, 10).Value = row.L_E_CM_0 ?? "";   // ±0°
+
+            // Columns K-N: Neutral - Earth (N-E) CM
+            ws.Cell(excelRow, 11).Value = row.N_E_CM_90 ?? "";   // ±90°
+            ws.Cell(excelRow, 12).Value = row.N_E_CM_180 ?? "";  // ±180°
+            ws.Cell(excelRow, 13).Value = row.N_E_CM_270 ?? "";  // ±270°
+            ws.Cell(excelRow, 14).Value = row.N_E_CM_0 ?? "";    // ±0°
+
+            // Column O - Observation
+            ws.Cell(excelRow, 15).Value = row.Observation ?? "";
+        }
+
+        if (withoutSpdResultRow != null)
+        {
+            // Row 18 - Merged cell A18:O18 (full width) containing all three elements
+            var resultSection = ws.Range("A18:O18");
+            if (!resultSection.IsMerged()) resultSection.Merge();
+
+            // Build the complete text with proper spacing
+            resultSection.Value = "Result - " + (withoutSpdResultRow.PassFail ?? "") +
+                                 "\n" +
+                                 "Driver - " + (withoutSpdResultRow.Driver_LED_PCB_OK ?? "") +
+                                 "                              " +
+                                 "LED PCB - " + (withoutSpdResultRow.SPD_OK ?? "");
+
+            resultSection.Style.Font.Bold = true;
+            resultSection.Style.Font.FontColor = XLColor.Red;
+            resultSection.Style.Font.FontSize = 12;
+            resultSection.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+            resultSection.Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+            resultSection.Style.Alignment.WrapText = true;
+
+            // Increase row height
+            ws.Row(18).Height = 40;
+        }
+
+
+        // ========================================
+        // SECTION 2: Surge with SPD
+        // ========================================
+        // Get data rows (not result rows) for WithSPD
+        var withSpdDataRows = details
+            .Where(x => string.Equals(x.TestType, "WithSPD", StringComparison.OrdinalIgnoreCase)
+                        && !x.IsResult)
+            .OrderBy(x => x.RowNo)
+            .ToList();
+
+        // Get result row for WithSPD
+        var withSpdResultRow = details
+            .FirstOrDefault(x => string.Equals(x.TestType, "WithSPD", StringComparison.OrdinalIgnoreCase)
+                                 && x.IsResult);
+
+        // Populate data rows (you'll need to determine the starting row from your template)
+        // Assuming it starts around row 17-18 based on typical layout
+        int withSpdStartRow = 23; // Adjust based on actual template
+        int withSpdMaxDataRows = 6;
+
+        for (int i = 0; i < Math.Min(withSpdDataRows.Count, withSpdMaxDataRows); i++)
+        {
+            var row = withSpdDataRows[i];
+            int excelRow = withSpdStartRow + i;
+
+            // Column A - Voltage (KV)
+            ws.Cell(excelRow, 1).Value = row.Voltage_KV ?? "";
+
+            // Column B - Mode
+            ws.Cell(excelRow, 2).Value = row.Mode ?? "";
+
+            // Columns C-F: Line - Neutral (L-N) DM
+            ws.Cell(excelRow, 3).Value = row.L_N_DM_90 ?? "";
+            ws.Cell(excelRow, 4).Value = row.L_N_DM_180 ?? "";
+            ws.Cell(excelRow, 5).Value = row.L_N_DM_270 ?? "";
+            ws.Cell(excelRow, 6).Value = row.L_N_DM_0 ?? "";
+
+            // Columns G-J: Line - Earth (L-E) CM
+            ws.Cell(excelRow, 7).Value = row.L_E_CM_90 ?? "";
+            ws.Cell(excelRow, 8).Value = row.L_E_CM_180 ?? "";
+            ws.Cell(excelRow, 9).Value = row.L_E_CM_270 ?? "";
+            ws.Cell(excelRow, 10).Value = row.L_E_CM_0 ?? "";
+
+            // Columns K-N: Neutral - Earth (N-E) CM
+            ws.Cell(excelRow, 11).Value = row.N_E_CM_90 ?? "";
+            ws.Cell(excelRow, 12).Value = row.N_E_CM_180 ?? "";
+            ws.Cell(excelRow, 13).Value = row.N_E_CM_270 ?? "";
+            ws.Cell(excelRow, 14).Value = row.N_E_CM_0 ?? "";
+
+            // Column O - Observation
+            ws.Cell(excelRow, 15).Value = row.Observation ?? "";
+        }
+
+        // Populate WithSPD result rows (adjust row numbers based on actual template)
+        if (withSpdResultRow != null)
+        {
+            int spdResultRow = 29; // Adjust based on template
+            ws.Cell(spdResultRow, 1).Value = withSpdResultRow.PassFail ?? "";
+
+            int spdStatusRow = 29; // Adjust based on template
+            ws.Cell(spdStatusRow, 1).Value = "Driver - " + (withSpdResultRow.Driver_LED_PCB_OK ?? "");
+            ws.Cell(spdStatusRow, 7).Value = "SPD - " + (withSpdResultRow.SPD_OK ?? "");
+        }
+
+        if (withSpdResultRow != null)
+        {
+            // Row 18 - Merged cell A18:O18 (full width) containing all three elements
+            var resultSection = ws.Range("A29:O29");
+            if (!resultSection.IsMerged()) resultSection.Merge();
+
+            // Build the complete text with proper spacing
+            resultSection.Value = "Result - " + (withSpdResultRow.PassFail ?? "") +
+                                 "\n" +
+                                 "SPD - " + (withSpdResultRow.SPD_OK ?? "") +
+                                 "                                                       " +
+                                 "Driver - " + (withSpdResultRow.Driver_LED_PCB_OK ?? "") +
+                                 "                                                       " +
+                                 "LED PCB - " + (withSpdResultRow.Driver_LED_PCB_OK ?? "");
+
+            resultSection.Style.Font.Bold = true;
+            resultSection.Style.Font.FontColor = XLColor.Red;
+            resultSection.Style.Font.FontSize = 12;
+            resultSection.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+            resultSection.Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+            resultSection.Style.Alignment.WrapText = true;
+
+            // Increase row height
+            ws.Row(29).Height = 40;
+        }
+
+        if (!string.IsNullOrWhiteSpace(model.Surge_Photo))
+        {
+            InsertPhoto(ws, model?.Surge_Photo, _env.WebRootPath, _systemLogService, mode: PhotoMode.Fit);
+
+            // Ensure print area includes the photo row
+            ws.PageSetup.PrintAreas.Clear();
+            ws.PageSetup.PrintAreas.Add("A1:O32"); // include row 30; increase if needed
+        }
+
+        // ✅ Ensure print area includes the photo
+        ws.PageSetup.PrintAreas.Clear();
+        ws.PageSetup.PrintAreas.Add("A1:O32");
+
+        ws.Cell("A31").Value = "Checked By :- " + (model.CheckedBy ?? "");
+        ws.Cell("I31").Value = "Verified By :-" + (model.VerifiedBy ?? "");
+
+
+        // ========================================
+        // Return Excel File
+        // ========================================
+        using var stream = new MemoryStream();
+        wb.SaveAs(stream);
+        stream.Position = 0;
+
+        var fileName = $"Surge_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        return File(stream.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
+    }
+
+    // ---------------------------
+    // Helpers
+    // ---------------------------
+
+    private enum PhotoMode
+    {
+        Fit,
+        FullStretch
+    }
+
+    private static void InsertPhoto(
+        IXLWorksheet ws,
+        string? surgePhoto,
+        string webRootPath,
+        dynamic? systemLogService,
+        PhotoMode mode
+    )
+    {
+        if (string.IsNullOrWhiteSpace(surgePhoto))
+            return;
+
+        var photoRelativePath = surgePhoto.TrimStart('/', '\\');
+        var photoPath = Path.Combine(webRootPath, photoRelativePath);
+
+        if (!System.IO.File.Exists(photoPath))
+        {
+            try { systemLogService?.WriteLog("Surge photo NOT found: " + photoPath); } catch { }
+            return;
+        }
+
+        try
+        {
+            // Template box
+            var box = ws.Range("A30:O30");
+            if (!box.IsMerged()) box.Merge();
+            box.Value = "";
+
+            int row = 30;
+            ws.Row(row).Height = 260;
+
+            // Box size approx in pixels
+            double boxWidthPx = 0;
+            for (int c = box.FirstCell().Address.ColumnNumber; c <= box.LastCell().Address.ColumnNumber; c++)
+                boxWidthPx += ws.Column(c).Width * 7.0;
+
+            double boxHeightPx = ws.Row(row).Height * 1.33;
+
+            var pic = ws.AddPicture(photoPath);
+
+            // IMPORTANT: to set Width/Height, placement must be FreeFloating or Move
+            pic.Placement = XLPicturePlacement.Move;
+
+            if (mode == PhotoMode.FullStretch)
+            {
+                // ClosedXML expects int Width/Height in your version
+                pic.Width = (int)Math.Round(boxWidthPx);
+                pic.Height = (int)Math.Round(boxHeightPx);
+                pic.MoveTo(box.FirstCell(), new System.Drawing.Point(0, 0));
+                return;
+            }
+
+            // FIT mode (no distortion)
+            double imgW = pic.OriginalWidth;
+            double imgH = pic.OriginalHeight;
+
+            const double pad = 8;
+            double maxW = Math.Max(50, boxWidthPx - 2 * pad);
+            double maxH = Math.Max(50, boxHeightPx - 2 * pad);
+
+            if (imgW <= 0 || imgH <= 0)
+            {
+                pic.Width = (int)Math.Round(maxW);
+                pic.Height = (int)Math.Round(maxH);
+                pic.MoveTo(box.FirstCell(), new System.Drawing.Point((int)pad, (int)pad));
+                return;
+            }
+
+            double scale = Math.Min(maxW / imgW, maxH / imgH);
+
+            double newW = imgW * scale;
+            double newH = imgH * scale;
+
+            pic.Width = (int)Math.Round(newW);
+            pic.Height = (int)Math.Round(newH);
+
+            double offsetX = (boxWidthPx - newW) / 2;
+            double offsetY = (boxHeightPx - newH) / 2;
+
+            pic.MoveTo(
+                box.FirstCell(),
+                new System.Drawing.Point((int)Math.Round(offsetX), (int)Math.Round(offsetY))
+            );
+        }
+        catch (Exception ex)
+        {
+            try { systemLogService?.WriteLog("Surge photo insert failed: " + ex.ToString()); } catch { }
+        }
+    }
+
+    private static string SanitizeFileName(string input)
+    {
+        var invalid = Path.GetInvalidFileNameChars();
+        var sb = new StringBuilder(input.Length);
+        foreach (var ch in input)
+            sb.Append(invalid.Contains(ch) ? '_' : ch);
+        return sb.ToString();
+    }
     #endregion
 
 

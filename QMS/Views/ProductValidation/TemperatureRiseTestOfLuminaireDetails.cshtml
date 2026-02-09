@@ -612,31 +612,33 @@
                     <tbody>
                         <!-- Row 1 -->
                         <tr>
-                            <td>
+                                <td style="width:492px;">
                                 <b>Testing Location :</b> <em class="req">*</em>
                                     @Html.TextBoxFor(m => m.TestingLocation, new {@class = "inline-input",
                                     placeholder = "Enter TestingLocation",required = "required",type = "text"})
                             </td>
 
-                            <td>
+                            <td style="width:342px;">
                                 <b>Report No. :</b> <em class="req">*</em>
 
                                 @Html.TextBoxFor(m => m.ReportNo, new {@class = "inline-input",
                                                                 placeholder = "Enter ReportNo",required = "required",type = "text"})
                             </td>
 
-                            <td>
+                            <td style ="width:242px;">
                                 <b>Date :</b> <em class="req">*</em>
                                   @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new { @class = "inline-date", placeholder = "dd-mm-yyyy" ,required = "required",type = "date" })
                             </td>
 
-                            <td><span style="opacity:.6;">&nbsp;</span></td>
+                            <td style="width:242px;"><span style="opacity:.6;">&nbsp;</span></td>
                         </tr>
 
                         <!-- Row 2 -->
                         <tr>
-                            <td>
+                            <td style="width:492px;">
+                                <div class="row">
                                 <b>Product Cat Ref. :</b> <em class="req">*</em>
+                               
                                 <input type="text"
                                        name="prodCode_Search"
                                        id="prodCode_Search"
@@ -647,24 +649,24 @@
                                        style="text-transform: uppercase;width: 175px;" />
                                 @Html.TextBoxFor(m => m.ProductCatRef, new {@class = "inline-input",
                                                                 placeholder = "Enter Product Cat Ref",required = "required",type = "text"})
-
+                                </div>
                             </td>
 
-                            <td>
+                            <td style="width:342px;">
                                 <b>Product Description :</b> <em class="req">*</em>
 
                                 @Html.TextBoxFor(m => m.ProductDescription, new {@class = "inline-input",
                                                                 placeholder = "Enter Product Description",required = "required",type = "text"})
                             </td>
 
-                            <td>
+                            <td style="width:242px;">
                                 <b>Batch Code :</b> <em class="req">*</em>
 
                                 @Html.TextBoxFor(m => m.BatchCode, new {@class = "inline-input",
                                                                 placeholder = "Enter BatchCode",required = "required",type = "text"})
                             </td>
 
-                            <td>
+                            <td style="width:242px;">
                                 <b>PKD :</b> <em class="req">*</em>
 
                                 @Html.TextBoxFor(m => m.PKD, new {@class = "inline-input",
@@ -674,14 +676,14 @@
 
                         <!-- Row 3 -->
                         <tr>
-                            <td colspan="2" style="vertical-align:middle;">
+                            <td colspan="2" style="vertical-align:middle;width:850px;">
                                 <b>Heat sink material -</b> <em class="req">*</em>
 
                                 @Html.TextBoxFor(m => m.HeatSinkMaterial, new {@class = "inline-input",
                                                                 placeholder = "Enter Heat Sink Material",required = "required",type = "text"})
                             </td>
 
-                            <td colspan="2" style="vertical-align:middle;">
+                            <td colspan="2" style="vertical-align:middle; width:500px;">
                                 <b>Heat sink material Weight -</b> <em class="req">*</em>
 
                                 @Html.TextBoxFor(m => m.HeatSinkWeight, new {@class = "inline-input",
@@ -691,14 +693,14 @@
 
                         <!-- Row 4 -->
                         <tr>
-                            <td colspan="2">
+                            <td colspan="2" style="width:850px;">
                                 <b>LENS details :</b> <em class="req">*</em>
 
                                 @Html.TextBoxFor(m => m.LensDetails, new {@class = "inline-input",
                                                                 placeholder = "Enter Lens Details",required = "required",type = "text"})
                             </td>
 
-                            <td colspan="2">
+                            <td colspan="2" style="width:500px;">
                                 <b>Thermal paste Details -</b> <em class="req">*</em>
                                 @Html.TextBoxFor(m => m.ThermalPasteDetails, new {@class = "inline-input",
                                                                 placeholder = "Enter Thermal Paste Details",required = "required",type = "text"})

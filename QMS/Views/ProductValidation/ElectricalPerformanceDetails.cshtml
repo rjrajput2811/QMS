@@ -633,18 +633,27 @@
                                oninput="handleProdCodeSearch(this)"
                                style="text-transform: uppercase;width: 175px;" />
 
-						<div>@Html.TextBoxFor(m => m.ProductCatRef, new { @class = "form-control" })</div>
+                        <div>
+                            @Html.TextBoxFor(m => m.ProductCatRef, new {@class = "inline-input",
+                            placeholder = "Enter ProductCatRef",required = "required",type = "text"})
+                    </div>
 					</div>
 
 				<div class="cell"><label>Product Description :</label></div>
-				<div class="cell">@Html.TextBoxFor(m => m.ProductDescription, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.ProductDescription, new {@class = "inline-input",
+                                        placeholder = "Product Description",required = "required",type = "text"})
+                </div>
 			</div>
 
 
 
             <div class="row-grid">
                 <div class="cell"><label>Report No :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.ReportNo, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.ReportNo, new {@class = "inline-input",
+                                        placeholder = "Report No",required = "required",type = "text"})
+                </div>
 
                 <div class="cell"><label>Report Date :</label></div>
                 <div class="cell">
@@ -656,34 +665,58 @@
 
             <div class="row-grid">
                 <div class="cell"><label>Light Source Details :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.LightSourceDetails, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.LightSourceDetails, new {@class = "inline-input",
+                                        placeholder = "Light Source Details",required = "required",type = "text"})
+                </div>
 
                 <div class="cell"><label>Driver Details :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.DriverDetails, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.DriverDetails, new {@class = "inline-input",
+                                        placeholder = "Driver Details",required = "required",type = "text"})
+                </div>
             </div>
 
             <div class="row-grid">
                 <div class="cell"><label>PCB Details :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.PCBDetails, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.PCBDetails, new {@class = "inline-input",
+                                        placeholder = "PCB Details",required = "required",type = "text"})
+                </div>
 
                 <div class="cell"><label>LED Combinations :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.LEDCombinations, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.LEDCombinations, new {@class = "inline-input",
+                                        placeholder = "LED Combinations",required = "required",type = "text"})
+                </div>
             </div>
 
             <div class="row-grid">
                 <div class="cell"><label>Sensor Details :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.SensorDetails, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.SensorDetails, new {@class = "inline-input",
+                                        placeholder = "Sensor Details",required = "required",type = "text"})
+                </div>
 
                 <div class="cell"><label>Batch Code :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.BatchCode, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.BatchCode, new {@class = "inline-input",
+                                        placeholder = "Batch Code",required = "required",type = "text"})
+                </div>
             </div>
 
             <div class="row-grid">
                 <div class="cell"><label>Lamp Details :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.LampDetails, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.LampDetails, new {@class = "inline-input",
+                                        placeholder = "Lamp Details",required = "required",type = "text"})
+                </div>
 
                 <div class="cell"><label>PKD :</label></div>
-                <div class="cell">@Html.TextBoxFor(m => m.PKD, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.PKD, new {@class = "inline-input",
+                                        placeholder = "PKD",required = "required",type = "text"})
+                </div>
             </div>
 
             <!-- ================= REPORT TABLE ================= -->
@@ -864,15 +897,24 @@
                 <!-- ================= FOOTER ================= -->
                 <div class="row-grid mt-3">
                     <div class="cell"><label>Overall Result :</label></div>
-                    <div class="cell">@Html.TextBoxFor(m => m.OverallResult, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.OverallResult, new {@class = "inline-input",
+                    placeholder = "Overall Result",required = "required",type = "text"})
+                </div>
 
                     <div class="cell"><label>Tested By :</label></div>
-                    <div class="cell">@Html.TextBoxFor(m => m.TestedByName, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.TestedByName, new {@class = "inline-input",
+                                        placeholder = "Tested By",required = "required",type = "text"})
+                </div>
                 </div>
 
                 <div class="row-grid">
                     <div class="cell"><label>Verified By :</label></div>
-                    <div class="cell">@Html.TextBoxFor(m => m.VerifiedByName, new { @class = "form-control" })</div>
+                <div class="cell">
+                    @Html.TextBoxFor(m => m.VerifiedByName, new {@class = "inline-input",
+                                        placeholder = "Verified By",required = "required",type = "text"})
+                </div>
                 </div>
 
 

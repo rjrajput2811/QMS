@@ -32,23 +32,6 @@ namespace QMS.Core.Models
         public decimal? TJ { get; set; }
       
 
-        public decimal? MaxVal_T1 { get; set; }
-        public decimal? MaxVal_T2 { get; set; }
-        public decimal? MaxVal_T3 { get; set; }
-        public decimal? MaxVal_T4 { get; set; }
-        public decimal? MaxVal_T5 { get; set; }
-        public decimal? MaxVal_T6 { get; set; }
-        public decimal? MaxVal_T7 { get; set; }
-        public decimal? MaxVal_T8 { get; set; }
-        public decimal? MaxVal_T9 { get; set; }
-        public decimal? MaxVal_T10 { get; set; }
-        public decimal? MaxVal_T11 { get; set; }
-        public decimal? MaxVal_T12 { get; set; }
-        public decimal? MaxVal_T13 { get; set; }
-        public decimal? MaxVal_T14 { get; set; }
-        public decimal? MaxVal_T15 { get; set; }
-        public decimal? MaxVal_T16 { get; set; }
-        public decimal? MaxVal_TJ { get; set; }
 
         public List<TemperatureRiseDetailModal> Details { get; set; } = new();
     }

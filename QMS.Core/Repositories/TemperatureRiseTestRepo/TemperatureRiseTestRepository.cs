@@ -6,6 +6,7 @@ using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
 using System.Data;
+using System.Net.NetworkInformation;
 
 namespace QMS.Core.Repositories.TemperatureRiseTestRepo
 {
@@ -101,7 +102,7 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
             using var connection = _dbContext.Database.GetDbConnection();
             using var command = connection.CreateCommand();
 
-            command.CommandText = "sp_Get_ElectricalPerformance";
+            command.CommandText = "sp_Get_TemperatureRiseTest";
             command.CommandType = CommandType.StoredProcedure;
             command.Parameters.Add(new SqlParameter("@Id", Id));
 
@@ -160,6 +161,21 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                 model.ProbeT14_Desc = reader["ProbeT14_Desc"] as string;
                 model.ProbeT15_Desc = reader["ProbeT15_Desc"] as string;
                 model.ProbeT16_Desc = reader["ProbeT16_Desc"] as string;
+                model.MaxVal_T2 = reader.GetDecimal(reader.GetOrdinal("Max_T2"));
+                model.MaxVal_T3 = reader.GetDecimal(reader.GetOrdinal("Max_T3"));
+                model.MaxVal_T4 = reader.GetDecimal(reader.GetOrdinal("Max_T4"));
+                model.MaxVal_T5 = reader.GetDecimal(reader.GetOrdinal("Max_T5"));
+                model.MaxVal_T6 = reader.GetDecimal(reader.GetOrdinal("Max_T6"));
+                model.MaxVal_T7 = reader.GetDecimal(reader.GetOrdinal("Max_T7"));
+                model.MaxVal_T8 = reader.GetDecimal(reader.GetOrdinal("Max_T8"));
+                model.MaxVal_T9 = reader.GetDecimal(reader.GetOrdinal("Max_T9"));
+                model.MaxVal_T10 = reader.GetDecimal(reader.GetOrdinal("Max_T10"));
+                model.MaxVal_T11 = reader.GetDecimal(reader.GetOrdinal("Max_T11"));
+                model.MaxVal_T12 = reader.GetDecimal(reader.GetOrdinal("Max_T12"));
+                model.MaxVal_T13 = reader.GetDecimal(reader.GetOrdinal("Max_T13"));
+                model.MaxVal_T14 = reader.GetDecimal(reader.GetOrdinal("Max_T14"));
+                model.MaxVal_T15 = reader.GetDecimal(reader.GetOrdinal("Max_T15"));
+                model.MaxVal_T16 = reader.GetDecimal(reader.GetOrdinal("Max_T16"));
                 model.Conclusion_MaxRecordedTJ = reader["Conclusion_MaxRecordedTJ"] as decimal?;
                 model.Conclusion_AllowableTJ = reader["Conclusion_AllowableTJ"] as decimal?;
                 model.Conclusion_MaxRecordedDriverTc = reader["Conclusion_MaxRecordedDriverTc"] as decimal?;
@@ -177,38 +193,45 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                 model.AddedOn = reader.GetDateTime(reader.GetOrdinal("AddedOn"));
                 model.UpdatedBy = reader["UpdatedBy"] as int?;
                 model.UpdatedOn = reader["UpdatedOn"] as DateTime?;
-                model.User = reader["User"] as string;
+                //model.User = reader["User"] as string;
 
             }
 
             // -----------------------------
             // 2️⃣ SECOND RESULT SET (Child)
             // -----------------------------
-            //if (await reader.NextResultAsync())
-            //{
-            //    while (await reader.ReadAsync())
-            //    {
-            //        model.Details.Add(new TemperatureRiseDetailModal
-            //        {
-            //            TRId = reader.GetInt32(reader.GetOrdinal("TR_Id")),
-            //            //SampleNo = reader.GetInt32(reader.GetOrdinal("SampleNo")),
-            //            //ConditionType = reader["ConditionType"] as string,
-            //            //RowNo = reader.GetInt32(reader.GetOrdinal("RowNo")),
-            //            //Vac = reader["Vac"] as string,
-            //            //IacA = reader["IacA"] as string,
-            //            //Wac = reader["Wac"] as string,
-            //            //PF = reader["PF"] as string,
-            //            //ATHD = reader["ATHD"] as string,
-            //            //Vdc = reader["Vdc"] as string,
-            //            //IdcA = reader["IdcA"] as string,
-            //            //Wdc = reader["Wdc"] as string,
-            //            //Eff = reader["Eff"] as string,
-            //            //NoLoadV = reader["NoLoadV"] as string,
-            //            //StartV = reader["StartV"] as string,
-            //            //Result = reader["Result"] as string
-            //        });
-            //    }
-            //}
+            if (await reader.NextResultAsync())
+            {
+                while (await reader.ReadAsync())
+
+                    
+                    model.Details.Add(new TemperatureRiseDetailModal
+                    {
+                        TRId = reader.GetInt32(reader.GetOrdinal("TR_Id")),
+                         TimeHrs = reader.GetDecimal(reader.GetOrdinal("TimeHrs")),
+                         T1 = reader.GetDecimal(reader.GetOrdinal("T1")),
+                         T2 = reader.GetDecimal(reader.GetOrdinal("T2")),
+                         T3 = reader.GetDecimal(reader.GetOrdinal("T3")),
+                         T4 = reader.GetDecimal(reader.GetOrdinal("T4")),
+                         T5 = reader.GetDecimal(reader.GetOrdinal("T5")),
+                         T6 = reader.GetDecimal(reader.GetOrdinal("T6")),
+                         T7 = reader.GetDecimal(reader.GetOrdinal("T7")),
+                         T8 = reader.GetDecimal(reader.GetOrdinal("T8")),
+                         T9 = reader.GetDecimal(reader.GetOrdinal("T9")),
+                         T10 = reader.GetDecimal(reader.GetOrdinal("T10")),
+                         T11 = reader.GetDecimal(reader.GetOrdinal("T11")),
+                         T12 = reader.GetDecimal(reader.GetOrdinal("T12")),
+                         T13 = reader.GetDecimal(reader.GetOrdinal("T13")),
+                         T14 = reader.GetDecimal(reader.GetOrdinal("T14")),
+                         T15 = reader.GetDecimal(reader.GetOrdinal("T15")),
+                         T16 = reader.GetDecimal(reader.GetOrdinal("T16")),
+                         VIN = reader.GetDecimal(reader.GetOrdinal("VIN")),
+                         IIN = reader.GetDecimal(reader.GetOrdinal("IIN")),
+                         PIN = reader.GetDecimal(reader.GetOrdinal("PIN")),
+                         TJ = reader.GetDecimal(reader.GetOrdinal("TJ")),
+                    });
+                }
+            
 
             return model;
         }
@@ -268,6 +291,23 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                 new SqlParameter("@ProbeT14_Desc", model.ProbeT14_Desc ?? (object)DBNull.Value),
                 new SqlParameter("@ProbeT15_Desc", model.ProbeT15_Desc ?? (object)DBNull.Value),
                 new SqlParameter("@ProbeT16_Desc", model.ProbeT16_Desc ?? (object)DBNull.Value),
+
+                new SqlParameter("@Max_T2", model.MaxVal_T2 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T3", model.MaxVal_T3 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T4", model.MaxVal_T4 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T5", model.MaxVal_T5 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T6", model.MaxVal_T6 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T7", model.MaxVal_T7 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T8", model.MaxVal_T8 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T9", model.MaxVal_T9 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T10", model.MaxVal_T10 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T11", model.MaxVal_T11 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T12", model.MaxVal_T12 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T13", model.MaxVal_T13 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T14", model.MaxVal_T14 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T15", model.MaxVal_T15 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T16", model.MaxVal_T16 ?? (object)DBNull.Value),
+
                 new SqlParameter("@Conclusion_MaxRecordedTJ", model.Conclusion_MaxRecordedTJ ?? (object)DBNull.Value),
                 new SqlParameter("@Conclusion_AllowableTJ", model.Conclusion_AllowableTJ ?? (object)DBNull.Value),
                 new SqlParameter("@Conclusion_MaxRecordedDriverTc", model.Conclusion_MaxRecordedDriverTc ?? (object)DBNull.Value),
@@ -287,8 +327,12 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                     Value = model.AddedOn
                 },
 
-                new SqlParameter("@User", model.User ?? (object)DBNull.Value)
-
+                new SqlParameter("@User", model.User ?? (object)DBNull.Value),
+                                    // ===== DETAILS STRING =====
+                new SqlParameter("@TempRiseDetails", SqlDbType.NVarChar)
+                {
+                    Value = model.ThermalReadingsData ?? (object)DBNull.Value
+                }
                     // ===== DETAILS STRING =====
                 //new SqlParameter("@ElectricalDetails", SqlDbType.NVarChar)
                 //{
@@ -297,7 +341,7 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
             };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Insert_ElectricalPerformance " +
+                    "EXEC sp_Insert_TemperatureRiseTest " +
                        
                         "@ReportNo, " +
                         "@ReportDate, " +
@@ -343,6 +387,23 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                         "@ProbeT14_Desc, " +
                         "@ProbeT15_Desc, " +
                         "@ProbeT16_Desc, " +
+
+                        "@Max_T2, " +
+                        "@Max_T3, " +
+                        "@Max_T4, " +
+                        "@Max_T5, " +
+                        "@Max_T6, " +
+                        "@Max_T7, " +
+                        "@Max_T8, " +
+                        "@Max_T9, " +
+                        "@Max_T10, " +
+                        "@Max_T11, " +
+                        "@Max_T12, " +
+                        "@Max_T13, " +
+                        "@Max_T14, " +
+                        "@Max_T15, " +
+                        "@Max_T16, " +
+
                         "@Conclusion_MaxRecordedTJ, " +
                         "@Conclusion_AllowableTJ, " +
                         "@Conclusion_MaxRecordedDriverTc, " +
@@ -358,9 +419,8 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                         "@ApprovedBySecnd, " +
                         "@AddedBy, " +
                         "@AddedOn, " +
-                        "@UpdatedBy, " +
-                        "@UpdatedOn, " +
-                        "@User",
+                        "@User, " +
+                        "@TempRiseDetails",
                     parameters
                 );
 
@@ -427,6 +487,23 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                 new SqlParameter("@ProbeT14_Desc", model.ProbeT14_Desc ?? (object)DBNull.Value),
                 new SqlParameter("@ProbeT15_Desc", model.ProbeT15_Desc ?? (object)DBNull.Value),
                 new SqlParameter("@ProbeT16_Desc", model.ProbeT16_Desc ?? (object)DBNull.Value),
+
+                new SqlParameter("@Max_T2", model.MaxVal_T2 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T3", model.MaxVal_T3 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T4", model.MaxVal_T4 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T5", model.MaxVal_T5 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T6", model.MaxVal_T6 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T7", model.MaxVal_T7 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T8", model.MaxVal_T8 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T9", model.MaxVal_T9 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T10", model.MaxVal_T10 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T11", model.MaxVal_T11 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T12", model.MaxVal_T12 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T13", model.MaxVal_T13 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T14", model.MaxVal_T14 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T15", model.MaxVal_T15 ?? (object)DBNull.Value),
+                new SqlParameter("@Max_T16", model.MaxVal_T16 ?? (object)DBNull.Value),
+
                 new SqlParameter("@Conclusion_MaxRecordedTJ", model.Conclusion_MaxRecordedTJ ?? (object)DBNull.Value),
                 new SqlParameter("@Conclusion_AllowableTJ", model.Conclusion_AllowableTJ ?? (object)DBNull.Value),
                 new SqlParameter("@Conclusion_MaxRecordedDriverTc", model.Conclusion_MaxRecordedDriverTc ?? (object)DBNull.Value),
@@ -440,10 +517,10 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                 new SqlParameter("@ConductedBySecnd", model.ConductedBySecnd ?? (object)DBNull.Value),
                 new SqlParameter("@WitnessBySecnd", model.WitnessBySecnd ?? (object)DBNull.Value),
                 new SqlParameter("@ApprovedBySecnd", model.ApprovedBySecnd ?? (object)DBNull.Value),
-                new SqlParameter("@AddedBy", model.AddedBy),
-                new SqlParameter("@AddedOn", System.Data.SqlDbType.DateTime)
+                new SqlParameter("@UpdatedBy", model.UpdatedBy),
+                new SqlParameter("@UpdatedOn", System.Data.SqlDbType.DateTime)
                 {
-                    Value = model.AddedOn
+                    Value = model.UpdatedOn
                 },
             };
 
@@ -493,6 +570,23 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                         "@ProbeT14_Desc, " +
                         "@ProbeT15_Desc, " +
                         "@ProbeT16_Desc, " +
+                        "@Max_T2, " +
+                        "@Max_T3, " +
+                        "@Max_T4, " +
+                        "@Max_T5, " +
+                        "@Max_T6, " +
+                        "@Max_T7, " +
+                        "@Max_T8, " +
+                        "@Max_T9, " +
+                        "@Max_T10, " +
+                        "@Max_T11, " +
+                        "@Max_T12, " +
+                        "@Max_T13, " +
+                        "@Max_T14, " +
+                        "@Max_T15, " +
+                        "@Max_T16, " +
+
+
                         "@Conclusion_MaxRecordedTJ, " +
                         "@Conclusion_AllowableTJ, " +
                         "@Conclusion_MaxRecordedDriverTc, " +
@@ -506,11 +600,10 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
                         "@ConductedBySecnd, " +
                         "@WitnessBySecnd, " +
                         "@ApprovedBySecnd, " +
-                        "@AddedBy, " +
-                        "@AddedOn, " +
+
                         "@UpdatedBy, " +
-                        "@UpdatedOn, " +
-                        "@User",
+                        "@UpdatedOn, ",
+                        
                     parameters
                 );
 
@@ -530,12 +623,12 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
             {
                 var parameters = new[]
                 {
-                new SqlParameter("@ElectricalId", Id ),
+                new SqlParameter("@TemperatureId", Id ),
             };
 
                 await _dbContext.Database.ExecuteSqlRawAsync(
-                    "EXEC sp_Delete_ElectricalPerformance " +
-                        "@ElectricalId",
+                    "EXEC sp_Delete_TemperatureRise " +
+                        "@TemperatureId",
                     parameters
                 );
 
@@ -549,14 +642,14 @@ namespace QMS.Core.Repositories.TemperatureRiseTestRepo
 
         }
 
-        Task<List<TemperatureRiseTestViewModel>> ITemperatureRiseTestRepository.GetTemperatureRiseTestAsync(DateTime? startDate, DateTime? endDate)
-        {
-            throw new NotImplementedException();
-        }
+        //Task<List<TemperatureRiseTestViewModel>> ITemperatureRiseTestRepository.GetTemperatureRiseTestAsync(DateTime? startDate, DateTime? endDate)
+        //{
+        //    throw new NotImplementedException();
+        //}
 
-        Task<TemperatureRiseTestViewModel> ITemperatureRiseTestRepository.GetTemperatureRiseTestByIdAsync(int Id)
-        {
-            throw new NotImplementedException();
-        }
+        //Task<TemperatureRiseTestViewModel> ITemperatureRiseTestRepository.GetTemperatureRiseTestByIdAsync(int Id)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

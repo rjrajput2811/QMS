@@ -23,6 +23,7 @@
 
 <script type="text/javascript">
     let searchTimeout;
+    var modelDetails = @Html.Raw(Json.Serialize(Model.Details ?? new List<TemperatureRiseDetailModal>()));
 
     $(document).ready(function () {
         console.log("Document ready - initializing search");
@@ -38,6 +39,43 @@
         } else {
             console.error("prodCode_Search input NOT found");
         }
+
+        if (modelDetails && modelDetails.length > 0) {
+            console.log("Found " + modelDetails.length + " detail records");
+
+            // Populate each row
+            modelDetails.forEach(function(detail, index) {
+                var rowIndex = index + 1; // Rows are 1-based
+
+                // Set all thermal reading values
+                $('input[name="ThermalReadings[' + rowIndex + '].TimeHrs"]').val(detail.timeHrs || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T1"]').val(detail.t1 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T2"]').val(detail.t2 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T3"]').val(detail.t3 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T4"]').val(detail.t4 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T5"]').val(detail.t5 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T6"]').val(detail.t6 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T7"]').val(detail.t7 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T8"]').val(detail.t8 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T9"]').val(detail.t9 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T10"]').val(detail.t10 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T11"]').val(detail.t11 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T12"]').val(detail.t12 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T13"]').val(detail.t13 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T14"]').val(detail.t14 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T15"]').val(detail.t15 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].T16"]').val(detail.t16 || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].VIN"]').val(detail.vin || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].IIN"]').val(detail.iin || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].PIN"]').val(detail.pin || '');
+                $('input[name="ThermalReadings[' + rowIndex + '].TJ"]').val(detail.tj || '');
+            });
+
+            console.log("Thermal readings loaded successfully");
+        } else {
+            console.log("No thermal readings to load (new record)");
+        }
+
     });
 
     function handleProdCodeSearch(event) {
@@ -74,7 +112,7 @@
         console.log("Fetching data for:", productCatNo);
 
         $.ajax({
-            url: '@Url.Action("GetCodeSearchAsync", "Vendor")',
+            url: '/Vendor/GetCodeSearch',
             type: 'GET',
             data: { search: productCatNo },
             dataType: 'json',
@@ -191,13 +229,59 @@
         }
     });
 
-    function saveElectricalPerformance() {
-        console.log("saveElectricalPerformance called");
+    function SaveTemperatureTest() {
+        console.log("SaveTemperatureTest called");
 
-        // Get ID value
         var idVal = $('#Id').val();
         idVal = idVal ? parseInt(idVal) : 0;
-        console.log("ID:", idVal);
+
+        // Collect thermal readings
+        var thermalRows = [];
+        var thermalMap = {};
+
+        $('input[name^="ThermalReadings["]').each(function () {
+            var name = $(this).attr('name');
+            var match = name.match(/ThermalReadings\[(\d+)\]\.(.+)/);
+            if (!match) return;
+
+            var index = match[1];
+            var field = match[2];
+            var value = $(this).val() || '';
+
+            if (!thermalMap[index]) thermalMap[index] = {};
+            thermalMap[index][field] = value;
+        });
+
+        Object.keys(thermalMap).sort(function (a, b) {
+            return a - b;
+        }).forEach(function (i) {
+            var d = thermalMap[i];
+
+            var row =
+                (d.TimeHrs || '') + '^' +
+                (d.T1 || '') + '^' +
+                (d.T2 || '') + '^' +
+                (d.T3 || '') + '^' +
+                (d.T4 || '') + '^' +
+                (d.T5 || '') + '^' +
+                (d.T6 || '') + '^' +
+                (d.T7 || '') + '^' +
+                (d.T8 || '') + '^' +
+                (d.T9 || '') + '^' +
+                (d.T10 || '') + '^' +
+                (d.T11 || '') + '^' +
+                (d.T12 || '') + '^' +
+                (d.T13 || '') + '^' +
+                (d.T14 || '') + '^' +
+                (d.T15 || '') + '^' +
+                (d.T16 || '') + '^' +
+                (d.VIN || '') + '^' +
+                (d.IIN || '') + '^' +
+                (d.PIN || '') + '^' +
+                (d.TJ || '');
+
+            thermalRows.push(row);
+        });
 
         var model = {
             Id: idVal,
@@ -218,7 +302,10 @@
             LedUsed: $('#LedUsed').val(),
             NoOfDrivers: $('#NoOfDrivers').val(),
             DriverOutputVoltage: $('#DriverOutputVoltage').val(),
+            DriverOutputCurrent: $('#DriverOutputCurrent').val(),
             NoOfLedsInSeries: $('#NoOfLedsInSeries').val(),
+            NoOfLedsInParallel: $('#NoOfLedsInParallel').val(),
+            NoOfLeds: $('#NoOfLeds').val(),
             DriverAllowableTc: $('#DriverAllowableTc').val(),
             LedRjTH: $('#LedRjTH').val(),
 
@@ -228,8 +315,8 @@
             LedIf: $('#LedIf').val(),
             PcbSizeQty: $('#PcbSizeQty').val(),
             LedWdc: $('#LedWdc').val(),
-            ProbeT1_Desc: $('#ProbeT1_Desc').val(),
 
+            ProbeT1_Desc: $('#ProbeT1_Desc').val(),
             ProbeT2_Desc: $('#ProbeT2_Desc').val(),
             ProbeT3_Desc: $('#ProbeT3_Desc').val(),
             ProbeT4_Desc: $('#ProbeT4_Desc').val(),
@@ -237,7 +324,6 @@
             ProbeT6_Desc: $('#ProbeT6_Desc').val(),
             ProbeT7_Desc: $('#ProbeT7_Desc').val(),
             ProbeT8_Desc: $('#ProbeT8_Desc').val(),
-
             ProbeT9_Desc: $('#ProbeT9_Desc').val(),
             ProbeT10_Desc: $('#ProbeT10_Desc').val(),
             ProbeT11_Desc: $('#ProbeT11_Desc').val(),
@@ -253,6 +339,7 @@
             Conclusion_AllowableDriverTc: $('#Conclusion_AllowableDriverTc').val(),
             Conclusion_MaxRecordedLensTemp: $('#Conclusion_MaxRecordedLensTemp').val(),
             Conclusion_OverThermalCutoff: $('#Conclusion_OverThermalCutoff').val(),
+            Conclusion_Result: $('#Conclusion_Result').val(),
 
             ConductedBy: $('#ConductedBy').val(),
             WitnessBy: $('#WitnessBy').val(),
@@ -260,6 +347,31 @@
             ConductedBySecnd: $('#ConductedBySecnd').val(),
             WitnessBySecnd: $('#WitnessBySecnd').val(),
             ApprovedBySecnd: $('#ApprovedBySecnd').val(),
+
+            // Thermal readings as delimited string
+            ThermalReadingsData: thermalRows.join('~'),
+
+            // Maximum values
+            MaxValues_T1: $('input[name="MaxValues.T1"]').val(),
+            MaxValues_T2: $('input[name="MaxValues.T2"]').val(),
+            MaxValues_T3: $('input[name="MaxValues.T3"]').val(),
+            MaxValues_T4: $('input[name="MaxValues.T4"]').val(),
+            MaxValues_T5: $('input[name="MaxValues.T5"]').val(),
+            MaxValues_T6: $('input[name="MaxValues.T6"]').val(),
+            MaxValues_T7: $('input[name="MaxValues.T7"]').val(),
+            MaxValues_T8: $('input[name="MaxValues.T8"]').val(),
+            MaxValues_T9: $('input[name="MaxValues.T9"]').val(),
+            MaxValues_T10: $('input[name="MaxValues.T10"]').val(),
+            MaxValues_T11: $('input[name="MaxValues.T11"]').val(),
+            MaxValues_T12: $('input[name="MaxValues.T12"]').val(),
+            MaxValues_T13: $('input[name="MaxValues.T13"]').val(),
+            MaxValues_T14: $('input[name="MaxValues.T14"]').val(),
+            MaxValues_T15: $('input[name="MaxValues.T15"]').val(),
+            MaxValues_T16: $('input[name="MaxValues.T16"]').val(),
+            MaxValues_VIN: $('input[name="MaxValues.VIN"]').val(),
+            MaxValues_IIN: $('input[name="MaxValues.IIN"]').val(),
+            MaxValues_PIN: $('input[name="MaxValues.PIN"]').val(),
+            MaxValues_TJ: $('input[name="MaxValues.TJ"]').val()
         };
 
         console.log("Model data:", model);
@@ -279,7 +391,9 @@
             error: function (xhr, status, error) {
                 console.error("Save error:", error);
                 console.error("Response:", xhr.responseText);
-                Blockloaderhide();
+                if (typeof Blockloaderhide === 'function') {
+                    Blockloaderhide();
+                }
                 showDangerAlert('Error saving data: ' + error);
             }
         });
@@ -466,7 +580,7 @@
                 <button id="addTemperatureButton"
                         type="button"
                         class="btn btn-outline-success legitRipple mr-2"
-                        onclick="insertTemperatureTest()"
+                        onclick="SaveTemperatureTest()"
                         style="width:120px; font-size:15px;">
                     <i class="fas fa-save mr-1"></i>Save
                 </button>
@@ -900,6 +1014,7 @@
             </div>
         </div>
         <!-- ====== PART V & VI: THERMAL / ELECTRICAL READINGS ====== -->
+        <!-- ====== PART V & VI: THERMAL / ELECTRICAL READINGS ====== -->
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered" style="width:100%; border-collapse:collapse; font-size:13px; text-align:center;">
@@ -941,63 +1056,80 @@
                     </thead>
 
                     <tbody>
-                        <!-- Example data rows (unchanged) -->
-                        <tr>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                        </tr>
-                        <!-- (rows truncated in this snippet for brevity but unchanged in your file) -->
-                        <!-- Editable Maximum Values row -->
+                        @{
+                            for (int row = 1; row <= 12; row++)
+                            {
+                                <tr>
+                                    @Html.Hidden($"ThermalReadings[{row}].RowNo", row)
+                                    <td><input name="ThermalReadings[@row].TimeHrs" class="form-control" style="min-width:80px;" /></td>
+                                    <td><input name="ThermalReadings[@row].T1" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T2" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T3" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T4" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T5" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T6" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T7" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T8" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T9" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T10" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T11" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T12" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T13" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T14" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T15" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].T16" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].VIN" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].IIN" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].PIN" class="form-control" /></td>
+                                    <td><input name="ThermalReadings[@row].TJ" class="form-control" /></td>
+                                </tr>
+                            }
+                        }
+
+                        <!-- Maximum Values row -->
                         <tr style="background:#f1f3f5; font-weight:600;">
                             <td style="text-align:center;">Maximum<br />Values</td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td contenteditable="true"></td>
-                            <td style="white-space:nowrap; text-align:left; padding-left:10px;">
-                                <b></b>
-                                <input type="text" class="underline-input"
-                                        style="width:40px; margin-left:8px; border-bottom:none;"
-                                        placeholder="" />
+                            <td>
+                                @Html.TextBoxFor(m => m.ConductedBy, new {@class = "inline-input",
+                                placeholder = "CONDUCTED BY",type = "text"})
                             </td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T2, new {@class = "inline-input",
+                                                                placeholder = "MaxValues.T2",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T3, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T4, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T5, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T6, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T7, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T8, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T9, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T10, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T11, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T12, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T13, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T14, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T15, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td>@Html.TextBoxFor(m => m.MaxVal_T16, new {@class = "inline-input",
+                                                                placeholder = "CONDUCTED BY",type = "text"})</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
-
             </div>
         </div>
         <!-- ====== PART VII: CONCLUSIONS / REMARKS + SIGN-OFF ====== -->

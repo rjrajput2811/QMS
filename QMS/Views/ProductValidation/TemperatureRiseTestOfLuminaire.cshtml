@@ -51,6 +51,13 @@
                 </div>
             </div>
             <div>
+                <button id="exportExcelButton"
+                        type="button"
+                        class="btn btn-outline-info legitRipple mr-2 header-btn"
+                        onclick="exportToExcel()">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export
+                </button>
+
                 <button id="addTRTButton"
                         type="button"
                         class="btn btn-outline-success legitRipple mr-2 header-btn"
@@ -64,6 +71,20 @@
                         onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+
+                        <div id="rmtc_table_wrapper" style="overflow-x: auto;">
+                            <div id="TempRise_table"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -91,7 +112,7 @@
         var table = '';
         const searchTerms = {};
         $(document).ready(function () {
-                        $('#dateRangeInsta').text(
+            $('#dateRangeInsta').text(
                 moment(filterStartDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndDate).format('MMMM D, YYYY')
             );
 
@@ -114,14 +135,14 @@
                         filterStartDate = start.format('YYYY-MM-DD');
                         filterEndDate = end.format('YYYY-MM-DD');
                         $('#dateRangeInsta').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                        loadElectricalperformanceGridData();
+                        loadTemperatureRiseGridData();
                     });
 
                     picker.on('clear', () => {
                         filterStartDate = "";
                         filterEndDate = "";
                         $('#dateRangeInsta').text("Select Date Range");
-                        loadElectricalperformanceGridData();
+                        loadTemperatureRiseGridData();
                     });
                 },
                 ranges: {
@@ -141,10 +162,10 @@
                 picker.show();
             });
 
-            loadElectricalperformanceGridData();
+            loadTemperatureRiseGridData();
         });
 
-        function loadElectricalperformanceGridData() {
+        function loadTemperatureRiseGridData() {
             Blockloadershow();
             $.ajax({
                 url: '@Url.Action("GetTemperatureRiseList", "ProductValidation")',
@@ -157,7 +178,7 @@
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data)) {
-                        OnElectricalperformanceLoad(data);
+                        OnTemperatureRiseLoad(data);
                     }
                     else {
                         showDangerAlert('No data available to load.');
@@ -239,10 +260,10 @@
                         ProductCatRef: item.productCatRef,
                         ProductDescription: item.productDescription,
                         TestingLocation: item.TestingLocation,
-                        HeatSinkMaterial = item.HeatSinkMaterial,
-                        HeatSinkWeight = item.HeatSinkWeight,
-                        LensDetails = item.LensDetails,
-                        ThermalPasteDetails = item.ThermalPasteDetails,
+                        HeatSinkMaterial: item.HeatSinkMaterial,
+                        HeatSinkWeight: item.HeatSinkWeight,
+                        LensDetails: item.LensDetails,
+                        ThermalPasteDetails: item.ThermalPasteDetails,
                         BatchCode: item.batchCode,
                         PKD: item.pkd,
                         User: item.user
@@ -250,6 +271,17 @@
                 });
 
                 columns.push(
+                    {
+                        formatter: "rowSelection",
+                        titleFormatter: "rowSelection",
+                        hozAlign: "center",
+                        headerHozAlign: "center",
+                        headerSort: false,
+                        width: 50,
+                        cellClick: function(e, cell) {
+                            cell.getRow().toggleSelect();
+                        }
+                    },
                     {
                         title: "Action",
                         field: "Action",
@@ -261,7 +293,7 @@
                             const rowData = cell.getRow().getData();
                             let actionButtons = "";
 
-                            actionButtons += `<i data-toggle="modal" onclick="delElecPerConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+                            actionButtons += `<i data-toggle="modal" onclick="delTempRiseConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
 
                             return actionButtons;
                         }
@@ -282,7 +314,7 @@
                 );
 
                 // // Initialize Tabulator
-                table = new Tabulator("#ElecPer_table", {
+                table = new Tabulator("#TempRise_table", {
                     data: tabledata,
                     layout: "fitDataTable",
                     responsiveLayout: false,
@@ -294,6 +326,9 @@
                     paginationCounter: "rows",
                     paginationElement: document.getElementById("pager"),
                     dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                     // Added these lines for row selection
+                    selectable: true,
+                    selectableRangeMode: "click",
                     columns: columns
                 });
 
@@ -302,7 +337,7 @@
 
                     if (columnField !== "Action") {
                         let rowData = cell.getRow().getData();
-                        window.open("@Url.Action("TemperatureRiseDetailsbyID", "ProductValidation")" + "/" + rowData.Id, '_self');
+                        window.open("@Url.Action("TemperatureRiseTestOfLuminaireDetails", "ProductValidation")" + "/" + rowData.Id, '_self');
                     }
                 });
 
@@ -373,7 +408,23 @@
             Blockloaderhide();
         }
 
-        function delElecPerConfirm(recid) {
+        function exportToExcel() {
+            var selected = table.getSelectedRows();
+
+            if (selected.length === 0) {
+                showDangerAlert('Please select at least one row to export');
+                return;
+            }
+
+            var ids = selected.map(function(row) {
+                return row.getData().Id;
+            });
+
+            // Export selected records
+            window.location.href = '@Url.Action("ExportTemperatureRiseToExcel", "ProductValidation")' + '?ids=' + ids.join(',');
+        }
+
+        function delTempRiseConfirm(recid) {
             PNotify.prototype.options.styling = "bootstrap3";
             (new PNotify({
                 title: 'Confirmation Needed',
@@ -392,7 +443,7 @@
                 },
             })).get().on('pnotify.confirm', function () {
                 $.ajax({
-                    url: '@Url.Action("DeleteElectricalperformance", "ProductValidation")',
+                    url: '@Url.Action("DeleteTemperatureRise", "ProductValidation")',
                     type: 'POST',
                     data: { id: recid },
                     success: function (data) {

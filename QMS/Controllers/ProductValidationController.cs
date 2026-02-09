@@ -2252,6 +2252,164 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ExportPhotometryTestToExcel(int id)
+    {
+        var model = await _photometryTestRepository.GetPhotometryTestReportByIdAsync(id);
+        if (model == null)
+            return NotFound();
+
+        var templatePath = Path.Combine(_env.WebRootPath, "templates", "V7. Photometry_V.xlsx");
+        if (!System.IO.File.Exists(templatePath))
+            return NotFound("Photometry template not found at " + templatePath);
+
+        using var wb = new XLWorkbook(templatePath);
+        var ws = wb.Worksheet(1);
+
+        // ========================================
+        // Header Information
+        // ========================================
+        ws.Cell("C4").Value = "Product Cat Ref :-" + (model.ProductCatRef ?? "");
+        ws.Cell("E4").Value = "Product Description :-" + (model.ProductDescription ?? "");
+        ws.Cell("I2").Value = "Report No. :- " + (model.ReportNo ?? "");
+        ws.Cell("C5").Value = "Driver :-  " + (model.DriverDetails ?? "");
+        ws.Cell("E4").Value = "LED Details :-" + (model.LedDetails ?? "");
+        ws.Cell("I5").Value = "Date :" + (model.ReportDate?.ToString("dd-MMM-yyyy") ?? "");
+
+
+        ws.Cell("E8").Value =  model.Sphere_InputWattage_Spec ?? "";
+        ws.Cell("F8").Value =  model.Sphere_InputWattage_Sample1.ToString() ?? "";
+        ws.Cell("G8").Value =  model.Sphere_InputWattage_Sample2.ToString() ?? "";
+        ws.Cell("H8").Value =  model.Sphere_InputWattage_Sample3.ToString() ?? "";
+        ws.Cell("I8").Value =  model.Sphere_InputWattage_Sample4.ToString() ?? "";
+        ws.Cell("J8").Value =  model.Sphere_InputWattage_Sample5.ToString() ?? "";
+        ws.Cell("K8").Value = model.Sphere_InputWattage_Result ?? "";
+
+        ws.Cell("E9").Value = model.Sphere_LuminousFlux_Spec ?? "";
+        ws.Cell("F9").Value = model.Sphere_LuminousFlux_Sample1.ToString() ?? "";
+        ws.Cell("G9").Value = model.Sphere_LuminousFlux_Sample2.ToString() ?? "";
+        ws.Cell("H9").Value = model.Sphere_LuminousFlux_Sample3.ToString() ?? "";
+        ws.Cell("I9").Value = model.Sphere_LuminousFlux_Sample4.ToString() ?? "";
+        ws.Cell("J9").Value = model.Sphere_LuminousFlux_Sample5.ToString() ?? "";
+        ws.Cell("K9").Value = model.Sphere_LuminousFlux_Result ?? "";
+
+        ws.Cell("E10").Value = model.Sphere_CCT_Spec ?? "";
+        ws.Cell("F10").Value = model.Sphere_CCT_Sample1.ToString() ?? "";
+        ws.Cell("G10").Value = model.Sphere_CCT_Sample2.ToString() ?? "";
+        ws.Cell("H10").Value = model.Sphere_CCT_Sample3.ToString() ?? "";
+        ws.Cell("I10").Value = model.Sphere_CCT_Sample4.ToString() ?? "";
+        ws.Cell("J10").Value = model.Sphere_CCT_Sample5.ToString() ?? "";
+        ws.Cell("K10").Value = model.Sphere_CCT_Result ?? "";
+
+        ws.Cell("E11").Value = model.Sphere_CRI_Spec ?? "";
+        ws.Cell("F11").Value = model.Sphere_CRI_Sample1.ToString() ?? "";
+        ws.Cell("G11").Value = model.Sphere_CRI_Sample2.ToString() ?? "";
+        ws.Cell("H11").Value = model.Sphere_CRI_Sample3.ToString() ?? "";
+        ws.Cell("I11").Value = model.Sphere_CRI_Sample4.ToString() ?? "";
+        ws.Cell("J11").Value = model.Sphere_CRI_Sample5.ToString() ?? "";
+        ws.Cell("K11").Value = model.Sphere_CRI_Result ?? "";
+
+        ws.Cell("E12").Value = model.Sphere_SystemEfficacy_Spec ?? "";
+        ws.Cell("F12").Value = model.Sphere_SystemEfficacy_Sample1.ToString() ?? "";
+        ws.Cell("G12").Value = model.Sphere_SystemEfficacy_Sample2.ToString() ?? "";
+        ws.Cell("H12").Value = model.Sphere_SystemEfficacy_Sample3.ToString() ?? "";
+        ws.Cell("I12").Value = model.Sphere_SystemEfficacy_Sample4.ToString() ?? "";
+        ws.Cell("J12").Value = model.Sphere_SystemEfficacy_Sample5.ToString() ?? "";
+        ws.Cell("K12").Value = model.Sphere_SystemEfficacy_Result ?? "";
+
+
+        //---------------------
+
+        ws.Cell("E13").Value = model.Gonio_InputWattage_Spec ?? "";
+        ws.Cell("F13").Value = model.Gonio_InputWattage_Sample1.ToString() ?? "";
+        ws.Cell("G13").Value = model.Gonio_InputWattage_Sample2.ToString() ?? "";
+        ws.Cell("H13").Value = model.Gonio_InputWattage_Sample3.ToString() ?? "";
+        ws.Cell("I13").Value = model.Gonio_InputWattage_Sample4.ToString() ?? "";
+        ws.Cell("J13").Value = model.Gonio_InputWattage_Sample5.ToString() ?? "";
+        ws.Cell("K13").Value = model.Gonio_InputWattage_Result ?? "";
+
+        ws.Cell("E14").Value = model.Gonio_LuminousFlux_Spec ?? "";
+        ws.Cell("F14").Value = model.Gonio_LuminousFlux_Sample1.ToString() ?? "";
+        ws.Cell("G14").Value = model.Gonio_LuminousFlux_Sample2.ToString() ?? "";
+        ws.Cell("H14").Value = model.Gonio_LuminousFlux_Sample3.ToString() ?? "";
+        ws.Cell("I14").Value = model.Gonio_LuminousFlux_Sample4.ToString() ?? "";
+        ws.Cell("J14").Value = model.Gonio_LuminousFlux_Sample5.ToString() ?? "";
+        ws.Cell("K14").Value = model.Gonio_LuminousFlux_Result ?? "";
+
+        ws.Cell("E15").Value = model.Gonio_CCT_Spec ?? "";
+        ws.Cell("F15").Value = model.Gonio_CCT_Sample1.ToString() ?? "";
+        ws.Cell("G15").Value = model.Gonio_CCT_Sample2.ToString() ?? "";
+        ws.Cell("H15").Value = model.Gonio_CCT_Sample3.ToString() ?? "";
+        ws.Cell("I15").Value = model.Gonio_CCT_Sample4.ToString() ?? "";
+        ws.Cell("J15").Value = model.Gonio_CCT_Sample5.ToString() ?? "";
+        ws.Cell("K15").Value = model.Gonio_CCT_Result ?? "";
+
+        ws.Cell("E16").Value = model.Gonio_CRI_Spec ?? "";
+        ws.Cell("F16").Value = model.Gonio_CRI_Sample1.ToString() ?? "";
+        ws.Cell("G16").Value = model.Gonio_CRI_Sample2.ToString() ?? "";
+        ws.Cell("H16").Value = model.Gonio_CRI_Sample3.ToString() ?? "";
+        ws.Cell("I16").Value = model.Gonio_CRI_Sample4.ToString() ?? "";
+        ws.Cell("J16").Value = model.Gonio_CRI_Sample5.ToString() ?? "";
+        ws.Cell("K16").Value = model.Gonio_CRI_Result ?? "";
+
+        ws.Cell("E17").Value = model.Gonio_SystemEfficacy_Spec ?? "";
+        ws.Cell("F17").Value = model.Gonio_SystemEfficacy_Sample1.ToString() ?? "";
+        ws.Cell("G17").Value = model.Gonio_SystemEfficacy_Sample2.ToString() ?? "";
+        ws.Cell("H17").Value = model.Gonio_SystemEfficacy_Sample3.ToString() ?? "";
+        ws.Cell("I17").Value = model.Gonio_SystemEfficacy_Sample4.ToString() ?? "";
+        ws.Cell("J17").Value = model.Gonio_SystemEfficacy_Sample5.ToString() ?? "";
+        ws.Cell("K17").Value = model.Gonio_SystemEfficacy_Result ?? "";
+
+        ws.Cell("E18").Value = model.Gonio_UGR_Spec ?? "";
+        ws.Cell("F18").Value = model.Gonio_UGR_Sample1.ToString() ?? "";
+        ws.Cell("G18").Value = model.Gonio_UGR_Sample2.ToString() ?? "";
+        ws.Cell("H18").Value = model.Gonio_UGR_Sample3.ToString() ?? "";
+        ws.Cell("I18").Value = model.Gonio_UGR_Sample4.ToString() ?? "";
+        ws.Cell("J18").Value = model.Gonio_UGR_Sample5.ToString() ?? "";
+        ws.Cell("K18").Value = model.Gonio_UGR_Result ?? "";
+
+        ws.Cell("E19").Value = model.Gonio_Distribution_Spec ?? "";
+        ws.Cell("F19").Value = model.Gonio_Distribution_Sample1.ToString() ?? "";
+        ws.Cell("G19").Value = model.Gonio_Distribution_Sample2.ToString() ?? "";
+        ws.Cell("H19").Value = model.Gonio_Distribution_Sample3.ToString() ?? "";
+        ws.Cell("I19").Value = model.Gonio_Distribution_Sample4.ToString() ?? "";
+        ws.Cell("J19").Value = model.Gonio_Distribution_Sample5.ToString() ?? "";
+        ws.Cell("K19").Value = model.Gonio_Distribution_Result ?? "";
+
+        ws.Cell("E20").Value = model.Gonio_NABL79_Spec ?? "";
+        ws.Cell("F20").Value = model.Gonio_NABL79_Sample1.ToString() ?? "";
+        ws.Cell("G20").Value = model.Gonio_NABL79_Sample2.ToString() ?? "";
+        ws.Cell("H20").Value = model.Gonio_NABL79_Sample3.ToString() ?? "";
+        ws.Cell("I20").Value = model.Gonio_NABL79_Sample4.ToString() ?? "";
+        ws.Cell("J20").Value = model.Gonio_NABL79_Sample5.ToString() ?? "";
+        ws.Cell("K20").Value = model.Gonio_NABL79_Result ?? "";
+
+        ws.Cell("E21").Value = model.Gonio_NABL79_Other_Spec ?? "";
+        ws.Cell("F21").Value = model.Gonio_NABL79_Other_Sample1.ToString() ?? "";
+        ws.Cell("G21").Value = model.Gonio_NABL79_Other_Sample2.ToString() ?? "";
+        ws.Cell("H21").Value = model.Gonio_NABL79_Other_Sample3.ToString() ?? "";
+        ws.Cell("I21").Value = model.Gonio_NABL79_Other_Sample4.ToString() ?? "";
+        ws.Cell("J21").Value = model.Gonio_NABL79_Other_Sample5.ToString() ?? "";
+        ws.Cell("K21").Value = model.Gonio_NABL79_Other_Result ?? "";
+
+
+        ws.Cell("A31").Value = "Tested By :- " + (model.TestedBy ?? "");
+        ws.Cell("I31").Value = "Verified By :-" + (model.VerifiedBy ?? "");
+
+
+        // ========================================
+        // Return Excel File
+        // ========================================
+        using var stream = new MemoryStream();
+        wb.SaveAs(stream);
+        stream.Position = 0;
+
+        var fileName = $"Surge_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        return File(stream.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            fileName);
+    }
+
     #endregion
 
 

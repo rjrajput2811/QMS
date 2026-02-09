@@ -177,7 +177,7 @@
                 <button id="backButton"
                         type="button"
                         class="btn btn-outline-primary header-btn"
-                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                        onclick="location.href='@Url.Action("ProductValidation", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
@@ -409,7 +409,7 @@
                         let actionButtons = "";
 
                         actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>
-                            <i onclick=""
+                            <i onclick="exportToExcel(${rowData.Id})"
                        class="fas fa-file-excel fa-1x"
                        title="Export To Excel"
                        style="color:green;cursor:pointer;">
@@ -513,13 +513,110 @@
         }
 
 
-        // function exportToExcel(id) {
+        function exportToExcel(recid) {
+            Blockloadershow();
 
-        //     const url = `/CustomerRCAReport/ExportCAReportToExcel?id=${id}`;
+            $.ajax({
+                url: '@Url.Action("ExportInstallationTrailToExcel", "ProductValidation")',
+                data: { id: recid }, // Changed from 'Id' to 'id' to match controller parameter
+                type: 'POST',
+                xhrFields: {
+                    responseType: 'blob' // Expect a blob response for file download
+                },
+                success: function (data, status, xhr) {
+                    try {
+                        // Check if the response is an error (JSON) instead of a file
+                        var contentType = xhr.getResponseHeader('Content-Type');
 
-        //     // Open file download in new tab (best for Excel)
-        //     window.open(url, "_blank");
-        // }
+                        // If response is JSON, it's likely an error message
+                        if (contentType && contentType.indexOf('application/json') !== -1) {
+                            // Convert blob to text to read error message
+                            var reader = new FileReader();
+                            reader.onload = function() {
+                                try {
+                                    var errorData = JSON.parse(reader.result);
+                                    showDangerAlert(errorData.message || errorData.error || 'An error occurred while generating the Excel file.');
+                                } catch (e) {
+                                    showDangerAlert('An error occurred while generating the Excel file.');
+                                }
+                            };
+                            reader.readAsText(data);
+                            return;
+                        }
+
+                        // Create a blob from the response data
+                        var blob = new Blob([data], { type: contentType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+                        // Extract the file name from the response headers (Content-Disposition)
+                        var contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                        var fileName = 'InstallationTrial.xlsx'; // Default filename
+
+                        if (contentDisposition) {
+                            // Try to extract filename with UTF-8 encoding first
+                            var fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                            if (fileNameMatch && fileNameMatch.length > 1) {
+                                fileName = decodeURIComponent(fileNameMatch[1].split(';')[0].trim());
+                            } else {
+                                // Fallback to simple filename extraction
+                                var fileNameSimpleMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                                if (fileNameSimpleMatch && fileNameSimpleMatch.length > 1) {
+                                    fileName = fileNameSimpleMatch[1].replace(/['"]/g, '').trim();
+                                }
+                            }
+                        }
+
+                        // Create a temporary link element to trigger the download
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = fileName;
+
+                        // Append link to the body and trigger the download
+                        document.body.appendChild(link);
+                        link.click();
+
+                        // Clean up: remove the link and revoke the object URL
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(link.href);
+
+                        // Show success message
+                        showSuccessAlert('Excel file downloaded successfully.');
+
+                    } catch (error) {
+                        console.error('Error processing download:', error);
+                        showDangerAlert('An error occurred while processing the download.');
+                    }
+                },
+                error: function (xhr, status, error) {
+
+                    if (xhr.status === 401) {
+                        // Unauthorized - redirect to login
+                        window.location.href = '@Url.Action("Login", "Account")';
+                    } else if (xhr.status === 404) {
+                        // Not found
+                        showDangerAlert('Record not found or template file is missing.');
+                    } else if (xhr.status === 500) {
+                        // Server error - try to read error message if available
+                        try {
+                            if (xhr.responseText) {
+                                var errorData = JSON.parse(xhr.responseText);
+                                showDangerAlert(errorData.message || errorData.error || 'Server error occurred while generating Excel file.');
+                            } else {
+                                showDangerAlert('Server error occurred while generating Excel file.');
+                            }
+                        } catch (e) {
+                            showDangerAlert('Server error occurred while generating Excel file.');
+                        }
+                    } else {
+                        // Generic error
+                        showDangerAlert('An error occurred. Please refresh the page and try again.');
+                    }
+                },
+                complete: function () {
+                    Blockloaderhide(); // Hide loader
+                }
+            });
+        }
+
     </script>
         
 

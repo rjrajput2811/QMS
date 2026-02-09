@@ -2274,7 +2274,7 @@ public class ProductValidationController : Controller
         ws.Cell("I2").Value = "Report No. :- " + (model.ReportNo ?? "");
         ws.Cell("C5").Value = "Driver :-  " + (model.DriverDetails ?? "");
         ws.Cell("E4").Value = "LED Details :-" + (model.LedDetails ?? "");
-        ws.Cell("I5").Value = "Date :" + (model.ReportDate?.ToString("dd-MMM-yyyy") ?? "");
+        ws.Cell("I5").Value = "Date :" + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
 
 
         ws.Cell("E8").Value =  model.Sphere_InputWattage_Spec ?? "";
@@ -2781,6 +2781,233 @@ public class ProductValidationController : Controller
     {
         var result = await _installationTrialRepository.DeleteInstallationTrailAsync(Id);
         return Json(result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> ExportInstallationTrailToExcel(int id)
+    {
+        try
+        {
+            var model = await _installationTrialRepository.GetInstallationTrailByIdAsync(id);
+            if (model == null)
+                return NotFound();
+
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "V8. Installation Trial_V.xlsx");
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("Installation Trail template not found at " + templatePath);
+
+            using var wb = new XLWorkbook(templatePath);
+            var ws = wb.Worksheet(1);
+
+            // ========================================
+            // Header Information (Rows 5-7)
+            // ========================================
+            ws.Cell("I5").Value = "Report No. :- " + (model.ReportNo ?? "");
+            ws.Cell("A6").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
+            ws.Cell("A7").Value = "Product Description :- " + (model.ProductDescription ?? "");
+            ws.Cell("E6").Value = "Batch Code  :- " + (model.BatchCode ?? "");
+            ws.Cell("E7").Value = "PKD :- " + (model.PKD ?? "");
+            ws.Cell("I6").Value = "Date :- " + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
+            ws.Cell("I7").Value = "Sample Qty :-  " + (model.SampleQty.ToString() ?? "");
+
+            // ========================================
+            // Sample Details (Rows 11-17)
+            // ========================================
+            ws.Cell("D11").Value = model.ProductCategory_SampleDetails ?? "";
+            ws.Cell("D12").Value = model.InstallationSheet_SampleDetails ?? "";
+            ws.Cell("D13").Value = model.MountingMechanism_SampleDetails ?? "";
+            ws.Cell("D14").Value = model.DurationOfTest_SampleDetails ?? "";
+            ws.Cell("D15").Value = model.InstallationWith4xLoad_SampleDetails ?? "";
+            ws.Cell("D16").Value = model.InstallationWithSandBagLoad_SampleDetails ?? "";
+            ws.Cell("D17").Value = model.InstallationWithSandBagLoad2_SampleDetails ?? "";
+
+            // ========================================
+            // Results (Rows 11-17)
+            // ========================================
+            ws.Cell("H11").Value = model.ProductCategory_Result ?? "";
+            ws.Cell("H12").Value = model.InstallationSheet_Result ?? "";
+            ws.Cell("H13").Value = model.MountingMechanism_Result ?? "";
+            ws.Cell("H14").Value = model.DurationOfTest_Result ?? "";
+            ws.Cell("H15").Value = model.InstallationWith4xLoad_Result ?? "";
+            ws.Cell("H16").Value = model.InstallationWithSandBagLoad_Result ?? "";
+            ws.Cell("H17").Value = model.InstallationWithSandBagLoad2_Result ?? "";
+
+            // ========================================
+            // Photo Section (Row 20)
+            // ========================================
+            // BUG FIX: You were using Photo_WithoutLoad for BOTH photos!
+            // Left side (B20:G20) - "With Load" photo
+            if (!string.IsNullOrWhiteSpace(model.Photo_WithLoad))
+            {
+                var withLoadRange = ws.Range("B20:G20");
+                InsertImageCentered(ws, model.Photo_WithLoad, withLoadRange, _env.WebRootPath);
+            }
+
+            // Right side (H20:J20) - "Without Load" photo
+            if (!string.IsNullOrWhiteSpace(model.Photo_WithoutLoad))
+            {
+                var withoutLoadRange = ws.Range("H20:J20");
+                InsertImageCentered(ws, model.Photo_WithoutLoad, withoutLoadRange, _env.WebRootPath);
+            }
+
+            // ========================================
+            // Footer Information (Rows 21-22)
+            // ========================================
+            ws.Cell("A21").Value = "Result ( Pass / Fail ) :- " + (model.OverallResult ?? "");
+            ws.Cell("A22").Value = "Checked By :- " + (model.CheckedBy ?? "");
+            ws.Cell("H22").Value = "Verified By :-" + (model.VerifiedBy ?? "");
+
+            // ========================================
+            // Print Settings
+            // ========================================
+            ws.PageSetup.PrintAreas.Clear();
+            ws.PageSetup.PrintAreas.Add("A1:J22");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            ws.PageSetup.FitToPages(1, 1);
+
+            // ========================================
+            // Return Excel File
+            // ========================================
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"InstallationTrial_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+        catch (Exception ex)
+        {
+            // BUG FIX: Added proper error handling
+            _systemLogService?.WriteLog($"Error exporting Installation Trial report {id}: {ex.Message}");
+            return StatusCode(500, new { error = "Error generating Excel file", message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Maps web path (~/CAReport_Attach/...) to physical file system path
+    /// </summary>
+    private string? MapWebPathToPhysical(string? webPath, string webRootPath)
+    {
+        if (string.IsNullOrWhiteSpace(webPath))
+            return null;
+
+        // Remove ~, leading slashes
+        webPath = webPath.Replace("~", "").TrimStart('/', '\\');
+
+        // Convert forward slashes to platform-specific separator
+        webPath = webPath.Replace("/", Path.DirectorySeparatorChar.ToString());
+
+        return Path.Combine(webRootPath, webPath);
+    }
+
+    /// <summary>
+    /// Gets the actual merged range for a cell (or single cell if not merged)
+    /// </summary>
+    private IXLRange GetMergedRangeForCell(IXLWorksheet sheet, IXLCell cell)
+    {
+        foreach (var mr in sheet.MergedRanges)
+        {
+            if (mr.Contains(cell))
+                return mr;
+        }
+
+        return sheet.Range(cell.Address, cell.Address);
+    }
+
+    /// <summary>
+    /// Convert Excel column width to pixels (approximate)
+    /// </summary>
+    private double ColWidthToPixels(double excelColWidth)
+    {
+        return excelColWidth * 7.0; // Excel uses character width units
+    }
+
+    /// <summary>
+    /// Convert Excel row height (in points) to pixels
+    /// </summary>
+    private double RowPointsToPixels(double points)
+    {
+        return points * 1.333; // 1 point = 1.333 pixels at 96 DPI
+    }
+
+    /// <summary>
+    /// Calculate the pixel dimensions of a merged range
+    /// </summary>
+    private (double widthPx, double heightPx) GetBoxPixels(IXLRange box)
+    {
+        double width = 0;
+        for (int c = box.FirstColumn().ColumnNumber(); c <= box.LastColumn().ColumnNumber(); c++)
+        {
+            width += ColWidthToPixels(box.Worksheet.Column(c).Width);
+        }
+
+        double height = 0;
+        for (int r = box.FirstRow().RowNumber(); r <= box.LastRow().RowNumber(); r++)
+        {
+            var row = box.Worksheet.Row(r);
+            double pointHeight = row.Height > 0 ? row.Height : 15.0; // Default row height
+            height += RowPointsToPixels(pointHeight);
+        }
+
+        // Add padding so image doesn't touch cell borders
+        width = Math.Max(10, width - 10);
+        height = Math.Max(10, height - 10);
+
+        return (width, height);
+    }
+
+    /// <summary>
+    /// Insert an image centered within a merged cell range
+    /// </summary>
+    private void InsertImageCentered(IXLWorksheet sheet, string? webPath, IXLRange box, string webRootPath)
+    {
+        var physicalPath = MapWebPathToPhysical(webPath, webRootPath);
+
+        // If file doesn't exist, skip silently
+        if (string.IsNullOrWhiteSpace(physicalPath) || !System.IO.File.Exists(physicalPath))
+        {
+            _systemLogService?.WriteLog($"Image not found: {webPath} -> {physicalPath}");
+            return;
+        }
+
+        try
+        {
+            using var img = System.Drawing.Image.FromFile(physicalPath);
+
+            if (img.Width <= 0 || img.Height <= 0)
+                return;
+
+            // Get the available space in the merged cell range
+            var (boxWidth, boxHeight) = GetBoxPixels(box);
+
+            // Calculate scale to fit image within the box (maintain aspect ratio)
+            double scale = Math.Min(boxWidth / img.Width, boxHeight / img.Height);
+
+            // Don't upscale images
+            if (scale > 1.0)
+                scale = 1.0;
+
+            // Calculate final dimensions
+            int finalWidth = Math.Max(1, (int)(img.Width * scale));
+            int finalHeight = Math.Max(1, (int)(img.Height * scale));
+
+            // Calculate centering offsets
+            int offsetX = Math.Max(0, (int)((boxWidth - finalWidth) / 2));
+            int offsetY = Math.Max(0, (int)((boxHeight - finalHeight) / 2));
+
+            // Add picture to worksheet
+            var picture = sheet.AddPicture(physicalPath);
+            picture.MoveTo(box.FirstCell(), offsetX, offsetY);
+            picture.WithSize(finalWidth, finalHeight);
+
+            _systemLogService?.WriteLog($"Image inserted successfully: {webPath} ({finalWidth}x{finalHeight}px)");
+        }
+        catch (Exception ex)
+        {
+            _systemLogService?.WriteLog($"Error inserting image {webPath}: {ex.Message}");
+        }
     }
 
     #endregion

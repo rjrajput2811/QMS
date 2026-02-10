@@ -2369,27 +2369,27 @@ public class ProductValidationController : Controller
         ws.Cell("K18").Value = model.Gonio_UGR_Result ?? "";
 
         ws.Cell("E19").Value = model.Gonio_Distribution_Spec ?? "";
-        ws.Cell("F19").Value = model.Gonio_Distribution_Sample1.ToString() ?? "";
-        ws.Cell("G19").Value = model.Gonio_Distribution_Sample2.ToString() ?? "";
-        ws.Cell("H19").Value = model.Gonio_Distribution_Sample3.ToString() ?? "";
-        ws.Cell("I19").Value = model.Gonio_Distribution_Sample4.ToString() ?? "";
-        ws.Cell("J19").Value = model.Gonio_Distribution_Sample5.ToString() ?? "";
+        ws.Cell("F19").Value = model.Gonio_Distribution_Sample1 ?? "";
+        ws.Cell("G19").Value = model.Gonio_Distribution_Sample2 ?? "";
+        ws.Cell("H19").Value = model.Gonio_Distribution_Sample3 ?? "";
+        ws.Cell("I19").Value = model.Gonio_Distribution_Sample4 ?? "";
+        ws.Cell("J19").Value = model.Gonio_Distribution_Sample5 ?? "";
         ws.Cell("K19").Value = model.Gonio_Distribution_Result ?? "";
 
         ws.Cell("E20").Value = model.Gonio_NABL79_Spec ?? "";
-        ws.Cell("F20").Value = model.Gonio_NABL79_Sample1.ToString() ?? "";
-        ws.Cell("G20").Value = model.Gonio_NABL79_Sample2.ToString() ?? "";
-        ws.Cell("H20").Value = model.Gonio_NABL79_Sample3.ToString() ?? "";
-        ws.Cell("I20").Value = model.Gonio_NABL79_Sample4.ToString() ?? "";
-        ws.Cell("J20").Value = model.Gonio_NABL79_Sample5.ToString() ?? "";
+        ws.Cell("F20").Value = model.Gonio_NABL79_Sample1 ?? "";
+        ws.Cell("G20").Value = model.Gonio_NABL79_Sample2 ?? "";
+        ws.Cell("H20").Value = model.Gonio_NABL79_Sample3 ?? "";
+        ws.Cell("I20").Value = model.Gonio_NABL79_Sample4 ?? "";
+        ws.Cell("J20").Value = model.Gonio_NABL79_Sample5 ?? "";
         ws.Cell("K20").Value = model.Gonio_NABL79_Result ?? "";
 
         ws.Cell("E21").Value = model.Gonio_NABL79_Other_Spec ?? "";
-        ws.Cell("F21").Value = model.Gonio_NABL79_Other_Sample1.ToString() ?? "";
-        ws.Cell("G21").Value = model.Gonio_NABL79_Other_Sample2.ToString() ?? "";
-        ws.Cell("H21").Value = model.Gonio_NABL79_Other_Sample3.ToString() ?? "";
-        ws.Cell("I21").Value = model.Gonio_NABL79_Other_Sample4.ToString() ?? "";
-        ws.Cell("J21").Value = model.Gonio_NABL79_Other_Sample5.ToString() ?? "";
+        ws.Cell("F21").Value = model.Gonio_NABL79_Other_Sample1 ?? "";
+        ws.Cell("G21").Value = model.Gonio_NABL79_Other_Sample2 ?? "";
+        ws.Cell("H21").Value = model.Gonio_NABL79_Other_Sample3 ?? "";
+        ws.Cell("I21").Value = model.Gonio_NABL79_Other_Sample4 ?? "";
+        ws.Cell("J21").Value = model.Gonio_NABL79_Other_Sample5 ?? "";
         ws.Cell("K21").Value = model.Gonio_NABL79_Other_Result ?? "";
 
 
@@ -2404,7 +2404,7 @@ public class ProductValidationController : Controller
         wb.SaveAs(stream);
         stream.Position = 0;
 
-        var fileName = $"Surge_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+        var fileName = $"Photometry_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
         return File(stream.ToArray(),
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             fileName);
@@ -3210,7 +3210,132 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ExportDropTestToExcel(int id)
+    {
+        try
+        {
+            var model = await _dropTestRepository.GetDropTestByIdAsync(id);
+            if (model == null)
+                return NotFound();
 
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "V9. Drop Test Report_V.xlsx");
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("Drop Test template not found at " + templatePath);
+
+            using var wb = new XLWorkbook(templatePath);
+            var ws = wb.Worksheet(1);
+
+            // ========================================
+            // Header Information (Rows 5-7)
+            // ========================================
+            ws.Cell("G3").Value = "Report No. :- " + (model.ReportNo ?? "");
+            ws.Cell("M3").Value = "Date :- " + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
+            ws.Cell("D4").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
+            ws.Cell("D5").Value = "Product Description :- " + (model.ProductDescription ?? "");
+            ws.Cell("D6").Value = "CaseLot :- " + (model.CaseLot ?? "");
+            ws.Cell("H7").Value = "Master Carton :- " + (model.PackingBox_MasterCarton_Dimension ?? "");
+            ws.Cell("H8").Value = "Inner Carton :- " + (model.PackingBox_MasterCarton_Dimension ?? "");
+            ws.Cell("H9").Value = model.InnerPaddingDimension ?? "";
+            ws.Cell("H10").Value = model.GrossWeight_Kg ?? "";
+            ws.Cell("H11").Value = model.HeightForTest_IS9000 ?? "";
+
+            const int templateDetailRow = 14; // first detail row (template)
+            var details = model.Details ?? new List<DropTestReportDetailViewModel>(); // replace with your detail type
+            int detailCount = details.Count;
+
+            var templateMergedRanges = new List<(int firstCol, int lastCol)>();
+
+            foreach (var range in ws.MergedRanges)
+            {
+                if (range.FirstRow().RowNumber() == templateDetailRow &&
+                    range.LastRow().RowNumber() == templateDetailRow)
+                {
+                    templateMergedRanges.Add(
+                        (range.FirstColumn().ColumnNumber(),
+                         range.LastColumn().ColumnNumber())
+                    );
+                }
+            }
+
+            // 2. Insert extra rows for N details
+            if (detailCount > 1)
+            {
+                ws.Row(templateDetailRow).InsertRowsBelow(detailCount - 1);
+            }
+
+            // 3. Re-apply merge structure + fill values in every detail row
+            for (int i = 0; i < detailCount; i++)
+            {
+                int row = templateDetailRow + i;
+                var d = details[i];
+
+                // Recreate template merges for this row
+                foreach (var m in templateMergedRanges)
+                {
+                    ws.Range(row, m.firstCol, row, m.lastCol).Merge();
+                }
+
+                // Fill values
+                ws.Cell(row, 2).Value = i + 1;                                 // Sr. No
+                ws.Cell(row, 3).Value = d.Test ?? "";                   // Action Plan (merged B–E)
+                ws.Cell(row, 4).Value = d.Parameter ?? "";
+                ws.Cell(row, 8).Value = d.Acceptance_Criteria ?? "";
+                ws.Cell(row, 12).Value = d.Observations ?? "";
+            }
+
+            //// ========================================
+            //// Photo Section (Row 20)
+            //// ========================================
+            //// BUG FIX: You were using Photo_WithoutLoad for BOTH photos!
+            //// Left side (B20:G20) - "With Load" photo
+            //if (!string.IsNullOrWhiteSpace(model.Photo_WithLoad))
+            //{
+            //    var withLoadRange = ws.Range("B20:G20");
+            //    InsertImageCentered(ws, model.Photo_WithLoad, withLoadRange, _env.WebRootPath);
+            //}
+
+            //// Right side (H20:J20) - "Without Load" photo
+            //if (!string.IsNullOrWhiteSpace(model.Photo_WithoutLoad))
+            //{
+            //    var withoutLoadRange = ws.Range("H20:J20");
+            //    InsertImageCentered(ws, model.Photo_WithoutLoad, withoutLoadRange, _env.WebRootPath);
+            //}
+
+            // ========================================
+            // Footer Information (Rows 21-22)
+            // ========================================  
+            ws.Cell("B36").Value = "Result ( Pass / Fail ) :- " + (model.OverallResult ?? "");
+            ws.Cell("B37").Value = "Tested By :- " + (model.TestedBy ?? "");
+            ws.Cell("G37").Value = "Approved By :- " + (model.VerifiedBy ?? "");
+
+            //// ========================================
+            //// Print Settings
+            //// ========================================
+            //ws.PageSetup.PrintAreas.Clear();
+            //ws.PageSetup.PrintAreas.Add("A1:J22");
+            //ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            //ws.PageSetup.FitToPages(1, 1);
+
+            // ========================================
+            // Return Excel File
+            // ========================================
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"InstallationTrial_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+        catch (Exception ex)
+        {
+            // BUG FIX: Added proper error handling
+            _systemLogService?.WriteLog($"Error exporting Installation Trial report {id}: {ex.Message}");
+            return StatusCode(500, new { error = "Error generating Excel file", message = ex.Message });
+        }
+    }
 
     #endregion
 

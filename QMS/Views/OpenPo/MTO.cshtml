@@ -440,7 +440,7 @@
 
                     window.PendTSTableData = JSON.parse(JSON.stringify(tabledata));
 
-                    new Tabulator("#summary_Table", {
+                    table = new Tabulator("#summary_Table", {
                         data: window.PendTSTableData,
                         layout: "fitDataFill",
                         renderHorizontal: "virtual",
@@ -551,6 +551,10 @@
                             { title: "Delivery Date", field: "Delivery_Date", headerMenu: headerMenu,headerFilter: "input",hozAlign: "center",headerHozAlign: "center",visible: false },
                             { title: "PO Material", field: "PO_Material",headerMenu: headerMenu,headerFilter: "input",hozAlign: "left",headerHozAlign: "left",visible: false }
                         ]
+                    });
+
+                    document.getElementById("exportExcel").addEventListener("click", function () {
+                        table.download("xlsx", "MTO.xlsx", { sheetName: "MTO" });
                     });
                 }
             });

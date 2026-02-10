@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -61,6 +62,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Material = data.Material,
                     Hold_Date = data.Hold_Date,
                     Cleared_Date = data.Cleared_Date,
+                    TOC_BRYG_Color = data.TOC_BRYG_Color,
+                    Vendor_Dispatch_Date = data.Vendor_Dispatch_Date,
 
                     Key1 = data.Key1,
                     Comit_Date = data.Comit_Date,
@@ -192,6 +195,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     Material = data.Material,
                     Hold_Date = data.Hold_Date,
                     Cleared_Date = data.Cleared_Date,
+                    TOC_BRYG_Color = data.TOC_BRYG_Color,
+                    Vendor_Dispatch_Date = data.Vendor_Dispatch_Date,
 
                     Key1 = data.Key1,
                     Comit_Date = data.Comit_Date,
@@ -506,7 +511,9 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 new DataColumn("UpdatedBy", typeof(string)),
                 new DataColumn("LastUploadedAt", typeof(DateTime)),
                 new DataColumn("LastUploadBatchId", typeof(Guid)),
-                new DataColumn("SuppressChildDelivery", typeof(bool))
+                new DataColumn("SuppressChildDelivery", typeof(bool)),
+                new DataColumn("TOC_BRYG_Color", typeof(string)),
+                new DataColumn("Vendor_Dispatch_Date", typeof(string)),
             });
 
             foreach (var x in listOfData)
@@ -558,7 +565,9 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     uploadedBy, // UpdatedBy
                     uploadTs,
                     batchId,
-                    true
+                    true,
+                    trim(x.TOC_BRYG_Color),
+                    x.Vendor_Dispatch_Date.HasValue ? x.Vendor_Dispatch_Date.Value : (object)DBNull.Value
                 );
             }
 
@@ -569,11 +578,13 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 await conn.OpenAsync();
 
                 var dp = new DynamicParameters();
-                dp.Add("@Rows", tvp.AsTableValuedParameter("dbo.OpenPo_ImportRow"));
+                dp.Add("@Rows", tvp.AsTableValuedParameter("dbo.OpenPo_ImportRowBulk"));
                 dp.Add("@FileName", fileName, DbType.String, size: 260);
                 dp.Add("@UploadedBy", uploadedBy, DbType.String, size: 100);
                 dp.Add("@BatchId", batchId, DbType.Guid);
                 dp.Add("@UploadTs", uploadTs, DbType.DateTime2);
+                dp.Add("@TOC_BRYG_Color", uploadTs, DbType.String);
+                dp.Add("@Vendor_Dispatch_Date", uploadTs, DbType.DateTime);
 
                 using var grid = await conn.QueryMultipleAsync(
                     sql: "dbo.sp_OpenPo_BulkUpsert",

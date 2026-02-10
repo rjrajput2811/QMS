@@ -223,6 +223,8 @@ namespace QMS.Controllers
                         Material = worksheet.Cell(row, 17).GetString().Trim(),
                         Hold_Date = worksheet.Cell(row, 18).TryGetValue(out DateTime hold) ? hold : null,
                         Cleared_Date = worksheet.Cell(row, 19).TryGetValue(out DateTime clear) ? clear : null,
+                        TOC_BRYG_Color = worksheet.Cell(row, 20).GetString().Trim(),
+                        Vendor_Dispatch_Date = worksheet.Cell(row, 21).TryGetValue(out DateTime disDate) ? disDate : null,
                         CreatedBy = uploadedBy,
                         CreatedDate = DateTime.Now,
                     };

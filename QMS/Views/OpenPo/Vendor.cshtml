@@ -720,6 +720,8 @@
                         Material: item.material,
                         Hold_Date: formatDate(item.hold_Date),
                         Cleared_Date: formatDate(item.cleared_Date),
+                        TOC_BRYG_Color : item.toC_BRYG_Color,
+                        Vendor_Dispatch_Date :  formatDate(item.vendor_Dispatch_Date),
 
                         Key1 : item.key1,
                         Comit_Date : formatDate(item.comit_Date),
@@ -1088,6 +1090,7 @@
                     columns.push({ title: "Material", field: "Material", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "Hold Date", field: "Hold_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"});
                     columns.push({ title: "Cleared Date", field: "Cleared_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    
 
                     if (userType != "Vendor")
                     {
@@ -1134,6 +1137,9 @@
                         columns.push({ title: "Vendor Qty", field: "Comit_Vendor_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
                         columns.push({ title: "User", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     }
+
+                    columns.push({ title: "TOC BRYG Color Code", field: "TOC_BRYG_Color", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
+                    columns.push({ title: "Vendor Dispatch Date", field: "Vendor_Dispatch_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center"  });
 
                     columns.push({ title: "ID", field: "Id", visible: false });
 

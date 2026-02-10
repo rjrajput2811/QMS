@@ -193,6 +193,9 @@
                     <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
                         <i class="fas fa-upload mr-2"></i>Upload Xl
                     </button>
+                    <button id="download-template" class="btn btn-outline-secondary legitRipple" onclick="BlankOpenSODown()" style="font-size:14px">
+                        <i class="fas fa-regular fa-file-excel mr-2"></i>Download Blank Exl
+                    </button>&nbsp;
                     <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
                         <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
                     </button>&nbsp;
@@ -446,6 +449,48 @@
             Blockloaderhide();
         }
 
+
+        function BlankOpenSODown() {
+            Blockloadershow();
+
+            var expectedColumns = [
+                   'SO', 'Sale Order Type', 'SO DATE', 'LINE ITEM', 'Indent Number', 'Indent Date',
+                   'Sales Group', 'Sales Group descript', 'Sales Office', 'Sales Office descrip',
+                   'Sales Person', 'Project Name', 'CUSTOMER', 'CUST. NAME', 'MATERIAL',
+                   'Old material number', 'Description', 'SO QUANTITY', 'SO Value', 'DEL QUANTITY',
+                   'OPEN SALES QTY', 'OPEN SALES Value', 'Plant', 'Item Category', 'Procurement Type',
+                   'Vendor PO Number', 'Vendor PO Date', 'PO Release Qty', 'Allocated Stock QTY',
+                   'Allocated Stock Value', 'Indent Status', 'Delivery Schedule', 'DELIVERY DATE',
+                   'Schedule Line Qty1', 'Schedule Line Date1', 'Schedule Line Qty2', 'Schedule Line Date2',
+                   'Schedule Line Qty3', 'Schedule Line Date3'
+                 ];
+
+            var data = [expectedColumns];
+            var ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Apply bold style to header cells
+            expectedColumns.forEach((col, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: {
+                        bold: true
+                    }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
+            ws['!cols'] = columnWidths;
+
+            // Create workbook and export
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Open SO Temaplate");
+
+            XLSX.writeFile(wb, "Open SO Temaplate.xlsx");
+
+            Blockloaderhide();
+        };
     </script>
 }
 @section HideSidebar { }

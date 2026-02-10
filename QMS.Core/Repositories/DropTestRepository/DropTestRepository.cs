@@ -91,7 +91,7 @@ namespace QMS.Core.Repositories.DropTestRepository
 
         public async Task<DropTestViewModel?> GetDropTestByIdAsync(int id)
         {
-            await using var con = new SqlConnection(_connStr);
+            await using var con = _dbContext.Database.GetDbConnection();
 
             var param = new DynamicParameters();
             param.Add("@Id", id, DbType.Int32);
@@ -250,7 +250,7 @@ namespace QMS.Core.Repositories.DropTestRepository
                 var dtDetails = BuildDetailsTvp(model.Details ?? new List<DropTestReportDetail>());
                 var dtImgs = BuildImgsTvp(model.ImgDetails ?? new List<DropTestReportImgDetail>());
 
-                await using var con = new SqlConnection(_connStr);
+                await using var con = _dbContext.Database.GetDbConnection();
                 await con.OpenAsync();
 
                 var param = new DynamicParameters();
@@ -315,7 +315,7 @@ namespace QMS.Core.Repositories.DropTestRepository
             {
                 if (id <= 0) throw new Exception("Invalid Id.");
 
-                await using var con = new SqlConnection(_connStr);
+                await using var con = _dbContext.Database.GetDbConnection();
                 await con.OpenAsync();
 
                 var param = new DynamicParameters();

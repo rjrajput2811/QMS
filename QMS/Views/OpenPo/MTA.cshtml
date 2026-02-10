@@ -497,7 +497,7 @@
 
                         window.PendTSTableData = JSON.parse(JSON.stringify(tabledata));
 
-                    summaryTable = new Tabulator("#summary_Table", {
+                        summaryTable = new Tabulator("#summary_Table", {
                             data: window.PendTSTableData,
                             layout: "fitDataFill",
                             index: "Id",
@@ -858,6 +858,13 @@
                             //      });
                             //    }
                             // },
+
+                            
+
+                        });
+
+                        document.getElementById("exportExcel").addEventListener("click", function () {
+                                summaryTable.download("xlsx", "MTA.xlsx", { sheetName: "MTA" });
                         });
                     }
                 });

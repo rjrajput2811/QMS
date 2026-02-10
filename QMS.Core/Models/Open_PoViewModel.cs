@@ -57,6 +57,8 @@ namespace QMS.Core.Models
         public DateTime? LastUploadedAt { get; set; }
         public Guid? LastUploadBatchId { get; set; }
         public bool SuppressChildDelivery { get; set; }
+        public DateTime? Vendor_Dispatch_Date { get; set; }
+        public string? TOC_BRYG_Color { get; set; }
     }
 
     public class Open_Po_LogViewModel

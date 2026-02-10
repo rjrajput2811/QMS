@@ -201,7 +201,7 @@
                         <i class="fas fa-regular fa-file-excel mr-2"></i>Download Blank Exl
                     </button>&nbsp;
 
-                    <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
+                    <button type="button" id="exportExcelPC" class="btn btn btn-outline-danger legitRipple" style="margin: 1px 0px; width: 140px;font-size:14px">
                         <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
                     </button>&nbsp;
 
@@ -385,6 +385,7 @@
             }
         }
 
+
         function OnTabGridLoad(response) {
             // Clear table data
             debugger;
@@ -413,7 +414,7 @@
             }
 
 
-            new Tabulator("#pcCalen_Table", {
+            table = new Tabulator("#pcCalen_Table", {
                 data: tabledata,
                 layout: "fitColumns",
                 renderHorizontal: "virtual",
@@ -443,9 +444,9 @@
                 //     saveEditedRow(cell.getRow().getData());
                 // });
 
-                // document.getElementById("exportExcel").addEventListener("click", function () {
-                //     table.download("xlsx", "PC Calendar.xlsx", { sheetName: "PC Calendar" });
-                // });
+                document.getElementById("exportExcelPC").addEventListener("click", function () {
+                    table.download("xlsx", "PC_Calendar.xlsx", { sheetName: "PC Calendar" });
+                });
 
             Blockloaderhide();
         }

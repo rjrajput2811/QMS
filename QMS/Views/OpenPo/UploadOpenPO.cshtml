@@ -193,6 +193,11 @@
                     <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
                         <i class="fas fa-upload mr-2"></i>Upload Xl
                     </button>
+
+                    <button id="download-template" class="btn btn-outline-secondary legitRipple" onclick="BlankOpenPoDown()" style="font-size:14px">
+                        <i class="fas fa-regular fa-file-excel mr-2"></i>Download Blank Exl
+                    </button>&nbsp;
+
                     <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
                         <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
                     </button>&nbsp;
@@ -252,7 +257,7 @@
                     var expectedColumns = [
                         'Key', 'PR Type', 'PR Description', 'Requisioner', 'Tracking No', 'PR No',
                         'Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'Balance Qty', 'Destination', 'Delivery Date',
-                        'Balance Value', 'Material', 'Hold Date', 'Cleared Date'
+                        'Balance Value', 'Material', 'Hold Date', 'Cleared Date','TOC BRYG Color Code','Vendor Dispatch Date'
                     ];
 
                     var url = '@Url.Action("UploadOpenPoDataExcel", "OpenPo")';
@@ -435,6 +440,42 @@
             // Hide loader
             Blockloaderhide();
         }
+
+        function BlankOpenPoDown() {
+            Blockloadershow();
+
+            var expectedColumns = [
+                        'Key', 'PR Type', 'PR Description', 'Requisioner', 'Tracking No', 'PR No',
+                        'Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'Balance Qty', 'Destination', 'Delivery Date',
+                        'Balance Value', 'Material', 'Hold Date', 'Cleared Date','TOC BRYG Color Code','Vendor Dispatch Date'
+                    ];
+
+            var data = [expectedColumns];
+            var ws = XLSX.utils.aoa_to_sheet(data);
+
+            // Apply bold style to header cells
+            expectedColumns.forEach((col, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: {
+                        bold: true
+                    }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
+            ws['!cols'] = columnWidths;
+
+            // Create workbook and export
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Open Po Temaplate");
+
+            XLSX.writeFile(wb, "Open Po Temaplate.xlsx");
+
+            Blockloaderhide();
+        };
        
     </script>
 }

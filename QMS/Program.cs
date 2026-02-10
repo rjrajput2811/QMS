@@ -65,6 +65,9 @@ using QMS.Core.Repositories.MergeTrackerRepository;
 using QMS.Core.Services.HydraulicTestReportService;
 using QMS.Core.Repositories.HydraulicTestObservationRepository;
 using QMS.Core.Repositories.HydraulicTestRepository;
+using QMS.Core.Repositories.GlowWireTestRepository;
+using QMS.Core.Repositories.GeneralObservationRepository;
+using QMS.Core.Repositories.NeedleFlameTestRepository;
 
 var builder = WebApplication.CreateBuilder(args);// Configure database connection.
 var connstring = builder.Configuration.GetConnectionString("DbConnectionString");
@@ -139,6 +142,9 @@ builder.Services.AddTransient<IHydraulicTestObservationRepository, HydraulicTest
 builder.Services.AddTransient<IHydraulicTestReportService, HydraulicTestReportService>();
 builder.Services.AddTransient<IDropTestRepository, DropTestRepository>();
 builder.Services.AddTransient<IIngressProtectionRepository, IngressProtectionRepository>();
+builder.Services.AddTransient<IGlowWireTestRepository, GlowWireTestRepository>();
+builder.Services.AddTransient<IGeneralObservationRepository, GeneralObservationRepository>();
+builder.Services.AddTransient<INeedleFlameTestRepository, NeedleFlameTestRepository>();
 
 builder.Services.AddTransient<ITemperatureRiseTestRepository, TemperatureRiseTestRepository>();
 

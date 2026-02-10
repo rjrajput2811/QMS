@@ -140,9 +140,9 @@
         -moz-appearance: none;
         appearance: none;
         display: inline-block;
-        width: 100%;
+        width: 10%;
         min-width: 120px;
-        padding: 6px 28px 6px 10px;
+        padding: 6px 25px 6px 9px;
         font-size: 13px;
         color: #111;
         background-color: #fff;
@@ -250,6 +250,7 @@
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
                 <div class="card-body" style="padding:18px 20px;">
                     <form id="Regulatory-form" method="post" asp-action="InsertUpdateLegalRegulatory" asp-controller="ProductValidation">
+                          @Html.HiddenFor(m => m.Id)
                         <div class="table table-bordered table-legal">
                             <table class="table table-bordered" style="width:100%; border-collapse:collapse; margin-bottom:0;">
 
@@ -295,12 +296,12 @@
                             <table class="table table-bordered" id="Regulatory_table" name="Regulatory_table" style="width:100%; border-collapse:collapse; margin-top:-1.5px; font-size:14px;">
                                 <thead>
                                     <tr>
-                                        <th style="width:5%; text-align:left; padding:6px;">Category</th>
-                                        <th style="width:10%; text-align:left; padding:6px;">Minimum Technical Requirement</th>
-                                        <th colspan="4" style="width:35%; color:red; text-align:center; padding:6px;">
+                                        <th style="width:1%; text-align:left; padding:6px;">Category</th>
+                                        <th style="width:2%; text-align:left; padding:6px;">Minimum Technical Requirement</th>
+                                        <th colspan="4" style="width:30%; color:red; text-align:center; padding:6px;">
                                             Result (OK / Not OK / Not Applicable / Pending)
                                         </th>
-                                        <th style="width:8%; text-align:center; padding:6px;">Upload File</th>
+                                        <th style="width:25%; text-align:center; padding:6px;">Upload File</th>
                                     </tr>
 
                                 </thead>

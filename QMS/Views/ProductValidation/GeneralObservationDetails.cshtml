@@ -1,4 +1,7 @@
-﻿@{
+﻿@using QMS.Core.Models
+@model GeneralObservationViewModel
+
+@{
     ViewData["Title"] = "General Observation / Open Points";
 }
 
@@ -87,6 +90,44 @@
         margin-top: 0;
         border-top-width: 1px;
     }
+
+    /* Upload UI */
+    .image-upload-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .file-input-hidden {
+        display: none;
+    }
+
+    .btn-upload, .btn-remove-image {
+        border: 1px solid #ccc;
+        background: #fff;
+        border-radius: 6px;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+
+    .btn-remove-image {
+        border-color: #d9534f;
+        color: #d9534f;
+    }
+
+    .image-preview {
+        /* width: 130px; */
+        width: 85%;
+        height: 15%;
+        /* max-width: 130px; */
+        /* height: 130px; */
+        /* max-height: 130px; */
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        /* object-fit: cover; */
+    }
 </style>
 
 <div class="content">
@@ -123,121 +164,217 @@
                 </div>
             </div>
 
-
             <!-- MAIN CARD -->
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body">
+                <form id="genObs_form" method="post" asp-action="InsertUpdateGeneralObservation" asp-controller="ProductValidation" enctype="multipart/form-data">
+                    @Html.HiddenFor(m => m.Id)
+                    <div class="card-body">
 
-                    <!-- HEADER TABLES (same structure as Needle Flame) -->
-                    <table class="header-table" style="margin:0;">
-                        <tbody>
+                        <!-- HEADER TABLES -->
+                        <table class="header-table" style="margin:0;">
+                            <tbody>
+                                <tr>
+                                    <td style="padding:10px 12px; width:33%;">
+                                        <span class="field-label">Product Cat Ref :</span>
+                                        @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "inline-input", placeholder = "Enter Product Cat Ref", style = "width: 60%;" })
+                                    </td>
 
-                            <!-- ROW 1 : PRODUCT CAT REF | PRODUCT DESCRIPTION | REPORT NO -->
-                            <tr>
-                                <td style="padding:10px 12px; width:33%;">
-                                    <span class="field-label">Product Cat Ref :</span>
-                                    <input type="text"
-                                           name="ProductCatRef"
-                                           class="inline-input"
-                                           placeholder="Enter Product Cat Ref"
-                                           style="width:60%;" />
-                                </td>
+                                    <td style="padding:10px 12px; width:33%;">
+                                        <span class="field-label">Product Description :</span>
+                                        @Html.TextBoxFor(m => m.ProductDescription, new { @class = "inline-input", placeholder = "Enter Product Description", style = "width: 60%;" })
+                                    </td>
 
-                                <td style="padding:10px 12px; width:33%;">
-                                    <span class="field-label">Product Description :</span>
-                                    <input type="text"
-                                           name="ProductDescription"
-                                           class="inline-input"
-                                           placeholder="Enter Product Description"
-                                           style="width:60%;" />
-                                </td>
+                                    <td style="padding:10px 12px; width:34%;">
+                                        <span class="field-label">Report No. :</span>
+                                        @Html.TextBoxFor(m => m.ReportNo, new { @class = "inline-input", placeholder = "Enter Report Number", required = "required", style = "width: 60%;" })
+                                    </td>
+                                </tr>
 
-                                <td style="padding:10px 12px; width:34%;">
-                                    <span class="field-label">Report No. :</span>
-                                    <input type="text"
-                                           name="ReportNo"
-                                           class="inline-input"
-                                           placeholder="Enter Report No."
-                                           style="width:60%;" />
-                                </td>
-                            </tr>
+                                <tr>
+                                    <td style="padding:10px 12px;"></td>
+                                    <td style="padding:10px 12px;"></td>
 
-                            <!-- ROW 2 : EMPTY CELLS + DATE -->
-                            <tr>
-                                <td style="padding:10px 12px;"></td>
-                                <td style="padding:10px 12px;"></td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Date :</span>
+                                        @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new
+                                        {
+                                            @class = "inline-date",
+                                                                                style = "width:60%; font-size:13px;",
+                                                                                placeholder = "dd-mm-yyyy",
+                                                                                title = "Enter date as dd-mm-yyyy",
+                                                                                required = "required",
+                                                                                type = "date"
+                                                                                })
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Date :</span>
-                                    <input id="ReportDate"
-                                           type="date"
-                                           class="inline-date"
-                                           style="width:60%;" />
-                                </td>
-                            </tr>
+                        <!-- ADD BUTTON ROW -->
+                        <table class="header-table" style="margin-top:-1px;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                        <button id="addOpenPointRowBtn"
+                                                type="button"
+                                                class="btn btn-outline-success"
+                                                style="width:120px; font-size:15px;">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                        </tbody>
-                    </table>
+                        <!-- OPEN POINTS TABLE -->
+                        <table class="pv-table" id="openPointsTable" style="margin-top:0;">
+                            <thead>
+                                <tr>
+                                    <th style="width:6%; text-align:center;">Sr. No.</th>
+                                    <th style="width:26%; text-align:center;">Requirement/ specification</th>
+                                    <th style="width:28%; text-align:center;">Actual findings</th>
+                                    <th style="width:14%; text-align:center; color:red;">Open / Closed</th>
+                                    <th style="width:16%; text-align:center;">Closure Responsibility</th>
+                                    <th style="width:10%; text-align:center;">Upload File</th>
+                                </tr>
+                            </thead>
+                            <tbody id="openPointsTbody">
+                                @{
+                                    var details = Model?.Details ?? new List<QMS.Core.Models.GeneralObservationDetailViewModel>();
+                                }
 
-                    <!-- ADD BUTTON ROW (same location as Needle Flame) -->
-                    <table class="header-table" style="margin-top:-1px;">
-                        <tbody>
-                            <tr>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <button id="addOpenPointRowBtn"
-                                            type="button"
-                                            class="btn btn-outline-success"
-                                            style="width:120px; font-size:15px;">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                @if (details.Any())
+                                {
+                                    for (int i = 0; i < details.Count; i++)
+                                    {
+                                        <tr class="open-point-row" style="height:120px;" data-index="@i">
+                                            @Html.HiddenFor(m => m.Details[i].Id)
 
-                    <!-- OPEN POINTS TABLE (replaces Needle Flame test table) -->
-                    <table class="pv-table" id="openPointsTable" style="margin-top:0;">
-                        <thead>
-                            <tr>
-                                <th style="width:6%; text-align:center;">Sr. No.</th>
-                                <th style="width:26%; text-align:center;">Requirement/ specification</th>
-                                <th style="width:28%; text-align:center;">Actual findings</th>
-                                <th style="width:14%; text-align:center; color:red;">Open / Closed</th>
-                                <th style="width:16%; text-align:center;">Closure Responsibility</th>
-                                <th style="width:10%; text-align:center;">Upload File</th>
-                            </tr>
-                        </thead>
-                        <tbody id="openPointsTbody">
-                            <!-- rows added by script -->
-                        </tbody>
-                    </table>
+                                            <!-- Sr No + Delete (MATCHES JS HOOKS) -->
+                                            <td style="text-align:center; border:1.5px solid #000; vertical-align:top;">
+                                                <span class="srno-open">@(i + 1)</span>
+                                                <button type="button"
+                                                        class="delete-open-row"
+                                                        style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                                    <i class="fas fa-trash" style="color:#c0392b;"></i>
+                                                </button>
+                                            </td>
 
-         
-                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
-                        <tbody>
-                            <tr>
-                                <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
-                                    <span class="field-label">Checked By :</span>
-                                    <input type="text"
-                                           name="CheckedBy"
-                                           class="inline-input"
-                                           placeholder="Enter Name"
-                                           style="width:60%;" />
-                                </td>
+                                            <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;">
+                                                @(details[i].Req_Spec ?? "")
+                                            </td>
 
-                                <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
-                                    <span class="field-label">Verified By :</span>
-                                    <input type="text"
-                                           name="VerifiedBy"
-                                           class="inline-input"
-                                           placeholder="Enter Name"
-                                           style="width:60%;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                            <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;">
+                                                @(details[i].Actual_find ?? "")
+                                            </td>
 
-                </div>
+                                            <td style="text-align:center; border:1.5px solid #000; vertical-align:top;">
+                                                <select class="result-select" style="width:130px;">
+                                                    <option value="">Select</option>
+                                                    <option value="Open" selected="@(details[i].Open_Close == "Open")">Open</option>
+                                                    <option value="Closed" selected="@(details[i].Open_Close == "Closed")">Closed</option>
+                                                </select>
+                                            </td>
+
+                                            <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;">
+                                                @(details[i].Closure_Respons ?? "")
+                                            </td>
+
+                                            <!-- Upload + Preview (EDIT MODE PREVIEW WORKS) -->
+                                            <td class="image-upload-cell" style="border:1.5px solid #000; vertical-align:top;">
+                                                <div class="image-upload-wrapper">
+                                                    <input type="file"
+                                                           class="file-input-hidden"
+                                                           accept="image/*"
+                                                           onchange="handleImageUpload(this)">
+
+                                                    <img class="image-preview"
+                                                         alt="Preview"
+                                                         src="@(details[i].Attachment ?? "")"
+                                                         style="@(string.IsNullOrWhiteSpace(details[i].Attachment) ? "display:none;" : "display:block;")" />
+
+                                                    <button type="button"
+                                                            class="btn-remove-image"
+                                                            onclick="removeImage(this)"
+                                                            style="@(string.IsNullOrWhiteSpace(details[i].Attachment) ? "display:none;" : "display:inline-block;")">
+                                                        <i class="fas fa-trash"></i> 
+                                                    </button>
+
+                                                    @Html.HiddenFor(m => m.Details[i].Attachment, new { @class = "hidden-path" })
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <!-- SAMPLE ROW (NOT USED FOR UI, ONLY FOR CLONE IF NEEDED) -->
+                                    <tr class="sample-row" style="display:none; height:120px;">
+                                        <td style="text-align:center; border:1.5px solid #000; vertical-align:top;">
+                                            <span class="srno-open">1</span>
+                                            <button type="button"
+                                                    class="delete-open-row"
+                                                    style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                                                <i class="fas fa-trash" style="color:#c0392b;"></i>
+                                            </button>
+                                        </td>
+
+                                        <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;"></td>
+                                        <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                                        <td style="text-align:center; border:1.5px solid #000; vertical-align:top;">
+                                            <select class="result-select" style="width:130px;">
+                                                <option value="">Select</option>
+                                                <option value="Open">Open</option>
+                                                <option value="Closed">Closed</option>
+                                            </select>
+                                        </td>
+
+                                        <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                                        <td class="image-upload-cell" style="border:1.5px solid #000; vertical-align:top;">
+                                            <div class="image-upload-wrapper">
+                                                <input type="file" class="file-input-hidden" accept="image/*" onchange="handleImageUpload(this)">
+                                                <img class="image-preview" alt="Preview" style="display:none;">
+                                                <button type="button" class="btn-remove-image" onclick="removeImage(this)" style="display:none;">
+                                                    <i class="fas fa-trash"></i> 
+                                                </button>
+                                                <input type="hidden" class="hidden-path" value="" />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+
+                        <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
+                                        <span class="field-label">Checked By :</span>
+                                        @* <input type="text"
+                                               name="CheckedBy"
+                                               class="inline-input"
+                                               placeholder="Enter Name"
+                                               style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.CheckedBy, new { @class = "inline-input", placeholder = "Enter name", style = "width: 60%;" })
+                                    </td>
+
+                                    <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                        <span class="field-label">Verified By :</span>
+                                       @*  <input type="text"
+                                               name="VerifiedBy"
+                                               class="inline-input"
+                                               placeholder="Enter Name"
+                                               style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "inline-input", placeholder = "Enter name", style = "width: 60%;" })
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </form>
             </div>
 
         </div>
@@ -257,30 +394,50 @@
         function createOpenPointRow() {
             const tr = document.createElement('tr');
             tr.className = 'open-point-row';
+            tr.style.height = "120px";
 
+            // IMPORTANT:
+            // New rows now include the same Upload + Preview UI
             tr.innerHTML = `
-                        <td style="text-align:center;">
-                            <span class="srno-open"></span>
-                            <button type="button"
-                                    class="delete-open-row"
-                                    style="border:none; background:none; cursor:pointer; margin-left:6px;">
-                                <i class="fas fa-trash" style="color:#c0392b;"></i>
-                            </button>
-                        </td>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
-                        <td style="text-align:center;">
-                            <select class="result-select" style="width:130px;">
-                                <option value="">Select</option>
-                                <option value="Open">Open</option>
-                                <option value="Closed">Closed</option>
-                            </select>
-                        </td>
-                        <td contenteditable="true"></td>
-                        <td style="text-align:center;">
-                            <input type="file" />
-                        </td>
-                    `;
+                <td style="text-align:center; border:1.5px solid #000; vertical-align:top;">
+                    <span class="srno-open"></span>
+                    <button type="button"
+                            class="delete-open-row"
+                            style="border:none; background:none; cursor:pointer; margin-left:6px;">
+                        <i class="fas fa-trash" style="color:#c0392b;"></i>
+                    </button>
+                </td>
+
+                <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;"></td>
+                <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                <td style="text-align:center; border:1.5px solid #000; vertical-align:top;">
+                    <select class="result-select" style="width:130px;">
+                        <option value="">Select</option>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </td>
+
+                <td contenteditable="true" style="border:1.5px solid #000; vertical-align:top;"></td>
+
+                <td class="image-upload-cell" style="border:1.5px solid #000; vertical-align:top;">
+                    <div class="image-upload-wrapper">
+                        <input type="file"
+                               class="file-input-hidden"
+                               accept="image/*"
+                               onchange="handleImageUpload(this)">
+
+                        <img class="image-preview" alt="Preview" style="display:none;" />
+
+                        <button type="button" class="btn-remove-image" onclick="removeImage(this)" style="display:none;">
+                            <i class="fas fa-trash"></i> 
+                        </button>
+
+                        <input type="hidden" class="hidden-path" value="" />
+                    </div>
+                </td>
+            `;
             return tr;
         }
 
@@ -323,15 +480,183 @@
                 if (tr) removeOpenPointRow(tr);
             });
 
-            // start with one empty row
-            if (openPointsTbody.children.length === 0) {
+            // If no existing edit rows, add one row
+            if (openPointsTbody.querySelectorAll('.open-point-row').length === 0) {
                 addOpenPointRow();
             } else {
                 refreshOpenPointsSerials();
             }
         }
 
-       
+        // ==============================
+        // IMAGE PREVIEW + REMOVE (EDIT + INSERT)
+        // ==============================
+        function handleImageUpload(input) {
+            const file = input.files && input.files[0];
+            const wrapper = input.closest('.image-upload-wrapper');
+            if (!wrapper) return;
+
+            const img = wrapper.querySelector('.image-preview');
+            const removeBtn = wrapper.querySelector('.btn-remove-image');
+
+            if (!file) return;
+
+            // preview
+            const url = URL.createObjectURL(file);
+            if (img) {
+                img.src = url;
+                img.style.display = "block";
+            }
+            if (removeBtn) removeBtn.style.display = "inline-block";
+
+            // NOTE:
+            // hidden-path should be set only after you upload file to server and get final path.
+            // For now we just preview locally.
+        }
+
+        function removeImage(btn) {
+            const wrapper = btn.closest('.image-upload-wrapper');
+            if (!wrapper) return;
+
+            const input = wrapper.querySelector('input[type="file"]');
+            const img = wrapper.querySelector('.image-preview');
+            const hidden = wrapper.querySelector('.hidden-path');
+
+            if (input) input.value = "";
+            if (img) {
+                img.src = "";
+                img.style.display = "none";
+            }
+
+            btn.style.display = "none";
+
+            // clear saved path also (for edit remove)
+            if (hidden) hidden.value = "";
+        }
+
+                function saveOpenPoints() {
+            Blockloadershow();
+
+            // ✅ Validate required fields (your TextBoxFor ids will be these)
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No.' },
+                { id: 'ProductCatRef', name: 'Product Cat Ref' },
+                { id: 'ProductDescription', name: 'Product Description' },
+                { id: 'ReportDate', name: 'Date' }
+            ];
+
+            const missing = [];
+            requiredFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value || !el.value.trim()) missing.push(f.name);
+            });
+
+            if (missing.length) {
+                showDangerAlert(
+                    `<p>Please fill the required field(s):</p><ul>${missing.map(x => `<li>${x}</li>`).join('')}</ul>`
+                );
+                Blockloaderhide();
+                return false;
+            }
+
+            // ✅ Use the correct form on this page
+            const form = document.getElementById('genObs_form');
+            if (!form) {
+                Blockloaderhide();
+                showDangerAlert("Form not found (genObs_form).");
+                return false;
+            }
+
+            const formData = new FormData(form);
+
+            // ✅ Collect Details from your Open Points rows
+            const rows = document.querySelectorAll('#openPointsTbody tr.open-point-row');
+            let detailIndex = 0;
+
+            rows.forEach(tr => {
+                // contenteditable tds in your row:
+                // td[1] Req_Spec, td[2] Actual_find, td[4] Closure_Respons
+                const tds = tr.querySelectorAll('td');
+
+                const reqSpec = (tds[1]?.innerText || '').trim();
+                const actualFind = (tds[2]?.innerText || '').trim();
+                const openClose = (tr.querySelector('select.result-select')?.value || '').trim();
+                const closureResp = (tds[4]?.innerText || '').trim();
+
+                const detailId = (tr.querySelector('input[name$=".Id"]')?.value || 0);
+                const hiddenPathEl = tr.querySelector('.hidden-path');
+                const existingPath = (hiddenPathEl?.value || '').trim();
+
+                const fileInput = tr.querySelector('input[type="file"]');
+                const file = (fileInput && fileInput.files && fileInput.files.length > 0) ? fileInput.files[0] : null;
+
+                // Skip completely empty row
+                if (!reqSpec && !actualFind && !openClose && !closureResp && !file && !existingPath) {
+                    return;
+                }
+
+                formData.set(`Details[${detailIndex}].Id`, detailId);
+                formData.set(`Details[${detailIndex}].SrNo`, detailIndex + 1);
+                formData.set(`Details[${detailIndex}].Req_Spec`, reqSpec);
+                formData.set(`Details[${detailIndex}].Actual_find`, actualFind);
+                formData.set(`Details[${detailIndex}].Open_Close`, openClose);
+                formData.set(`Details[${detailIndex}].Closure_Respons`, closureResp);
+
+                // ✅ Attachment handling:
+                // - if new file chosen => upload
+                // - else if existing path present => preserve
+                // - else => blank
+                if (file) {
+                    // IMPORTANT: your ViewModel should have IFormFile property like AttachmentFile
+                    formData.append(`Details[${detailIndex}].AttachmentFile`, file);
+                } else if (existingPath) {
+                    formData.set(`Details[${detailIndex}].Attachment`, existingPath);
+                } else {
+                    formData.set(`Details[${detailIndex}].Attachment`, "");
+                }
+
+                detailIndex++;
+            });
+
+            // Optional: if no valid rows, warn (your choice)
+            // if (detailIndex === 0) { ... }
+
+            $.ajax({
+                url: $(form).attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response || response.success !== true) {
+                        let msg = response?.message || "Error saving General Observation / Open Points.";
+                        if (response?.errors && Array.isArray(response.errors) && response.errors.length) {
+                            msg = response.errors.join("\n");
+                        }
+                        showDangerAlert(msg);
+                        return false;
+                    }
+
+                    if (parseInt($("#Id").val() || "0", 10) > 0) {
+                        showSuccessAlert("General Observation / Open Points Updated Successfully.");
+                    } else {
+                        showSuccessAlert("General Observation / Open Points Saved Successfully.");
+                    }
+
+                    setTimeout(function () {
+                        window.open('@Url.Action("GeneralObservation", "ProductValidation")', '_self');
+                    }, 1500);
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving General Observation / Open Points: ' + error);
+                    console.error('Save error:', xhr.responseText);
+                }
+            });
+        }
+
     </script>
 }
 

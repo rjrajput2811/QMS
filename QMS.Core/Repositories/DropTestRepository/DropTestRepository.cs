@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using DocumentFormat.OpenXml.Wordprocessing;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -27,7 +28,7 @@ namespace QMS.Core.Repositories.DropTestRepository
             _connStr = configuration.GetConnectionString("DefaultConnection")!;
         }
 
-        public async Task<List<DropTestViewModel>> GetDropTestAsync()
+        public async Task<List<DropTestViewModel>> GetDropTestAsync(DateTime? startDate = null, DateTime? endDate = null)
         {
             try
             {
@@ -63,6 +64,16 @@ namespace QMS.Core.Repositories.DropTestRepository
                         AddedBy = x.AddedBy
                     })
                     .ToList());
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    var s = startDate.Value.Date;
+                    var e = endDate.Value.Date;
+
+                    result = result
+                        .Where(d => d.ReportDate?.Date >= s && d.ReportDate?.Date <= e)
+                        .ToList();
+                }
 
                 foreach (var rec in result)
                 {

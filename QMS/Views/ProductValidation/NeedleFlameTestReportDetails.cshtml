@@ -1,4 +1,7 @@
-﻿@{
+﻿@using QMS.Core.Models
+@model NeedleFlameTestViewModel
+
+@{
     ViewData["Title"] = "Needle Flame Test Report";
 }
 
@@ -134,192 +137,215 @@
 
             <!-- MAIN CARD -->
             <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body">
+                <form id="needleFlameTest_form" method="post" asp-action="InsertUpdateNeedleFlameTest" asp-controller="ProductValidation" enctype="multipart/form-data">
+                    @Html.HiddenFor(m => m.Id)
+                    <div class="card-body">
 
-                    <!-- HEADER TABLES -->
-                    <table class="header-table" style="margin:0;">
-                        <tbody>
-                            <tr>
-                                <td colspan="4" style="text-align:center; padding:10px 12px;">
-                                    <span class="field-label">Reference Standard :</span>
-                                    <input type="text"
-                                           name="ReferenceStandard"
+                        <!-- HEADER TABLES -->
+                        <table class="header-table" style="margin:0;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="text-align:center; padding:10px 12px;">
+                                        <span class="field-label">Reference Standard :</span>
+                                        @* <input type="text"
+                                           name="Ref_Stan"
                                            class="inline-input"
                                            placeholder="Enter Reference Standard"
-                                           style="width:20%; text-align:center;" />
-                                </td>
-                            </tr>
+                                           style="width:20%; text-align:center;" /> *@
+                                        @Html.TextBoxFor(m => m.Ref_Stan, new { @class = "inline-input", style="width:20%;text-align:center;", placeholder = "Enter Reference Standard", required = "required" })
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td colspan="3"></td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Report No.:</span>
-                                    <input type="text"
+                                <tr>
+                                    <td colspan="3"></td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Report No.:</span>
+                                        @* <input type="text"
                                            name="ReportNo"
                                            class="inline-input"
                                            style="width:60%;"
-                                           placeholder="Enter Report No." />
-                                </td>
-                            </tr>
+                                           placeholder="Enter Report No." /> *@
+                                        @Html.TextBoxFor(m => m.ReportNo, new { @class = "inline-input", style="width:60%;", placeholder = "Enter Report Number", required = "required" })
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td colspan="3" style="padding:10px 12px;">
-                                    <span class="field-label">Customer / Project Name :</span>
-                                    <input type="text"
+                                <tr>
+                                    <td colspan="3" style="padding:10px 12px;">
+                                        <span class="field-label">Customer / Project Name :</span>
+                                        @* <input type="text"
                                            name="CustomerName"
                                            class="inline-input"
                                            style="width:70%;"
-                                           placeholder="Enter Customer / Project" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Date :</span>
-                                    <input type="date"
+                                           placeholder="Enter Customer / Project" /> *@
+                                        @Html.TextBoxFor(m => m.CustomerProjectName, new { @class = "inline-input", placeholder = "Enter Customer / Project", style = "width:70%;" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Date :</span>
+                                        @*  <input type="date"
                                            name="ReportDate"
                                            class="inline-date"
-                                           style="width:70%;" />
-                                </td>
-                            </tr>
+                                           style="width:70%;" /> *@
+                                        @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new
+                                        {
+                                            @class = "inline-date",
+                                                                                style = "width:70%; font-size:13px;",
+                                                                                placeholder = "dd-mm-yyyy",
+                                                                                title = "Enter date as dd-mm-yyyy",
+                                                                                required = "required",
+                                                                                type = "date"
+                                                                                })
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Product Cat Ref :</span>
-                                    <input type="text"
+                                <tr>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Product Cat Ref :</span>
+                                        @* <input type="text"
                                            name="ProductCatRef"
                                            class="inline-input"
                                            placeholder="Enter Product Cat Ref"
-                                           style="width:50%;" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Product Description :</span>
-                                    <input type="text"
+                                           style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "inline-input", placeholder = "Enter Product Reference", required = "required", style = "width:50%;" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Product Description :</span>
+                                        @* <input type="text"
                                            name="ProductDescription"
                                            class="inline-input"
                                            placeholder="Enter Product Description"
-                                           style="width:50%;" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Batch Code :</span>
-                                    <input type="text"
+                                           style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.ProductDescription, new { @class = "inline-input", placeholder = "Enter Product Description",style="width:50%;", required = "required" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Batch Code :</span>
+                                        @* <input type="text"
                                            name="BatchCode"
                                            class="inline-input"
                                            placeholder="Enter Batch Code"
-                                           style="width:50%;" />
-                                </td>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Quantity :</span>
-                                    <input type="number"
+                                           style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.BatchCode, new { @class = "inline-input", placeholder = "Enter Batch Code",style="width:50%;" })
+                                    </td>
+                                    <td style="padding:10px 12px;">
+                                        <span class="field-label">Quantity :</span>
+                                        @* <input type="number"
                                            name="Quantity"
                                            class="inline-input"
                                            placeholder="0"
-                                           style="width:50%;" />
-                                </td>
-                            </tr>
+                                           style="width:50%;" /> *@
+                                        @Html.TextBoxFor(m => m.Quantity, new { type="number", @class = "inline-input", placeholder = "Enter Quantity",style="width:50%;" })
+                                    </td>
+                                </tr>
 
-                            <tr>
-                                <td colspan="2" style="padding:10px 12px;">
-                                    <span class="field-label">Part Description :</span>
-                                    <input type="text"
+                                <tr>
+                                    <td colspan="2" style="padding:10px 12px;">
+                                        <span class="field-label">Part Description :</span>
+                                        @* <input type="text"
                                            name="PartDescription"
                                            class="inline-input"
                                            placeholder="Enter Part Description"
-                                           style="width:70%;" />
-                                </td>
-                                <td colspan="2" style="padding:10px 12px;">
-                                    <span class="field-label">PKD :</span>
-                                    <input type="text"
+                                           style="width:70%;" /> *@
+                                        @Html.TextBoxFor(m => m.PartDescription, new { @class = "inline-input", placeholder = "Enter Part Description",style="width:70%;" })
+                                    </td>
+                                    <td colspan="2" style="padding:10px 12px;">
+                                        <span class="field-label">PKD :</span>
+                                        @* <input type="text"
                                            name="PKD"
                                            class="inline-input"
                                            placeholder="Enter PKD"
-                                           style="width:60%;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                           style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.PKD, new { @class = "inline-input", placeholder = "Enter PKD",style="width:60%;" })
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                    <table class="header-table" style="margin-top:-1px;">
-                        <tbody>
-                            <tr>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <button id="addNeedleTestRowBtn"
-                                            type="button"
-                                            class="btn btn-outline-success"
-                                            style="width:120px; font-size:15px;">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        <table class="header-table" style="margin-top:-1px;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="4" style="padding:10px 12px; text-align:left;">
+                                        <button id="addNeedleTestRowBtn"
+                                                type="button"
+                                                class="btn btn-outline-success"
+                                                style="width:120px; font-size:15px;">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                    <!-- COMBINED TEST + PHOTO TABLES -->
-                    <table class="pv-table" id="needleCombinedTable" style="margin-top:0;">
-                        <thead>
-                            <tr>
-                                <th style="width:6%; text-align:center;">Sr. No.</th>
-                                <th style="width:36%; text-align:center;">TESTS WITH CLAUSE REFERENCE</th>
-                                <th style="width:28%; text-align:center;">SPECIFIED REQUIREMENTS</th>
-                                <th style="width:18%; text-align:center;">Observation</th>
-                                <th style="width:12%; text-align:center; color:#c0392b;">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody id="needleCombinedTbody">
-                            <!-- rows added by script -->
-                        </tbody>
-                    </table>
+                        <!-- COMBINED TEST + PHOTO TABLES -->
+                        <table class="pv-table" id="needleCombinedTable" style="margin-top:0;">
+                            <thead>
+                                <tr>
+                                    <th style="width:6%; text-align:center;">Sr. No.</th>
+                                    <th style="width:36%; text-align:center;">TESTS WITH CLAUSE REFERENCE</th>
+                                    <th style="width:28%; text-align:center;">SPECIFIED REQUIREMENTS</th>
+                                    <th style="width:18%; text-align:center;">Observation</th>
+                                    <th style="width:12%; text-align:center; color:#c0392b;">Result</th>
+                                </tr>
+                            </thead>
+                            <tbody id="needleCombinedTbody">
+                                <!-- rows added by script -->
+                            </tbody>
+                        </table>
 
-                    <!-- optional extra table (kept for future use) -->
-                    <table class="pv-table" id="needlePhotosTable" style="margin-top:0;">
-                        <thead>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                    </table>
+                        <!-- optional extra table (kept for future use) -->
+                        <table class="pv-table" id="needlePhotosTable" style="margin-top:0;">
+                            <thead>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
 
-                    <!-- FINAL RESULT -->
-                    <table class="pv-table" style="margin-top:0; width:100%; border-collapse:collapse;">
-                        <tbody>
-                            <tr>
-                                <td style="padding:10px 12px; white-space:nowrap;">
-                                    <span style="color:#c0392b; font-weight:700; margin-right:20px;">
-                                        Test Result:
-                                    </span>
+                        <!-- FINAL RESULT -->
+                        <table class="pv-table" style="margin-top:0; width:100%; border-collapse:collapse;">
+                            <tbody>
+                                <tr>
+                                    <td style="padding:10px 12px; white-space:nowrap;">
+                                        <span style="color:#c0392b; font-weight:700; margin-right:20px;">
+                                            Test Result:
+                                        </span>
 
-                                    <select id="needleFinalTestResult" class="result-select" style="width:180px;">
-                                        <option value="">Select</option>
-                                        <option value="Pass">Pass</option>
-                                        <option value="Fail">Fail</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                        <select class="result-select" data-name="TestResult" style="width:180px;">
+                                            <option value="" selected="@(Model.TestResult == "")">Select</option>
+                                            <option value="Pass" selected="@(Model.TestResult == "Pass")">Pass</option>
+                                            <option value="Fail" selected="@(Model.TestResult == "Fail")">Fail</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                    <!-- SIGNATURE ROW -->
-                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
-                        <tbody>
-                            <tr>
-                                <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
-                                    <span class="field-label">Tested By :</span>
-                                    <input type="text"
+                        <!-- SIGNATURE ROW -->
+                        <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:0;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2" style="padding:10px 12px; white-space:nowrap;">
+                                        <span class="field-label">Tested By :</span>
+                                        @* <input type="text"
                                            name="TestedBy"
                                            class="inline-input"
                                            placeholder="Enter Name"
-                                           style="width:60%;" />
-                                </td>
+                                           style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.TestedBy, new { @class = "inline-input", placeholder = "Enter name",style="width:60%;" })
+                                    </td>
 
-                                <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
-                                    <span class="field-label">Verified By :</span>
-                                    <input type="text"
+                                    <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
+                                        <span class="field-label">Verified By :</span>
+                                        @* <input type="text"
                                            name="VerifiedBy"
                                            class="inline-input"
                                            placeholder="Enter Name"
-                                           style="width:60%;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                           style="width:60%;" /> *@
+                                        @Html.TextBoxFor(m => m.VerifiedBy, new { @class = "inline-input", placeholder = "Enter name",style="width:60%;" })
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                </div>
+                    </div>
+                </form>
             </div>
 
         </div>
@@ -337,31 +363,36 @@
             try { initNeedleFlame(); } catch (e) { console.error(e); }
         });
 
-        function needleCreateTestRow(groupId) {
+        function needleCreateTestRow(groupId, detailData = null) {
             const tr = document.createElement('tr');
             tr.dataset.group = groupId;
             tr.className = 'needle-group-test-row';
 
-            tr.innerHTML = `
-                        <td style="text-align:center;">
-                            <span class="srno-test"></span>
-                            <button type="button" class="delete-needle-group"
-                                    style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
-                        <td contenteditable="true"></td>
-                        <td style="text-align:center;">
-                            <select class="result-select">
-                                <option value="">Select</option>
-                                <option>Pass</option>
-                                <option>Fail</option>
-                                <option>Not Applicable</option>
-                            </select>
-                        </td>
-                    `;
+            // Store detail ID if editing
+            if (detailData && detailData.Id) {
+                tr.dataset.detailId = detailData.Id;
+            }
+
+           tr.innerHTML = `
+                <td style="text-align:center;">
+                    <span class="srno-test"></span>
+                    <button type="button" class="delete-group"
+                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+                <td contenteditable="true" data-name="Test_Ref">${detailData ? (detailData.test_Ref || '') : ''}</td>
+                <td contenteditable="true" data-name="Specified_Req">${detailData ? (detailData.specified_Req || '') : ''}</td>
+                <td contenteditable="true" data-name="Observation">${detailData ? (detailData.observation || '') : ''}</td>
+                <td style="text-align:center;">
+                    <select class="result-select" data-name="Result">
+                        <option value="">Select</option>
+                        <option ${detailData && detailData.result === 'Pass' ? 'selected' : ''}>Pass</option>
+                        <option ${detailData && detailData.result === 'Fail' ? 'selected' : ''}>Fail</option>
+                        <option ${detailData && detailData.result === 'Not Applicable' ? 'selected' : ''}>Not Applicable</option>
+                    </select>
+                </td>
+            `;
             return tr;
         }
 
@@ -382,33 +413,66 @@
             return tr;
         }
 
-        function needleCreatePhotoInputRow(groupId) {
+        function needleCreatePhotoInputRow(groupId, detailData = null) {
             const tr = document.createElement('tr');
             tr.dataset.group = groupId;
             tr.className = 'needle-group-photo-input-row';
 
+            if (detailData) {
+                if (detailData.photo_During_Test) {
+                    tr.dataset.existingPhotoDuring = detailData.photo_During_Test;
+                }
+                if (detailData.after_During_Test) {
+                    tr.dataset.existingPhotoAfter = detailData.after_During_Test;
+                }
+            }
+
+            let photoDuringHtml = '<input type="file" accept="image/*" class="photo-input-left" />';
+            if (detailData && detailData.photo_During_Test) {
+                photoDuringHtml += `
+                    <div style="margin-top:8px;">
+                        <a href="${detailData.photo_During_Test}" target="_blank" style="color:#4682B4; text-decoration:none; font-size:13px;">
+                            <i class="fas fa-image"></i> View Current Photo
+                        </a>
+                    </div>
+                `;
+            }
+
+            // Build photo after section
+            let photoAfterHtml = '<input type="file" accept="image/*" class="photo-input-right" />';
+            if (detailData && detailData.after_During_Test) {
+                photoAfterHtml += `
+                    <div style="margin-top:8px;">
+                        <a href="${detailData.after_During_Test}" target="_blank" style="color:#4682B4; text-decoration:none; font-size:13px;">
+                            <i class="fas fa-image"></i> View Current Photo
+                        </a>
+                    </div>
+                `;
+            }
+
             tr.innerHTML = `
-                        <td></td>
-                        <td colspan="1" style="width:50%; padding:10px;">
-                            <div class="photo-input-wrap-left">
-                                <input type="file" accept="image/*" class="photo-input-left" />
-                            </div>
-                        </td>
-                        <td colspan="3" style="width:50%; padding:10px;">
-                            <div class="photo-input-wrap-right">
-                                <input type="file" accept="image/*" class="photo-input-right" />
-                            </div>
-                        </td>
-                    `;
+                <td></td>
+                <td colspan="1" style="width:50%; padding:10px;">
+                    <div class="photo-input-wrap-left">
+                        ${photoDuringHtml}
+                    </div>
+                </td>
+                <td colspan="3" style="width:50%; padding:10px;">
+                    <div class="photo-input-wrap-right">
+                        ${photoAfterHtml}
+                    </div>
+                </td>
+            `;
+
             return tr;
         }
 
-        function needleAddGroup() {
+        function needleAddGroup(detailData = null) {
             const gid = "ng" + (++needleGroupCounter);
 
-            const rowA = needleCreateTestRow(gid);
+            const rowA = needleCreateTestRow(gid, detailData);
             const rowB = needleCreatePhotoHeaderRow(gid);
-            const rowC = needleCreatePhotoInputRow(gid);
+            const rowC = needleCreatePhotoInputRow(gid, detailData);
 
             needleTbody.appendChild(rowA);
             needleTbody.appendChild(rowB);
@@ -416,8 +480,10 @@
 
             needleRefreshSerials();
 
-            const editCell = rowA.querySelector('td[contenteditable="true"]');
-            if (editCell) editCell.focus();
+            if (!detailData) {
+                const editCell = rowA.querySelector('td[contenteditable="true"]');
+                if (editCell) editCell.focus();
+            }
         }
 
         function needleRemoveGroup(groupId) {
@@ -453,16 +519,180 @@
                 needleRemoveGroup(gid);
             });
 
-            if (needleTbody.children.length === 0) {
-                needleAddGroup();
-            } else {
-                needleRefreshSerials();
+            @if (Model.Details != null && Model.Details.Any())
+            {
+                            <text>
+                                const existingDetails = @Html.Raw(Json.Serialize(Model.Details));
+
+                                if (existingDetails && existingDetails.length > 0) {
+                                    existingDetails.forEach(detail => {
+                                            needleAddGroup(detail);
+                                    });
+                                } else {
+                                        needleAddGroup();
+                                }
+                            </text>
             }
+            else
+            {
+                            <text>
+                                if (needleTbody.children.length === 0) {
+                                        needleAddGroup();
+                                } else {
+                                        needleRefreshSerials();
+                                }
+                            </text>
+            }
+
+            // if (needleTbody.children.length === 0) {
+            //     needleAddGroup();
+            // } else {
+            //     needleRefreshSerials();
+            // }
         }
 
+
         function saveNeedleFlameTest() {
-           
-            alert('Needle Flame Test save not implemented yet.');
+            Blockloadershow();
+
+            // ✅ Validate required fields
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+                { id: 'ProductDescription', name: 'Product Description' },
+                { id: 'ReportDate', name: 'Report Date' }
+            ];
+
+            let missingFields = [];
+            requiredFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value || !el.value.trim()) {
+                    missingFields.push(f.name);
+                }
+            });
+
+            if (missingFields.length) {
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${missingFields.map(x => `<li>${x}</li>`).join('')}</ul>`
+                );
+                Blockloaderhide();
+                return false;
+            }
+
+            // ✅ Get form and create FormData
+            const form = $('#needleFlameTest_form')[0];
+            const formData = new FormData(form);
+
+            // ✅ Get TestResult (overall result)
+            const testResult = $('.result-select[data-name="TestResult"]').val();
+            formData.set('TestResult', (testResult || '').toString().trim());
+
+            // ✅ Collect Details from table rows
+            const testRows = $('#needleCombinedTbody .needle-group-test-row');
+            let detailIndex = 0;
+
+            testRows.each(function () {
+                const $row = $(this);
+                const groupId = $row.data('group');
+                const detailId = $row.data('detailId') || 0;
+
+                // Get contenteditable cell values
+                const tds = $row.find('td');
+                const testWithClause = $(tds[1]).text().trim();
+                const specifiedRequirements = $(tds[2]).text().trim();
+                const observation = $(tds[3]).text().trim();
+                const result = $row.find('.result-select').val() || '';
+
+                // Skip completely empty rows
+                if (!testWithClause && !specifiedRequirements && !observation && !result) {
+                    return;
+                }
+
+                // Set detail data
+                formData.set(`Details[${detailIndex}].Id`, detailId);
+                formData.set(`Details[${detailIndex}].SrNo`, detailIndex + 1);
+                formData.set(`Details[${detailIndex}].Test_Ref`, testWithClause);
+                formData.set(`Details[${detailIndex}].Specified_Req`, specifiedRequirements);
+                formData.set(`Details[${detailIndex}].Observation`, observation);
+                formData.set(`Details[${detailIndex}].Result`, result);
+
+                // Get corresponding photo row
+                const photoRow = $(`#needleCombinedTbody .needle-group-photo-input-row[data-group="${groupId}"]`);
+
+                if (photoRow.length) {
+                    const photoRowElement = photoRow[0];
+                    const photoDuringInput = photoRow.find('.photo-input-left')[0];
+                    const photoAfterInput = photoRow.find('.photo-input-right')[0];
+
+                    // ✅ Get existing photo paths from data attributes
+                    const existingPhotoDuring = photoRowElement.dataset.existingPhotoDuring || '';
+                    const existingPhotoAfter = photoRowElement.dataset.existingPhotoAfter || '';
+
+                    // ✅ Handle Photo During Testing
+                    if (photoDuringInput && photoDuringInput.files && photoDuringInput.files.length > 0) {
+                        // New file selected - upload it
+                        formData.append(`Details[${detailIndex}].Photo_During_TestFile`, photoDuringInput.files[0]);
+                    } else if (existingPhotoDuring) {
+                        // No new file but existing photo exists - preserve it
+                        formData.set(`Details[${detailIndex}].Photo_During_Test`, existingPhotoDuring);
+                    }
+
+                    // ✅ Handle Photo After Testing
+                    if (photoAfterInput && photoAfterInput.files && photoAfterInput.files.length > 0) {
+                        // New file selected - upload it
+                        formData.append(`Details[${detailIndex}].After_During_TestFile`, photoAfterInput.files[0]);
+                    } else if (existingPhotoAfter) {
+                        // No new file but existing photo exists - preserve it
+                        formData.set(`Details[${detailIndex}].After_During_Test`, existingPhotoAfter);
+                    }
+                }
+
+                detailIndex++;
+            });
+
+            // ✅ AJAX call to save
+            $.ajax({
+                url: $('#needleFlameTest_form').attr('action'),
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        let errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) {
+                                errorMessg += error + "\n";
+                            }
+                            if (errorMessg) {
+                                showDangerAlert(errorMessg);
+                            }
+                        } else {
+                            showDangerAlert(response.message || "Error saving Glow Wire Test Report");
+                        }
+                        return false;
+                    }
+
+                    // Success message
+                    if ($("#Id").val() > 0) {
+                        showSuccessAlert("Needle Flame Test Report Updated Successfully.");
+                    } else {
+                        showSuccessAlert("Needle Flame Test Report Saved Successfully.");
+                    }
+
+                    // Redirect after success
+                    setTimeout(function () {
+                        window.open('@Url.Action("NeedleFlameTestReport", "ProductValidation")', '_self');
+                    }, 2500);
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert('Error saving Needle Flame Test Report: ' + error);
+                    console.error('Save error:', xhr.responseText);
+                }
+            });
         }
     </script>
 }

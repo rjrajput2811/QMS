@@ -1522,24 +1522,160 @@
         }
 
 
-        function setIsSubmitted()
-        {
+        // function setIsSubmitted()
+        // {
+        //     debugger;
+        //     Blockloadershow();
+        //     const selectedRows = table.getData().filter(row => row.Selected);
+
+        //     // Check if no rows are selected
+        //     if (selectedRows.length === 0) {
+        //         Blockloaderhide(); // Hide the loader before showing the alert
+        //         showDangerAlert('Please select at least one valid product to submit.');
+        //         return;
+        //     }
+
+        //     if (selectedRows.length === 0) {
+        //         showDangerAlert('No rows selected.');
+        //         return;
+        //     }
+
+        //     const selectedIds = selectedRows.map(row => row.Id);
+
+        //     $.ajax({
+        //         type: "POST",
+        //         url: '@Url.Action("SetIsSubmitted", "OpenPo")',
+        //         data: JSON.stringify(selectedIds),
+        //         contentType: "application/json",
+        //         success: function (response) {
+        //             Blockloaderhide();
+        //             if (response.success) {
+
+        //                showSuccessAlert("Delivery Schedule is submitted successfully!");
+
+        //                 setTimeout(function () {
+        //                     window.location.reload();
+        //                 }, 1000);
+        //             }
+        //             else {
+        //                 var errorMessg = "";
+        //                 for (var error in response.errors) {
+        //                     errorMessg += error + "\n";
+        //                 }
+        //                 if (errorMessg != "") {
+        //                     showDangerAlert(errorMessg);
+        //                 }
+        //                 else {
+        //                     showDangerAlert(response.Message);
+        //                 }
+        //             }
+        //         },
+        //         error: function (xhr, ststus, errors) {
+        //             Blockloaderhide();
+        //             showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
+        //         }
+        //     });
+        // }
+
+                        function setIsSubmitted() {
             debugger;
             Blockloadershow();
+
             const selectedRows = table.getData().filter(row => row.Selected);
 
             // Check if no rows are selected
             if (selectedRows.length === 0) {
-                Blockloaderhide(); // Hide the loader before showing the alert
-                showDangerAlert('Please select at least one valid product to submit.');
+                Blockloaderhide();
+                showDangerAlert('Please select at least one record to submit.');
                 return;
             }
 
-            if (selectedRows.length === 0) {
-                showDangerAlert('No rows selected.');
+            // Validation: Check all selected rows and their children
+            const validationErrors = [];
+
+            selectedRows.forEach((row, index) => {
+                const rowIdentifier = `Row ${index + 1} (PO No: ${row.PO_No || 'N/A'}, Key: ${row.Key || 'N/A'})`;
+                const children = Array.isArray(row._children) ? row._children : [];
+                const realChildren = children.filter(ch => !ch?._isChildHeader);
+
+                // If no delivery schedule exists
+                if (realChildren.length === 0) {
+                    validationErrors.push({
+                        RowNumber: index + 1,
+                        Key: row.Key || '',
+                        PRNo: row.PR_No || '',
+                        PONo: row.PO_No || '',
+                        Vendor: row.Vendor || '',
+                        DeliveryScheduleNo: 'N/A',
+                        ErrorType: 'Missing Delivery Schedule',
+                        ErrorMessage: 'No delivery schedule found. Please add at least one delivery schedule.',
+                        DeliveryDate: '',
+                        DeliveryQty: '',
+                        DeliveryRemark: ''
+                    });
+                    return;
+                }
+
+                // Check each child delivery schedule
+                realChildren.forEach((child, childIndex) => {
+                    const hasDeliveryDate = child.Delivery_Date && String(child.Delivery_Date).trim() !== "";
+                    const hasDeliveryQty = child.Hold_Date != null && String(child.Hold_Date).trim() !== "" && child.Hold_Date !== 0;
+                    const hasDeliveryRemark = child.Cleared_Date && String(child.Cleared_Date).trim() !== "";
+
+                    let errorType = '';
+                    let errorMessage = '';
+
+                    // Validation Rule 1: If Delivery_Date exists, Delivery_Qty must exist
+                    if (hasDeliveryDate && !hasDeliveryQty) {
+                        errorType = 'Missing Delivery Qty';
+                        errorMessage = 'Delivery Date is provided but Delivery Qty is missing.';
+                    }
+                    // Validation Rule 1: If Delivery_Qty exists, Delivery_Date must exist
+                    else if (hasDeliveryQty && !hasDeliveryDate) {
+                        errorType = 'Missing Delivery Date';
+                        errorMessage = 'Delivery Qty is provided but Delivery Date is missing.';
+                    }
+                    // Validation Rule 2 & 3: If neither Date nor Qty exist, Remark must exist
+                    else if (!hasDeliveryDate && !hasDeliveryQty && !hasDeliveryRemark) {
+                        errorType = 'All Fields Empty';
+                        errorMessage = 'All fields (Delivery Date, Qty, and Remark) are empty. Please fill at least Delivery Date & Qty OR Remark.';
+                    }
+
+                    // If there's an error, add to validation errors array
+                    if (errorType) {
+                        validationErrors.push({
+                            RowNumber: index + 1,
+                            Key: row.Key || '',
+                            PRNo: row.PR_No || '',
+                            PONo: row.PO_No || '',
+                            Vendor: row.Vendor || '',
+                            DeliveryScheduleNo: childIndex + 1,
+                            ErrorType: errorType,
+                            ErrorMessage: errorMessage,
+                            DeliveryDate: child.Delivery_Date || '',
+                            DeliveryQty: child.Hold_Date || '',
+                            DeliveryRemark: child.Cleared_Date || ''
+                        });
+                    }
+                });
+            });
+
+            // If validation errors exist, generate Excel log and stop submission
+            if (validationErrors.length > 0) {
+                Blockloaderhide();
+
+                // Generate Excel Error Log
+                generateValidationErrorExcel(validationErrors);
+
+                // Clear selections after showing errors
+                clearAllSelections();
+
+                // Show summary alert
+                showDangerAlert(`Validation Failed: ${validationErrors.length} error(s) found.\n\nAn Excel error log has been downloaded. Please fix the errors and try again.`);
                 return;
             }
 
+            // Proceed with submission if validation passes
             const selectedIds = selectedRows.map(row => row.Id);
 
             $.ajax({
@@ -1550,12 +1686,14 @@
                 success: function (response) {
                     Blockloaderhide();
                     if (response.success) {
+                        showSuccessAlert("Delivery Schedule is submitted successfully!");
 
-                       showSuccessAlert("Delivery Schedule is submitted successfully!");
+                        // Clear all selections after successful submission
+                        clearAllSelections();
 
                         setTimeout(function () {
                             window.location.reload();
-                        }, 1000);
+                        }, 1500);
                     }
                     else {
                         var errorMessg = "";
@@ -1570,11 +1708,166 @@
                         }
                     }
                 },
-                error: function (xhr, ststus, errors) {
+                error: function (xhr, status, errors) {
                     Blockloaderhide();
-                    showDangerAlert("An unexpected eror occured, please refresh the page and try again.");
+                    showDangerAlert("An unexpected error occurred, please refresh the page and try again.");
                 }
             });
+        }
+
+        // Function to clear all selections - BEST METHOD
+        function clearAllSelections() {
+            if (!table) return;
+
+            // Get current table data
+            const tableData = table.getData();
+
+            // Update Selected field to false for all rows
+            tableData.forEach(item => {
+                item.Selected = false;
+            });
+
+            // Replace table data (forces full re-render with checkboxes unchecked)
+            table.replaceData(tableData).then(() => {
+                // Uncheck header checkbox after data is replaced
+                const headerCheckbox = document.querySelector('#openPo_Table input.large-checkbox[onclick*="toggleAllCheckboxes"]');
+                if (headerCheckbox) {
+                    headerCheckbox.checked = false;
+                }
+            }).catch(err => {
+                console.error("Error clearing selections:", err);
+            });
+        }
+
+        // Function to generate Excel file for validation errors
+        async function generateValidationErrorExcel(errors) {
+            if (!window.ExcelJS) {
+                console.error("ExcelJS library not loaded");
+                alert("Excel export library not available. Please check console for details.");
+                return;
+            }
+
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet("Validation Errors", {
+                views: [{ state: "frozen", xSplit: 0, ySplit: 1 }]
+            });
+
+            // Define columns
+            const columns = [
+                { header: "Row No", key: "RowNumber", width: 10 },
+                { header: "Key", key: "Key", width: 15 },
+                { header: "PR No", key: "PRNo", width: 15 },
+                { header: "PO No", key: "PONo", width: 15 },
+                { header: "Vendor", key: "Vendor", width: 25 },
+                { header: "Delivery Schedule No", key: "DeliveryScheduleNo", width: 18 },
+                { header: "Error Type", key: "ErrorType", width: 25 },
+                { header: "Error Message", key: "ErrorMessage", width: 60 },
+                { header: "Delivery Date", key: "DeliveryDate", width: 15 },
+                { header: "Delivery Qty", key: "DeliveryQty", width: 12 },
+                { header: "Delivery Remark", key: "DeliveryRemark", width: 30 }
+            ];
+
+            ws.columns = columns;
+
+            // Style header row
+            const headerRow = ws.getRow(1);
+            headerRow.height = 25;
+            headerRow.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 11 };
+            headerRow.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFD32F2F" } // Red background for errors
+            };
+            headerRow.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+
+            const thinBorder = {
+                top: { style: "thin" },
+                bottom: { style: "thin" },
+                left: { style: "thin" },
+                right: { style: "thin" }
+            };
+
+            headerRow.eachCell(cell => {
+                cell.border = thinBorder;
+            });
+
+            // Add data rows
+            errors.forEach((error, index) => {
+                const row = ws.addRow(error);
+                row.height = 20;
+
+                // Alternate row colors for better readability
+                if (index % 2 === 0) {
+                    row.fill = {
+                        type: "pattern",
+                        pattern: "solid",
+                        fgColor: { argb: "FFFEF5E7" } // Light yellow
+                    };
+                }
+
+                row.eachCell(cell => {
+                    cell.alignment = { vertical: "middle", wrapText: true };
+                    cell.border = thinBorder;
+                });
+
+                // Highlight error type column
+                row.getCell("ErrorType").font = { bold: true, color: { argb: "FFD32F2F" } };
+            });
+
+            // Add summary row at the top (after header)
+            ws.insertRow(2, {
+                RowNumber: '',
+                Key: '',
+                PRNo: '',
+                PONo: '',
+                Vendor: '',
+                DeliveryScheduleNo: '',
+                ErrorType: 'TOTAL ERRORS',
+                ErrorMessage: errors.length,
+                DeliveryDate: '',
+                DeliveryQty: '',
+                DeliveryRemark: ''
+            });
+
+            const summaryRow = ws.getRow(2);
+            summaryRow.height = 22;
+            summaryRow.font = { bold: true, size: 12 };
+            summaryRow.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFFEB3B" } // Yellow
+            };
+            summaryRow.eachCell(cell => {
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+                cell.border = thinBorder;
+            });
+
+            // Auto-filter
+            ws.autoFilter = {
+                from: { row: 1, column: 1 },
+                to: { row: 1, column: columns.length }
+            };
+
+            // Generate file
+            try {
+                const buffer = await wb.xlsx.writeBuffer();
+                const blob = new Blob([buffer], {
+                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                });
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5);
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = `Validation_Errors_${timestamp}.xlsx`;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                console.log("Excel validation error log generated successfully");
+            } catch (error) {
+                console.error("Error generating Excel file:", error);
+                alert("Failed to generate Excel error log. Please check console.");
+            }
         }
 
         function openDeliverySchedule(id) {

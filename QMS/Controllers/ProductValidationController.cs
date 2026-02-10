@@ -31,14 +31,11 @@ using QMS.Core.Repositories.ProductValidationRepo;
 using QMS.Core.Repositories.RegulatoryRequirementRepository;
 using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.SurgeTestReportRepository;
-using QMS.Core.Repositories.TemperatureRiseTestRepo;
 using QMS.Core.Services.HydraulicTestReportService;
 using QMS.Core.Services.SystemLogs;
 using System.Globalization;
-using System.Drawing;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading.Tasks;
 using Color = System.Drawing.Color;
 using Paragraph = iText.Layout.Element.Paragraph;
@@ -68,11 +65,6 @@ public class ProductValidationController : Controller
     private readonly INeedleFlameTestRepository _needleFlameTestRepository;
     private readonly IGeneralObservationRepository _generalObservationRepository;
     private readonly IWebHostEnvironment _env;
-    private readonly IIngressProtectionRepository _ingressProtectionRepository;
-    private readonly IDropTestRepository _dropTestRepository;
-    //private readonly IGlowWireTestRepository _glowWireTestRepository;
-    private readonly IHydraulicTestReportService _hydraulicTestReportService;
-    private readonly ITemperatureRiseTestRepository _temperatureRiseTestRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -93,25 +85,7 @@ public class ProductValidationController : Controller
         INeedleFlameTestRepository needleFlameTestRepository,
         IGeneralObservationRepository generalObservationRepository, IWebHostEnvironment env
         )
-         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
- IElectricalPerformanceRepository electricalPerformanceRepository,
- IWebHostEnvironment hostEnvironment,
- IElectricalProtectionRepository electricalProtectionRepository,
- IRippleTestReportRepository rippleTestReportRepository,
- ISurgeTestReportRepository surgeTestRepository,
- IPhotometryTestRepository photometryTestRepository,
- IImpactTestRepository impactTestRepository,
- ISystemLogService systemLogService,
- IInstallationTrialRepository installationTrialRepository,
- IRegulatoryRequirementRepository regulatoryRequirementRepository,
- IIngressProtectionRepository ingressProtectionRepository,
- IDropTestRepository dropTestRepository,
- //IGlowWireTestRepository glowWireTestRepository,
- IHydraulicTestReportService hydraulicTestReportService,
-        ITemperatureRiseTestRepository temperatureRiseTestRepository)
     {
-        
-
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
         _electricalPerformanceRepository = electricalPerformanceRepository;
         _hostEnvironment = hostEnvironment;
@@ -130,11 +104,6 @@ public class ProductValidationController : Controller
         _needleFlameTestRepository = needleFlameTestRepository;
         _generalObservationRepository = generalObservationRepository;
         _env = env;
-        _ingressProtectionRepository = ingressProtectionRepository;
-        _dropTestRepository = dropTestRepository;
-        //_glowWireTestRepository = glowWireTestRepository;
-        _hydraulicTestReportService = hydraulicTestReportService;
-        _temperatureRiseTestRepository = temperatureRiseTestRepository;
     }
 
 
@@ -645,7 +614,7 @@ public class ProductValidationController : Controller
         }
     }
 
-    
+
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
     {
         var model = new PhysicalCheckAndVisualInspectionViewModel();
@@ -727,328 +696,13 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
-
-    [HttpGet]
-    [HttpGet]
-    public async Task<IActionResult> ExportElectricalPerformanceToExcel(string ids)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(ids))
-            {
-                return BadRequest("No records selected");
-            }
-
-            var idList = ids.Split(',').Select(int.Parse).ToList();
-
-            using var workbook = new XLWorkbook();
-
-            foreach (var id in idList)
-            {
-                var data = await _electricalPerformanceRepository.GetElectricalPerformancesByIdAsync(id);
-
-                if (data == null) continue;
-
-                // Create worksheet with report number as sheet name
-                var sheetName = SanitizeSheetName(data.ReportNo ?? $"Report_{id}");
-                var worksheet = workbook.Worksheets.Add(sheetName);
-
-                // ===== SET COLUMN WIDTHS FIRST =====
-                worksheet.Column(1).Width = 10;  // Sample
-                worksheet.Column(2).Width = 20;  // Condition
-                worksheet.Column(3).Width = 12;  // Vac
-                worksheet.Column(4).Width = 12;  // Iac (A)
-                worksheet.Column(5).Width = 12;  // Wac
-                worksheet.Column(6).Width = 12;  // PF
-                worksheet.Column(7).Width = 12;  // ATHD
-                worksheet.Column(8).Width = 12;  // Vdc
-                worksheet.Column(9).Width = 12;  // Idc (A)
-                worksheet.Column(10).Width = 12; // Wdc
-                worksheet.Column(11).Width = 12; // Eff (%)
-                worksheet.Column(12).Width = 14; // NoLoad V
-                worksheet.Column(13).Width = 14; // Start V
-                worksheet.Column(14).Width = 12; // Result
-
-                int currentRow = 1;
-
-                // ===== HEADER SECTION =====
-                worksheet.Cell(currentRow, 1).Value = "ELECTRICAL PERFORMANCE TEST REPORT";
-                worksheet.Range(currentRow, 1, currentRow, 12).Merge();
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
-                worksheet.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                worksheet.Cell(currentRow, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-
-                // Second merged section for logo
-                worksheet.Range(currentRow, 13, currentRow, 14).Merge();
-                worksheet.Cell(currentRow, 13).Style.Fill.BackgroundColor = XLColor.White;
-                worksheet.Cell(currentRow, 13).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                worksheet.Cell(currentRow, 13).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-
-                // Set row height for logo
-                worksheet.Row(currentRow).Height = 80;
-
-                // Insert logo
-                try
-                {
-                    var webroot = _hostEnvironment.WebRootPath ?? "";
-                    var logoPath = Path.Combine(webroot, "images", "wipro-logo.png");
-
-                    if (System.IO.File.Exists(logoPath))
-                    {
-                        var logoAnchor = worksheet.Cell(currentRow, 13);
-
-                        var picture = worksheet.AddPicture(logoPath)
-                                        .MoveTo(logoAnchor, 5, 5)
-                                        .WithPlacement(XLPicturePlacement.Move);
-
-                        picture.ScaleHeight(1.2);
-                        picture.ScaleWidth(1.2);
-                    }
-                }
-                catch
-                {
-                    // ignore image errors so export still works
-                }
-
-                currentRow++;
-
-                // ===== BASIC INFORMATION =====
-                ElectAddDataRow(worksheet, currentRow++, "Product Cat Ref:", data.ProductCatRef,
-                          "Report No:", data.ReportNo);
-                ElectAddDataRow(worksheet, currentRow++, "Product Description:", data.ProductDescription,
-                          "Report Date:", data.ReportDate?.ToString("dd-MMM-yyyy"));
-                currentRow++;
-
-                ElectAddDataRow(worksheet, currentRow++, "Light Source Details:", data.LightSourceDetails,
-                          "Driver Details:", data.DriverDetails);
-                ElectAddDataRow(worksheet, currentRow++, "PCB Details:", data.PCBDetails,
-                          "LED Combinations:", data.LEDCombinations);
-                ElectAddDataRow(worksheet, currentRow++, "Sensor Details:", data.SensorDetails,
-                          "Batch Code:", data.BatchCode);
-                ElectAddDataRow(worksheet, currentRow++, "Lamp Details:", data.LampDetails,
-                          "PKD:", data.PKD);
-                currentRow += 2;
-
-                // ===== TEST DATA TABLE =====
-                const int samples = 5;
-                const int rowsPerCondition = 9;
-                string before = "Before Soaking";
-                string after = "After 2 hrs Soaking";
-
-                for (int s = 1; s <= samples; s++)
-                {
-                    // Add header for each sample
-                    ElectAddSectionHeader(worksheet, currentRow, $"SAMPLE {s}");
-                    currentRow++;
-
-                    // Column headers
-                    worksheet.Cell(currentRow, 1).Value = "Sample";
-                    worksheet.Cell(currentRow, 2).Value = "Condition";
-                    worksheet.Cell(currentRow, 3).Value = "Vac";
-                    worksheet.Cell(currentRow, 4).Value = "Iac (A)";
-                    worksheet.Cell(currentRow, 5).Value = "Wac";
-                    worksheet.Cell(currentRow, 6).Value = "PF";
-                    worksheet.Cell(currentRow, 7).Value = "ATHD";
-                    worksheet.Cell(currentRow, 8).Value = "Vdc";
-                    worksheet.Cell(currentRow, 9).Value = "Idc (A)";
-                    worksheet.Cell(currentRow, 10).Value = "Wdc";
-                    worksheet.Cell(currentRow, 11).Value = "Eff (%)";
-                    worksheet.Cell(currentRow, 12).Value = "NoLoad V";
-                    worksheet.Cell(currentRow, 13).Value = "Start V";
-                    worksheet.Cell(currentRow, 14).Value = "Result";
-
-                    // Style header row
-                    for (int col = 1; col <= 14; col++)
-                    {
-                        worksheet.Cell(currentRow, col).Style.Font.Bold = true;
-                        worksheet.Cell(currentRow, col).Style.Fill.BackgroundColor = XLColor.LightGray;
-                        worksheet.Cell(currentRow, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                        worksheet.Cell(currentRow, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        worksheet.Cell(currentRow, col).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                        worksheet.Cell(currentRow, col).Style.Alignment.WrapText = true;
-                    }
-                    worksheet.Row(currentRow).Height = 25; // Header row height
-                    currentRow++;
-
-                    int sampleStartRow = currentRow;
-
-                    // Before Soaking rows
-                    for (int r = 1; r <= rowsPerCondition; r++)
-                    {
-                        var detail = data.Details.FirstOrDefault(d =>
-                            d.SampleNo == s && d.ConditionType == before && d.RowNo == r);
-
-                        if (r == 1)
-                        {
-                            worksheet.Cell(currentRow, 1).Value = s;
-                            worksheet.Cell(currentRow, 2).Value = before;
-                        }
-
-                        worksheet.Cell(currentRow, 3).Value = detail?.Vac;
-                        worksheet.Cell(currentRow, 4).Value = detail?.IacA;
-                        worksheet.Cell(currentRow, 5).Value = detail?.Wac;
-                        worksheet.Cell(currentRow, 6).Value = detail?.PF;
-                        worksheet.Cell(currentRow, 7).Value = detail?.ATHD;
-                        worksheet.Cell(currentRow, 8).Value = detail?.Vdc;
-                        worksheet.Cell(currentRow, 9).Value = detail?.IdcA;
-                        worksheet.Cell(currentRow, 10).Value = detail?.Wdc;
-                        worksheet.Cell(currentRow, 11).Value = detail?.Eff;
-                        worksheet.Cell(currentRow, 12).Value = detail?.NoLoadV;
-                        worksheet.Cell(currentRow, 13).Value = detail?.StartV;
-                        worksheet.Cell(currentRow, 14).Value = detail?.Result;
-
-                        // Center align all data cells
-                        for (int col = 3; col <= 14; col++)
-                        {
-                            worksheet.Cell(currentRow, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        }
-
-                        ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 14));
-                        worksheet.Row(currentRow).Height = 20; // Data row height
-                        currentRow++;
-                    }
-
-                    // After Soaking rows
-                    for (int r = 1; r <= rowsPerCondition; r++)
-                    {
-                        var detail = data.Details.FirstOrDefault(d =>
-                            d.SampleNo == s && d.ConditionType == after && d.RowNo == r);
-
-                        if (r == 1)
-                        {
-                            worksheet.Cell(currentRow, 2).Value = after;
-                        }
-
-                        worksheet.Cell(currentRow, 3).Value = detail?.Vac;
-                        worksheet.Cell(currentRow, 4).Value = detail?.IacA;
-                        worksheet.Cell(currentRow, 5).Value = detail?.Wac;
-                        worksheet.Cell(currentRow, 6).Value = detail?.PF;
-                        worksheet.Cell(currentRow, 7).Value = detail?.ATHD;
-                        worksheet.Cell(currentRow, 8).Value = detail?.Vdc;
-                        worksheet.Cell(currentRow, 9).Value = detail?.IdcA;
-                        worksheet.Cell(currentRow, 10).Value = detail?.Wdc;
-                        worksheet.Cell(currentRow, 11).Value = detail?.Eff;
-                        worksheet.Cell(currentRow, 12).Value = detail?.NoLoadV;
-                        worksheet.Cell(currentRow, 13).Value = detail?.StartV;
-                        worksheet.Cell(currentRow, 14).Value = detail?.Result;
-
-                        // Center align all data cells
-                        for (int col = 3; col <= 14; col++)
-                        {
-                            worksheet.Cell(currentRow, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                        }
-
-                        ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 14));
-                        worksheet.Row(currentRow).Height = 20; // Data row height
-                        currentRow++;
-                    }
-
-                    // Merge Sample column for all rows
-                    worksheet.Range(sampleStartRow, 1, currentRow - 1, 1).Merge();
-                    worksheet.Cell(sampleStartRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                    worksheet.Cell(sampleStartRow, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                    worksheet.Cell(sampleStartRow, 1).Style.Font.Bold = true;
-
-                    // Merge Condition columns
-                    worksheet.Range(sampleStartRow, 2, sampleStartRow + rowsPerCondition - 1, 2).Merge();
-                    worksheet.Cell(sampleStartRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                    worksheet.Cell(sampleStartRow, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                    worksheet.Cell(sampleStartRow, 2).Style.Font.Bold = true;
-
-                    worksheet.Range(sampleStartRow + rowsPerCondition, 2, currentRow - 1, 2).Merge();
-                    worksheet.Cell(sampleStartRow + rowsPerCondition, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                    worksheet.Cell(sampleStartRow + rowsPerCondition, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-                    worksheet.Cell(sampleStartRow + rowsPerCondition, 2).Style.Font.Bold = true;
-
-                    currentRow += 2;
-                }
-
-                // ===== FOOTER SECTION =====
-                ElectAddSectionHeader(worksheet, currentRow, "TEST CONCLUSION");
-                currentRow++;
-
-                ElectAddDataRow(worksheet, currentRow++, "Overall Result:", data.OverallResult, "", "");
-                ElectAddDataRow(worksheet, currentRow++, "Tested By:", data.TestedByName,
-                          "Verified By:", data.VerifiedByName);
-
-                // DO NOT use AdjustToContents - we already set custom widths
-                // worksheet.Columns().AdjustToContents();
-            }
-
-            // Save to memory stream
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
-
-            var fileName = $"ElectricalPerformance_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-            return File(stream.ToArray(),
-                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                       fileName);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest($"Error exporting: {ex.Message}");
-        }
-    }
-
-    // Helper methods (same as Temperature Rise Test)
-    private void ElectAddSectionHeader(IXLWorksheet worksheet, int row, string title)
-    {
-        worksheet.Cell(row, 1).Value = title;
-        worksheet.Range(row, 1, row, 14).Merge();
-        worksheet.Cell(row, 1).Style.Font.Bold = true;
-        worksheet.Cell(row, 1).Style.Font.FontSize = 12;
-        worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-        worksheet.Cell(row, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
-    }
-
-    private void ElectAddDataRow(IXLWorksheet worksheet, int row, string label1, string value1,
-                           string label2, string value2, int startCol = 1, int endCol = 14)
-    {
-        int midCol = (endCol - startCol + 1) / 2 + startCol;
-
-        worksheet.Cell(row, startCol).Value = label1;
-        worksheet.Cell(row, startCol).Style.Font.Bold = true;
-        worksheet.Cell(row, startCol + 1).Value = value1;
-        worksheet.Range(row, startCol + 1, row, midCol - 1).Merge();
-
-        if (!string.IsNullOrEmpty(label2))
-        {
-            worksheet.Cell(row, midCol).Value = label2;
-            worksheet.Cell(row, midCol).Style.Font.Bold = true;
-            worksheet.Cell(row, midCol + 1).Value = value2;
-            worksheet.Range(row, midCol + 1, row, endCol).Merge();
-        }
-
-        ApplyBorders(worksheet.Range(row, startCol, row, endCol));
-    }
-
-    //private void ApplyBorders(IXLRange range)
-    //{
-    //    range.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-    //    range.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-    //}
-
-    //private string SanitizeSheetName(string name)
-    //{
-    //    var invalidChars = new[] { '\\', '/', '?', '*', '[', ']', ':' };
-    //    foreach (var c in invalidChars)
-    //    {
-    //        name = name.Replace(c, '_');
-    //    }
-    //    return name.Length > 31 ? name.Substring(0, 31) : name;
-    //}
-
-
-
     #endregion
 
 
     #region RippleTest
 
     [HttpPost]
-    
+
 
     public IActionResult RippleTestReport()
     {
@@ -1947,7 +1601,7 @@ public class ProductValidationController : Controller
             return Json(new { success = false, message = ex.Message });
         }
     }
-    
+
     #endregion
 
 
@@ -2502,7 +2156,17 @@ public class ProductValidationController : Controller
     #endregion
 
 
+    #region TemperatureRiseTestOfLuminaire
+    public IActionResult TemperatureRiseTestOfLuminaire()
+    {
 
+        return View();
+    }
+    public IActionResult TemperatureRiseTestOfLuminaireDetails()
+    {
+        return View();
+    }
+    #endregion
 
 
     #region PhotometryTestReport 
@@ -2613,12 +2277,12 @@ public class ProductValidationController : Controller
         ws.Cell("I5").Value = "Date :" + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
 
 
-        ws.Cell("E8").Value =  model.Sphere_InputWattage_Spec ?? "";
-        ws.Cell("F8").Value =  model.Sphere_InputWattage_Sample1.ToString() ?? "";
-        ws.Cell("G8").Value =  model.Sphere_InputWattage_Sample2.ToString() ?? "";
-        ws.Cell("H8").Value =  model.Sphere_InputWattage_Sample3.ToString() ?? "";
-        ws.Cell("I8").Value =  model.Sphere_InputWattage_Sample4.ToString() ?? "";
-        ws.Cell("J8").Value =  model.Sphere_InputWattage_Sample5.ToString() ?? "";
+        ws.Cell("E8").Value = model.Sphere_InputWattage_Spec ?? "";
+        ws.Cell("F8").Value = model.Sphere_InputWattage_Sample1.ToString() ?? "";
+        ws.Cell("G8").Value = model.Sphere_InputWattage_Sample2.ToString() ?? "";
+        ws.Cell("H8").Value = model.Sphere_InputWattage_Sample3.ToString() ?? "";
+        ws.Cell("I8").Value = model.Sphere_InputWattage_Sample4.ToString() ?? "";
+        ws.Cell("J8").Value = model.Sphere_InputWattage_Sample5.ToString() ?? "";
         ws.Cell("K8").Value = model.Sphere_InputWattage_Result ?? "";
 
         ws.Cell("E9").Value = model.Sphere_LuminousFlux_Spec ?? "";
@@ -3959,545 +3623,6 @@ public class ProductValidationController : Controller
     #endregion
 
 
-
-    public IActionResult TemperatureRiseTestOfLuminaire()
-    {
-        return View();
-    }
-
-    public async Task<ActionResult> GetTemperatureRiseList(DateTime? startDate = null, DateTime? endDate = null)
-    {
-        var result = await _temperatureRiseTestRepository.GetTemperatureRiseTestAsync(startDate, endDate);
-        return Json(result);
-    }
-
-    public async Task<IActionResult> TemperatureRiseTestOfLuminaireDetails(int Id)
-    {
-        var model = new TemperatureRiseTestViewModel();
-
-        if (Id > 0)
-        {
-            model = await _temperatureRiseTestRepository.GetTemperatureRiseTestByIdAsync(Id);
-
-        }
-        else
-        {
-            model.ReportDate = DateTime.Now;
-        }
-
-        return View(model);
-    }
-
-
-    [HttpPost]
-    public async Task<ActionResult> InsertUpdateTemperatureRiseDetails(TemperatureRiseTestViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            var errors = ModelState.Values.SelectMany(v => v.Errors)
-                                          .Select(e => e.ErrorMessage)
-                                          .ToList();
-            return Json(new { Success = false, Errors = errors });
-        }
-
-        if (model.Id > 0)
-        {
-            model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
-            model.UpdatedOn = DateTime.Now;
-            var result = await _temperatureRiseTestRepository.UpdateTemperatureRiseTestAsync(model);
-            return Json(result);
-        }
-        else
-        {
-            model.AddedBy = HttpContext.Session.GetInt32("UserId") ?? 0;
-            model.AddedOn = DateTime.Now;
-            var result = await _temperatureRiseTestRepository.InsertTemperatureRiseTestAsync(model);
-            return Json(result);
-        }
-    }
-
-    [HttpPost]
-    public async Task<ActionResult> DeleteTemperatureRise(int id)
-    {
-        var result = await _temperatureRiseTestRepository.DeleteTemperatureRiseTestAsync(id);
-        return Json(result);
-    }
-
-    [HttpGet]
-    
-    public async Task<IActionResult> ExportTemperatureRiseToExcel(string ids)
-    {
-        try
-        {
-            if (string.IsNullOrEmpty(ids))
-            {
-                return BadRequest("No records selected");
-            }
-
-            var idList = ids.Split(',').Select(int.Parse).ToList();
-
-            using var workbook = new XLWorkbook();
-
-            foreach (var id in idList)
-            {
-                var data = await _temperatureRiseTestRepository.GetTemperatureRiseTestByIdAsync(id);
-
-                if (data == null) continue;
-
-                // Create worksheet with report number as sheet name
-                var sheetName = SanitizeSheetName(data.ReportNo ?? $"Report_{id}");
-                var worksheet = workbook.Worksheets.Add(sheetName);
-
-                int currentRow = 1;
-
-                // ===== HEADER SECTION =====
-                worksheet.Cell(currentRow, 1).Value = "TEMPERATURE RISE TEST OF LUMINAIRE (TRT)";
-                worksheet.Range(currentRow, 1, currentRow, 16).Merge(); // A1:P1 (columns 1-16)
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
-                worksheet.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                worksheet.Cell(currentRow, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-
-                // Second merged section: Q1:U1 for logo
-                worksheet.Range(currentRow, 17, currentRow, 21).Merge(); // Q1:U1 (columns 17-21)
-                worksheet.Cell(currentRow, 17).Style.Fill.BackgroundColor = XLColor.White;
-                worksheet.Cell(currentRow, 17).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                worksheet.Cell(currentRow, 17).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
-
-                // Set row height for logo
-                worksheet.Row(currentRow).Height = 80; // Adjust this value as needed (try 50-80)
-
-                //// The rightmost column of the box (col 5) will hold the large logo inside the same box
-                try
-                {
-                    var webroot = _hostEnvironment.WebRootPath ?? "";
-                    var logoPath = Path.Combine(webroot, "images", "wipro-logo.png");
-
-                    if (System.IO.File.Exists(logoPath))
-                    {
-                        var logoAnchor = worksheet.Cell(currentRow, 17); // Column Q
-
-                        var picture = worksheet.AddPicture(logoPath)
-                                        .MoveTo(logoAnchor, 5, 5) // Adjust offset: (horizontal, vertical)
-                                        .WithPlacement(XLPicturePlacement.Move);
-
-                        picture.ScaleHeight(1.2); // Adjust scale as needed
-                        picture.ScaleWidth(1.2);  // Adjust scale as needed
-                    }
-                }
-
-                catch
-                {
-                    // ignore image errors so export still works
-                }
-
-
-                //worksheet.Cell(currentRow, 1).Value = $"Report No: {data.ReportNo}  |  Date: {data.ReportDate?.ToString("dd-MMM-yyyy")}";
-                //worksheet.Range(currentRow, 1, currentRow, 21).Merge();
-                //worksheet.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                //currentRow += 2;
-                currentRow++;
-                // ===== PART I: BASIC INFORMATION =====
-                AddSectionHeader(worksheet, currentRow, "PART I: BASIC INFORMATION");
-                currentRow++;
-
-                AddDataRow(worksheet, currentRow++, "Testing Location:", data.TestingLocation, "Report No:", data.ReportNo);
-                AddDataRow(worksheet, currentRow++, "Product Cat Ref:", data.ProductCatRef, "Report Date:", data.ReportDate?.ToString("dd-MMM-yyyy"));
-                AddDataRow(worksheet, currentRow++, "Product Description:", data.ProductDescription, "Batch Code:", data.BatchCode);
-                AddDataRow(worksheet, currentRow++, "Heat Sink Material:", data.HeatSinkMaterial, "Heat Sink Weight:", data.HeatSinkWeight);
-                AddDataRow(worksheet, currentRow++, "Lens Details:", data.LensDetails, "Thermal Paste Details:", data.ThermalPasteDetails);
-                AddDataRow(worksheet, currentRow++, "PKD:", data.PKD, "Nominal Operating Voltage:", data.NominalOperatingVoltage?.ToString());
-                currentRow++;
-
-                // ===== PART II & III: DRIVER/PCB & LED DETAILS =====
-                AddSectionHeader(worksheet, currentRow, "PART II: DRIVER / PCB DETAILS");
-                worksheet.Cell(currentRow, 12).Value = "PART III: LED DETAILS";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 12).Style.Fill.BackgroundColor = XLColor.LightGray;
-                worksheet.Range(currentRow, 12, currentRow, 21).Merge();
-                worksheet.Cell(currentRow, 12).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
-                currentRow++;
-
-                // Row 1
-                worksheet.Cell(currentRow, 1).Value = "Driver Used:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.DriverUsed;
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "LED Used:";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.LedUsed;
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow++;
-
-                // Row 2
-                worksheet.Cell(currentRow, 1).Value = "No. of Drivers:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.NoOfDrivers?.ToString();
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "No. of LEDs:";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.NoOfLeds?.ToString();
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow++;
-
-                // Row 3
-                worksheet.Cell(currentRow, 1).Value = "Driver O/P Voltage:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.DriverOutputVoltage?.ToString();
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "No. of LEDs in Series:";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.NoOfLedsInSeries?.ToString();
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow++;
-
-                // Row 4
-                worksheet.Cell(currentRow, 1).Value = "Driver O/P Current (A):";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.DriverOutputCurrent?.ToString();
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "No. of LEDs in Parallel:";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.NoOfLedsInParallel?.ToString();
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow++;
-
-                // Row 5
-                worksheet.Cell(currentRow, 1).Value = "Driver Allowable Tc:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.DriverAllowableTc?.ToString();
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "LED RθJH (°C/W):";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.LedRjTH?.ToString();
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow++;
-
-                // Row 6
-                worksheet.Cell(currentRow, 1).Value = "Driver Allowable Ta:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.DriverAllowableTa?.ToString();
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "Vf (V):";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.LedVf?.ToString();
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow++;
-
-                // Row 7
-                worksheet.Cell(currentRow, 1).Value = "PCB Material / Make:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.PcbMaterialMake;
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "If (A):";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.LedIf?.ToString();
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow++;
-
-                // Row 8
-                worksheet.Cell(currentRow, 1).Value = "PCB Size & Qty:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.PcbSizeQty;
-                worksheet.Range(currentRow, 2, currentRow, 10).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 10));
-
-                worksheet.Cell(currentRow, 12).Value = "W(dc):";
-                worksheet.Cell(currentRow, 12).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 13).Value = data.LedWdc?.ToString();
-                worksheet.Range(currentRow, 13, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 12, currentRow, 21));
-                currentRow += 2;
-                // ===== PART IV: PROBE PLACEMENT =====
-                // ===== PART IV: PROBE PLACEMENT =====
-                AddSectionHeader(worksheet, currentRow, "PART IV: PROBE PLACEMENT DETAILS");
-                currentRow++;
-
-                int probeStartRow = currentRow;
-                int leftColRow = currentRow;
-                int rightColRow = currentRow;
-
-                // Left column: T1-T9
-                for (int i = 1; i <= 9; i++)
-                {
-                    var propName = $"ProbeT{i}_Desc";
-                    var propValue = data.GetType().GetProperty(propName)?.GetValue(data, null)?.ToString();
-
-                    worksheet.Cell(leftColRow, 1).Value = $"T{i}:";
-                    worksheet.Cell(leftColRow, 1).Style.Font.Bold = true;
-                    worksheet.Cell(leftColRow, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-                    worksheet.Cell(leftColRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                    worksheet.Cell(leftColRow, 2).Value = propValue;
-                    worksheet.Range(leftColRow, 2, leftColRow, 10).Merge();
-
-                    ApplyBorders(worksheet.Range(leftColRow, 1, leftColRow, 10));
-                    leftColRow++;
-                }
-
-                // Right column: T10-T16 (starts at the same row as T1)
-                for (int i = 10; i <= 16; i++)
-                {
-                    var propName = $"ProbeT{i}_Desc";
-                    var propValue = data.GetType().GetProperty(propName)?.GetValue(data, null)?.ToString();
-
-                    worksheet.Cell(rightColRow, 12).Value = $"T{i}:";
-                    worksheet.Cell(rightColRow, 12).Style.Font.Bold = true;
-                    worksheet.Cell(rightColRow, 12).Style.Fill.BackgroundColor = XLColor.LightGray;
-                    worksheet.Cell(rightColRow, 12).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                    worksheet.Cell(rightColRow, 13).Value = propValue;
-                    worksheet.Range(rightColRow, 13, rightColRow, 21).Merge();
-
-                    ApplyBorders(worksheet.Range(rightColRow, 12, rightColRow, 21));
-                    rightColRow++;
-                }
-
-                // Move to next section (use the maximum row from both columns)
-                currentRow = Math.Max(leftColRow, rightColRow) + 1;
-
-                // Move to next section (currentRow is already at row 9 from the loop)
-                currentRow ++;
-
-                // ===== PART V & VI: THERMAL & ELECTRICAL READINGS =====
-                AddSectionHeader(worksheet, currentRow, "PART V: THERMAL READINGS & PART VI: ELECTRICAL READINGS");
-                currentRow++;
-
-                // Headers
-                string[] headers = { "Time (Hrs)", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8",
-                               "T9", "T10", "T11", "T12", "T13", "T14", "T15", "T16",
-                               "VIN", "IIN", "PIN", "TJ" };
-
-                for (int i = 0; i < headers.Length; i++)
-                {
-                    worksheet.Cell(currentRow, i + 1).Value = headers[i];
-                    worksheet.Cell(currentRow, i + 1).Style.Font.Bold = true;
-                    worksheet.Cell(currentRow, i + 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-                    worksheet.Cell(currentRow, i + 1).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                    worksheet.Cell(currentRow, i + 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                }
-                currentRow++;
-
-                // Data rows
-                foreach (var detail in data.Details)
-                {
-                    worksheet.Cell(currentRow, 1).Value = detail.TimeHrs;
-                    worksheet.Cell(currentRow, 2).Value = detail.T1;
-                    worksheet.Cell(currentRow, 3).Value = detail.T2;
-                    worksheet.Cell(currentRow, 4).Value = detail.T3;
-                    worksheet.Cell(currentRow, 5).Value = detail.T4;
-                    worksheet.Cell(currentRow, 6).Value = detail.T5;
-                    worksheet.Cell(currentRow, 7).Value = detail.T6;
-                    worksheet.Cell(currentRow, 8).Value = detail.T7;
-                    worksheet.Cell(currentRow, 9).Value = detail.T8;
-                    worksheet.Cell(currentRow, 10).Value = detail.T9;
-                    worksheet.Cell(currentRow, 11).Value = detail.T10;
-                    worksheet.Cell(currentRow, 12).Value = detail.T11;
-                    worksheet.Cell(currentRow, 13).Value = detail.T12;
-                    worksheet.Cell(currentRow, 14).Value = detail.T13;
-                    worksheet.Cell(currentRow, 15).Value = detail.T14;
-                    worksheet.Cell(currentRow, 16).Value = detail.T15;
-                    worksheet.Cell(currentRow, 17).Value = detail.T16;
-                    worksheet.Cell(currentRow, 18).Value = detail.VIN;
-                    worksheet.Cell(currentRow, 19).Value = detail.IIN;
-                    worksheet.Cell(currentRow, 20).Value = detail.PIN;
-                    worksheet.Cell(currentRow, 21).Value = detail.TJ;
-
-                    ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 21));
-                    currentRow++;
-                }
-
-                // ✅ FIXED: Add Maximum Values Row
-                worksheet.Cell(currentRow, 1).Value = "Maximum Values";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 1).Style.Fill.BackgroundColor = XLColor.LightYellow;
-                worksheet.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-                worksheet.Cell(currentRow, 2).Value = data.MaxVal_T1;
-                worksheet.Cell(currentRow, 3).Value = data.MaxVal_T2;
-                worksheet.Cell(currentRow, 4).Value = data.MaxVal_T3;
-                worksheet.Cell(currentRow, 5).Value = data.MaxVal_T4;
-                worksheet.Cell(currentRow, 6).Value = data.MaxVal_T5;
-                worksheet.Cell(currentRow, 7).Value = data.MaxVal_T6;
-                worksheet.Cell(currentRow, 8).Value = data.MaxVal_T7;
-                worksheet.Cell(currentRow, 9).Value = data.MaxVal_T8;
-                worksheet.Cell(currentRow, 10).Value = data.MaxVal_T9;
-                worksheet.Cell(currentRow, 11).Value = data.MaxVal_T10;
-                worksheet.Cell(currentRow, 12).Value = data.MaxVal_T11;
-                worksheet.Cell(currentRow, 13).Value = data.MaxVal_T12;
-                worksheet.Cell(currentRow, 14).Value = data.MaxVal_T13;
-                worksheet.Cell(currentRow, 15).Value = data.MaxVal_T14;
-                worksheet.Cell(currentRow, 16).Value = data.MaxVal_T15;
-                worksheet.Cell(currentRow, 17).Value = data.MaxVal_T16;
-                worksheet.Cell(currentRow, 18).Value = "";
-                worksheet.Cell(currentRow, 19).Value = "";
-                worksheet.Cell(currentRow, 20).Value = "";
-                worksheet.Cell(currentRow, 21).Value = "";
-
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 21));
-                currentRow += 2;
-
-                // ===== PART VII: CONCLUSIONS =====
-                AddSectionHeader(worksheet, currentRow, "PART VII: CONCLUSIONS / REMARKS");
-                currentRow++;
-
-                AddDataRow(worksheet, currentRow++, "Max Recorded TJ:", data.Conclusion_MaxRecordedTJ?.ToString(),
-                          "Allowable TJ:", data.Conclusion_AllowableTJ?.ToString());
-                AddDataRow(worksheet, currentRow++, "Max Recorded Driver Tc:", data.Conclusion_MaxRecordedDriverTc?.ToString(),
-                          "Allowable Driver Tc:", data.Conclusion_AllowableDriverTc?.ToString());
-                AddDataRow(worksheet, currentRow++, "Max Recorded Lens Temp:", data.Conclusion_MaxRecordedLensTemp?.ToString(), "", "");
-                AddDataRow(worksheet, currentRow++, "Over Thermal Cut-Off:", data.Conclusion_OverThermalCutoff, "", "");
-
-                worksheet.Cell(currentRow, 1).Value = "RESULT:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Value = data.Conclusion_Result;
-                worksheet.Cell(currentRow, 2).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 2).Style.Font.FontSize = 14;
-                worksheet.Cell(currentRow, 2).Style.Font.FontColor =
-                    data.Conclusion_Result?.ToUpper() == "PASS" ? XLColor.Green : XLColor.Red;
-                worksheet.Range(currentRow, 2, currentRow, 21).Merge();
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 21));
-                currentRow += 2;
-
-                // ===== SIGNATURES =====
-                AddSectionHeader(worksheet, currentRow, "SIGNATURES");
-                currentRow++;
-
-                // Header row
-                worksheet.Cell(currentRow, 1).Value = "CONDUCTED BY:";
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-                worksheet.Range(currentRow, 1, currentRow, 7).Merge();
-
-                worksheet.Cell(currentRow, 8).Value = "WITNESSED BY:";
-                worksheet.Cell(currentRow, 8).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 8).Style.Fill.BackgroundColor = XLColor.LightGray;
-                worksheet.Range(currentRow, 8, currentRow, 14).Merge();
-
-                worksheet.Cell(currentRow, 15).Value = "APPROVED BY:";
-                worksheet.Cell(currentRow, 15).Style.Font.Bold = true;
-                worksheet.Cell(currentRow, 15).Style.Fill.BackgroundColor = XLColor.LightGray;
-                worksheet.Range(currentRow, 15, currentRow, 21).Merge();
-
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 21));
-                currentRow++;
-
-                // ✅ FIXED: First signature row (Name/Signature)
-                worksheet.Cell(currentRow, 1).Value = data.ConductedBy;
-                worksheet.Range(currentRow, 1, currentRow, 7).Merge();
-
-                worksheet.Cell(currentRow, 8).Value = data.WitnessBy;
-                worksheet.Range(currentRow, 8, currentRow, 14).Merge();
-
-                worksheet.Cell(currentRow, 15).Value = data.ApprovedBy;
-                worksheet.Range(currentRow, 15, currentRow, 21).Merge();
-
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 21));
-                currentRow++;
-
-                // ✅ FIXED: Second signature row (Designation/Date)
-                worksheet.Cell(currentRow, 1).Value = data.ConductedBySecnd;
-                worksheet.Range(currentRow, 1, currentRow, 7).Merge();
-
-                worksheet.Cell(currentRow, 8).Value = data.WitnessBySecnd;
-                worksheet.Range(currentRow, 8, currentRow, 14).Merge();
-
-                worksheet.Cell(currentRow, 15).Value = data.ApprovedBySecnd;
-                worksheet.Range(currentRow, 15, currentRow, 21).Merge();
-
-                ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 21));
-
-                // Auto-fit columns
-                worksheet.Columns().AdjustToContents();
-            }
-
-            // Save to memory stream
-            using var stream = new MemoryStream();
-            workbook.SaveAs(stream);
-            stream.Position = 0;
-
-            var fileName = $"TemperatureRiseTest_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
-            return File(stream.ToArray(),
-                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                       fileName);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest($"Error exporting: {ex.Message}");
-        }
-    }
-
-    
-    // Helper methods remain the same
-    private void AddSectionHeader(IXLWorksheet worksheet, int row, string title)
-    {
-        worksheet.Cell(row, 1).Value = title;
-        worksheet.Range(row, 1, row, 21).Merge();
-        worksheet.Cell(row, 1).Style.Font.Bold = true;
-        worksheet.Cell(row, 1).Style.Font.FontSize = 12;
-        worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-        worksheet.Cell(row, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
-    }
-
-    private void AddDataRow(IXLWorksheet worksheet, int row, string label1, string value1,
-                           string label2, string value2, int startCol = 1, int endCol = 21)
-    {
-        int midCol = (endCol - startCol + 1) / 2 + startCol;
-
-        worksheet.Cell(row, startCol).Value = label1;
-        worksheet.Cell(row, startCol).Style.Font.Bold = true;
-        worksheet.Cell(row, startCol + 1).Value = value1;
-        worksheet.Range(row, startCol + 1, row, midCol - 1).Merge();
-
-        if (!string.IsNullOrEmpty(label2))
-        {
-            worksheet.Cell(row, midCol).Value = label2;
-            worksheet.Cell(row, midCol).Style.Font.Bold = true;
-            worksheet.Cell(row, midCol + 1).Value = value2;
-            worksheet.Range(row, midCol + 1, row, endCol).Merge();
-        }
-
-        ApplyBorders(worksheet.Range(row, startCol, row, endCol));
-    }
-
-    private void ApplyBorders(IXLRange range)
-    {
-        range.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-        range.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-    }
-
-    private string SanitizeSheetName(string name)
-    {
-        var invalidChars = new[] { '\\', '/', '?', '*', '[', ']', ':' };
-        foreach (var c in invalidChars)
-        {
-            name = name.Replace(c, '_');
-        }
-        return name.Length > 31 ? name.Substring(0, 31) : name;
-    }
-    //#endregion
-
     #region Regulatory
     public IActionResult RegulatoryRequirements()
     {
@@ -4883,7 +4008,7 @@ public class ProductValidationController : Controller
     public async Task<IActionResult> HydraulicTestReportDetailsAsync(int Id)
     {
         var model = new HydraulicTestReportViewModel();
-        if(Id > 0)
+        if (Id > 0)
         {
             model = await _hydraulicTestReportService.GetHydraulicTestReportDetailsAsync(Id);
         }
@@ -4904,9 +4029,9 @@ public class ProductValidationController : Controller
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
-        foreach(var obs in model.Observations)
+        foreach (var obs in model.Observations)
         {
-            if(obs.PhotoBeforeTestAttachedFile != null)
+            if (obs.PhotoBeforeTestAttachedFile != null)
             {
                 string fileName = obs.PhotoBeforeTestAttachedFile.FileName.Replace(",", "_");
                 string savePath = Path.Combine(folder, fileName);
@@ -4916,7 +4041,7 @@ public class ProductValidationController : Controller
                 }
                 obs.PhotoBeforeTest = savePath;
             }
-            if(obs.PhotoAfterTestAttachedFile != null)
+            if (obs.PhotoAfterTestAttachedFile != null)
             {
                 string fileName = obs.PhotoAfterTestAttachedFile.FileName.Replace(",", "_");
                 string savePath = Path.Combine(folder, fileName);
@@ -4928,7 +4053,7 @@ public class ProductValidationController : Controller
             }
         }
 
-        if(model.Id > 0)
+        if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
             model.UpdatedOn = DateTime.Now;
@@ -4977,16 +4102,16 @@ public class ProductValidationController : Controller
 
                 var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png");
                 Cell logoCell = new Cell()
-                    .SetPadding(2) 
+                    .SetPadding(2)
                     .SetTextAlignment(TextAlignment.CENTER)
                     .SetVerticalAlignment(VerticalAlignment.MIDDLE);
 
                 if (System.IO.File.Exists(imagePath))
                 {
-                    iText.Layout.Element.Image logo = new iText.Layout.Element.Image(ImageDataFactory.Create(imagePath));
-                    logo.SetWidth(70f); 
+                    Image logo = new Image(ImageDataFactory.Create(imagePath));
+                    logo.SetWidth(70f);
                     logo.SetHorizontalAlignment(HorizontalAlignment.CENTER);
-    
+
                     logoCell.Add(logo);
                 }
                 else
@@ -5392,7 +4517,7 @@ public class ProductValidationController : Controller
                             referenceNo: model.ReportNo
                         );
                     }
-                    
+
                 }
             }
 
@@ -5501,7 +4626,7 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-    
+
 }
 
 

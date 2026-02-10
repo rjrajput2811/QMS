@@ -3284,38 +3284,126 @@ public class ProductValidationController : Controller
                 ws.Cell(row, 12).Value = d.Observations ?? "";
             }
 
-            //// ========================================
-            //// Photo Section (Row 20)
-            //// ========================================
-            //// BUG FIX: You were using Photo_WithoutLoad for BOTH photos!
-            //// Left side (B20:G20) - "With Load" photo
-            //if (!string.IsNullOrWhiteSpace(model.Photo_WithLoad))
-            //{
-            //    var withLoadRange = ws.Range("B20:G20");
-            //    InsertImageCentered(ws, model.Photo_WithLoad, withLoadRange, _env.WebRootPath);
-            //}
+            // ========================================
+            // Photo Section - DYNAMIC ROWS
+            // Template has: Row 16 (header), Row 17-23 (first photo row)
+            // ========================================
+            const int templatePhotoHeaderRow = 16;
+            const int templatePhotoStartRow = 17;
+            const int photoRowHeight = 7; // Each photo pair takes 7 rows (17-23)
 
-            //// Right side (H20:J20) - "Without Load" photo
-            //if (!string.IsNullOrWhiteSpace(model.Photo_WithoutLoad))
-            //{
-            //    var withoutLoadRange = ws.Range("H20:J20");
-            //    InsertImageCentered(ws, model.Photo_WithoutLoad, withoutLoadRange, _env.WebRootPath);
-            //}
+            var imgDetails = model.ImgDetails ?? new List<DropTestReportImgDetailViewModel>();
+            int imgCount = imgDetails.Count;
+
+            // Calculate where photo section starts (after details)
+            int photoHeaderRow = templateDetailRow + detailCount + 1; // One blank row after details
+            int photoStartRow = photoHeaderRow + 1;
+
+            // Move the "PHOTOGRAPHS (Before and After)" header
+            int rowsToMove = photoHeaderRow - templatePhotoHeaderRow;
+            if (rowsToMove != 0)
+            {
+                // We need to shift everything down
+                if (rowsToMove > 0)
+                {
+                    ws.Row(templatePhotoHeaderRow).InsertRowsAbove(rowsToMove);
+                }
+            }
+
+            // Capture template photo row merged ranges
+            var templatePhotoMergedRanges = new List<(int firstRow, int lastRow, int firstCol, int lastCol)>();
+            foreach (var range in ws.MergedRanges)
+            {
+                if (range.FirstRow().RowNumber() >= templatePhotoStartRow &&
+                    range.FirstRow().RowNumber() <= templatePhotoStartRow + photoRowHeight - 1)
+                {
+                    templatePhotoMergedRanges.Add(
+                        (range.FirstRow().RowNumber(),
+                         range.LastRow().RowNumber(),
+                         range.FirstColumn().ColumnNumber(),
+                         range.LastColumn().ColumnNumber())
+                    );
+                }
+            }
+
+            // Insert additional photo rows if needed
+            if (imgCount > 1)
+            {
+                ws.Row(photoStartRow).InsertRowsBelow((imgCount - 1) * photoRowHeight);
+            }
+
+            // Fill images dynamically
+            for (int i = 0; i < imgCount; i++)
+            {
+                int currentPhotoRow = photoStartRow + (i * photoRowHeight);
+                var img = imgDetails[i];
+
+                // Re-create merged ranges for this photo row set
+                foreach (var m in templatePhotoMergedRanges)
+                {
+                    int rowOffset = currentPhotoRow - templatePhotoStartRow;
+                    int newFirstRow = m.firstRow + rowOffset;
+                    int newLastRow = m.lastRow + rowOffset;
+
+                    ws.Range(newFirstRow, m.firstCol, newLastRow, m.lastCol).Merge();
+                }
+
+                // Insert Before Image (Left side: B to G, 7 rows)
+                if (!string.IsNullOrWhiteSpace(img.Before_Img))
+                {
+                    var beforeRange = ws.Range(currentPhotoRow, 2, currentPhotoRow + photoRowHeight - 1, 7);
+                    InsertDropImageCentered(ws, img.Before_Img, beforeRange, _env.WebRootPath);
+                }
+
+                // Insert After Image (Right side: H to P, 7 rows)
+                if (!string.IsNullOrWhiteSpace(img.After_Img))
+                {
+                    var afterRange = ws.Range(currentPhotoRow, 8, currentPhotoRow + photoRowHeight - 1, 16);
+                    InsertDropImageCentered(ws, img.After_Img, afterRange, _env.WebRootPath);
+                }
+            }
 
             // ========================================
-            // Footer Information (Rows 21-22)
-            // ========================================  
-            ws.Cell("B36").Value = "Result ( Pass / Fail ) :- " + (model.OverallResult ?? "");
-            ws.Cell("B37").Value = "Tested By :- " + (model.TestedBy ?? "");
-            ws.Cell("G37").Value = "Approved By :- " + (model.VerifiedBy ?? "");
+            // Footer Information (Dynamic positioning)
+            // ========================================
+            // Calculate footer position after all photos
+            int blankRowAfterPhotos = 1;
+            int resultRow = photoStartRow + (imgCount * photoRowHeight) + blankRowAfterPhotos;
+            int testedByRow = resultRow + 1;
 
-            //// ========================================
-            //// Print Settings
-            //// ========================================
-            //ws.PageSetup.PrintAreas.Clear();
-            //ws.PageSetup.PrintAreas.Add("A1:J22");
-            //ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
-            //ws.PageSetup.FitToPages(1, 1);
+            // Test Result (B36:P36 merged in template, but now dynamic)
+            ws.Range(resultRow, 2, resultRow, 16).Merge();
+            ws.Cell(resultRow, 2).Value = "Test Result ( Pass / Fail): " + (model.OverallResult ?? "");
+
+            // Tested By (B37:F37) and Approved By (G37:P37)
+            ws.Range(testedByRow, 2, testedByRow, 6).Merge();
+            ws.Cell(testedByRow, 2).Value = "TESTED BY: " + (model.TestedBy ?? "");
+
+            ws.Range(testedByRow, 7, testedByRow, 16).Merge();
+            ws.Cell(testedByRow, 7).Value = "APPROVED BY: " + (model.VerifiedBy ?? "");
+
+            // ========================================
+            // Apply styling to footer (match template)
+            // ========================================
+            var resultCell = ws.Cell(resultRow, 2);
+            resultCell.Style.Font.Bold = true;
+            resultCell.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+            resultCell.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            var testedByCell = ws.Cell(testedByRow, 2);
+            testedByCell.Style.Font.Bold = true;
+
+            var approvedByCell = ws.Cell(testedByRow, 7);
+            approvedByCell.Style.Font.Bold = true;
+
+            // ========================================
+            // Print Settings
+            // ========================================
+            ws.PageSetup.PrintAreas.Clear();
+            int lastRow = testedByRow;
+            ws.PageSetup.PrintAreas.Add($"A1:P{lastRow}");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            ws.PageSetup.FitToPages(1, 1);
 
             // ========================================
             // Return Excel File
@@ -3324,7 +3412,7 @@ public class ProductValidationController : Controller
             wb.SaveAs(stream);
             stream.Position = 0;
 
-            var fileName = $"InstallationTrial_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            var fileName = $"DropTest_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
             return File(stream.ToArray(),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 fileName);
@@ -3335,6 +3423,98 @@ public class ProductValidationController : Controller
             _systemLogService?.WriteLog($"Error exporting Installation Trial report {id}: {ex.Message}");
             return StatusCode(500, new { error = "Error generating Excel file", message = ex.Message });
         }
+    }
+
+    private void InsertDropImageCentered(IXLWorksheet ws, string imagePath, IXLRange range, string webRootPath)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(imagePath)) return;
+
+            // DB stores like: /DropTest_Attach/...
+            var relative = imagePath.TrimStart('~').TrimStart('/', '\\')
+                                    .Replace('/', Path.DirectorySeparatorChar);
+
+            var fullPath = Path.Combine(webRootPath, relative);
+
+            if (!System.IO.File.Exists(fullPath))
+            {
+                _systemLogService?.WriteLog($"Image not found: {fullPath} (db: {imagePath})");
+                return;
+            }
+
+            var ext = Path.GetExtension(fullPath)?.ToLowerInvariant();
+            if (ext is not ".png" and not ".jpg" and not ".jpeg" and not ".bmp")
+            {
+                _systemLogService?.WriteLog($"Unsupported image format '{ext}' for: {fullPath} (skip)");
+                return;
+            }
+
+            // Read bytes -> MemoryStream (stable for ClosedXML)
+            var bytes = System.IO.File.ReadAllBytes(fullPath);
+            using var ms = new MemoryStream(bytes);
+
+            // Read image size for aspect ratio
+            using var img = System.Drawing.Image.FromStream(ms, false, false);
+            ms.Position = 0;
+
+            // Target rectangle in px based on Excel row/col sizes
+            int targetW = GetRangeWidthPx(ws, range);
+            int targetH = GetRangeHeightPx(ws, range);
+
+            // padding
+            targetW = (int)(targetW * 0.95);
+            targetH = (int)(targetH * 0.95);
+
+            if (targetW < 10 || targetH < 10) return;
+
+            double scale = Math.Min((double)targetW / img.Width, (double)targetH / img.Height);
+            int drawW = Math.Max(1, (int)Math.Round(img.Width * scale));
+            int drawH = Math.Max(1, (int)Math.Round(img.Height * scale));
+
+            int offsetX = Math.Max(0, (targetW - drawW) / 2);
+            int offsetY = Math.Max(0, (targetH - drawH) / 2);
+
+            var pic = ws.AddPicture(ms)
+                        .WithSize(drawW, drawH)
+                        .MoveTo(range.FirstCell(), offsetX, offsetY);
+
+            pic.Placement = XLPicturePlacement.FreeFloating;
+        }
+        catch (Exception ex)
+        {
+            _systemLogService?.WriteLog($"Image insert failed for db path '{imagePath}'. Error: {ex.Message}");
+            // Do NOT throw; skip image so Excel export still works
+        }
+    }
+
+    private int GetRangeWidthPx(IXLWorksheet ws, IXLRange range)
+    {
+        double px = 0;
+        for (int c = range.FirstColumn().ColumnNumber(); c <= range.LastColumn().ColumnNumber(); c++)
+        {
+            var w = ws.Column(c).Width;     // approx char units
+            px += (w * 7) + 5;              // decent conversion
+        }
+        return (int)Math.Round(px);
+    }
+
+    private int GetRangeHeightPx(IXLWorksheet ws, IXLRange range)
+    {
+        double px = 0;
+
+        for (int r = range.FirstRow().RowNumber(); r <= range.LastRow().RowNumber(); r++)
+        {
+            double heightPt = ws.Row(r).Height;
+
+            // ClosedXML returns 0 when height is "Auto"
+            if (heightPt <= 0)
+                heightPt = 15; // Excel default row height in points
+
+            px += heightPt * 96.0 / 72.0; // points → pixels
+        }
+
+        return (int)Math.Round(px);
     }
 
     #endregion

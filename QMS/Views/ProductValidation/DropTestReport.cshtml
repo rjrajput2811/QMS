@@ -181,6 +181,7 @@
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/xlsx.full.min.js"></script>
     <script>
         // App base ("/" or "/BisProjectTrac/")
         window.APP_BASE = '@Url.Content("~")';
@@ -485,58 +486,99 @@
 
         function exportToExcel(recid) {
             Blockloadershow();
+
             $.ajax({
                 url: '@Url.Action("ExportDropTestToExcel", "ProductValidation")',
-                data: { Id: recid },
+                data: { id: recid }, // Changed from 'Id' to 'id' to match controller parameter
                 type: 'POST',
                 xhrFields: {
                     responseType: 'blob' // Expect a blob response for file download
                 },
                 success: function (data, status, xhr) {
-                    // Create a blob from the response data
-                    var blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+                    try {
+                        // Check if the response is an error (JSON) instead of a file
+                        var contentType = xhr.getResponseHeader('Content-Type');
 
-                    // Extract the file name from the response headers (Content-Disposition)
-                    var contentDisposition = xhr.getResponseHeader('Content-Disposition');
-                    var fileName = '';
+                        // If response is JSON, it's likely an error message
+                        if (contentType && contentType.indexOf('application/json') !== -1) {
+                            // Convert blob to text to read error message
+                            var reader = new FileReader();
+                            reader.onload = function() {
+                                try {
+                                    var errorData = JSON.parse(reader.result);
+                                    showDangerAlert(errorData.message || errorData.error || 'An error occurred while generating the Excel file.');
+                                } catch (e) {
+                                    showDangerAlert('An error occurred while generating the Excel file.');
+                                }
+                            };
+                            reader.readAsText(data);
+                            return;
+                        }
 
-                    if (contentDisposition) {
-                        // Check if the filename is encoded as UTF-8
-                        var fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
-                        if (fileNameMatch && fileNameMatch.length > 1) {
-                            // Decode URI encoding to get the actual file name
-                            fileName = decodeURIComponent(fileNameMatch[1].split(';')[0].trim());
-                        } else {
-                            // Fallback to simple filename extraction without UTF-8 encoding
-                            var fileNameSimpleMatch = contentDisposition.match(/filename="?(.+)"?/);
-                            if (fileNameSimpleMatch && fileNameSimpleMatch.length > 1) {
-                                fileName = fileNameSimpleMatch[1].split(';')[0].trim();
+                        // Create a blob from the response data
+                        var blob = new Blob([data], { type: contentType || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+                        // Extract the file name from the response headers (Content-Disposition)
+                        var contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                        var fileName = 'InstallationTrial.xlsx'; // Default filename
+
+                        if (contentDisposition) {
+                            // Try to extract filename with UTF-8 encoding first
+                            var fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                            if (fileNameMatch && fileNameMatch.length > 1) {
+                                fileName = decodeURIComponent(fileNameMatch[1].split(';')[0].trim());
+                            } else {
+                                // Fallback to simple filename extraction
+                                var fileNameSimpleMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                                if (fileNameSimpleMatch && fileNameSimpleMatch.length > 1) {
+                                    fileName = fileNameSimpleMatch[1].replace(/['"]/g, '').trim();
+                                }
                             }
                         }
+
+                        // Create a temporary link element to trigger the download
+                        var link = document.createElement('a');
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = fileName;
+
+                        // Append link to the body and trigger the download
+                        document.body.appendChild(link);
+                        link.click();
+
+                        // Clean up: remove the link and revoke the object URL
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(link.href);
+
+                        // Show success message
+                        showSuccessAlert('Excel file downloaded successfully.');
+
+                    } catch (error) {
+                        console.error('Error processing download:', error);
+                        showDangerAlert('An error occurred while processing the download.');
                     }
-
-                    // Fallback to a default file name if extraction fails
-                    if (!fileName) {
-                        fileName = 'DropTest.xlsx';
-                    }
-
-                    // Create a temporary link element to trigger the download
-                    var link = document.createElement('a');
-                    link.href = window.URL.createObjectURL(blob);
-                    link.download = fileName;
-
-                    // Append link to the body and trigger the download
-                    document.body.appendChild(link);
-                    link.click();
-
-                    // Clean up: remove the link after the download is triggered
-                    document.body.removeChild(link);
-
                 },
-                error: function (xhr) {
+                error: function (xhr, status, error) {
+
                     if (xhr.status === 401) {
+                        // Unauthorized - redirect to login
                         window.location.href = '@Url.Action("Login", "Account")';
+                    } else if (xhr.status === 404) {
+                        // Not found
+                        showDangerAlert('Record not found or template file is missing.');
+                    } else if (xhr.status === 500) {
+                        // Server error - try to read error message if available
+                        try {
+                            if (xhr.responseText) {
+                                var errorData = JSON.parse(xhr.responseText);
+                                showDangerAlert(errorData.message || errorData.error || 'Server error occurred while generating Excel file.');
+                            } else {
+                                showDangerAlert('Server error occurred while generating Excel file.');
+                            }
+                        } catch (e) {
+                            showDangerAlert('Server error occurred while generating Excel file.');
+                        }
                     } else {
+                        // Generic error
                         showDangerAlert('An error occurred. Please refresh the page and try again.');
                     }
                 },

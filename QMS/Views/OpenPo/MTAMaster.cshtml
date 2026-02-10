@@ -444,8 +444,8 @@
                 //     saveEditedRow(cell.getRow().getData());
                 // });
 
-                document.getelementbyid("exportexcel").addeventlistener("click", function () {
-                    table.download("xlsx", "MTA_Master.xlsx", { sheetname: "MTA Master" });
+                document.getElementById("exportExcel").addEventListener("click", function () {
+                        table.download("xlsx", "MTA_Master.xlsx", { sheetName: "MTA Master" });
                 });
 
             Blockloaderhide();

@@ -2464,10 +2464,10 @@ public class ProductValidationController : Controller
 
         return View();
     }
-    public IActionResult TemperatureRiseTestOfLuminaireDetails()
-    {
-        return View();
-    }
+    //public IActionResult TemperatureRiseTestOfLuminaireDetails()
+    //{
+    //    return View();
+    //}
 
     
 
@@ -4447,6 +4447,253 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ExportImpactTestToExcel(int id)
+    {
+        try
+        {
+            var model = await _impactTestRepository.GetImpactTestReportByIdAsync(id);
+            if (model == null)
+                return NotFound();
+
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "V10. Impact Test Report (IK)_V.xlsx");
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("Impact Test template not found at " + templatePath);
+
+            using var wb = new XLWorkbook(templatePath);
+            var ws = wb.Worksheet(1);
+
+            ws.Cell("B6").Value = "Customer/Project Name :- " + (model.CustomerProjectName ?? "");
+            ws.Cell("J6").Value = "Report No. :- " + (model.ReportNo ?? "");
+            ws.Cell("J7").Value = "Date :- " + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
+            ws.Cell("B9").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
+            ws.Cell("F9").Value = "Product Description :- " + (model.ProductDescription ?? "");
+            ws.Cell("J9").Value = "Batch Code  :- " + (model.BatchCode ?? "");
+            ws.Cell("L9").Value = "Quantity :-  " + (model.Quantity.ToString() ?? "");
+
+            
+            ws.Cell("C12").Value = model.Weight_kg_IK01 ?? "";
+            ws.Cell("C13").Value = model.Weight_Material_IK01 ?? "";
+            ws.Cell("C14").Value = model.Distance_cm_IK01 ?? "";
+            ws.Cell("C15").Value = model.ImpactEnergy_joules_IK01 ?? "";
+            ws.Cell("C16").Value = model.ApplicableTest_IK01 ?? "";
+
+            ws.Cell("D12").Value = model.Weight_kg_IK02 ?? "";
+            ws.Cell("D13").Value = model.Weight_Material_IK02 ?? "";
+            ws.Cell("D14").Value = model.Distance_cm_IK02 ?? "";
+            ws.Cell("D15").Value = model.ImpactEnergy_joules_IK02 ?? "";
+            ws.Cell("D16").Value = model.ApplicableTest_IK02 ?? "";
+
+            ws.Cell("E12").Value = model.Weight_kg_IK03 ?? "";
+            ws.Cell("E13").Value = model.Weight_Material_IK03 ?? "";
+            ws.Cell("E14").Value = model.Distance_cm_IK03 ?? "";
+            ws.Cell("E15").Value = model.ImpactEnergy_joules_IK03 ?? "";
+            ws.Cell("E16").Value = model.ApplicableTest_IK03 ?? "";
+
+            ws.Cell("F12").Value = model.Weight_kg_IK04 ?? "";
+            ws.Cell("F13").Value = model.Weight_Material_IK04 ?? "";
+            ws.Cell("F14").Value = model.Distance_cm_IK04 ?? "";
+            ws.Cell("F15").Value = model.ImpactEnergy_joules_IK04 ?? "";
+            ws.Cell("F16").Value = model.ApplicableTest_IK04 ?? "";
+
+            ws.Cell("G12").Value = model.Weight_kg_IK05 ?? "";
+            ws.Cell("G13").Value = model.Weight_Material_IK05 ?? "";
+            ws.Cell("G14").Value = model.Distance_cm_IK05 ?? "";
+            ws.Cell("G15").Value = model.ImpactEnergy_joules_IK05 ?? "";
+            ws.Cell("G16").Value = model.ApplicableTest_IK05 ?? "";
+
+            ws.Cell("H12").Value = model.Weight_kg_IK06 ?? "";
+            ws.Cell("H13").Value = model.Weight_Material_IK06 ?? "";
+            ws.Cell("H14").Value = model.Distance_cm_IK06 ?? "";
+            ws.Cell("H15").Value = model.ImpactEnergy_joules_IK06 ?? "";
+            ws.Cell("H16").Value = model.ApplicableTest_IK06 ?? "";
+
+            ws.Cell("I12").Value = model.Weight_kg_IK07 ?? "";
+            ws.Cell("I13").Value = model.Weight_Material_IK07 ?? "";
+            ws.Cell("I14").Value = model.Distance_cm_IK07 ?? "";
+            ws.Cell("I15").Value = model.ImpactEnergy_joules_IK07 ?? "";
+            ws.Cell("I16").Value = model.ApplicableTest_IK07 ?? "";
+
+            ws.Cell("J12").Value = model.Weight_kg_IK08 ?? "";
+            ws.Cell("J13").Value = model.Weight_Material_IK08 ?? "";
+            ws.Cell("J14").Value = model.Distance_cm_IK08 ?? "";
+            ws.Cell("J15").Value = model.ImpactEnergy_joules_IK08 ?? "";
+            ws.Cell("J16").Value = model.ApplicableTest_IK08 ?? "";
+
+            ws.Cell("K12").Value = model.Weight_kg_IK09 ?? "";
+            ws.Cell("K13").Value = model.Weight_Material_IK09 ?? "";
+            ws.Cell("K14").Value = model.Distance_cm_IK09 ?? "";
+            ws.Cell("K15").Value = model.ImpactEnergy_joules_IK09 ?? "";
+            ws.Cell("K16").Value = model.ApplicableTest_IK09 ?? "";
+
+            ws.Cell("L12").Value = model.Weight_kg_IK10 ?? "";
+            ws.Cell("L13").Value = model.Weight_Material_IK10 ?? "";
+            ws.Cell("L14").Value = model.Distance_cm_IK10 ?? "";
+            ws.Cell("L15").Value = model.ImpactEnergy_joules_IK10 ?? "";
+            ws.Cell("L16").Value = model.ApplicableTest_IK10 ?? "";
+
+            // ========================================
+            // ✅ Observation + Space For Photo + Test Result (LIKE SCREENSHOT)
+            // Put this block at rows 21-24
+            // ========================================
+            AddObservationAndTestResultBlock(ws, startRow: 21, model, _env.WebRootPath);
+
+            //// ========================================
+            //// Footer Information (Shifted Down)
+            //// ========================================
+            //ws.Cell("A25").Value = "Result ( Pass / Fail ) :- " + (model.OverallResult ?? "");
+            //ws.Cell("A26").Value = "Checked By :- " + (model.CheckedBy ?? "");
+            //ws.Cell("H26").Value = "Verified By :-" + (model.VerifiedBy ?? "");
+
+            ws.Cell("E21").Value = model.Observation_DamageObserved ?? "YES/ NO ";
+            ws.Cell("E22").Value = model.Observation_LivePartsAccessibility ?? "YES/ NO ";
+            ws.Cell("C24").Value = model.TestResult ?? "Pass/ Fail ";
+
+            ws.Cell("B30").Value = "Tested By :- " + (model.TestedBy ?? "");
+            ws.Cell("G30").Value = "Verified By :- " + (model.VerifiedBy ?? "");
+
+            // ========================================
+            // Print Settings
+            // ========================================
+            ws.PageSetup.PrintAreas.Clear();
+            ws.PageSetup.PrintAreas.Add("A1:L26");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            ws.PageSetup.FitToPages(1, 1);
+
+            // ========================================
+            // Return Excel File
+            // ========================================
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"ImpactTest_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+        catch (Exception ex)
+        {
+            // BUG FIX: Added proper error handling
+            _systemLogService?.WriteLog($"Error exporting ImpactTest report {id}: {ex.Message}");
+            return StatusCode(500, new { error = "Error generating Excel file", message = ex.Message });
+        }
+    }
+
+    //private void AddObservationAndTestResultBlock(
+    //IXLWorksheet ws,
+    //int startRow,
+    //ImpactTestViewModel model,
+    //string webRootPath)
+    //{
+    //    int rObsTitle = startRow;       // 21
+    //    int rLine1 = startRow + 1;   // 22
+    //    int rLine2 = startRow + 2;   // 23
+    //    int rResult = startRow + 3;   // 24
+
+    //    // ---------------------------
+    //    // Observation Title
+    //    // ---------------------------
+    //    ws.Range($"B{rObsTitle}:G{rObsTitle}").Merge();
+    //    var obsTitle = ws.Cell($"B{rObsTitle}");
+    //    obsTitle.Value = "Observation :";
+    //    obsTitle.Style.Font.Bold = true;
+    //    obsTitle.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+    //    // ---------------------------
+    //    // 1) Damage observed - [green box] YES/ NO (value)
+    //    // ---------------------------
+    //    ws.Cell($"C{rLine1}").Value = "1.";
+    //    ws.Cell($"D{rLine1}").Value = "Damage observed  -";
+    //    ws.Cell($"C{rLine1}").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+    //    var yesNo1 = ws.Cell($"F{rLine1}");
+    //    yesNo1.Value = "YES/ NO" + (model.Observation_DamageObserved ?? "").Trim();
+    //    yesNo1.Style.Font.FontColor = XLColor.Red;
+    //    yesNo1.Style.Font.Bold = true;
+
+    //    // ---------------------------
+    //    // 2) Live parts accessibility........... YES/ NO (value)
+    //    // ---------------------------
+    //    ws.Cell($"C{rLine2}").Value = "2.";
+    //    ws.Cell($"D{rLine2}").Value = "Live parts accessibility...........";
+    //    ws.Cell($"C{rLine2}").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Right;
+
+    //    var yesNo2 = ws.Cell($"F{rLine2}");
+    //    yesNo2.Value = "YES/ NO" + (model.Observation_LivePartsAccessibility ?? "").Trim();
+    //    yesNo2.Style.Font.FontColor = XLColor.Red;
+    //    yesNo2.Style.Font.Bold = true;
+
+    //    // ---------------------------
+    //    // Space For Photo (right side)
+    //    // ---------------------------
+    //    var photoRange = ws.Range($"H{rObsTitle}:J{rResult}");
+    //    photoRange.Merge();
+    //    photoRange.Value = "Space For Photo";
+    //    photoRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+    //    photoRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+    //    // Insert Observation photo if available (replaces the text)
+    //    if (!string.IsNullOrWhiteSpace(model.Observation_Photo))
+    //    {
+    //        // Clear text before inserting image
+    //        photoRange.Value = "";
+
+    //        // Use your existing InsertImageCentered method
+    //        InsertImageCentered(ws, model.Observation_Photo ,photoRange, webRootPath);
+    //    }
+
+    //    // ---------------------------
+    //    // Test Result: Pass/ Fail (value in red)
+    //    // ---------------------------
+    //    ws.Cell($"B{rResult}").Value = "Test Result:";
+    //    ws.Cell($"B{rResult}").Style.Font.Bold = true;
+
+    //    var resultCell = ws.Cell($"D{rResult}");
+    //    resultCell.Value = string.IsNullOrWhiteSpace(model.TestResult) ? "Pass/ Fail" : model.TestResult;
+    //    resultCell.Style.Font.FontColor = XLColor.Red;
+    //    resultCell.Style.Font.Bold = true;
+    //    resultCell.Style.Font.FontSize = 12;
+
+    //    // ---------------------------
+    //    // Row heights (match screenshot spacing)
+    //    // ---------------------------
+    //    ws.Row(rObsTitle).Height = 18;
+    //    ws.Row(rLine1).Height = 18;
+    //    ws.Row(rLine2).Height = 18;
+    //    ws.Row(rResult).Height = 18;
+
+    //    // Vertical center for left area
+    //    ws.Range($"B{rObsTitle}:G{rResult}").Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+    //}
+
+    private void AddObservationAndTestResultBlock(
+    IXLWorksheet ws,
+    int startRow,
+    ImpactTestViewModel model,
+    string webRootPath)
+    {
+        int rObsTitle = startRow;       // 21
+        
+        int rResult = startRow + 7;   // 24
+
+        var photoRange = ws.Range($"H{rObsTitle}:J{rResult}");
+        photoRange.Merge();
+        photoRange.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        photoRange.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+        if (!string.IsNullOrWhiteSpace(model.Observation_Photo))
+        {
+            photoRange.Value = ""; // Clear text before inserting image
+            InsertImageCentered(ws, model.Observation_Photo.Trim(), photoRange, webRootPath);
+        }
+        else
+        {
+            photoRange.Value = "Space For Photo";
+        }
+    }
+
+
     #endregion
 
 
@@ -4821,6 +5068,7 @@ public class ProductValidationController : Controller
     {
         return View();
     }
+
     //public IActionResult GlowWireTestReportDetails()
     //{
     //    return View();

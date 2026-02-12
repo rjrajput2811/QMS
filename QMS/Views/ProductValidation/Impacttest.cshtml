@@ -129,7 +129,7 @@
                 </button>
 
                 <button id="backButton" type="button" class="btn btn-outline-primary header-btn"
-                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                        onclick="location.href='@Url.Action("ProductValidation", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
@@ -447,7 +447,7 @@
             Blockloaderhide();
         }
 
-        function delImpactTestConfirm(recid) {
+             function delImpactTestConfirm(recid) {
                     PNotify.prototype.options.styling = "bootstrap3";
                     (new PNotify({
                         title: 'Confirmation Needed',
@@ -487,7 +487,70 @@
                     }).on('pnotify.cancel', function () {
                         loadImpactTestGridData();
                     });
+             }
+
+        function exportToExcel(recid) {
+            Blockloadershow();
+            $.ajax({
+                url: '@Url.Action("ExportImpactTestToExcel", "ProductValidation")',
+                data: { Id: recid },
+                type: 'POST',
+                xhrFields: {
+                    responseType: 'blob' // Expect a blob response for file download
+                },
+                success: function (data, status, xhr) {
+                    // Create a blob from the response data
+                    var blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+
+                    // Extract the file name from the response headers (Content-Disposition)
+                    var contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                    var fileName = '';
+
+                    if (contentDisposition) {
+                        // Check if the filename is encoded as UTF-8
+                        var fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                        if (fileNameMatch && fileNameMatch.length > 1) {
+                            // Decode URI encoding to get the actual file name
+                            fileName = decodeURIComponent(fileNameMatch[1].split(';')[0].trim());
+                        } else {
+                            // Fallback to simple filename extraction without UTF-8 encoding
+                            var fileNameSimpleMatch = contentDisposition.match(/filename="?(.+)"?/);
+                            if (fileNameSimpleMatch && fileNameSimpleMatch.length > 1) {
+                                fileName = fileNameSimpleMatch[1].split(';')[0].trim();
+                            }
+                        }
+                    }
+
+                    // Fallback to a default file name if extraction fails
+                    if (!fileName) {
+                        fileName = 'ImpactTest.xlsx';
+                    }
+
+                    // Create a temporary link element to trigger the download
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = fileName;
+
+                    // Append link to the body and trigger the download
+                    document.body.appendChild(link);
+                    link.click();
+
+                    // Clean up: remove the link after the download is triggered
+                    document.body.removeChild(link);
+
+                },
+                error: function (xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Account")';
+                    } else {
+                        showDangerAlert('An error occurred. Please refresh the page and try again.');
+                    }
+                },
+                complete: function () {
+                    Blockloaderhide(); // Hide loader
                 }
+            });
+        }
     </script>
 }
 

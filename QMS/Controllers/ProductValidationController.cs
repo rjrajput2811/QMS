@@ -5060,6 +5060,235 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ExportRegulatoryRequirementToExcel(int id)
+    {
+        try
+        {
+            var model = await _regulatoryRequirementRepository.GetRegulatoryRequirementByIdAsync(id);
+            if (model == null)
+                return NotFound();
+
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "V12. Legal & Regulatory Requirement and Documents verification_V.xlsx");
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("Regulatory Requirement template not found at " + templatePath);
+
+            using var wb = new XLWorkbook(templatePath);
+            var ws = wb.Worksheet(1);
+
+            
+            ws.Cell("E2").Value = model.ReportNo ?? "";
+            ws.Cell("H2").Value = model.ReportDate?.ToString("dd/MM/yyyy") ?? "";
+            ws.Cell("B3").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
+            ws.Cell("D3").Value = "Product Description :- " + (model.ProductDescription ?? "");
+
+           
+            ws.Cell("D5").Value = model.DriverBIS_Result1 ?? "";
+            ws.Cell("E5").Value = model.DriverBIS_Result2 ?? "";
+            ws.Cell("F5").Value = model.DriverBIS_Result3 ?? "";
+            ws.Cell("G5").Value = model.DriverBIS_Result4 ?? "";
+            ws.Cell("H5").Value = "";
+            InsertImageIntoCell(ws, 5, 8, model.DriverBIS_UploadFile, _env.WebRootPath);
+
+
+            ws.Cell("D6").Value = model.LuminairesBIS_Result1 ?? "";
+            ws.Cell("E6").Value = model.LuminairesBIS_Result2 ?? "";
+            ws.Cell("F6").Value = model.LuminairesBIS_Result3 ?? "";
+            ws.Cell("G6").Value = model.LuminairesBIS_Result4 ?? "";
+            ws.Cell("H6").Value = "";
+            InsertImageIntoCell(ws, 6, 8, model.LuminairesBIS_UploadFile,_env.WebRootPath);
+
+            ws.Cell("D7").Value = model.CCL_Result1 ?? "";
+            ws.Cell("E7").Value = model.CCL_Result2 ?? "";
+            ws.Cell("F7").Value = model.CCL_Result3 ?? "";
+            ws.Cell("G7").Value = model.CCL_Result4 ?? "";
+            ws.Cell("H7").Value = ""; 
+            InsertImageIntoCell(ws, 7, 8, model.CCL_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D8").Value = model.NPIBuySheet_Result1 ?? "";
+            ws.Cell("E8").Value = model.NPIBuySheet_Result2 ?? "";
+            ws.Cell("F8").Value = model.NPIBuySheet_Result3 ?? "";
+            ws.Cell("G8").Value = model.NPIBuySheet_Result4 ?? "";
+            ws.Cell("H8").Value = "";
+            InsertImageIntoCell(ws, 8, 8, model.NPIBuySheet_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D9").Value = model.CPS_Result1 ?? "";
+            ws.Cell("E9").Value = model.CPS_Result2 ?? "";
+            ws.Cell("F9").Value = model.CPS_Result3 ?? "";
+            ws.Cell("G9").Value = model.CPS_Result4 ?? "";
+            ws.Cell("H9").Value = "";
+            InsertImageIntoCell(ws, 9, 8, model.CPS_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D10").Value = model.PPS_Result1 ?? "";
+            ws.Cell("E10").Value = model.PPS_Result2 ?? "";
+            ws.Cell("F10").Value = model.PPS_Result3 ?? "";
+            ws.Cell("G10").Value = model.PPS_Result4 ?? "";
+            ws.Cell("H10").Value = "";
+            InsertImageIntoCell(ws, 10, 8, model.PPS_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D11").Value = model.TDS_Result1 ?? "";
+            ws.Cell("E11").Value = model.TDS_Result2 ?? "";
+            ws.Cell("F11").Value = model.TDS_Result3 ?? "";
+            ws.Cell("G11").Value = model.TDS_Result4 ?? "";
+            ws.Cell("H11").Value = "";
+            InsertImageIntoCell(ws, 11, 8, model.TDS_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D12").Value = model.DesignDocket_Result1 ?? "";
+            ws.Cell("E12").Value = model.DesignDocket_Result2 ?? "";
+            ws.Cell("F12").Value = model.DesignDocket_Result3 ?? "";
+            ws.Cell("G12").Value = model.DesignDocket_Result4 ?? "";
+            ws.Cell("H12").Value = "";
+            InsertImageIntoCell(ws, 12, 8, model.DesignDocket_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D13").Value = model.InstallationSheet_Result1 ?? "";
+            ws.Cell("E13").Value = model.InstallationSheet_Result2 ?? "";
+            ws.Cell("F13").Value = model.InstallationSheet_Result3 ?? "";
+            ws.Cell("G13").Value = model.InstallationSheet_Result4 ?? "";
+            ws.Cell("H13").Value = "";
+            InsertImageIntoCell(ws, 13, 8, model.InstallationSheet_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D14").Value = model.ROHSCompliance_Result1 ?? "";
+            ws.Cell("E14").Value = model.ROHSCompliance_Result2 ?? "";
+            ws.Cell("F14").Value = model.ROHSCompliance_Result3 ?? "";
+            ws.Cell("G14").Value = model.ROHSCompliance_Result4 ?? "";
+            ws.Cell("H14").Value = "";
+            InsertImageIntoCell(ws, 14, 8, model.ROHSCompliance_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D15").Value = model.CIMFR_Result1 ?? "";
+            ws.Cell("E15").Value = model.CIMFR_Result2 ?? "";
+            ws.Cell("F15").Value = model.CIMFR_Result3 ?? "";
+            ws.Cell("G15").Value = model.CIMFR_Result4 ?? "";
+            ws.Cell("H15").Value = "";
+            InsertImageIntoCell(ws, 15, 8, model.CIMFR_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D16").Value = model.PESO_Result1 ?? "";
+            ws.Cell("E16").Value = model.PESO_Result2 ?? "";
+            ws.Cell("F16").Value = model.PESO_Result3 ?? "";
+            ws.Cell("G16").Value = model.PESO_Result4 ?? "";
+            ws.Cell("H16").Value = "";
+            InsertImageIntoCell(ws, 16, 8, model.PESO_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D17").Value = model.BOM_Result1 ?? "";
+            ws.Cell("E17").Value = model.BOM_Result2 ?? "";
+            ws.Cell("F17").Value = model.BOM_Result3 ?? "";
+            ws.Cell("G17").Value = model.BOM_Result4 ?? "";
+            ws.Cell("H17").Value = "";
+            InsertImageIntoCell(ws, 17, 8, model.BOM_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D18").Value = model.SpareCodeSAP_Result1 ?? "";
+            ws.Cell("E18").Value = model.SpareCodeSAP_Result2 ?? "";
+            ws.Cell("F18").Value = model.SpareCodeSAP_Result3 ?? "";
+            ws.Cell("G18").Value = model.SpareCodeSAP_Result4 ?? "";
+            ws.Cell("H18").Value = "";
+            InsertImageIntoCell(ws, 18, 8, model.SpareCodeSAP_UploadFile, _env.WebRootPath);
+
+            ws.Cell("D19").Value = model.CERegistration_Result1 ?? "";
+            ws.Cell("E19").Value = model.CERegistration_Result2 ?? "";
+            ws.Cell("F19").Value = model.CERegistration_Result3 ?? "";
+            ws.Cell("G19").Value = model.CERegistration_Result4 ?? "";
+            ws.Cell("H19").Value = "";
+            InsertImageIntoCell(ws, 19, 8, model.CERegistration_UploadFile, _env.WebRootPath);
+
+            ws.Cell("B20").Value = "Result ( OK / Not OK/ Not Applicable / Pending) " + (model.OverallResult) ?? "";
+
+            ws.Cell("B21").Value = "Checked By :- " + (model.CheckedBy) ?? "";
+            ws.Cell("D21").Value = "Verified By :- " + (model.VerifiedBy) ?? "";
+
+           
+
+            // ========================================
+            // Print Settings
+            // ========================================
+            ws.PageSetup.PrintAreas.Clear();
+            ws.PageSetup.PrintAreas.Add("A1:J22");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            ws.PageSetup.FitToPages(1, 1);
+
+            // ========================================
+            // Return Excel File
+            // ========================================
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"RegulatoryRequirement_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+        catch (Exception ex)
+        {
+            // BUG FIX: Added proper error handling
+            _systemLogService?.WriteLog($"Error exporting Installation Trial report {id}: {ex.Message}");
+            return StatusCode(500, new { error = "Error generating Excel file", message = ex.Message });
+        }
+    }
+
+
+    /// <summary>
+    /// Inserts image into a specific cell and fits it inside that cell.
+    /// photoRelPath must be a relative path like "/DropTest_Attach/xxx.png" or "DropTest_Attach/xxx.png".
+    /// </summary>
+    private void InsertImageIntoCell(IXLWorksheet ws, int row, int col, string? dbPath, string webRootPath)
+    {
+        if (string.IsNullOrWhiteSpace(dbPath))
+            return;
+
+        string relativePath = dbPath.Trim()
+                                    .TrimStart('~')
+                                    .TrimStart('/', '\\')
+                                    .Replace('/', Path.DirectorySeparatorChar)
+                                    .Replace('\\', Path.DirectorySeparatorChar);
+
+        string absPath = Path.Combine(webRootPath, relativePath);
+
+        if (!System.IO.File.Exists(absPath))
+        {
+            _systemLogService?.WriteLog($"Image NOT FOUND: {absPath}");
+            return;
+        }
+
+        var cell = ws.Cell(row, col);
+        cell.Value = "";
+
+        ws.Row(row).Height = 70;
+        ws.Column(col).Width = 18;
+
+        var pic = ws.AddPicture(absPath)
+                    .MoveTo(cell)
+                    .WithPlacement(XLPicturePlacement.Move);   // ✅ FIXED HERE
+
+        int cellWidthPx = (int)(ws.Column(col).Width * 7.0 + 5.0) - 6;
+        int cellHeightPx = (int)(ws.Row(row).Height * 96.0 / 72.0) - 6;
+
+        double ow = Convert.ToDouble(pic.OriginalWidth);
+        double oh = Convert.ToDouble(pic.OriginalHeight);
+        if (ow <= 0 || oh <= 0) return;
+
+        double scale = Math.Min(cellWidthPx / ow, cellHeightPx / oh);
+        pic.Scale(scale);
+
+        double nw = Convert.ToDouble(pic.Width);
+        double nh = Convert.ToDouble(pic.Height);
+
+        int left = (int)((cellWidthPx - nw) / 2.0);
+        int top = (int)((cellHeightPx - nh) / 2.0);
+
+        pic.MoveTo(cell, left, top);
+    }
+
+    private static int PointsToPixels(double points)
+    {
+        return (int)(points * 96.0 / 72.0);
+    }
+
+    private static int ColumnWidthToPixels(double columnWidth)
+    {
+        return (int)(columnWidth * 7.0 + 5.0);
+    }
+
+
+
     #endregion
 
 

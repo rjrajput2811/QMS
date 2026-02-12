@@ -2486,9 +2486,6 @@ public class ProductValidationController : Controller
     #endregion
 
 
-
-
-
     #region PhotometryTestReport 
     public IActionResult PhotometryTestReport()
     {
@@ -3818,7 +3815,7 @@ public class ProductValidationController : Controller
     #endregion
 
 
-
+    #region TemperatureRiseTest
     public IActionResult TemperatureRiseTestOfLuminaire()
     {
         return View();
@@ -4307,7 +4304,7 @@ public class ProductValidationController : Controller
         }
     }
 
-    
+    #endregion
     // Helper methods remain the same
     private void AddSectionHeader(IXLWorksheet worksheet, int row, string title)
     {
@@ -5413,10 +5410,6 @@ public class ProductValidationController : Controller
 
     #region NeedleFlameTestReport
 
-    //public IActionResult NeedleFlameTestReportDetails()
-    //{
-    //    return View();
-    //}
 
     public async Task<IActionResult> NeedleFlameTestReportDetails(int Id)
     {
@@ -5596,6 +5589,410 @@ public class ProductValidationController : Controller
     {
         var result = await _needleFlameTestRepository.DeleteNeedleFlameTestAsync(Id);
         return Json(result);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> ExportNeedleFlameTestToExcel(string ids)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(ids))
+                return BadRequest("No records selected");
+
+            var idList = ids.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => int.Parse(x.Trim()))
+                            .ToList();
+
+            using var workbook = new XLWorkbook();
+
+            foreach (var id in idList)
+            {
+                var data = await _needleFlameTestRepository.GetNeedleFlameTestByIdAsync(id);
+                if (data == null) continue;
+
+                var sheetName = SanitizeSheetName(data.ReportNo ?? $"Report_{id}");
+                var ws = workbook.Worksheets.Add(sheetName);
+
+                // =========================================================
+                // COLUMN LAYOUT:
+                // A: left margin
+                // B: Sr No / labels
+                // C: Tests (Clause Ref)
+                // D: Specified Requirements
+                // E: Observation
+                // F: Result
+                // =========================================================
+
+                ws.Column(1).Width = 3.56;   // A margin
+                ws.Column(2).Width = 7.28;   // B Sr No
+                ws.Column(3).Width = 41.85;  // C Test Ref
+                ws.Column(4).Width = 50.13;  // D Specified Req
+                ws.Column(5).Width = 27.14;  // E Observation
+                ws.Column(6).Width = 26.70;  // F Result
+
+                int r = 1;
+
+                // ===== TITLE ROW =====
+                ws.Cell(r, 2).Value = "NEEDLE FLAME TEST REPORT";
+                ws.Range(r, 2, r, 5).Merge();
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 2).Style.Font.FontSize = 16;
+                ws.Cell(r, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Cell(r, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                ws.Cell(r, 6).Style.Fill.BackgroundColor = XLColor.White;
+                ws.Cell(r, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Cell(r, 6).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                ws.Row(r).Height = 80;
+
+                // Insert logo
+                try
+                {
+                    var webroot = _hostEnvironment.WebRootPath ?? "";
+                    var logoPath = Path.Combine(webroot, "images", "wipro-logo.png");
+                    if (System.IO.File.Exists(logoPath))
+                    {
+                        var picture = ws.AddPicture(logoPath)
+                                        .MoveTo(ws.Cell(r, 6), 5, 5)
+                                        .WithPlacement(XLPicturePlacement.Move);
+                        picture.ScaleHeight(1.2);
+                        picture.ScaleWidth(1.2);
+                    }
+                }
+                catch { /* ignore */ }
+
+                r++;
+
+                // ===== REFERENCE STANDARD =====
+                ws.Range(r, 2, r, 4).Merge();
+                ws.Cell(r, 5).Value = "Reference Standard:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.Ref_Stan ?? "";
+                
+                ws.Cell(r, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // ===== REPORT NO =====
+                ws.Range(r, 2, r, 4).Merge();
+                ws.Cell(r, 5).Value = "Report No:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.ReportNo ?? "";
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // ===== CUSTOMER / PROJECT NAME + DATE =====
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Customer / Project Name:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 4).Value = data.CustomerProjectName ?? "";
+                ws.Cell(r, 5).Value = "Date:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.ReportDate?.ToString("dd-MMM-yyyy") ?? "";
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // ===== PRODUCT CAT REF + BATCH CODE =====
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Product Cat Ref:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 4).Value = data.ProductCatRef ?? "";
+
+                ws.Cell(r, 5).Value = "Batch Code:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.BatchCode ?? "";
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // ===== PRODUCT DESCRIPTION + QUANTITY =====
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Product Description:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 4).Value = data.ProductDescription ?? "";
+
+                ws.Cell(r, 5).Value = "Quantity:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.Quantity;
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // ===== PART DESCRIPTION + PKD =====
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Part Description:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 4).Value = data.PartDescription ?? "";
+
+                ws.Cell(r, 5).Value = "PKD::";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.PKD;
+                ApplyBorders(ws.Range(r, 2, r, 6));
+         
+
+
+
+                r += 1;
+
+                // ===== TEST DETAILS SECTION HEADER =====
+                NeedleAddSectionHeader(ws, r, "TEST DETAILS");
+                r++;
+
+                // ===== TABLE COLUMN HEADERS =====
+                ws.Cell(r, 2).Value = "Sr. No.";
+                ws.Cell(r, 3).Value = "TESTS WITH CLAUSE REFERENCE";
+                ws.Cell(r, 4).Value = "SPECIFIED REQUIREMENTS";
+                ws.Cell(r, 5).Value = "Observation";
+                ws.Cell(r, 6).Value = "Result";
+
+                var hdr = ws.Range(r, 2, r, 6);
+                hdr.Style.Font.Bold = true;
+                hdr.Style.Fill.BackgroundColor = XLColor.LightGray;
+                hdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                hdr.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                hdr.Style.Alignment.WrapText = true;
+                hdr.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                hdr.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                ws.Row(r).Height = 30;
+                r++;
+
+                // ===== DATA + PHOTO BLOCKS =====
+                int srNo = 1;
+                var details = data.Details ?? new List<NeedleFlameTestDetailViewModel>();
+
+                foreach (var detail in details)
+                {
+                    // ---- TEXT ROW ----
+                    ws.Cell(r, 2).Value = srNo++;
+                    ws.Cell(r, 3).Value = detail.Test_Ref ?? "";
+                    ws.Cell(r, 4).Value = detail.Specified_Req ?? "";
+                    ws.Cell(r, 5).Value = detail.Observation ?? "";
+                    ws.Cell(r, 6).Value = detail.Result ?? "";
+
+                    ws.Range(r, 2, r, 6).Style.Alignment.WrapText = true;
+
+                    ws.Cell(r, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+                    ws.Cell(r, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                    ws.Cell(r, 3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+                    ws.Cell(r, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                    ws.Cell(r, 4).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+                    ws.Cell(r, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                    ws.Cell(r, 5).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+                    ws.Cell(r, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 6).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+                    // Color result cell
+                    var resultVal = (detail.Result ?? "").ToUpper();
+                    if (resultVal == "PASS")
+                        ws.Cell(r, 6).Style.Font.FontColor = XLColor.Green;
+                    else if (resultVal == "FAIL")
+                        ws.Cell(r, 6).Style.Font.FontColor = XLColor.Red;
+
+                    ws.Cell(r, 6).Style.Font.Bold = true;
+                    ApplyBorders(ws.Range(r, 2, r, 6));
+                    ws.Row(r).Height = 90;
+                    r++;
+
+                    // ---- PHOTO LABEL ROW ----
+                    ws.Cell(r, 2).Value = "";
+                    ws.Cell(r, 3).Value = "Photo during testing";
+                    ws.Range(r, 3, r, 4).Merge();
+                    ws.Cell(r, 3).Style.Font.Bold = true;
+                    ws.Cell(r, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    ws.Cell(r, 3).Style.Fill.BackgroundColor = XLColor.FromHtml("#f8f9fa");
+
+                    ws.Cell(r, 5).Value = "Photo after testing";
+                    ws.Range(r, 5, r, 6).Merge();
+                    ws.Cell(r, 5).Style.Font.Bold = true;
+                    ws.Cell(r, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 5).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    ws.Cell(r, 5).Style.Fill.BackgroundColor = XLColor.FromHtml("#f8f9fa");
+
+                    ApplyBorders(ws.Range(r, 2, r, 6));
+                    ws.Row(r).Height = 22;
+                    r++;
+
+                    // ---- PHOTO IMAGE ROW ----
+                    var duringRange = ws.Range(r, 3, r, 4);
+                    duringRange.Merge();
+
+                    var afterRange = ws.Range(r, 5, r, 6);
+                    afterRange.Merge();
+
+                    ApplyBorders(ws.Range(r, 2, r, 6));
+                    ws.Row(r).Height = 170;
+
+                    try
+                    {
+                        var webroot = _hostEnvironment.WebRootPath ?? "";
+
+                        // Photo during testing
+                        if (!string.IsNullOrWhiteSpace(detail.Photo_During_Test))
+                        {
+                            var path1 = Path.Combine(webroot, detail.Photo_During_Test.TrimStart('/', '\\'));
+                            if (System.IO.File.Exists(path1))
+                            {
+                                var pic1 = ws.AddPicture(path1);
+                                NeedleFitPictureCentered(ws, pic1, duringRange);
+                            }
+                        }
+
+                        // Photo after testing
+                        if (!string.IsNullOrWhiteSpace(detail.After_During_Test))
+                        {
+                            var path2 = Path.Combine(webroot, detail.After_During_Test.TrimStart('/', '\\'));
+                            if (System.IO.File.Exists(path2))
+                            {
+                                var pic2 = ws.AddPicture(path2);
+                                NeedleFitPictureCentered(ws, pic2, afterRange);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Needle Flame image error: {ex.Message}");
+                    }
+
+                    r++; // move to next test block
+                }
+
+                r += 2;
+
+                // ===== OVERALL TEST RESULT =====
+                ws.Cell(r, 2).Value = "Test Result:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 2).Style.Font.FontColor = XLColor.Red;
+
+                ws.Cell(r, 3).Value = data.TestResult ?? "";
+                ws.Cell(r, 3).Style.Font.Bold = true;
+                ws.Cell(r, 3).Style.Font.FontSize = 14;
+                ws.Cell(r, 3).Style.Font.FontColor =
+                    (data.TestResult ?? "").ToUpper() == "PASS" ? XLColor.Green : XLColor.Red;
+
+                ws.Range(r, 3, r, 6).Merge();
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r += 2;
+
+                // ===== SIGNATURES =====
+                NeedleAddDataRow(ws, r++, "Tested By:", data.TestedBy,
+                                          "Verified By:", data.VerifiedBy, 2, 6);
+            }
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"NeedleFlameTest_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(),
+                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                       fileName);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Error exporting: {ex.Message}");
+        }
+    }
+
+    /* ========================= NEEDLE FLAME HELPER METHODS ========================= */
+
+    private void NeedleAddSectionHeader(IXLWorksheet ws, int row, string title)
+    {
+        ws.Cell(row, 2).Value = title;
+        ws.Range(row, 2, row, 6).Merge();
+        ws.Cell(row, 2).Style.Font.Bold = true;
+        ws.Cell(row, 2).Style.Font.FontSize = 12;
+        ws.Cell(row, 2).Style.Fill.BackgroundColor = XLColor.LightGray;
+        ws.Cell(row, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
+        ws.Cell(row, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        ws.Cell(row, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        ws.Row(row).Height = 22;
+    }
+
+    private void NeedleAddDataRow(IXLWorksheet ws, int row,
+                                  string label1, string value1,
+                                  string label2, string value2,
+                                  int startCol, int endCol)
+    {
+        int totalCols = endCol - startCol + 1;
+        int half = totalCols / 2;
+
+        int l1 = startCol;
+        int v1Start = startCol + 1;
+        int v1End = startCol + half - 1;
+        int l2 = startCol + half;
+        int v2Start = l2 + 1;
+        int v2End = endCol;
+
+        ws.Cell(row, l1).Value = label1;
+        ws.Cell(row, l1).Style.Font.Bold = true;
+        ws.Cell(row, v1Start).Value = value1 ?? "";
+        if (v1End >= v1Start) ws.Range(row, v1Start, row, v1End).Merge();
+
+        if (!string.IsNullOrWhiteSpace(label2))
+        {
+            ws.Cell(row, l2).Value = label2;
+            ws.Cell(row, l2).Style.Font.Bold = true;
+            ws.Cell(row, v2Start).Value = value2 ?? "";
+            if (v2End >= v2Start) ws.Range(row, v2Start, row, v2End).Merge();
+        }
+
+        ws.Range(row, startCol, row, endCol).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        ws.Range(row, startCol, row, endCol).Style.Alignment.WrapText = true;
+        ApplyBorders(ws.Range(row, startCol, row, endCol));
+    }
+
+    private double NeedleColWidthToPixels(double excelColWidth) => excelColWidth * 7.0;
+
+    private double NeedleRowPointsToPixels(double points) => points * 1.333;
+
+    private (double wPx, double hPx) NeedleGetBoxPixels(IXLWorksheet ws, IXLRange box)
+    {
+        double w = 0;
+        for (int c = box.RangeAddress.FirstAddress.ColumnNumber; c <= box.RangeAddress.LastAddress.ColumnNumber; c++)
+            w += NeedleColWidthToPixels(ws.Column(c).Width);
+
+        double h = 0;
+        for (int rr = box.RangeAddress.FirstAddress.RowNumber; rr <= box.RangeAddress.LastAddress.RowNumber; rr++)
+        {
+            double pt = ws.Row(rr).Height > 0 ? ws.Row(rr).Height : 15.0;
+            h += NeedleRowPointsToPixels(pt);
+        }
+
+        w = Math.Max(10, w - 10);
+        h = Math.Max(10, h - 10);
+        return (w, h);
+    }
+
+    private void NeedleFitPictureCentered(IXLWorksheet ws, IXLPicture pic, IXLRange range)
+    {
+        try
+        {
+            var (boxW, boxH) = NeedleGetBoxPixels(ws, range);
+
+            double imgW = pic.OriginalWidth;
+            double imgH = pic.OriginalHeight;
+            if (imgW <= 0 || imgH <= 0) return;
+
+            double scale = Math.Min(boxW / imgW, boxH / imgH);
+            if (scale > 1.0) scale = 1.0; // never upscale
+
+            int finalW = Math.Max(1, (int)(imgW * scale));
+            int finalH = Math.Max(1, (int)(imgH * scale));
+
+            int offsetX = Math.Max(0, (int)((boxW - finalW) / 2));
+            int offsetY = Math.Max(0, (int)((boxH - finalH) / 2));
+
+            pic.MoveTo(range.FirstCell(), offsetX, offsetY);
+            pic.WithSize(finalW, finalH);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"NeedleFitPicture error: {ex.Message}");
+        }
     }
 
     #endregion

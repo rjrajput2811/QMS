@@ -703,6 +703,301 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> ExportElectricalPerformanceToExcel(string ids)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(ids))
+            {
+                return BadRequest("No records selected");
+            }
+
+            var idList = ids.Split(',').Select(int.Parse).ToList();
+
+            using var workbook = new XLWorkbook();
+
+            foreach (var id in idList)
+            {
+                var data = await _electricalPerformanceRepository.GetElectricalPerformancesByIdAsync(id);
+
+                if (data == null) continue;
+
+                // Create worksheet with report number as sheet name
+                var sheetName = SanitizeSheetName(data.ReportNo ?? $"Report_{id}");
+                var worksheet = workbook.Worksheets.Add(sheetName);
+
+                // ===== SET COLUMN WIDTHS FIRST =====
+                worksheet.Column(1).Width = 10;  // Sample
+                worksheet.Column(2).Width = 20;  // Condition
+                worksheet.Column(3).Width = 12;  // Vac
+                worksheet.Column(4).Width = 12;  // Iac (A)
+                worksheet.Column(5).Width = 12;  // Wac
+                worksheet.Column(6).Width = 12;  // PF
+                worksheet.Column(7).Width = 12;  // ATHD
+                worksheet.Column(8).Width = 12;  // Vdc
+                worksheet.Column(9).Width = 12;  // Idc (A)
+                worksheet.Column(10).Width = 12; // Wdc
+                worksheet.Column(11).Width = 12; // Eff (%)
+                worksheet.Column(12).Width = 14; // NoLoad V
+                worksheet.Column(13).Width = 14; // Start V
+                worksheet.Column(14).Width = 12; // Result
+
+                int currentRow = 1;
+
+                // ===== HEADER SECTION =====
+                worksheet.Cell(currentRow, 1).Value = "ELECTRICAL PERFORMANCE TEST REPORT";
+                worksheet.Range(currentRow, 1, currentRow, 12).Merge();
+                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+                worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
+                worksheet.Cell(currentRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                worksheet.Cell(currentRow, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                // Second merged section for logo
+                worksheet.Range(currentRow, 13, currentRow, 14).Merge();
+                worksheet.Cell(currentRow, 13).Style.Fill.BackgroundColor = XLColor.White;
+                worksheet.Cell(currentRow, 13).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                worksheet.Cell(currentRow, 13).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                // Set row height for logo
+                worksheet.Row(currentRow).Height = 80;
+
+                // Insert logo
+                try
+                {
+                    var webroot = _hostEnvironment.WebRootPath ?? "";
+                    var logoPath = Path.Combine(webroot, "images", "wipro-logo.png");
+
+                    if (System.IO.File.Exists(logoPath))
+                    {
+                        var logoAnchor = worksheet.Cell(currentRow, 13);
+
+                        var picture = worksheet.AddPicture(logoPath)
+                                        .MoveTo(logoAnchor, 5, 5)
+                                        .WithPlacement(XLPicturePlacement.Move);
+
+                        picture.ScaleHeight(1.2);
+                        picture.ScaleWidth(1.2);
+                    }
+                }
+                catch
+                {
+                    // ignore image errors so export still works
+                }
+
+                currentRow++;
+
+                // ===== BASIC INFORMATION =====
+                ElectAddDataRow(worksheet, currentRow++, "Product Cat Ref:", data.ProductCatRef,
+                          "Report No:", data.ReportNo);
+                ElectAddDataRow(worksheet, currentRow++, "Product Description:", data.ProductDescription,
+                          "Report Date:", data.ReportDate?.ToString("dd-MMM-yyyy"));
+                currentRow++;
+
+                ElectAddDataRow(worksheet, currentRow++, "Light Source Details:", data.LightSourceDetails,
+                          "Driver Details:", data.DriverDetails);
+                ElectAddDataRow(worksheet, currentRow++, "PCB Details:", data.PCBDetails,
+                          "LED Combinations:", data.LEDCombinations);
+                ElectAddDataRow(worksheet, currentRow++, "Sensor Details:", data.SensorDetails,
+                          "Batch Code:", data.BatchCode);
+                ElectAddDataRow(worksheet, currentRow++, "Lamp Details:", data.LampDetails,
+                          "PKD:", data.PKD);
+                currentRow += 2;
+
+                // ===== TEST DATA TABLE =====
+                const int samples = 5;
+                const int rowsPerCondition = 9;
+                string before = "Before Soaking";
+                string after = "After 2 hrs Soaking";
+
+                for (int s = 1; s <= samples; s++)
+                {
+                    // Add header for each sample
+                    ElectAddSectionHeader(worksheet, currentRow, $"SAMPLE {s}");
+                    currentRow++;
+
+                    // Column headers
+                    worksheet.Cell(currentRow, 1).Value = "Sample";
+                    worksheet.Cell(currentRow, 2).Value = "Condition";
+                    worksheet.Cell(currentRow, 3).Value = "Vac";
+                    worksheet.Cell(currentRow, 4).Value = "Iac (A)";
+                    worksheet.Cell(currentRow, 5).Value = "Wac";
+                    worksheet.Cell(currentRow, 6).Value = "PF";
+                    worksheet.Cell(currentRow, 7).Value = "ATHD";
+                    worksheet.Cell(currentRow, 8).Value = "Vdc";
+                    worksheet.Cell(currentRow, 9).Value = "Idc (A)";
+                    worksheet.Cell(currentRow, 10).Value = "Wdc";
+                    worksheet.Cell(currentRow, 11).Value = "Eff (%)";
+                    worksheet.Cell(currentRow, 12).Value = "NoLoad V";
+                    worksheet.Cell(currentRow, 13).Value = "Start V";
+                    worksheet.Cell(currentRow, 14).Value = "Result";
+
+                    // Style header row
+                    for (int col = 1; col <= 14; col++)
+                    {
+                        worksheet.Cell(currentRow, col).Style.Font.Bold = true;
+                        worksheet.Cell(currentRow, col).Style.Fill.BackgroundColor = XLColor.LightGray;
+                        worksheet.Cell(currentRow, col).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                        worksheet.Cell(currentRow, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        worksheet.Cell(currentRow, col).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                        worksheet.Cell(currentRow, col).Style.Alignment.WrapText = true;
+                    }
+                    worksheet.Row(currentRow).Height = 25; // Header row height
+                    currentRow++;
+
+                    int sampleStartRow = currentRow;
+
+                    // Before Soaking rows
+                    for (int r = 1; r <= rowsPerCondition; r++)
+                    {
+                        var detail = data.Details.FirstOrDefault(d =>
+                            d.SampleNo == s && d.ConditionType == before && d.RowNo == r);
+
+                        if (r == 1)
+                        {
+                            worksheet.Cell(currentRow, 1).Value = s;
+                            worksheet.Cell(currentRow, 2).Value = before;
+                        }
+
+                        worksheet.Cell(currentRow, 3).Value = detail?.Vac;
+                        worksheet.Cell(currentRow, 4).Value = detail?.IacA;
+                        worksheet.Cell(currentRow, 5).Value = detail?.Wac;
+                        worksheet.Cell(currentRow, 6).Value = detail?.PF;
+                        worksheet.Cell(currentRow, 7).Value = detail?.ATHD;
+                        worksheet.Cell(currentRow, 8).Value = detail?.Vdc;
+                        worksheet.Cell(currentRow, 9).Value = detail?.IdcA;
+                        worksheet.Cell(currentRow, 10).Value = detail?.Wdc;
+                        worksheet.Cell(currentRow, 11).Value = detail?.Eff;
+                        worksheet.Cell(currentRow, 12).Value = detail?.NoLoadV;
+                        worksheet.Cell(currentRow, 13).Value = detail?.StartV;
+                        worksheet.Cell(currentRow, 14).Value = detail?.Result;
+
+                        // Center align all data cells
+                        for (int col = 3; col <= 14; col++)
+                        {
+                            worksheet.Cell(currentRow, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        }
+
+                        ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 14));
+                        worksheet.Row(currentRow).Height = 20; // Data row height
+                        currentRow++;
+                    }
+
+                    // After Soaking rows
+                    for (int r = 1; r <= rowsPerCondition; r++)
+                    {
+                        var detail = data.Details.FirstOrDefault(d =>
+                            d.SampleNo == s && d.ConditionType == after && d.RowNo == r);
+
+                        if (r == 1)
+                        {
+                            worksheet.Cell(currentRow, 2).Value = after;
+                        }
+
+                        worksheet.Cell(currentRow, 3).Value = detail?.Vac;
+                        worksheet.Cell(currentRow, 4).Value = detail?.IacA;
+                        worksheet.Cell(currentRow, 5).Value = detail?.Wac;
+                        worksheet.Cell(currentRow, 6).Value = detail?.PF;
+                        worksheet.Cell(currentRow, 7).Value = detail?.ATHD;
+                        worksheet.Cell(currentRow, 8).Value = detail?.Vdc;
+                        worksheet.Cell(currentRow, 9).Value = detail?.IdcA;
+                        worksheet.Cell(currentRow, 10).Value = detail?.Wdc;
+                        worksheet.Cell(currentRow, 11).Value = detail?.Eff;
+                        worksheet.Cell(currentRow, 12).Value = detail?.NoLoadV;
+                        worksheet.Cell(currentRow, 13).Value = detail?.StartV;
+                        worksheet.Cell(currentRow, 14).Value = detail?.Result;
+
+                        // Center align all data cells
+                        for (int col = 3; col <= 14; col++)
+                        {
+                            worksheet.Cell(currentRow, col).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                        }
+
+                        ApplyBorders(worksheet.Range(currentRow, 1, currentRow, 14));
+                        worksheet.Row(currentRow).Height = 20; // Data row height
+                        currentRow++;
+                    }
+
+                    // Merge Sample column for all rows
+                    worksheet.Range(sampleStartRow, 1, currentRow - 1, 1).Merge();
+                    worksheet.Cell(sampleStartRow, 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Cell(sampleStartRow, 1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    worksheet.Cell(sampleStartRow, 1).Style.Font.Bold = true;
+
+                    // Merge Condition columns
+                    worksheet.Range(sampleStartRow, 2, sampleStartRow + rowsPerCondition - 1, 2).Merge();
+                    worksheet.Cell(sampleStartRow, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Cell(sampleStartRow, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    worksheet.Cell(sampleStartRow, 2).Style.Font.Bold = true;
+
+                    worksheet.Range(sampleStartRow + rowsPerCondition, 2, currentRow - 1, 2).Merge();
+                    worksheet.Cell(sampleStartRow + rowsPerCondition, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Cell(sampleStartRow + rowsPerCondition, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    worksheet.Cell(sampleStartRow + rowsPerCondition, 2).Style.Font.Bold = true;
+
+                    currentRow += 2;
+                }
+
+                // ===== FOOTER SECTION =====
+                ElectAddSectionHeader(worksheet, currentRow, "TEST CONCLUSION");
+                currentRow++;
+
+                ElectAddDataRow(worksheet, currentRow++, "Overall Result:", data.OverallResult, "", "");
+                ElectAddDataRow(worksheet, currentRow++, "Tested By:", data.TestedByName,
+                          "Verified By:", data.VerifiedByName);
+
+                // DO NOT use AdjustToContents - we already set custom widths
+                // worksheet.Columns().AdjustToContents();
+            }
+
+            // Save to memory stream
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"ElectricalPerformance_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(),
+                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                       fileName);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Error exporting: {ex.Message}");
+        }
+    }
+
+    // Helper methods (same as Temperature Rise Test)
+    private void ElectAddSectionHeader(IXLWorksheet worksheet, int row, string title)
+    {
+        worksheet.Cell(row, 1).Value = title;
+        worksheet.Range(row, 1, row, 14).Merge();
+        worksheet.Cell(row, 1).Style.Font.Bold = true;
+        worksheet.Cell(row, 1).Style.Font.FontSize = 12;
+        worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+        worksheet.Cell(row, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
+    }
+
+    private void ElectAddDataRow(IXLWorksheet worksheet, int row, string label1, string value1,
+                           string label2, string value2, int startCol = 1, int endCol = 14)
+    {
+        int midCol = (endCol - startCol + 1) / 2 + startCol;
+
+        worksheet.Cell(row, startCol).Value = label1;
+        worksheet.Cell(row, startCol).Style.Font.Bold = true;
+        worksheet.Cell(row, startCol + 1).Value = value1;
+        worksheet.Range(row, startCol + 1, row, midCol - 1).Merge();
+
+        if (!string.IsNullOrEmpty(label2))
+        {
+            worksheet.Cell(row, midCol).Value = label2;
+            worksheet.Cell(row, midCol).Style.Font.Bold = true;
+            worksheet.Cell(row, midCol + 1).Value = value2;
+            worksheet.Range(row, midCol + 1, row, endCol).Merge();
+        }
+
+        ApplyBorders(worksheet.Range(row, startCol, row, endCol));
+    }
+
     #endregion
 
 

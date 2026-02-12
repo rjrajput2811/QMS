@@ -9,6 +9,7 @@
 <script src="~/js/jquery.min.js"></script>
 <script src="~/js/jquery.datatables.js"></script>
 <link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/lib/bootstrap/dist/js/noty.min.js"></script>
 <script src="~/js/pnotify.js"></script>
 <script src="~/js/pnotify.confirm.js"></script>
 <script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
@@ -136,6 +137,12 @@
                 </div>
             </div>
             <div>
+                <button id="exportExcelButton"
+                        type="button"
+                        class="btn btn-outline-info legitRipple mr-2 header-btn"
+                        onclick="exportToExcel()">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export
+                </button>
                 <!-- Add Button -->
                 <button id="addGlowWireButton"
                         type="button"
@@ -252,6 +259,22 @@
 
             loadData();
         });
+
+        function exportToExcel() {
+            var selected = table.getSelectedRows();
+
+            if (selected.length === 0) {
+                showDangerAlert('Please select at least one row to export');
+                return;
+            }
+
+            var ids = selected.map(function(row) {
+                return row.getData().Id;
+            });
+
+            // Export selected records
+            window.location.href = '@Url.Action("ExportGlowWireTestToExcel", "ProductValidation")' + '?ids=' + ids.join(',');
+        }
 
         function loadData() {
             Blockloadershow();
@@ -388,6 +411,17 @@
                     </i>`
 
                         return actionButtons;
+                    }
+                },
+                {
+                    formatter: "rowSelection",
+                    titleFormatter: "rowSelection",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerSort: false,
+                    width: 50,
+                    cellClick: function(e, cell) {
+                        cell.getRow().toggleSelect();
                     }
                 },
                 {

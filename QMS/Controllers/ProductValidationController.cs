@@ -15,6 +15,7 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.DropTestRepository;
@@ -33,6 +34,7 @@ using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.SurgeTestReportRepository;
 using QMS.Core.Services.HydraulicTestReportService;
 using QMS.Core.Services.SystemLogs;
+using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -65,6 +67,8 @@ public class ProductValidationController : Controller
     private readonly INeedleFlameTestRepository _needleFlameTestRepository;
     private readonly IGeneralObservationRepository _generalObservationRepository;
     private readonly IWebHostEnvironment _env;
+    //private readonly IGlowWireTestRepository _glowWireTestRepository;
+    private readonly ITemperatureRiseTestRepository _temperatureRiseTestRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -83,7 +87,8 @@ public class ProductValidationController : Controller
         IGlowWireTestRepository glowWireTestRepository,
         IHydraulicTestReportService hydraulicTestReportService,
         INeedleFlameTestRepository needleFlameTestRepository,
-        IGeneralObservationRepository generalObservationRepository, IWebHostEnvironment env
+        IGeneralObservationRepository generalObservationRepository, IWebHostEnvironment env,
+        ITemperatureRiseTestRepository temperatureRiseTestRepository
         )
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
@@ -3988,6 +3993,445 @@ public class ProductValidationController : Controller
         var result = await _glowWireTestRepository.DeleteGlowWireTestAsync(Id);
         return Json(result);
     }
+
+
+    [HttpGet]
+    public async Task<IActionResult> ExportGlowWireTestToExcel(string ids)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(ids))
+                return BadRequest("No records selected");
+
+            var idList = ids.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                            .Select(x => int.Parse(x.Trim()))
+                            .ToList();
+
+            using var workbook = new XLWorkbook();
+
+            foreach (var id in idList)
+            {
+                var data = await _glowWireTestRepository.GetGlowWireTestByIdAsync(id);
+                if (data == null) continue;
+
+                // Sheet name
+                var sheetName = SanitizeSheetName(data.ReportNo ?? $"Report_{id}");
+                var ws = workbook.Worksheets.Add(sheetName);
+
+                // =========================================================
+                // TEMPLATE-LIKE LAYOUT
+                // A: left margin
+                // B: Sr No / labels
+                // C: Tests (Clause Ref)
+                // D: Specified Requirements
+                // E: Observation
+                // F: Result
+                // =========================================================
+
+                // Column widths
+                ws.Column(1).Width = 3.56;   // A margin
+                ws.Column(2).Width = 7.28;   // B
+                ws.Column(3).Width = 41.85;  // C
+                ws.Column(4).Width = 50.13;  // D
+                ws.Column(5).Width = 27.14;  // E
+                ws.Column(6).Width = 26.70;  // F
+
+                int r = 1;
+
+                // ===== HEADER SECTION =====
+                ws.Cell(r, 2).Value = "GLOW WIRE TEST REPORT";
+                ws.Range(r, 2, r, 5).Merge();
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 2).Style.Font.FontSize = 16;
+                ws.Cell(r, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Cell(r, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                // Logo at F
+                ws.Cell(r, 6).Style.Fill.BackgroundColor = XLColor.White;
+                ws.Cell(r, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Cell(r, 6).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                ws.Row(r).Height = 80;
+
+                // Insert logo
+                try
+                {
+                    var webroot = _hostEnvironment.WebRootPath ?? "";
+                    var logoPath = Path.Combine(webroot, "images", "wipro-logo.png");
+
+                    if (System.IO.File.Exists(logoPath))
+                    {
+                        var logoAnchor = ws.Cell(r, 6);
+                        var picture = ws.AddPicture(logoPath)
+                                        .MoveTo(logoAnchor, 5, 5)
+                                        .WithPlacement(XLPicturePlacement.Move);
+                        picture.ScaleHeight(1.2);
+                        picture.ScaleWidth(1.2);
+                    }
+                }
+                catch
+                {
+                    // ignore image errors
+                }
+
+                r++;
+
+                // Row: Report No
+                ws.Range(r, 2, r, 4).Merge();
+                ws.Cell(r, 5).Value = "Report No:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+
+                ws.Cell(r, 6).Value = data.ReportNo ?? "";
+
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // Row: Customer/Project + Date
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Customer / Project Name:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+
+                ws.Cell(r, 4).Value = data.CustomerProjectName ?? "";
+
+                ws.Cell(r, 5).Value = "Date:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+
+                ws.Cell(r, 6).Value = data.ReportDate?.ToString("dd-MMM-yyyy") ?? "";
+
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // Row: Product Cat Ref + Batch Code
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Product Cat Ref:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                
+                ws.Cell(r, 4).Value = data.ProductCatRef ?? "";
+
+
+                ws.Cell(r, 5).Value = "Batch Code:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.BatchCode ?? "";
+
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // Row: Product Description + Quantity
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Product Description:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 4).Value = data.ProductDescription ?? "";
+
+
+                ws.Cell(r, 5).Value = "Quantity:";
+                ws.Cell(r, 5).Style.Font.Bold = true;
+                ws.Cell(r, 6).Value = data.Quantity;
+
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r++;
+
+                // Part Description + PKD
+                ws.Range(r, 2, r, 3).Merge();
+                ws.Cell(r, 2).Value = "Part Description:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 4).Value = data.PartDescription ?? "";
+                ApplyBorders(ws.Range(r, 2, r, 6));
+
+                r += 1;
+
+                // ===== TEST DETAILS HEADER =====
+                GlowAddSectionHeader_Template(ws, r, "TEST DETAILS");
+                r++;
+
+                // ===== TABLE HEADER =====
+                ws.Cell(r, 2).Value = "Sr. No.";
+                ws.Cell(r, 3).Value = "TESTS WITH CLAUSE REFERENCE";
+                ws.Cell(r, 4).Value = "SPECIFIED REQUIREMENTS";
+                ws.Cell(r, 5).Value = "Observation";
+                ws.Cell(r, 6).Value = "Result";
+
+                var hdr = ws.Range(r, 2, r, 6);
+                hdr.Style.Font.Bold = true;
+                hdr.Style.Fill.BackgroundColor = XLColor.LightGray;
+                hdr.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                hdr.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                hdr.Style.Alignment.WrapText = true;
+                hdr.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                hdr.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                ws.Row(r).Height = 30;
+                r++;
+
+                // ===== DATA + PHOTO BLOCKS =====
+                int srNo = 1;
+                var details = data.Details ?? new List<GlowWireTestReportDetailViewModel>();
+
+                foreach (var detail in details)
+                {
+                    // TEXT ROW (B..F)
+                    ws.Cell(r, 2).Value = srNo++;
+                    ws.Cell(r, 3).Value = detail.Test_Ref ?? "";
+                    ws.Cell(r, 4).Value = detail.Specified_Req ?? "";
+                    ws.Cell(r, 5).Value = detail.Observation ?? "";
+                    ws.Cell(r, 6).Value = detail.Result ?? "";
+
+                    ws.Range(r, 2, r, 6).Style.Alignment.WrapText = true;
+                    ws.Cell(r, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+                    ws.Cell(r, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                    ws.Cell(r, 4).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+                    ws.Cell(r, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Left;
+
+                    ws.Cell(r, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 6).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+                    ApplyBorders(ws.Range(r, 2, r, 6));
+                    ws.Row(r).Height = 90;
+                    r++;
+
+                    // PHOTO LABEL ROW
+                    ws.Cell(r, 3).Value = "Photo during testing";
+                    ws.Range(r, 3, r, 4).Merge(); // C:D
+                    ws.Cell(r, 3).Style.Font.Bold = true;
+                    ws.Cell(r, 3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 3).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                    ws.Cell(r, 5).Value = "Photo After testing";
+                    ws.Range(r, 5, r, 6).Merge(); // E:F
+                    ws.Cell(r, 5).Style.Font.Bold = true;
+                    ws.Cell(r, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Cell(r, 5).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                    ApplyBorders(ws.Range(r, 2, r, 6));
+                    ws.Row(r).Height = 26;
+                    r++;
+
+                    // IMAGE ROW (merged boxes)
+                    var duringRange = ws.Range(r, 3, r, 4); // C:D
+                    duringRange.Merge();
+
+                    var afterRange = ws.Range(r, 5, r, 6); // E:F
+                    afterRange.Merge();
+
+                    // Apply border to entire row including column B
+                    ApplyBorders(ws.Range(r, 2, r, 6));
+                    ws.Row(r).Height = 170;
+
+                    try
+                    {
+                        var webroot = _hostEnvironment.WebRootPath ?? "";
+
+                        // During
+                        if (!string.IsNullOrWhiteSpace(detail.Photo_During_Test))
+                        {
+                            var photoPath1 = Path.Combine(webroot, detail.Photo_During_Test.TrimStart('/', '\\'));
+                            if (System.IO.File.Exists(photoPath1))
+                            {
+                                var pic1 = ws.AddPicture(photoPath1);
+                                FitPictureToRangeCentered(ws, pic1, duringRange);
+                            }
+                        }
+
+                        // After
+                        if (!string.IsNullOrWhiteSpace(detail.Photo_After_Test))
+                        {
+                            var photoPath2 = Path.Combine(webroot, detail.Photo_After_Test.TrimStart('/', '\\'));
+                            if (System.IO.File.Exists(photoPath2))
+                            {
+                                var pic2 = ws.AddPicture(photoPath2);
+                                FitPictureToRangeCentered(ws, pic2, afterRange);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Image error: {ex.Message}");
+                    }
+
+                    r += 1; // next test
+                }
+
+                r += 2;
+
+                // ===== FINAL RESULT =====
+                ws.Cell(r, 2).Value = "Test Result:";
+                ws.Cell(r, 2).Style.Font.Bold = true;
+                ws.Cell(r, 2).Style.Font.FontColor = XLColor.Red;
+
+                ws.Cell(r, 3).Value = data.TestResult ?? "";
+                ws.Cell(r, 3).Style.Font.Bold = true;
+                ws.Cell(r, 3).Style.Font.FontSize = 14;
+                ws.Cell(r, 3).Style.Font.FontColor =
+                    (data.TestResult ?? "").ToUpper() == "PASS" ? XLColor.Green : XLColor.Red;
+
+                ws.Range(r, 3, r, 6).Merge();
+                ApplyBorders(ws.Range(r, 2, r, 6));
+                r += 2;
+
+                // ===== SIGNATURES =====
+                GlowAddDataRow(ws, r++, "Tested By:", data.TestedBy,
+                               "Verified By:", data.VerifiedBy, 2, 6);
+            }
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"GlowWireTest_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+            return File(stream.ToArray(),
+                       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                       fileName);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"Error exporting: {ex.Message}");
+        }
+    }
+
+    /* ========================= HELPER METHODS ========================= */
+
+    // Sanitize sheet name
+    //private string SanitizeSheetName(string name)
+    //{
+    //    if (string.IsNullOrWhiteSpace(name))
+    //        return "Sheet1";
+
+    //    // Remove invalid characters for Excel sheet names
+    //    var invalid = new char[] { '/', '\\', '?', '*', '[', ']', ':' };
+    //    foreach (var c in invalid)
+    //        name = name.Replace(c.ToString(), "");
+
+    //    // Limit to 31 characters (Excel limit)
+    //    if (name.Length > 31)
+    //        name = name.Substring(0, 31);
+
+    //    return name;
+    //}
+
+    // Apply borders to a range
+    //private void ApplyBorders(IXLRange range)
+    //{
+    //    range.Style.Border.TopBorder = XLBorderStyleValues.Thin;
+    //    range.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+    //    range.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
+    //    range.Style.Border.RightBorder = XLBorderStyleValues.Thin;
+    //    range.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+    //}
+
+    // Section header merged B..F (template style)
+    private void GlowAddSectionHeader_Template(IXLWorksheet ws, int row, string title)
+    {
+        ws.Cell(row, 2).Value = title;
+        ws.Range(row, 2, row, 6).Merge();
+        ws.Cell(row, 2).Style.Font.Bold = true;
+        ws.Cell(row, 2).Style.Font.FontSize = 12;
+        ws.Cell(row, 2).Style.Fill.BackgroundColor = XLColor.LightGray;
+        ws.Cell(row, 2).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
+        ws.Cell(row, 2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+        ws.Cell(row, 2).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+    }
+
+    // Two-part row helper (for Part Description/PKD and signatures)
+    private void GlowAddDataRow(IXLWorksheet ws, int row,
+                               string label1, string value1,
+                               string label2, string value2,
+                               int startCol, int endCol)
+    {
+        int totalCols = endCol - startCol + 1;
+        int half = totalCols / 2;
+
+        int l1 = startCol;
+        int v1Start = startCol + 1;
+        int v1End = startCol + half - 1;
+
+        int l2 = startCol + half;
+        int v2Start = l2 + 1;
+        int v2End = endCol;
+
+        ws.Cell(row, l1).Value = label1;
+        ws.Cell(row, l1).Style.Font.Bold = true;
+
+        ws.Cell(row, v1Start).Value = value1 ?? "";
+        if (v1End >= v1Start) ws.Range(row, v1Start, row, v1End).Merge();
+
+        if (!string.IsNullOrWhiteSpace(label2))
+        {
+            ws.Cell(row, l2).Value = label2;
+            ws.Cell(row, l2).Style.Font.Bold = true;
+
+            ws.Cell(row, v2Start).Value = value2 ?? "";
+            if (v2End >= v2Start) ws.Range(row, v2Start, row, v2End).Merge();
+        }
+
+        ws.Range(row, startCol, row, endCol).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+        ws.Range(row, startCol, row, endCol).Style.Alignment.WrapText = true;
+
+        ApplyBorders(ws.Range(row, startCol, row, endCol));
+    }
+
+    //// Convert Excel column width to pixels
+    //private double ColWidthToPixels(double excelColWidth) => excelColWidth * 7.0;
+
+    //// Convert row height points to pixels
+    //private double RowPointsToPixels(double points) => points * 1.333;
+
+    // Get box dimensions in pixels
+    private (double wPx, double hPx) GetBoxPixels(IXLWorksheet ws, IXLRange box)
+    {
+        double w = 0;
+        for (int c = box.RangeAddress.FirstAddress.ColumnNumber; c <= box.RangeAddress.LastAddress.ColumnNumber; c++)
+            w += ColWidthToPixels(ws.Column(c).Width);
+
+        double h = 0;
+        for (int r = box.RangeAddress.FirstAddress.RowNumber; r <= box.RangeAddress.LastAddress.RowNumber; r++)
+        {
+            var row = ws.Row(r);
+            double pt = row.Height > 0 ? row.Height : 15.0;
+            h += RowPointsToPixels(pt);
+        }
+
+        // Padding so it doesn't touch borders
+        w = Math.Max(10, w - 10);
+        h = Math.Max(10, h - 10);
+        return (w, h);
+    }
+
+    // Fit and center picture inside a merged range
+    private void FitPictureToRangeCentered(IXLWorksheet ws, IXLPicture pic, IXLRange range)
+    {
+        try
+        {
+            // Get the box dimensions in pixels
+            var (boxW, boxH) = GetBoxPixels(ws, range);
+
+            // Get actual image dimensions
+            double imgW = pic.OriginalWidth;
+            double imgH = pic.OriginalHeight;
+
+            if (imgW <= 0 || imgH <= 0) return;
+
+            // Calculate scale to fit inside box
+            double scale = Math.Min(boxW / imgW, boxH / imgH);
+            if (scale > 1.0) scale = 1.0; // Don't enlarge images
+
+            int finalW = Math.Max(1, (int)(imgW * scale));
+            int finalH = Math.Max(1, (int)(imgH * scale));
+
+            // Center offsets
+            int offsetX = Math.Max(0, (int)((boxW - finalW) / 2));
+            int offsetY = Math.Max(0, (int)((boxH - finalH) / 2));
+
+            // Position and size the picture
+            pic.MoveTo(range.FirstCell(), offsetX, offsetY);
+            pic.WithSize(finalW, finalH);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Picture fitting error: {ex.Message}");
+        }
+    }
+
 
     #endregion
 

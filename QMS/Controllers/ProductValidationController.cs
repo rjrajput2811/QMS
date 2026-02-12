@@ -6654,6 +6654,120 @@ public class ProductValidationController : Controller
         return Json(result);
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ExportGeneralObservationToExcel(int id)
+    {
+        try
+        {
+            var model = await _generalObservationRepository.GetGeneralObservationByIdAsync(id);
+            if (model == null)
+                return NotFound();
+
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "V16. General Observation  Open Points_V.xlsx");
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("General Observation template not found at " + templatePath);
+
+            using var wb = new XLWorkbook(templatePath);
+            var ws = wb.Worksheet(1);
+
+            // =========================
+            // HEADER (NO CHANGE)
+            // =========================
+            ws.Cell("A3").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
+            ws.Cell("D3").Value = "Product Description :- " + (model.ProductDescription ?? "");
+            ws.Cell("G3").Value = "Report No :- " + (model.ReportNo ?? "");
+            ws.Cell("G4").Value = "Date :- " + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
+
+            // =========================
+            // DETAILS (ONLY LOGIC CHANGE HERE)
+            // =========================
+            const int templateDetailRow = 7;        // first data row
+            const int templateFooterSignRow = 8;    // this is the footer row IN TEMPLATE (original position)
+
+            var details = (model.Details ?? new List<GeneralObservationDetailViewModel>())
+                            .Where(x => !x.Deleted)
+                            .ToList();
+
+            if (details.Count == 0)
+                details.Add(new GeneralObservationDetailViewModel());
+
+            int extraRows = details.Count - 1;   // how many rows will be inserted
+
+            // 1) Capture merge structure of template detail row (NO CHANGE)
+            var templateMergedRanges = ws.MergedRanges
+                .Where(r => r.FirstRow().RowNumber() == templateDetailRow &&
+                            r.LastRow().RowNumber() == templateDetailRow)
+                .Select(r => (firstCol: r.FirstColumn().ColumnNumber(),
+                              lastCol: r.LastColumn().ColumnNumber()))
+                .ToList();
+
+            // 2) Insert rows if needed (NO CHANGE)
+            if (extraRows > 0)
+            {
+                ws.Row(templateDetailRow).InsertRowsBelow(extraRows);
+
+                for (int i = 1; i < details.Count; i++)
+                    ws.Row(templateDetailRow).CopyTo(ws.Row(templateDetailRow + i));
+            }
+
+            // 3) Fill values + recreate merges + insert images (NO CHANGE)
+            for (int i = 0; i < details.Count; i++)
+            {
+                int row = templateDetailRow + i;
+                var d = details[i];
+
+                foreach (var m in templateMergedRanges)
+                    ws.Range(row, m.firstCol, row, m.lastCol).Merge();
+
+                ws.Cell(row, 1).Value = i + 1;
+                ws.Cell(row, 2).Value = d.Req_Spec ?? "";
+                ws.Cell(row, 3).Value = d.Actual_find ?? "";
+                ws.Cell(row, 6).Value = d.Open_Close ?? "";
+                ws.Cell(row, 7).Value = d.Closure_Respons ?? "";
+
+                ws.Cell(row, 8).Value = "";
+                InsertImageIntoCell(ws, row, 8, d.Attachment, _env.WebRootPath);
+            }
+
+            // =========================
+            // FOOTER (ONLY LOGIC CHANGE)
+            // =========================
+            // IMPORTANT:
+            // Do NOT copy footer rows.
+            // Just write into the same footer rows, but they have shifted down by extraRows.
+
+            int rSign = templateFooterSignRow + extraRows;
+
+            ws.Cell($"A{rSign}").Value = "Checked By :- " + (model.CheckedBy ?? "");
+            ws.Cell($"E{rSign}").Value = "Verified By :- " + (model.VerifiedBy ?? "");
+
+            // =========================
+            // PRINT SETTINGS (minor adjust)
+            // =========================
+            ws.PageSetup.PrintAreas.Clear();
+            ws.PageSetup.PrintAreas.Add($"A1:J{rSign}");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            ws.PageSetup.FitToPages(1, 1);
+
+            // =========================
+            // RETURN FILE
+            // =========================
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"General Observation_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+        catch (Exception ex)
+        {
+            _systemLogService?.WriteLog($"Error exporting Ingress Protection report {id}: {ex}");
+            return StatusCode(500, new { error = "Error generating Excel file", message = ex.Message });
+        }
+    }
+
     #endregion
 
 

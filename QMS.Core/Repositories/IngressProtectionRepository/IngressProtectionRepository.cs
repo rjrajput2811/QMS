@@ -81,7 +81,7 @@ namespace QMS.Core.Repositories.IngressProtectionRepository
 
         public async Task<IngressProtectionTestViewModel?> GetIngressProtectionByIdAsync(int id)
         {
-            await using var con = new SqlConnection(_connStr);
+            await using var con =  _dbContext.Database.GetDbConnection();
 
             var param = new DynamicParameters();
             param.Add("@Id", id, DbType.Int32);
@@ -118,7 +118,7 @@ namespace QMS.Core.Repositories.IngressProtectionRepository
                 // TVP
                 var dtDetails = BuildIPDetailsTvp(model.Details ?? new List<IngressProtectionTest_Detail>());
 
-                await using var con = new SqlConnection(_connStr);
+                await using var con =  _dbContext.Database.GetDbConnection();
                 await con.OpenAsync();
 
                 var param = new DynamicParameters();
@@ -208,7 +208,7 @@ namespace QMS.Core.Repositories.IngressProtectionRepository
                 // Build TVP (null safe)
                 var dtDetails = BuildIPDetailsTvp(model.Details ?? new List<IngressProtectionTest_Detail>());
 
-                await using var con = new SqlConnection(_connStr);
+                await using var con =  _dbContext.Database.GetDbConnection();
                 await con.OpenAsync();
 
                 var param = new DynamicParameters();
@@ -267,7 +267,7 @@ namespace QMS.Core.Repositories.IngressProtectionRepository
             {
                 if (id <= 0) throw new Exception("Invalid Id.");
 
-                await using var con = new SqlConnection(_connStr);
+                await using var con =  _dbContext.Database.GetDbConnection();
                 await con.OpenAsync();
 
                 var param = new DynamicParameters();

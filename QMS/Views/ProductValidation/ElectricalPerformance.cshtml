@@ -231,6 +231,12 @@
                 </div>
             </div>
             <div>
+                <button id="exportExcelButton"
+                        type="button"
+                        class="btn btn-outline-info legitRipple mr-2 header-btn"
+                        onclick="exportToExcel()">
+                    <i class="fas fa-file-excel mr-2 fa-1x"></i>Export
+                </button>
                 <button id="" type="button" class="btn btn-outline-success legitRipple mr-2" onclick="location.href='@Url.Action("ElectricalPerformanceDetails", "ProductValidation")'" style="width: 140px; font-size:15px">
                     <i class="fas fa-plus mr-2 fa-1x"></i>Add
                 </button>
@@ -356,6 +362,21 @@
             });
         }
 
+        function exportToExcel() {
+            var selected = table.getSelectedRows();
+
+            if (selected.length === 0) {
+                showDangerAlert('Please select at least one row to export');
+                return;
+            }
+
+            var ids = selected.map(function(row) {
+                return row.getData().Id;
+            });
+
+            // Export selected records
+            window.location.href = '@Url.Action("ExportElectricalPerformanceToExcel", "ProductValidation")' + '?ids=' + ids.join(',');
+        }
 
         function loadEditData(id) {
             Blockloadershow();
@@ -523,6 +544,17 @@
                             actionButtons += `<i data-toggle="modal" onclick="delElecPerConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
 
                             return actionButtons;
+                        }
+                    },
+                    {
+                        formatter: "rowSelection",
+                        titleFormatter: "rowSelection",
+                        hozAlign: "center",
+                        headerHozAlign: "center",
+                        headerSort: false,
+                        width: 50,
+                        cellClick: function(e, cell) {
+                            cell.getRow().toggleSelect();
                         }
                     },
                     { title: "SNo", field: "Sr_No", width: 50, responsive: 0,  sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left" },

@@ -55,6 +55,7 @@ using QMS.Core.Repositories.VendorRepository;
 using QMS.Core.Services.ChangeNoteService;
 using QMS.Core.Services.DeviationNoteService;
 using QMS.Core.Services.SystemLogs;
+using QMS.Core.Repositories.TemperatureRiseTestRepo;
 using System.Data;
 using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.InstallationTrialRepository;
@@ -145,6 +146,7 @@ builder.Services.AddTransient<IGlowWireTestRepository, GlowWireTestRepository>()
 builder.Services.AddTransient<IGeneralObservationRepository, GeneralObservationRepository>();
 builder.Services.AddTransient<INeedleFlameTestRepository, NeedleFlameTestRepository>();
 
+builder.Services.AddTransient<ITemperatureRiseTestRepository, TemperatureRiseTestRepository>();
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 

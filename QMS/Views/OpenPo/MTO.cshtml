@@ -444,6 +444,8 @@
                         data: window.PendTSTableData,
                         layout: "fitDataFill",
                         renderHorizontal: "virtual",
+                        height: "calc(100vh - 280px)", // adjust offset
+                        renderVertical: "virtual",
                         movableColumns: true, // Allow column reordering
                         pagination: "local", // Enable pagination
                         paginationSize: 10, // Rows per page

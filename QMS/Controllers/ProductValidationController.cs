@@ -614,7 +614,7 @@ public class ProductValidationController : Controller
         }
     }
 
-    
+
     public async Task<IActionResult> PhysicalCheckAndVisualInspectionDetails(int Id)
     {
         var model = new PhysicalCheckAndVisualInspectionViewModel();
@@ -702,7 +702,7 @@ public class ProductValidationController : Controller
     #region RippleTest
 
     [HttpPost]
-    
+
 
     public IActionResult RippleTestReport()
     {
@@ -1601,7 +1601,7 @@ public class ProductValidationController : Controller
             return Json(new { success = false, message = ex.Message });
         }
     }
-    
+
     #endregion
 
 
@@ -2277,12 +2277,12 @@ public class ProductValidationController : Controller
         ws.Cell("I5").Value = "Date :" + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
 
 
-        ws.Cell("E8").Value =  model.Sphere_InputWattage_Spec ?? "";
-        ws.Cell("F8").Value =  model.Sphere_InputWattage_Sample1.ToString() ?? "";
-        ws.Cell("G8").Value =  model.Sphere_InputWattage_Sample2.ToString() ?? "";
-        ws.Cell("H8").Value =  model.Sphere_InputWattage_Sample3.ToString() ?? "";
-        ws.Cell("I8").Value =  model.Sphere_InputWattage_Sample4.ToString() ?? "";
-        ws.Cell("J8").Value =  model.Sphere_InputWattage_Sample5.ToString() ?? "";
+        ws.Cell("E8").Value = model.Sphere_InputWattage_Spec ?? "";
+        ws.Cell("F8").Value = model.Sphere_InputWattage_Sample1.ToString() ?? "";
+        ws.Cell("G8").Value = model.Sphere_InputWattage_Sample2.ToString() ?? "";
+        ws.Cell("H8").Value = model.Sphere_InputWattage_Sample3.ToString() ?? "";
+        ws.Cell("I8").Value = model.Sphere_InputWattage_Sample4.ToString() ?? "";
+        ws.Cell("J8").Value = model.Sphere_InputWattage_Sample5.ToString() ?? "";
         ws.Cell("K8").Value = model.Sphere_InputWattage_Result ?? "";
 
         ws.Cell("E9").Value = model.Sphere_LuminousFlux_Spec ?? "";
@@ -4188,7 +4188,7 @@ public class ProductValidationController : Controller
     public async Task<IActionResult> HydraulicTestReportDetailsAsync(int Id)
     {
         var model = new HydraulicTestReportViewModel();
-        if(Id > 0)
+        if (Id > 0)
         {
             model = await _hydraulicTestReportService.GetHydraulicTestReportDetailsAsync(Id);
         }
@@ -4209,9 +4209,9 @@ public class ProductValidationController : Controller
         if (!Directory.Exists(folder))
             Directory.CreateDirectory(folder);
 
-        foreach(var obs in model.Observations)
+        foreach (var obs in model.Observations)
         {
-            if(obs.PhotoBeforeTestAttachedFile != null)
+            if (obs.PhotoBeforeTestAttachedFile != null)
             {
                 string fileName = obs.PhotoBeforeTestAttachedFile.FileName.Replace(",", "_");
                 string savePath = Path.Combine(folder, fileName);
@@ -4221,7 +4221,7 @@ public class ProductValidationController : Controller
                 }
                 obs.PhotoBeforeTest = savePath;
             }
-            if(obs.PhotoAfterTestAttachedFile != null)
+            if (obs.PhotoAfterTestAttachedFile != null)
             {
                 string fileName = obs.PhotoAfterTestAttachedFile.FileName.Replace(",", "_");
                 string savePath = Path.Combine(folder, fileName);
@@ -4233,7 +4233,7 @@ public class ProductValidationController : Controller
             }
         }
 
-        if(model.Id > 0)
+        if (model.Id > 0)
         {
             model.UpdatedBy = HttpContext.Session.GetInt32("UserId");
             model.UpdatedOn = DateTime.Now;
@@ -4282,16 +4282,16 @@ public class ProductValidationController : Controller
 
                 var imagePath = Path.Combine(webRootPath, "images", "wipro-logo.png");
                 Cell logoCell = new Cell()
-                    .SetPadding(2) 
+                    .SetPadding(2)
                     .SetTextAlignment(TextAlignment.CENTER)
                     .SetVerticalAlignment(VerticalAlignment.MIDDLE);
 
                 if (System.IO.File.Exists(imagePath))
                 {
                     Image logo = new Image(ImageDataFactory.Create(imagePath));
-                    logo.SetWidth(70f); 
+                    logo.SetWidth(70f);
                     logo.SetHorizontalAlignment(HorizontalAlignment.CENTER);
-    
+
                     logoCell.Add(logo);
                 }
                 else
@@ -4697,7 +4697,7 @@ public class ProductValidationController : Controller
                             referenceNo: model.ReportNo
                         );
                     }
-                    
+
                 }
             }
 
@@ -4806,7 +4806,7 @@ public class ProductValidationController : Controller
     }
 
     #endregion
-    
+
 }
 
 

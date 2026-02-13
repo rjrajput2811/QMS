@@ -496,7 +496,7 @@
         function exportToExcel(recid) {
             Blockloadershow();
             $.ajax({
-                url: '@Url.Action("ExportGeneralObservationToExcel", "ProductValidation")',
+                url: '@Url.Action("ExportValidationClosureToExcel", "ProductValidation")',
                 data: { Id: recid },
                 type: 'POST',
                 xhrFields: {
@@ -527,7 +527,7 @@
 
                     // Fallback to a default file name if extraction fails
                     if (!fileName) {
-                        fileName = 'GeneralObservation.xlsx';
+                        fileName = 'ValidationClosure.xlsx';
                     }
 
                     // Create a temporary link element to trigger the download

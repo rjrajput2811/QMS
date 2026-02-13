@@ -2473,7 +2473,7 @@ public class ProductValidationController : Controller
     //    return View();
     //}
 
-    
+
 
     public async Task<ActionResult> GetTemperatureRiseList(DateTime? startDate = null, DateTime? endDate = null)
     {
@@ -4475,7 +4475,7 @@ public class ProductValidationController : Controller
             ws.Cell("J9").Value = "Batch Code  :- " + (model.BatchCode ?? "");
             ws.Cell("L9").Value = "Quantity :-  " + (model.Quantity.ToString() ?? "");
 
-            
+
             ws.Cell("C12").Value = model.Weight_kg_IK01 ?? "";
             ws.Cell("C13").Value = model.Weight_Material_IK01 ?? "";
             ws.Cell("C14").Value = model.Distance_cm_IK01 ?? "";
@@ -4678,7 +4678,7 @@ public class ProductValidationController : Controller
     string webRootPath)
     {
         int rObsTitle = startRow;       // 21
-        
+
         int rResult = startRow + 7;   // 24
 
         var photoRange = ws.Range($"H{rObsTitle}:J{rResult}");
@@ -5205,13 +5205,13 @@ public class ProductValidationController : Controller
             using var wb = new XLWorkbook(templatePath);
             var ws = wb.Worksheet(1);
 
-            
+
             ws.Cell("E2").Value = model.ReportNo ?? "";
             ws.Cell("H2").Value = model.ReportDate?.ToString("dd/MM/yyyy") ?? "";
             ws.Cell("B3").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
             ws.Cell("D3").Value = "Product Description :- " + (model.ProductDescription ?? "");
 
-           
+
             ws.Cell("D5").Value = model.DriverBIS_Result1 ?? "";
             ws.Cell("E5").Value = model.DriverBIS_Result2 ?? "";
             ws.Cell("F5").Value = model.DriverBIS_Result3 ?? "";
@@ -5225,13 +5225,13 @@ public class ProductValidationController : Controller
             ws.Cell("F6").Value = model.LuminairesBIS_Result3 ?? "";
             ws.Cell("G6").Value = model.LuminairesBIS_Result4 ?? "";
             ws.Cell("H6").Value = "";
-            InsertImageIntoCell(ws, 6, 8, model.LuminairesBIS_UploadFile,_env.WebRootPath);
+            InsertImageIntoCell(ws, 6, 8, model.LuminairesBIS_UploadFile, _env.WebRootPath);
 
             ws.Cell("D7").Value = model.CCL_Result1 ?? "";
             ws.Cell("E7").Value = model.CCL_Result2 ?? "";
             ws.Cell("F7").Value = model.CCL_Result3 ?? "";
             ws.Cell("G7").Value = model.CCL_Result4 ?? "";
-            ws.Cell("H7").Value = ""; 
+            ws.Cell("H7").Value = "";
             InsertImageIntoCell(ws, 7, 8, model.CCL_UploadFile, _env.WebRootPath);
 
             ws.Cell("D8").Value = model.NPIBuySheet_Result1 ?? "";
@@ -5323,7 +5323,7 @@ public class ProductValidationController : Controller
             ws.Cell("B21").Value = "Checked By :- " + (model.CheckedBy) ?? "";
             ws.Cell("D21").Value = "Verified By :- " + (model.VerifiedBy) ?? "";
 
-           
+
 
             // ========================================
             // Print Settings
@@ -5723,7 +5723,7 @@ public class ProductValidationController : Controller
                 ws.Range(r, 2, r, 3).Merge();
                 ws.Cell(r, 2).Value = "Product Cat Ref:";
                 ws.Cell(r, 2).Style.Font.Bold = true;
-                
+
                 ws.Cell(r, 4).Value = data.ProductCatRef ?? "";
 
 
@@ -6847,7 +6847,7 @@ public class ProductValidationController : Controller
 
             var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
             var reportNo = vm.ReportNo.Trim();
-            
+
             var vendorSigPath = vm.VendorQA_Signature;
             if (vm.VendorQA_SignatureFile != null && vm.VendorQA_SignatureFile.Length > 0)
             {
@@ -7011,6 +7011,263 @@ public class ProductValidationController : Controller
         var result = await _validationClosureRepository.DeleteValidationClosureAsync(Id);
         return Json(result);
     }
+
+
+
+
+    [HttpPost]
+    public async Task<IActionResult> ExportValidationClosureToExcel(int id)
+    {
+        try
+        {
+            var model = await _validationClosureRepository.GetValidationClosureByIdAsync(id);
+            if (model == null) return NotFound();
+
+            var templatePath = Path.Combine(_env.WebRootPath, "templates", "V19. Validation Closure Report.xlsx");
+            if (!System.IO.File.Exists(templatePath))
+                return NotFound("Validation Closure template not found at " + templatePath);
+
+            using var wb = new XLWorkbook(templatePath);
+            var ws = wb.Worksheet(1);
+
+            // =========================
+            // HEADER (as per your template layout)
+            // =========================
+            ws.Cell("A2").Value = "Product Cat Ref- " + (model.ProductCatRef ?? "");
+            ws.Cell("B3").Value = model.ProductDescription ?? ""; // template label in A3
+            ws.Cell("G2").Value = "Report no.-  " + (model.ReportNo ?? "");
+            ws.Cell("I2").Value = "Date - " + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
+
+            ws.Cell("A4").Value = "Batch code " + (model.BatchCode ?? "");
+            ws.Cell("C4").Value = "PKD " + (model.PKD ?? "");
+            ws.Cell("E4").Value = "Quantity Offered:- " + model.QuantityOffered.ToString(CultureInfo.InvariantCulture);
+            ws.Cell("G4").Value = "Closure Date:-" + (model.ClosureDate?.ToString("dd/MM/yyyy") ?? "");
+            ws.Cell("G3").Value = "Validation Done by Wipro QA - " + (model.ValidationDoneBy ?? "");
+
+            // =========================
+            // TEMPLATE STRUCTURE (your uploaded template)
+            // =========================
+            const int blockStartRow = 6;            // 1st record starts at row 6
+            const int blockRowCount = 4;            // rows 6-9 (one record)
+            const int footerStartRow = 10;          // footer starts at row 10 in template
+
+            const int templateVendorRow = 10;
+            const int templateWiproRow = 11;
+            const int templateSignRow = 12;
+            const int templateReportRow = 13;
+
+            // Copy whole block (keeps merges/borders/fonts/heights exactly)
+            var templateBlock = ws.Range($"A{blockStartRow}:I{blockStartRow + blockRowCount - 1}");
+
+            // =========================
+            // DETAILS
+            // =========================
+            var details = (model.Details ?? new List<ValidationClosureDetailViewModel>())
+                            .Where(x => !x.Delete)
+                            .ToList();
+
+            if (details.Count == 0)
+                details.Add(new ValidationClosureDetailViewModel());
+
+            int extraBlocks = details.Count - 1;
+            int rowsToInsert = extraBlocks * blockRowCount;
+
+            // Insert rows above footer so footer moves down
+            if (rowsToInsert > 0)
+            {
+                ws.Row(footerStartRow).InsertRowsAbove(rowsToInsert);
+
+                for (int b = 1; b < details.Count; b++)
+                {
+                    int destStart = blockStartRow + (b * blockRowCount);
+                    var destRange = ws.Range($"A{destStart}:I{destStart + blockRowCount - 1}");
+                    templateBlock.CopyTo(destRange);
+                }
+            }
+
+            // =========================
+            // FILL EACH RECORD (and images)
+            // =========================
+            for (int i = 0; i < details.Count; i++)
+            {
+                int start = blockStartRow + (i * blockRowCount);
+
+                int rowMain = start;          // row 6
+                int rowEvidence = start + 1;  // row 7 (A:I merged)
+                int rowAttachTop = start + 2; // row 8
+
+                var d = details[i];
+
+                // Row 6 columns:
+                // A = SL No
+                // B:D = Open Point (merged)
+                // E:G = Action Taken (merged)
+                // H = Stake Holder
+                // I = Status
+                ws.Cell(rowMain, 1).Value = i + 1;
+                ws.Cell(rowMain, 2).Value = d.Open_Point ?? "";
+                ws.Cell(rowMain, 5).Value = d.Action_Taken ?? "";
+                ws.Cell(rowMain, 8).Value = d.Stake_Holder ?? "";
+                ws.Cell(rowMain, 9).Value = d.Status ?? "";
+
+                // Evidence: /ValidationClosure_Attach/...png  -> wwwroot\ValidationClosure_Attach\...png
+                if (!string.IsNullOrWhiteSpace(d.Evidence))
+                {
+                    var evidenceRange = ws.Range(rowEvidence, 1, rowEvidence, 9); // A:I
+                    InsertImageCenteredInRange(ws, evidenceRange, d.Evidence, _env.WebRootPath, fitRatio: 0.98, setRowHeight: 120);
+                }
+
+                // Attached: /ValidationClosure_Attach/...png -> wwwroot\ValidationClosure_Attach\...png
+                if (!string.IsNullOrWhiteSpace(d.Attached))
+                {
+                    var attachRange = ws.Range(rowAttachTop, 1, rowAttachTop, 9); // A:I across rows 8
+                    InsertImageCenteredInRange(ws, attachRange, d.Attached, _env.WebRootPath, fitRatio: 0.98, setRowHeight: 120);
+                }
+            }
+
+            // =========================
+            // FOOTER (shifted by inserted rows)
+            // =========================
+            int vendorRow = templateVendorRow + rowsToInsert;
+            int wiproRow = templateWiproRow + rowsToInsert;
+            int signRow = templateSignRow + rowsToInsert;
+            int reportRow = templateReportRow + rowsToInsert;
+
+            ws.Cell($"A{vendorRow}").Value = "Vendor QA :Final Comments- " + (model.VendorQA_FinalComments ?? "");
+            ws.Cell($"A{wiproRow}").Value =
+                "Wipro- QA :Final Comments- Release for Pilot Lot Production (OK/NOT OK/ OK With Deviations) " +
+                (model.WiproQA_FinalComments ?? "");
+
+            // Sign ranges are A:E and F:I
+            if (!string.IsNullOrWhiteSpace(model.VendorQA_Signature)) 
+            { 
+                //InsertImageIntoRange(ws, ws.Range(signRow, 1, signRow, 5), model.VendorQA_Signature, _env.WebRootPath, _systemLogService);
+                
+                    var signRange = ws.Range(signRow, 1, signRow, 5); // A:I
+                    InsertImageCenteredInRange(ws, signRange, model.VendorQA_Signature, _env.WebRootPath, fitRatio: 0.98, setRowHeight: 120);
+            }
+
+            if (!string.IsNullOrWhiteSpace(model.WiproQA_Signature))
+            {
+
+                var signRange = ws.Range(signRow, 6, signRow, 9); // A:I
+                InsertImageCenteredInRange(ws, signRange, model.WiproQA_Signature, _env.WebRootPath, fitRatio: 0.98, setRowHeight: 120);
+            }
+
+            ws.Cell($"A{reportRow}").Value = "Report attached -- " + (model.ReportAttached ?? "");
+
+            // =========================
+            // PRINT SETTINGS
+            // =========================
+            ws.PageSetup.PrintAreas.Clear();
+            ws.PageSetup.PrintAreas.Add($"A1:I{reportRow}");
+            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+            ws.PageSetup.FitToPages(1, 1);
+
+            // =========================
+            // RETURN FILE
+            // =========================
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            stream.Position = 0;
+
+            var fileName = $"ValidationClosure_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                fileName);
+        }
+        catch (Exception ex)
+        {
+            _systemLogService?.WriteLog($"Error exporting Validation Closure report {id}: {ex}");
+            return StatusCode(500, new { error = "Error generating Excel file", message = ex.Message });
+        }
+    }
+
+    #region Helpers
+
+    private void InsertImageCenteredInRange(
+    IXLWorksheet ws,
+    IXLRange range,
+    string? dbPath,
+    string webRootPath,
+    double fitRatio = 0.95,      // 0.95 = default fit, use 0.98 for “some increase”
+    double? setRowHeight = null  // set bigger row height to increase visible size
+)
+    {
+        if (string.IsNullOrWhiteSpace(dbPath))
+            return;
+
+        string relativePath = dbPath.Trim()
+            .TrimStart('~')
+            .TrimStart('/', '\\')
+            .Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
+
+        string absPath = Path.Combine(webRootPath, relativePath);
+
+        if (!System.IO.File.Exists(absPath))
+        {
+            _systemLogService?.WriteLog($"Image NOT FOUND: {absPath}");
+            return;
+        }
+
+        // Optional: increase row heights for all rows in the range (helps image size)
+        if (setRowHeight.HasValue)
+        {
+            foreach (var r in range.Rows())
+                r.WorksheetRow().Height = setRowHeight.Value;
+        }
+
+        // Clear text in the top-left cell
+        var anchorCell = range.FirstCell();
+        anchorCell.Value = "";
+
+        // Calculate available pixel space in the range
+        int totalWidthPx = 0;
+        for (int c = range.RangeAddress.FirstAddress.ColumnNumber; c <= range.RangeAddress.LastAddress.ColumnNumber; c++)
+            totalWidthPx += ColumnWidthValidationToPixels(ws.Column(c).Width);
+
+        int totalHeightPx = 0;
+        for (int r = range.RangeAddress.FirstAddress.RowNumber; r <= range.RangeAddress.LastAddress.RowNumber; r++)
+            totalHeightPx += PointsValidationToPixels(ws.Row(r).Height);
+
+        // Add picture anchored to top-left cell
+        var pic = ws.AddPicture(absPath)
+            .MoveTo(anchorCell)
+            .WithPlacement(XLPicturePlacement.Move); // stable & avoids placement errors
+
+        double ow = pic.OriginalWidth;
+        double oh = pic.OriginalHeight;
+        if (ow <= 0 || oh <= 0) return;
+
+        // Fit to range with padding control
+        double targetW = Math.Max(1, totalWidthPx * fitRatio);
+        double targetH = Math.Max(1, totalHeightPx * fitRatio);
+
+        double scale = Math.Min(targetW / ow, targetH / oh);
+        pic.Scale(scale);
+
+        // Center inside the range
+        double nw = pic.Width;
+        double nh = pic.Height;
+
+        int left = (int)Math.Max(0, (totalWidthPx - nw) / 2.0);
+        int top = (int)Math.Max(0, (totalHeightPx - nh) / 2.0);
+
+        pic.MoveTo(anchorCell, left, top);
+    }
+
+    private static int PointsValidationToPixels(double points)
+    {
+        return (int)Math.Round(points * 96.0 / 72.0);
+    }
+
+    private static int ColumnWidthValidationToPixels(double columnWidth)
+    {
+        return (int)Math.Round(columnWidth * 7.0 + 5.0);
+    }
+    #endregion
+
 
     #endregion
 

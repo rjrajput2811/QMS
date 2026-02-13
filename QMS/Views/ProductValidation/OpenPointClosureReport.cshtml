@@ -2,6 +2,23 @@
     ViewData["Title"] = "Validation Open Points Closure Report";
 }
 
+<link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
+<link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
+<link href="~/css/pnotify.css" rel="stylesheet" />
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+@* <script src="~/js/xlsx.min.js"></script> *@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+
 <style>
     .header-card {
         border-radius: 8px;
@@ -10,7 +27,7 @@
     }
 
     .header-title {
-        font-size: large;
+        font-size: large; /* smaller, consistent with Electrical Protection */
         color: #4682B4;
         font-weight: 700;
     }
@@ -29,6 +46,78 @@
     .mr-2 {
         margin-right: 8px;
     }
+
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 35px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+
+    .calendar-container {
+        cursor: pointer;
+        padding: 8px 8px;
+        width: 100%;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        gap: 8px;
+        border: 1px solid slategray;
+    }
+
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+            padding-left: 20px;
+        }
+
+        .calendar-container span {
+            color: #4682B4;
+            margin: 0;
+            font-size: 14px;
+        }
+
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
+    .month-item {
+        font-size: 14px;
+    }
+
+
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+        /* light warning */
+        100% {
+            background-color: #e6e6e6;
+        }
+    }
 </style>
 
 <div class="content">
@@ -37,12 +126,17 @@
     <div class="card shadow-sm mb-3 header-card">
         <div class="card-body d-flex justify-content-between align-items-center">
 
-            <!-- LEFT TITLE -->
             <div>
                 <b class="header-title">Validation Open Points Closure Report</b>
             </div>
 
-            <!-- RIGHT BUTTONS -->
+            <div class="col-md-3">
+                <div id="customDateTrigger" class="calendar-container">
+                    <i class="fa fa-calendar"></i>
+                    <span id="dateRangeGeneral">Select Date Range</span>
+                </div>
+            </div>
+
             <div>
 
                 <button id="addClosureButton"
@@ -55,7 +149,7 @@
                 <button id="backButton"
                         type="button"
                         class="btn btn-outline-primary header-btn"
-                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                        onclick="location.href='@Url.Action("ProductValidation", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
 
@@ -63,8 +157,409 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chart-container">
+                        <div class="form-group row">
+                            <div id="openClose_Table" class="col-12"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- You may add the listing table here if needed -->
 
 </div>
+
+@section Scripts {
+
+    <script src="~/js/tabulator.js"></script>
+    <script src="~/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <!-- Moment.js and Litepicker -->
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script>
+        // App base ("/" or "/BisProjectTrac/")
+        window.APP_BASE = '@Url.Content("~")';
+        // Absolute URL to wipro-logo.png (e.g., "/BisProjectTrac/images/wipro-logo.png")
+        window.LOGO_URL = '@Url.Content("~/images/wipro-logo.png")';
+    </script>
+    <script>
+        var tabledata = [];
+        var table = '';
+        let filterStartDate = moment().startOf('month').format('YYYY-MM-DD');
+        let filterEndDate = moment().endOf('month').format('YYYY-MM-DD');
+        $(document).ready(function () {
+
+            $('#dateRangeGeneral').text(
+                moment(filterStartDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndDate).format('MMMM D, YYYY')
+            );
+
+            // Initialize Litepicker and store reference
+            const picker = new Litepicker({
+                element: document.getElementById('customDateTrigger'),
+                singleMode: false,
+                format: 'DD-MM-YYYY',
+                numberOfMonths: 2,
+                numberOfColumns: 2,
+                dropdowns: {
+                    minYear: 2020,
+                    maxYear: null,
+                    months: true,
+                    years: true
+                },
+                plugins: ['ranges'],
+                setup: (picker) => {
+                    picker.on('selected', (start, end) => {
+                        filterStartDate = start.format('YYYY-MM-DD');
+                        filterEndDate = end.format('YYYY-MM-DD');
+                        $('#dateRangeGeneral').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                        loadData();
+                    });
+
+                    picker.on('clear', () => {
+                        filterStartDate = "";
+                        filterEndDate = "";
+                        $('#dateRangeGeneral').text("Select Date Range");
+                        loadData();
+                    });
+                },
+                ranges: {
+                    Today: [moment(), moment()],
+                    Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                    'This Month': [moment().startOf('month'), moment().endOf('month')],
+                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+                },
+                startDate: moment().startOf('month').format('DD-MM-YYYY'),
+                endDate: moment().endOf('month').format('DD-MM-YYYY')
+            });
+
+            // 🔑 Ensure calendar opens on click
+            $('#customDateTrigger').on('click', function () {
+                picker.show();
+            });
+
+            document.addEventListener('DOMContentLoaded', function () {
+                document.getElementById('backButton').addEventListener('click', function () {
+                    window.history.back();
+                });
+            });
+
+            loadData();
+        });
+
+        function loadData() {
+            Blockloadershow();
+            $.ajax({
+                    url: '/ProductValidation/GetValidationClosure',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    startDate: filterStartDate,
+                    endDate: filterEndDate
+                },
+                success: function (data) {
+                    Blockloaderhide();
+                    if (data && Array.isArray(data)) {
+                        OnTabGridLoad(data);
+                    }
+                    else {
+                        showDangerAlert('No data available to load.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    showDangerAlert('Error retrieving data: ' + error);
+                    Blockloaderhide();
+                }
+            });
+        }
+
+        //define column header menu as column visibility toggle
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            for (let column of columns) {
+
+                //create checkbox element using font awesome icons
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                //build label
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                //create menu item
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        //prevent menu closing
+                        e.stopPropagation();
+
+                        //toggle current column visibility
+                        column.toggle();
+
+                        //change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+                    }
+                });
+            }
+
+            return menu;
+        };
+
+        function OnTabGridLoad(response) {
+            debugger;
+            Blockloadershow();
+
+            tabledata = [];
+            let columns = [];
+
+            // Map the response to the table format
+            if (response.length > 0) {
+                $.each(response, function (index, item) {
+
+                    let formattedDate = "";
+                    let updatedDate = "";
+                    let reportDate = "";
+                    let closureDate = "";
+                    if (item.addedOn) {
+                        const dateObj = new Date(item.addedOn);
+                        formattedDate = dateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.updatedOn) {
+                        const updatedateObj = new Date(item.updatedOn);
+                        updatedDate = updatedateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.reportDate) {
+                        const reportDateObj = new Date(item.reportDate);
+                        reportDate = reportDateObj.toLocaleDateString("en-GB");
+                    }
+                    if (item.closureDate) {
+                        const closureDateObj = new Date(item.closureDate);
+                        closureDate = closureDateObj.toLocaleDateString("en-GB");
+                    }
+
+                    tabledata.push({
+                        Sr_No: index + 1,
+                        Id: item.id,
+                        ReportNo: item.reportNo,
+                        ReportDate: reportDate,
+                        ProductCatRef: item.productCatRef,
+                        BatchCode : item.batchCode,
+                        QuantityOffered : item.quantityOffered,
+                        PKD : item.pkD,
+                        ValidationDoneBy : item.validationDoneBy,
+                        ClosureDate : closureDate,
+                        User: item.user
+                    });
+                });
+            }
+
+            columns.push(
+                {
+                    title: "Action",
+                    field: "Action",
+                    headerMenu: headerMenu,
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    formatter: function (cell, formatterParams) {
+                        const rowData = cell.getRow().getData();
+                        let actionButtons = "";
+
+                        actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>
+                            <i onclick="exportToExcel(${rowData.Id})"
+                       class="fas fa-file-excel fa-1x"
+                       title="Export To Excel"
+                       style="color:green;cursor:pointer;">
+                    </i>`
+
+                        return actionButtons;
+                    }
+                },
+                {
+                    title: "SNo", field: "Sr_No", sorter: "number", headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
+                },
+                { title: "Report No", field: "ReportNo", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Report Date", field: "ReportDate", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Product Cat. Ref.", field: "ProductCatRef", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" },
+                { title: "Batch Code", field: "BatchCode", sorter: "number", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Quantity Offered", field: "QuantityOffered", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "PKD", field: "PKD", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Validation Done By", field: "ValidationDoneBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "Closure Date", field: "ClosureDate", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+                { title: "User", field: "User", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+            );
+
+            // // Initialize Tabulator
+            table = new Tabulator("#openClose_Table", {
+                data: tabledata,
+                renderHorizontal: "virtual",
+                movableColumns: true,
+                pagination: "local",
+                paginationSize: 10,
+                paginationSizeSelector: [50, 100, 500, 1500, 2000],
+                paginationCounter: "rows",
+                dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+                columns: columns
+            });
+
+            table.on("cellClick", function (e, cell) {
+                let columnField = cell.getColumn().getField();
+
+                if (columnField !== "Action") {
+                    let rowData = cell.getRow().getData();
+                    showEditOpenCloseReport(rowData.Id);
+                }
+            });
+
+
+
+            // Hide loader
+            Blockloaderhide();
+        }
+
+        function showEditOpenCloseReport(id) {
+            debugger
+                var url = '/ProductValidation/OpenPointClosureReportDetails?id=' + id;
+            window.location.href = url;
+        }
+
+        function delConfirm(recid) {
+            debugger;
+            PNotify.prototype.options.styling = "bootstrap3";
+            (new PNotify({
+                title: 'Confirmation Needed',
+                text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+                icon: 'glyphicon glyphicon-question-sign',
+                hide: false,
+                confirm: {
+                    confirm: true
+                },
+                buttons: {
+                    closer: false,
+                    sticker: false
+                },
+                history: {
+                    history: false
+                },
+            })).get().on('pnotify.confirm', function () {
+                $.ajax({
+                        url: '/ProductValidation/DeleteValidationClosure',
+                    type: 'POST',
+                    data: { id: recid },
+                    success: function (data) {
+                        if (data.success == true) {
+                                showSuccessAlert("Validation Closure Detail is Deleted successfully.");
+                            setTimeout(function () {
+                                window.location.reload();
+                            }, 2500);
+                        }
+                        else if (data.success == false && data.message == "Not_Deleted") {
+                            showDangerAlert("Record is used in QMS Log transactions.");
+                        }
+                        else {
+                            showDangerAlert(data.message);
+                        }
+                    },
+                    error: function () {
+                        showDangerAlert('Error retrieving data.');
+                    }
+                });
+            }).on('pnotify.cancel', function () {
+                loadData();
+            });
+        }
+
+        function exportToExcel(recid) {
+            Blockloadershow();
+            $.ajax({
+                url: '@Url.Action("ExportGeneralObservationToExcel", "ProductValidation")',
+                data: { Id: recid },
+                type: 'POST',
+                xhrFields: {
+                    responseType: 'blob' // Expect a blob response for file download
+                },
+                success: function (data, status, xhr) {
+                    // Create a blob from the response data
+                    var blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+
+                    // Extract the file name from the response headers (Content-Disposition)
+                    var contentDisposition = xhr.getResponseHeader('Content-Disposition');
+                    var fileName = '';
+
+                    if (contentDisposition) {
+                        // Check if the filename is encoded as UTF-8
+                        var fileNameMatch = contentDisposition.match(/filename\*=UTF-8''(.+)/);
+                        if (fileNameMatch && fileNameMatch.length > 1) {
+                            // Decode URI encoding to get the actual file name
+                            fileName = decodeURIComponent(fileNameMatch[1].split(';')[0].trim());
+                        } else {
+                            // Fallback to simple filename extraction without UTF-8 encoding
+                            var fileNameSimpleMatch = contentDisposition.match(/filename="?(.+)"?/);
+                            if (fileNameSimpleMatch && fileNameSimpleMatch.length > 1) {
+                                fileName = fileNameSimpleMatch[1].split(';')[0].trim();
+                            }
+                        }
+                    }
+
+                    // Fallback to a default file name if extraction fails
+                    if (!fileName) {
+                        fileName = 'GeneralObservation.xlsx';
+                    }
+
+                    // Create a temporary link element to trigger the download
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    link.download = fileName;
+
+                    // Append link to the body and trigger the download
+                    document.body.appendChild(link);
+                    link.click();
+
+                    // Clean up: remove the link after the download is triggered
+                    document.body.removeChild(link);
+
+                },
+                error: function (xhr) {
+                    if (xhr.status === 401) {
+                        window.location.href = '@Url.Action("Login", "Account")';
+                    } else {
+                        showDangerAlert('An error occurred. Please refresh the page and try again.');
+                    }
+                },
+                complete: function () {
+                    Blockloaderhide(); // Hide loader
+                }
+            });
+        }
+
+
+    </script>
+
+
+}
 
 @section HideSidebar { }

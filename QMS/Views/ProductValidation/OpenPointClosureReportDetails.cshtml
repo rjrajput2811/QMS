@@ -1,4 +1,7 @@
-﻿@{
+﻿@using QMS.Core.Models
+@model ValidClosureReportViewModel
+
+@{
     ViewData["Title"] = "Validation Open Points Closure Report";
 }
 
@@ -51,12 +54,6 @@
         padding: 8px 10px;
     }
 
-    .pv-table td[contenteditable="true"] {
-        min-height: 28px;
-        cursor: text;
-        text-align: left;
-    }
-
     .final-comments-wrapper {
         border: 1px solid #000;
         width: 100%;
@@ -82,7 +79,6 @@
         font-size: 14px;
     }
 
-
     .result-select {
         -webkit-appearance: none;
         -moz-appearance: none;
@@ -107,13 +103,18 @@
             box-shadow: inset 0 -2px 0 #4682B4, 0 2px 6px rgba(70,130,180,0.15);
         }
 
-    .btn {
-        margin: 0;
-    }
-
     .pv-table + .pv-table {
         margin-top: 0;
         border-top-width: 1px;
+    }
+
+    .preview-img {
+        display: none;
+        max-height: 80px;
+        margin-left: 10px;
+        border: 1px solid #ddd;
+        padding: 2px;
+        border-radius: 6px;
     }
 </style>
 
@@ -132,7 +133,7 @@
                         <button id="OpenPointClosureReportDetails"
                                 type="button"
                                 class="btn btn-outline-success legitRipple mr-2"
-                                onclick="saveNeedleFlameTest()"
+                                onclick="saveOpenPoints()"
                                 style="width:120px; font-size:15px;">
                             <i class="fas fa-save mr-1"></i>Save
                         </button>
@@ -145,326 +146,700 @@
                     </div>
                 </div>
             </div>
+            <form id="openPointClosureForm" method="post" asp-action="InsertUpdateValidationClosure" asp-controller="ProductValidation" enctype="multipart/form-data">
+                <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
+                    <div class="card-body">
+                        @Html.HiddenFor(m => m.Id)
+                        <!-- HEADER TABLE (TOP) -->
+                        <table class="header-table" style="width:100%; border-collapse:collapse; border:1px solid #000; margin-bottom:0;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2">
+                                        <span class="field-label">Product Cat Ref-</span>
+                                        @Html.TextBoxFor(m => m.ProductCatRef, new { @class = "inline-input", placeholder = "Enter Product Catalog Reference", style = "width: 70%;" })
+                                    </td>
 
-            <!-- MAIN CARD -->
-            <div class="card shadow-sm mb-3" style="border-radius:8px; border:1px solid #ccc;">
-                <div class="card-body">
+                                    <td>
+                                        <span class="field-label">Report no.-</span>
+                                        @Html.TextBoxFor(m => m.ReportNo, new { @class = "inline-input", placeholder = "Enter Report Number", style = "width: 70%;" })
+                                    </td>
 
-                    <!-- HEADER TABLE (TOP) -->
-                    <table class="header-table" style="width:100%; border-collapse:collapse; border:1px solid #000; margin-bottom:0;">
-                        <tbody>
-                            <!-- ROW 1 -->
-                            <tr>
-                                <td colspan="2" style="padding:10px 12px;">
-                                    <span class="field-label">Product Cat Ref-</span>
-                                    <input type="text" class="inline-input" placeholder="Enter Product Catalog Reference" style="width:70%;" />
-                                </td>
+                                    <td>
+                                        <span class="field-label">Date -</span>
+                                        @Html.TextBoxFor(m => m.ReportDate, "{0:yyyy-MM-dd}", new
+                                        {
+                                            @class = "inline-input",
+                                                                                style = "width:70%; font-size:13px;",
+                                                                                placeholder = "dd-mm-yyyy",
+                                                                                title = "Enter date as dd-MM-yyyy",
+                                                                                required = "required",
+                                                                                type = "date"
+                                                                                })
+                                    </td>
+                                </tr>
 
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Report no.-</span>
-                                    <input type="text" class="inline-input" placeholder="Enter Report Number" style="width:60%;" />
-                                </td>
+                                <tr>
+                                    <td colspan="2">
+                                        <span class="field-label">Product Description-</span>
+                                        @Html.TextBoxFor(m => m.ProductDescription, new { @class = "inline-input", placeholder = "Enter Product Description", style = "width: 80%;" })
+                                    </td>
 
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Date -</span>
-                                    <input type="text" class="inline-input"
-                                           placeholder="DD-MM-YYYY"
-                                           maxlength="10"
-                                           oninput="this.value=this.value.replace(/[^0-9\-]/g,'')"
-                                           style="width:70%;" />
-                                </td>
-                            </tr>
+                                    <td colspan="2">
+                                        <span class="field-label">Validation Done by Wipro QA -</span>
+                                        @Html.TextBoxFor(m => m.ValidationDoneBy, new { @class = "inline-input", placeholder = "Enter Validation", style = "width: 80%;" })
+                                    </td>
+                                </tr>
 
-                            <!-- ROW 2 -->
-                            <tr>
-                                <td colspan="2" style="padding:10px 12px;">
-                                    <span class="field-label">Product Description-</span>
-                                    <input type="text" class="inline-input" placeholder="Enter Product Description" style="width:80%;" />
-                                </td>
+                                <tr>
+                                    <td>
+                                        <span class="field-label">Batch code</span>
+                                        @Html.TextBoxFor(m => m.BatchCode, new { @class = "inline-input", placeholder = "Enter Batch Code", style = "width: 80%;" })
+                                    </td>
 
-                                <td colspan="2" style="padding:10px 12px;">
-                                    <span class="field-label">Validation Done by Wipro QA -</span>
-                                    <input type="text" class="inline-input" placeholder="Enter Validation" style="width:80%;" />
-                                </td>
-                            </tr>
+                                    <td>
+                                        <span class="field-label">PKD</span>
+                                        @Html.TextBoxFor(m => m.PKD, new { @class = "inline-input", placeholder = "Enter PKD", style = "width: 80%;" })
+                                    </td>
 
-                            <!-- ROW 3 -->
-                            <tr>
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Batch code</span>
-                                    <input type="text" class="inline-input" placeholder="Enter Batch Code" style="width:80%;" />
-                                </td>
+                                    <td>
+                                        <span class="field-label">Quantity Offered:-</span>
+                                        @Html.TextBoxFor(m => m.QuantityOffered, new { @class = "inline-input", placeholder = "Enter Quantity Offered", style = "width: 60%;" })
+                                    </td>
 
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">PKD</span>
-                                    <input type="text" class="inline-input" placeholder="Enter PKD" style="width:80%;" />
-                                </td>
+                                    <td>
+                                        <span class="field-label">Closure Date:-</span>
+                                        @Html.TextBoxFor(m => m.ClosureDate, "{0:yyyy-MM-dd}", new
+                                                                                {
+                                            @class = "inline-input",
+                                                                                style = "width:60%; font-size:13px;",
+                                                                                placeholder = "dd-mm-yyyy",
+                                                                                title = "Enter date as dd-MM-yyyy",
+                                                                                required = "required",
+                                                                                type = "date"
+                                                                                })
+                                    </td>
+                                </tr>
 
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Quantity Offered:-</span>
-                                    <input type="text" class="inline-input" placeholder="Enter Quantity Offered" style="width:60%;" />
-                                </td>
+                                <tr>
+                                    <td colspan="4" style="text-align:left;">
+                                        <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px;">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                                <td style="padding:10px 12px;">
-                                    <span class="field-label">Closure Date:-</span>
-                                    <input type="text" id="closureDate" class="inline-input" placeholder="DD-MM-YYYY" style="width:70%;" />
-                                </td>
-                            </tr>
+                        <!-- OPEN POINTS CLOSURE TABLE -->
+                        <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:-1px;">
+                            <thead>
+                                <tr>
+                                    <th style="width:5%; text-align:center;">SL. No.</th>
+                                    <th style="width:35%; text-align:center;">Open Points During Validation</th>
+                                    <th style="width:35%; text-align:center;">Action taken by stakeholder</th>
+                                    <th style="width:15%; text-align:center;">Stake Holder</th>
+                                    <th style="width:10%; text-align:center;">Status</th>
+                                </tr>
+                            </thead>
 
-                            <!-- ROW 4: ADD BUTTON -->
-                            <tr>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <button id="addRowBtn" type="button" class="btn btn-outline-success" style="width:120px;">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                            <tbody id="openPointsBody">
 
-                    <!-- OPEN POINTS CLOSURE TABLE -->
-                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:-1px;">
-                        <thead>
-                            <tr>
-                                <th style="width:5%; text-align:center;">SL. No.</th>
-                                <th style="width:35%; text-align:center;">Open Points During Validation</th>
-                                <th style="width:35%; text-align:center;">Action taken by stakeholder</th>
-                                <th style="width:15%; text-align:center;">Stake Holder</th>
-                                <th style="width:10%; text-align:center;">Status</th>
-                            </tr>
-                        </thead>
+                                @{
+                                    var details = Model.Details ?? new List<ValidationClosureDetailViewModel>();
+                                    if (details.Count == 0) { details.Add(new ValidationClosureDetailViewModel()); }
+                                }
 
-                        <tbody id="openPointsBody">
-                            <!-- INITIAL GROUP -->
-                            <tr class="open-row">
-                                <td style="text-align:center; white-space:nowrap;">
-                                    <span class="sl-no">1</span>
-                                    <button type="button" class="delete-row"
-                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
+                                @for (int i = 0; i < details.Count; i++)
+                                {
+                                    var evRaw = details[i].Evidence ?? "";
+                                    var evUrl = string.IsNullOrWhiteSpace(evRaw) ? "" : Url.Content(evRaw);
 
-                                <td contenteditable="true"></td>
-                                <td contenteditable="true"></td>
-                                <td contenteditable="true"></td>
+                                    var atRaw = details[i].Attached ?? "";
+                                    var atUrl = string.IsNullOrWhiteSpace(atRaw) ? "" : Url.Content(atRaw);
+                                    var atLower = (atUrl ?? "").ToLower();
+                                    var isAtImage = atLower.EndsWith(".jpg") || atLower.EndsWith(".jpeg") || atLower.EndsWith(".png") || atLower.EndsWith(".gif") || atLower.EndsWith(".webp");
 
-                                <td style="text-align:center;">
-                                    <select class="result-select" style="width:110px;">
-                                        <option value="">Select</option>
-                                        <option>Open</option>
-                                        <option>Closed</option>
-                                        <option>In Progress</option>
-                                    </select>
-                                </td>
-                            </tr>
+                                    <tr class="open-row" data-index="@i">
+                                        <td style="text-align:center; white-space:nowrap;">
+                                            <span class="sl-no">@(i + 1)</span>
 
-                            <tr>
-                                <td style="text-align:center;"></td>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <label class="field-label" style="margin-right:10px;">Evidence picture if any :-</label>
-                                    <input type="file"
-                                           accept="image/*"
-                                           style="width:250px; display:inline-block;" />
-                                </td>
-                            </tr>
+                                            <button type="button" class="delete-row"
+                                                    style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
 
-                            <tr>
-                                <td style="text-align:center;"></td>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <label class="field-label" style="margin-right:10px;">Attached Annexure :-</label>
-                                    <input type="file"
-                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                           style="width:250px; display:inline-block;" />
-                                </td>
-                            </tr>
+                                            <input type="hidden" name="Details[@i].Id" value="@details[i].Id" />
+                                            <input type="hidden" name="Details[@i].ValidClose_Id" value="@details[i].ValidClose_Id" />
+                                            <input type="hidden" class="delete-flag" name="Details[@i].Delete" value="false" />
 
-                            <!-- FOOTER START MARKER: new groups are inserted before THIS row -->
-                            <tr id="openPointsFooterStart">
-                                <td colspan="5" class="final-comments-wrapper">
-                                    <div class="final-comments-title">Vendor QA : Final Comments -</div>
-                                    <textarea class="final-comments-textarea"></textarea>
-                                </td>
-                            </tr>
+                                            <input type="hidden" name="Details[@i].Evidence" value="@details[i].Evidence" />
+                                            <input type="hidden" name="Details[@i].Attached" value="@details[i].Attached" />
+                                        </td>
 
-                            <tr>
-                                <td colspan="5" style="padding:10px 12px; font-weight:700; color:red;">
-                                    Wipro- QA : Final Comments– Release for Pilot Lot Production
-                                    (OK / NOT OK / OK With Deviations)
-                                    <select class="result-select" style="width:380px; margin-left:20px;">
-                                        <option value="">Select</option>
-                                        <option>OK</option>
-                                        <option>NOT OK</option>
-                                        <option>OK With Deviations</option>
-                                    </select>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                        <td>
+                                            <textarea class="form-control" name="Details[@i].Open_Point" rows="2">@details[i].Open_Point</textarea>
+                                        </td>
+                                        <td>
+                                            <textarea class="form-control" name="Details[@i].Action_Taken" rows="2">@details[i].Action_Taken</textarea>
+                                        </td>
+                                        <td>
+                                            <input class="form-control" name="Details[@i].Stake_Holder" value="@details[i].Stake_Holder" />
+                                        </td>
+                                        <td style="text-align:center;">
+                                            <select class="result-select form-control" name="Details[@i].Status" style="width:110px; margin:auto;">
+                                                <option value="" selected="@(string.IsNullOrWhiteSpace(details[i].Status))">Select</option>
+                                                <option value="Open" selected="@(details[i].Status=="Open")">Open</option>
+                                                <option value="Closed" selected="@(details[i].Status=="Closed")">Closed</option>
+                                                <option value="In Progress" selected="@(details[i].Status=="In Progress")">In Progress</option>
+                                            </select>
+                                        </td>
+                                    </tr>
 
-                    <!-- SIGNATURE & REPORT ATTACHED TABLE -->
-                    <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:-1px;">
-                        <tbody>
-                            <!-- SIGNATURE ROW -->
-                            <tr>
-                                <!-- LEFT 50% -->
-                                <td colspan="3" style="padding:10px 12px; white-space:nowrap; text-align:left;">
-                                    <span class="field-label" style="margin-right:10px;">
-                                        Vendor - QA Signature :-
-                                    </span>
-                                    <input type="file"
-                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                           style="width:260px; display:inline-block; vertical-align:middle;" />
-                                </td>
+                                    <!-- Evidence row -->
+                                    <tr class="evidence-row" data-index="@i">
+                                        <td></td>
+                                        <td colspan="4">
+                                            <label class="field-label">Evidence picture if any :-</label>
+                                            <input type="file"
+                                                   name="Details[@i].EvidenceFile"
+                                                   accept="image/*"
+                                                   class="evidence-input"
+                                                   data-preview="evidencePreview_@i"
+                                                   style="width:250px; display:inline-block;" />
 
-                                <!-- RIGHT 50% -->
-                                <td colspan="2" style="padding:10px 12px; white-space:nowrap; text-align:left;">
-                                    <span class="field-label" style="margin-right:10px;">
-                                        Wipro- QA Signature :-
-                                    </span>
-                                    <input type="file"
-                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                           style="width:260px; display:inline-block; vertical-align:middle;" />
-                                </td>
-                            </tr>
+                                            <img id="evidencePreview_@i"
+                                                 class="preview-img"
+                                                 data-existing="@evUrl"
+                                                 src="@evUrl"
+                                                 style="display:@(!string.IsNullOrWhiteSpace(evUrl) ? "inline-block" : "none");" />
+                                        </td>
+                                    </tr>
 
-                            <!-- REPORT ATTACHED ROW -->
-                            <tr>
-                                <td colspan="5" style="padding:10px 12px; white-space:nowrap; text-align:left;">
-                                    <span class="field-label" style="margin-right:10px;">
-                                        Report attached :-
-                                    </span>
-                                    <input type="file"
-                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                           style="width:260px; display:inline-block; vertical-align:middle;" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                    <!-- Annexure row (Attached) -->
+                                    <tr class="annex-row" data-index="@i">
+                                        <td></td>
+                                        <td colspan="4">
+                                            <label class="field-label">Attached Annexure :-</label>
 
+                                            <input type="file"
+                                                   name="Details[@i].AttachedFile"
+                                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                                   class="annex-input"
+                                                   data-preview="annexPreview_@i"
+                                                   data-link="annexLink_@i"
+                                                   style="width:250px; display:inline-block;" />
 
+                                            <img id="annexPreview_@i"
+                                                 class="preview-img"
+                                                 data-existing="@(isAtImage ? atUrl : "")"
+                                                 src="@(isAtImage ? atUrl : "")"
+                                                 style="display:@(isAtImage ? "inline-block" : "none");" />
+
+                                            <a id="annexLink_@i"
+                                               href="@atUrl"
+                                               target="_blank"
+                                               style="display:@(!string.IsNullOrWhiteSpace(atUrl) && !isAtImage ? "inline-block" : "none"); margin-left:10px;">
+                                                View attached file
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+
+                                <tr id="openPointsFooterStart">
+                                    <td colspan="5" class="final-comments-wrapper">
+                                        <div class="final-comments-title">Vendor QA : Final Comments -</div>
+                                        @Html.TextAreaFor(m => m.VendorQA_FinalComments, new { @class = "final-comments-textarea" })
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="5" style="padding:10px 12px; font-weight:700; color:red;">
+                                        Wipro- QA : Final Comments– Release for Pilot Lot Production
+                                        (OK / NOT OK / OK With Deviations)
+                                        <select class="result-select" name="WiproQA_FinalComments" style="width:380px; margin-left:20px;">
+                                            <option value="" selected="@(string.IsNullOrWhiteSpace(Model.WiproQA_FinalComments))">Select</option>
+                                            <option value="OK" selected="@(Model.WiproQA_FinalComments=="OK")">OK</option>
+                                            <option value="NOT OK" selected="@(Model.WiproQA_FinalComments=="NOT OK")">NOT OK</option>
+                                            <option value="OK With Deviations" selected="@(Model.WiproQA_FinalComments=="OK With Deviations")">OK With Deviations</option>
+                                        </select>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                        <!-- SIGNATURE & REPORT ATTACHED TABLE -->
+                        @{
+                            // NOTE: Change these property names if your model uses different ones
+                            // If you don't have these in model, keep URLs empty and it will still work for new file previews.
+                            var vendorSigRaw = (Model as dynamic)?.VendorQA_Signature ?? "";
+                            var wiproSigRaw = (Model as dynamic)?.WiproQA_Signature ?? "";
+                            var reportAttRaw = (Model as dynamic)?.ReportAttached ?? "";
+
+                            string vendorSigUrl = string.IsNullOrWhiteSpace(vendorSigRaw) ? "" : Url.Content(vendorSigRaw);
+                            string wiproSigUrl = string.IsNullOrWhiteSpace(wiproSigRaw) ? "" : Url.Content(wiproSigRaw);
+                            string reportAttUrl = string.IsNullOrWhiteSpace(reportAttRaw) ? "" : Url.Content(reportAttRaw);
+
+                            var vendorSigLower = (vendorSigUrl ?? "").ToLower();
+                            var wiproSigLower = (wiproSigUrl ?? "").ToLower();
+                            var reportLower = (reportAttUrl ?? "").ToLower();
+
+                            bool vendorIsImg = vendorSigLower.EndsWith(".jpg") || vendorSigLower.EndsWith(".jpeg") || vendorSigLower.EndsWith(".png") || vendorSigLower.EndsWith(".gif") || vendorSigLower.EndsWith(".webp");
+                            bool wiproIsImg = wiproSigLower.EndsWith(".jpg") || wiproSigLower.EndsWith(".jpeg") || wiproSigLower.EndsWith(".png") || wiproSigLower.EndsWith(".gif") || wiproSigLower.EndsWith(".webp");
+                            bool reportIsImg = reportLower.EndsWith(".jpg") || reportLower.EndsWith(".jpeg") || reportLower.EndsWith(".png") || reportLower.EndsWith(".gif") || reportLower.EndsWith(".webp");
+                        }
+
+                        <table class="pv-table" style="width:100%; border-collapse:collapse; margin-top:-1px;">
+                            <tbody>
+                                <tr>
+                                    <td colspan="3" style="white-space:nowrap; text-align:left;">
+                                        <span class="field-label" style="margin-right:10px;">
+                                            Vendor - QA Signature :-
+                                        </span>
+                                        @Html.HiddenFor(m => m.VendorQA_Signature)
+
+                                        <input type="file"
+                                               name="VendorQA_SignatureFile"
+                                               accept="image/*,.pdf"
+                                               class="sig-input"
+                                               data-preview="vendorSigPreview"
+                                               style="width:260px; display:inline-block;" />
+
+                                        <img id="vendorSigPreview"
+                                             class="preview-img"
+                                             data-existing="@(vendorIsImg ? vendorSigUrl : "")"
+                                             src="@(vendorIsImg ? vendorSigUrl : "")"
+                                             style="display:@(vendorIsImg ? "inline-block" : "none");" />
+                                    </td>
+
+                                    <td colspan="2" style="white-space:nowrap; text-align:left;">
+                                        <span class="field-label" style="margin-right:10px;">
+                                            Wipro- QA Signature :-
+                                        </span>
+                                        @Html.HiddenFor(m => m.WiproQA_Signature)
+
+                                        <input type="file"
+                                               name="WiproQA_SignatureFile"
+                                               accept="image/*,.pdf"
+                                               class="sig-input"
+                                               data-preview="wiproSigPreview"
+                                               style="width:260px; display:inline-block;" />
+
+                                        <img id="wiproSigPreview"
+                                             class="preview-img"
+                                             data-existing="@(wiproIsImg ? wiproSigUrl : "")"
+                                             src="@(wiproIsImg ? wiproSigUrl : "")"
+                                             style="display:@(wiproIsImg ? "inline-block" : "none");" />
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="5" style="white-space:nowrap; text-align:left;">
+                                        <span class="field-label" style="margin-right:10px;">
+                                            Report attached :-
+                                        </span>
+                                        @Html.HiddenFor(m => m.ReportAttached)
+
+                                        <input type="file"
+                                               name="ReportAttachedFile"
+                                               accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                               class="report-input"
+                                               data-preview="reportAttachPreview"
+                                               data-link="reportAttachLink"
+                                               style="width:260px; display:inline-block;" />
+
+                                        <img id="reportAttachPreview"
+                                             class="preview-img"
+                                             data-existing="@(reportIsImg ? reportAttUrl : "")"
+                                             src="@(reportIsImg ? reportAttUrl : "")"
+                                             style="display:@(reportIsImg ? "inline-block" : "none");" />
+
+                                        <a id="reportAttachLink"
+                                           href="@reportAttUrl"
+                                           target="_blank"
+                                           style="display:@(!string.IsNullOrWhiteSpace(reportAttUrl) && !reportIsImg ? "inline-block" : "none"); margin-left:10px;">
+                                            View report file
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
                 </div>
-            </div>
-
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        let openPointsTbody;
-        let addRowBtn;
+        let openPointsTbody, addRowBtn;
 
         $(document).ready(function () {
-            try { initOpenPointsClosure(); } catch (e) { console.error(e); }
-        });
-
-        function initOpenPointsClosure() {
             openPointsTbody = document.getElementById('openPointsBody');
             addRowBtn = document.getElementById('addRowBtn');
 
-            if (!openPointsTbody || !addRowBtn) {
-                console.error("Open points tbody or Add button missing.");
-                return;
-            }
+            wirePreviews();
 
             addRowBtn.addEventListener('click', function () {
                 createRowGroup();
-                refreshSlNos();
+                reIndexAll();
+                wirePreviews();
             });
 
-            
             openPointsTbody.addEventListener('click', function (e) {
                 const del = e.target.closest('.delete-row');
                 if (!del) return;
 
-                const mainRow = del.closest('tr');
+                const mainRow = del.closest('tr.open-row');
                 if (!mainRow) return;
 
                 const evidenceRow = mainRow.nextElementSibling;
                 const annexRow = evidenceRow ? evidenceRow.nextElementSibling : null;
 
-                mainRow.remove();
-                if (evidenceRow) evidenceRow.remove();
-                if (annexRow) annexRow.remove();
+                const idInput = mainRow.querySelector('input[name$=".Id"]');
+                const isExisting = idInput && parseInt(idInput.value || "0") > 0;
 
-                refreshSlNos();
+                if (isExisting) {
+                    const delFlag = mainRow.querySelector('.delete-flag');
+                    if (delFlag) delFlag.value = "true";
+
+                    mainRow.style.display = "none";
+                    if (evidenceRow) evidenceRow.style.display = "none";
+                    if (annexRow) annexRow.style.display = "none";
+                } else {
+                    mainRow.remove();
+                    if (evidenceRow) evidenceRow.remove();
+                    if (annexRow) annexRow.remove();
+                }
+
+                reIndexAll();
             });
 
-            refreshSlNos();
-        }
+            reIndexAll();
+        });
 
-        function refreshSlNos() {
-            const rows = openPointsTbody.querySelectorAll('.open-row');
-            rows.forEach((row, index) => {
-                const span = row.querySelector('.sl-no');
-                if (span) span.textContent = index + 1;
+        function wirePreviews() {
+
+            // ✅ show existing images on load (edit mode)
+            document.querySelectorAll('img.preview-img').forEach(img => {
+                const existing = img.getAttribute("data-existing");
+                if (existing && existing.trim() !== "") {
+                    img.src = existing;
+                    img.style.display = "inline-block";
+                }
+            });
+
+            // Evidence preview
+            document.querySelectorAll('.evidence-input').forEach(inp => {
+                if (inp.dataset.wired === "1") return;
+                inp.dataset.wired = "1";
+
+                inp.addEventListener('change', function () {
+                    const imgId = inp.getAttribute("data-preview");
+                    const img = document.getElementById(imgId);
+                    if (!img) return;
+
+                    const f = inp.files && inp.files[0];
+                    if (!f) return;
+
+                    if (f.type.startsWith("image/")) {
+                        img.src = URL.createObjectURL(f);
+                        img.style.display = "inline-block";
+                    } else {
+                        img.style.display = "none";
+                    }
+                });
+            });
+
+            // Annex preview (Attached)
+            document.querySelectorAll('.annex-input').forEach(inp => {
+                if (inp.dataset.wired === "1") return;
+                inp.dataset.wired = "1";
+
+                inp.addEventListener('change', function () {
+                    const imgId = inp.getAttribute("data-preview");
+                    const linkId = inp.getAttribute("data-link");
+
+                    const img = document.getElementById(imgId);
+                    const link = document.getElementById(linkId);
+
+                    const f = inp.files && inp.files[0];
+                    if (!f) return;
+
+                    // New selection => hide old link (local file cannot be linked safely)
+                    if (link) link.style.display = "none";
+
+                    if (img) {
+                        if (f.type.startsWith("image/")) {
+                            img.src = URL.createObjectURL(f);
+                            img.style.display = "inline-block";
+                        } else {
+                            img.style.display = "none";
+                        }
+                    }
+                });
+            });
+
+            // Signature preview (image only)
+            document.querySelectorAll('.sig-input').forEach(inp => {
+                if (inp.dataset.wired === "1") return;
+                inp.dataset.wired = "1";
+
+                inp.addEventListener('change', function () {
+                    const imgId = inp.getAttribute("data-preview");
+                    const img = document.getElementById(imgId);
+                    if (!img) return;
+
+                    const f = inp.files && inp.files[0];
+                    if (!f) return;
+
+                    if (f.type.startsWith("image/")) {
+                        img.src = URL.createObjectURL(f);
+                        img.style.display = "inline-block";
+                    } else {
+                        img.style.display = "none";
+                    }
+                });
+            });
+
+            // Report attached preview (image -> preview, else hide img & hide link for new file)
+            document.querySelectorAll('.report-input').forEach(inp => {
+                if (inp.dataset.wired === "1") return;
+                inp.dataset.wired = "1";
+
+                inp.addEventListener('change', function () {
+                    const imgId = inp.getAttribute("data-preview");
+                    const linkId = inp.getAttribute("data-link");
+                    const img = document.getElementById(imgId);
+                    const link = document.getElementById(linkId);
+
+                    const f = inp.files && inp.files[0];
+                    if (!f) return;
+
+                    // new local file: hide existing link
+                    if (link) link.style.display = "none";
+
+                    if (img) {
+                        if (f.type.startsWith("image/")) {
+                            img.src = URL.createObjectURL(f);
+                            img.style.display = "inline-block";
+                        } else {
+                            img.style.display = "none";
+                        }
+                    }
+                });
             });
         }
 
         function createRowGroup() {
-          
+            const footerStart = document.getElementById('openPointsFooterStart');
+            const index = getVisibleOpenRows().length;
+
             const main = document.createElement('tr');
             main.className = 'open-row';
+            main.setAttribute("data-index", index);
             main.innerHTML = `
-                                <td style="text-align:center; white-space:nowrap;">
-                                    <span class="sl-no"></span>
-                                    <button type="button" class="delete-row"
-                                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                                <td contenteditable="true"></td>
-                                <td contenteditable="true"></td>
-                                <td contenteditable="true"></td>
-                                <td style="text-align:center;">
-                                    <select class="result-select" style="width:110px;">
-                                        <option value="">Select</option>
-                                        <option>Open</option>
-                                        <option>Closed</option>
-                                        <option>In Progress</option>
-                                    </select>
-                                </td>
-                            `;
+                <td style="text-align:center; white-space:nowrap;">
+                    <span class="sl-no"></span>
+                    <button type="button" class="delete-row"
+                            style="border:none; background:none; cursor:pointer; margin-left:6px; color:#c0392b;">
+                        <i class="fas fa-trash"></i>
+                    </button>
+
+                    <input type="hidden" name="Details[${index}].Id" value="0" />
+                    <input type="hidden" name="Details[${index}].ValidClose_Id" value="0" />
+                    <input type="hidden" class="delete-flag" name="Details[${index}].Delete" value="false" />
+                    <input type="hidden" name="Details[${index}].Evidence" value="" />
+                    <input type="hidden" name="Details[${index}].Attached" value="" />
+                </td>
+
+                <td><textarea class="form-control" name="Details[${index}].Open_Point" rows="2"></textarea></td>
+                <td><textarea class="form-control" name="Details[${index}].Action_Taken" rows="2"></textarea></td>
+                <td><input class="form-control" name="Details[${index}].Stake_Holder" /></td>
+
+                <td style="text-align:center;">
+                    <select class="result-select form-control" name="Details[${index}].Status" style="width:110px; margin:auto;">
+                        <option value="">Select</option>
+                        <option value="Open">Open</option>
+                        <option value="Closed">Closed</option>
+                        <option value="In Progress">In Progress</option>
+                    </select>
+                </td>
+            `;
 
             const evidence = document.createElement('tr');
+            evidence.className = "evidence-row";
             evidence.innerHTML = `
-                                <td style="text-align:center;"></td>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <label class="field-label" style="margin-right:10px;">Evidence picture if any :-</label>
-                                    <input type="file"
-                                           accept="image/*"
-                                           style="width:250px; display:inline-block;" />
-                                </td>
-                            `;
+                <td></td>
+                <td colspan="4">
+                    <label class="field-label">Evidence picture if any :-</label>
+                    <input type="file"
+                           name="Details[${index}].EvidenceFile"
+                           accept="image/*"
+                           class="evidence-input"
+                           data-preview="evidencePreview_${index}"
+                           style="width:250px; display:inline-block;" />
+
+                    <img id="evidencePreview_${index}" class="preview-img" data-existing="" style="display:none;" />
+                </td>
+            `;
 
             const annex = document.createElement('tr');
+            annex.className = "annex-row";
             annex.innerHTML = `
-                                <td style="text-align:center;"></td>
-                                <td colspan="4" style="padding:10px 12px; text-align:left;">
-                                    <label class="field-label" style="margin-right:10px;">Attached Annexure :-</label>
-                                    <input type="file"
-                                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
-                                           style="width:250px; display:inline-block;" />
-                                </td>
-                            `;
+                <td></td>
+                <td colspan="4">
+                    <label class="field-label">Attached Annexure :-</label>
 
-            // Insert the group BEFORE the footer section
-            const footerStart = document.getElementById('openPointsFooterStart');
+                    <input type="file"
+                           name="Details[${index}].AttachedFile"
+                           accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                           class="annex-input"
+                           data-preview="annexPreview_${index}"
+                           data-link="annexLink_${index}"
+                           style="width:250px; display:inline-block;" />
 
-            if (footerStart) {
-                openPointsTbody.insertBefore(annex, footerStart);
-                openPointsTbody.insertBefore(evidence, annex);
-                openPointsTbody.insertBefore(main, evidence);
-            } else {
-                // Fallback: append at the end if marker not found
-                openPointsTbody.appendChild(main);
-                openPointsTbody.appendChild(evidence);
-                openPointsTbody.appendChild(annex);
+                    <img id="annexPreview_${index}" class="preview-img" style="display:none;" />
+
+                    <a id="annexLink_${index}" href="#" target="_blank"
+                       style="display:none; margin-left:10px;">View attached file</a>
+                </td>
+            `;
+
+            openPointsTbody.insertBefore(annex, footerStart);
+            openPointsTbody.insertBefore(evidence, annex);
+            openPointsTbody.insertBefore(main, evidence);
+        }
+
+        function getVisibleOpenRows() {
+            return Array.from(openPointsTbody.querySelectorAll('tr.open-row'))
+                .filter(r => r.style.display !== "none");
+        }
+
+        function reIndexAll() {
+            const openRows = getVisibleOpenRows();
+
+            openRows.forEach((row, i) => {
+                row.setAttribute("data-index", i);
+                const sl = row.querySelector('.sl-no');
+                if (sl) sl.textContent = (i + 1);
+
+                renameNames(row, i);
+
+                const ev = row.nextElementSibling;
+                const an = ev ? ev.nextElementSibling : null;
+
+                if (ev && ev.classList.contains("evidence-row")) {
+                    renameNames(ev, i);
+
+                    const inp = ev.querySelector(".evidence-input");
+                    const img = ev.querySelector("img.preview-img");
+
+                    if (inp) {
+                        inp.name = `Details[${i}].EvidenceFile`;
+                        inp.setAttribute("data-preview", `evidencePreview_${i}`);
+                    }
+                    if (img) {
+                        const existing = img.getAttribute("data-existing") || "";
+                        img.id = `evidencePreview_${i}`;
+                        img.setAttribute("data-existing", existing);
+                    }
+                }
+
+                if (an && an.classList.contains("annex-row")) {
+                    renameNames(an, i);
+
+                    const inp2 = an.querySelector("input[type=file].annex-input");
+                    const img2 = an.querySelector("img.preview-img");
+                    const link2 = an.querySelector("a");
+
+                    if (inp2) {
+                        inp2.name = `Details[${i}].AttachedFile`;
+                        inp2.setAttribute("data-preview", `annexPreview_${i}`);
+                        inp2.setAttribute("data-link", `annexLink_${i}`);
+                    }
+                    if (img2) img2.id = `annexPreview_${i}`;
+                    if (link2) link2.id = `annexLink_${i}`;
+                }
+            });
+        }
+
+        function renameNames(container, idx) {
+            container.querySelectorAll('[name^="Details["]').forEach(el => {
+                el.name = el.name.replace(/Details\[\d+\]/g, `Details[${idx}]`);
+            });
+        }
+
+        function saveOpenPoints() {
+            Blockloadershow();
+
+            const requiredFields = [
+                { id: 'ReportNo', name: 'Report No' },
+                { id: 'ProductCatRef', name: 'Product Cat. Ref.' },
+                { id: 'ReportDate', name: 'Report Date' }
+            ];
+
+            let missingFields = [];
+            requiredFields.forEach(f => {
+                const el = document.getElementById(f.id);
+                if (!el || !el.value || !el.value.trim()) missingFields.push(f.name);
+            });
+
+            if (missingFields.length) {
+                showDangerAlert(
+                    `<p>Please fill out the following required field(s):</p><ul>${missingFields.map(x => `<li>${x}</li>`).join('')}</ul>`
+                );
+                Blockloaderhide();
+                return false;
             }
+
+            const form = document.getElementById("openPointClosureForm");
+            const fd = new FormData(form);
+
+            $.ajax({
+                url: form.action,
+                type: "POST",
+                data: fd,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    Blockloaderhide();
+
+                    if (!response.success) {
+                        let errorMessg = "";
+                        if (response.errors != undefined) {
+                            for (var error of response.errors) errorMessg += error + "\n";
+                            if (errorMessg) showDangerAlert(errorMessg);
+                        } else {
+                            showDangerAlert(response.message || "Error saving Validation open points closure Report");
+                        }
+                        return false;
+                    }
+
+                    if ($("#Id").val() > 0) {
+                        showSuccessAlert("Validation open points closure Report Updated Successfully.");
+                    } else {
+                        showSuccessAlert("Validation open points closure Report Saved Successfully.");
+                    }
+
+                    if (response.objectId && parseInt(response.objectId) > 0) {
+                        $("input[name='Id']").val(response.objectId);
+                    }
+
+                    setTimeout(function () {
+                        window.open('@Url.Action("OpenPointClosureReport", "ProductValidation")', '_self');
+                    }, 2500);
+                },
+                error: function (xhr) {
+                    Blockloaderhide();
+                    showDangerAlert("Error while saving. Check logs.");
+                    console.log(xhr);
+                }
+            });
         }
     </script>
 }
-
 
 @section HideSidebar { }

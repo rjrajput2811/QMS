@@ -33,6 +33,7 @@ using QMS.Core.Repositories.RegulatoryRequirementRepository;
 using QMS.Core.Repositories.RippleTestReportRepo;
 using QMS.Core.Repositories.SurgeTestReportRepository;
 using QMS.Core.Repositories.TemperatureRiseTestRepo;
+using QMS.Core.Repositories.ValidationClosureRepository;
 using QMS.Core.Services.HydraulicTestReportService;
 using QMS.Core.Services.SystemLogs;
 using System.Drawing;
@@ -71,6 +72,7 @@ public class ProductValidationController : Controller
     private readonly IWebHostEnvironment _env;
     //private readonly IGlowWireTestRepository _glowWireTestRepository;
     private readonly ITemperatureRiseTestRepository _temperatureRiseTestRepository;
+    private readonly IValidationClosureRepository _validationClosureRepository;
 
     public ProductValidationController(
         IPhysicalCheckAndVisualInspectionRepository physicalCheckAndVisualInspectionRepository,
@@ -90,7 +92,8 @@ public class ProductValidationController : Controller
         IHydraulicTestReportService hydraulicTestReportService,
         INeedleFlameTestRepository needleFlameTestRepository,
         IGeneralObservationRepository generalObservationRepository, IWebHostEnvironment env,
-        ITemperatureRiseTestRepository temperatureRiseTestRepository
+        ITemperatureRiseTestRepository temperatureRiseTestRepository,
+        IValidationClosureRepository validationClosureRepository
         )
     {
         _physicalCheckAndVisualInspectionRepository = physicalCheckAndVisualInspectionRepository;
@@ -111,6 +114,7 @@ public class ProductValidationController : Controller
         _needleFlameTestRepository = needleFlameTestRepository;
         _generalObservationRepository = generalObservationRepository;
         _env = env;
+        _validationClosureRepository = validationClosureRepository;
     }
 
 
@@ -6791,10 +6795,221 @@ public class ProductValidationController : Controller
         return View();
     }
 
-    public IActionResult OpenPointClosureReportDetails()
-    {
+    //public IActionResult OpenPointClosureReportDetails()
+    //{
 
-        return View();
+    //    return View();
+    //}
+
+    public async Task<IActionResult> OpenPointClosureReportDetails(int Id)
+    {
+        var model = new ValidClosureReportViewModel();
+        if (Id > 0)
+        {
+            model = await _validationClosureRepository.GetValidationClosureByIdAsync(Id);
+        }
+        else
+        {
+            model.ReportDate = DateTime.Now;
+        }
+        return View(model);
+    }
+
+    public async Task<ActionResult> GetValidationClosureAsync(DateTime? startDate = null, DateTime? endDate = null)
+    {
+        var result = await _validationClosureRepository.GetValidationClosureAsync();
+        return Json(result);
+    }
+
+
+    [HttpPost]
+    public async Task<IActionResult> InsertUpdateValidationClosureAsync(ValidClosureReportViewModel vm)
+    {
+        try
+        {
+            if (vm == null)
+                return Json(new { Success = false, Errors = new[] { "Model cannot be null." } });
+
+            if (string.IsNullOrWhiteSpace(vm.ReportNo))
+                return Json(new { Success = false, Errors = new[] { "Report No is required." } });
+
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .Where(m => !string.IsNullOrWhiteSpace(m))
+                    .Distinct()
+                    .ToList();
+
+                return Json(new { Success = false, Errors = errors });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+            var reportNo = vm.ReportNo.Trim();
+            
+            var vendorSigPath = vm.VendorQA_Signature;
+            if (vm.VendorQA_SignatureFile != null && vm.VendorQA_SignatureFile.Length > 0)
+            {
+                vendorSigPath = await SaveImageAsync(
+                    vm.VendorQA_SignatureFile,
+                    baseFolder: "ValidationClosure_Attach",
+                    prefix: "VendorQA_Sign",
+                    referenceNo: reportNo
+                );
+            }
+
+            var wiproSigPath = vm.WiproQA_Signature;
+            if (vm.WiproQA_SignatureFile != null && vm.WiproQA_SignatureFile.Length > 0)
+            {
+                wiproSigPath = await SaveImageAsync(
+                    vm.WiproQA_SignatureFile,
+                    baseFolder: "ValidationClosure_Attach",
+                    prefix: "WiproQA_Sign",
+                    referenceNo: reportNo
+                );
+            }
+
+            var reportAttachedPath = vm.ReportAttached;
+            if (vm.ReportAttachedFile != null && vm.ReportAttachedFile.Length > 0)
+            {
+                reportAttachedPath = await SaveImageAsync(
+                    vm.ReportAttachedFile,
+                    baseFolder: "ValidationClosure_Attach",
+                    prefix: "ReportAttached",
+                    referenceNo: reportNo
+                );
+            }
+
+            var model = new ValidationClosureReport
+            {
+                Id = vm.Id,
+                ReportNo = reportNo,
+                ReportDate = vm.ReportDate,
+                ProductCatRef = vm.ProductCatRef,
+                ProductDescription = vm.ProductDescription,
+                BatchCode = vm.BatchCode,
+                QuantityOffered = vm.QuantityOffered,
+                PKD = vm.PKD,
+                ValidationDoneBy = vm.ValidationDoneBy,
+                ClosureDate = vm.ClosureDate,
+                VendorQA_FinalComments = vm.VendorQA_FinalComments,
+                WiproQA_FinalComments = vm.WiproQA_FinalComments,
+
+                VendorQA_Signature = vendorSigPath,
+                WiproQA_Signature = wiproSigPath,
+                ReportAttached = reportAttachedPath,
+
+                Deleted = vm.Deleted,
+                Details = new List<ValidationClosureReport_Detail>()
+            };
+
+            if (vm.Details != null && vm.Details.Count > 0)
+            {
+                foreach (var d in vm.Details)
+                {
+                    if (d == null) continue;
+
+                    // Keep old values if no new upload
+                    var evidencePath = d.Evidence;
+                    if (d.EvidenceFile != null && d.EvidenceFile.Length > 0)
+                    {
+                        evidencePath = await SaveImageAsync(
+                            d.EvidenceFile,
+                            baseFolder: "ValidationClosure_Attach",
+                            prefix: "Evidence",
+                            referenceNo: reportNo
+                        );
+                    }
+
+                    var attachedPath = d.Attached;
+                    if (d.AttachedFile != null && d.AttachedFile.Length > 0)
+                    {
+                        attachedPath = await SaveImageAsync(
+                            d.AttachedFile,
+                            baseFolder: "ValidationClosure_Attach",
+                            prefix: "Attached",
+                            referenceNo: reportNo
+                        );
+                    }
+
+                    model.Details.Add(new ValidationClosureReport_Detail
+                    {
+                        Id = d.Id,
+                        ValidClose_Id = d.ValidClose_Id,
+                        Open_Point = d.Open_Point,
+                        Action_Taken = d.Action_Taken,
+                        Stake_Holder = d.Stake_Holder,
+                        Status = d.Status,
+                        Delete = d.Delete,
+                        Evidence = evidencePath,
+                        Attached = attachedPath
+                    });
+                }
+            }
+
+            var exists = await _validationClosureRepository.CheckDuplicate(
+                model.ReportNo,   // already trimmed
+                model.Id
+            );
+
+            if (exists)
+            {
+                return Json(new
+                {
+                    Success = false,
+                    Errors = new[] { $"Duplicate Report No '{model.ReportNo}' already exists." }
+                });
+            }
+
+            OperationResult result;
+
+            if (model.Id > 0)
+            {
+                model.UpdatedBy = userId;
+                model.UpdatedOn = DateTime.Now;
+
+                result = await _validationClosureRepository.UpdateValidationClosureAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Update failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Validation Closure Report updated successfully.";
+            }
+            else
+            {
+                model.AddedBy = userId;
+                model.AddedOn = DateTime.Now;
+
+                result = await _validationClosureRepository.InsertValidationClosureAsync(model)
+                         ?? new OperationResult { Success = false, Message = "Insert failed." };
+
+                if (result.Success && string.IsNullOrWhiteSpace(result.Message))
+                    result.Message = "Validation Closure Report created successfully.";
+            }
+
+            return Json(new
+            {
+                Success = result.Success,
+                Message = result.Message,
+                ObjectId = result.ObjectId
+            });
+        }
+        catch (Exception ex)
+        {
+            _systemLogService.WriteLog(ex.ToString());
+            return Json(new
+            {
+                Success = false,
+                Errors = new[] { "Failed to save Validation Closure report." },
+                Exception = ex.Message
+            });
+        }
+    }
+
+    public async Task<ActionResult> DeleteValidationClosureAsync(int Id)
+    {
+        var result = await _validationClosureRepository.DeleteValidationClosureAsync(Id);
+        return Json(result);
     }
 
     #endregion

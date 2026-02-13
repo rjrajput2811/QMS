@@ -6,16 +6,19 @@
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="~/css/pnotify.css" rel="stylesheet" />
 <script src="~/js/jquery.min.js"></script>
 <script src="~/js/jquery.datatables.js"></script>
-<link href="~/css/pnotify.css" rel="stylesheet" />
-<script src="~/js/pnotify.js"></script>
-<script src="~/js/pnotify.confirm.js"></script>
+
+
 <script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
 <script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
 <script src="~/js/common.js"></script>
+<script src="~/lib/bootstrap/dist/js/noty.min.js"></script>
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
 @* <script src="~/js/xlsx.min.js"></script> *@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
 
@@ -171,7 +174,7 @@
 
 
 @section Scripts {
-
+ 
 <script src="~/js/tabulator.js"></script>
 <script src="~/js/tabulator.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
@@ -381,11 +384,7 @@
                     let actionButtons = "";
 
                     actionButtons += `<i data-toggle="modal" onclick="delConfirm(${rowData.Id})" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>
-                        <i onclick=""
-                   class="fas fa-file-excel fa-1x"
-                   title="Export To Excel"
-                   style="color:green;cursor:pointer;">
-                </i>`
+                            <i class="fas fa-file-excel fa-1x" title="Export To Excel" onclick="exportToExcel(${rowData.Id})" style="color:green;cursor:pointer;"></i>`
 
                     return actionButtons;
                 }
@@ -431,6 +430,18 @@
 
         // Hide loader
         Blockloaderhide();
+    }
+
+        function exportToExcel(recid) {
+                var ids = recid ;
+
+            if (ids.length === 0) {
+            showDangerAlert('Please select at least one row to export');
+            return;
+            }
+
+        // Export selected records
+        window.location.href = '@Url.Action("ExportNeedleFlameTestToExcel", "ProductValidation")' + '?ids=' + ids;
     }
 
     function showEditGlowWireTestReport(id) {

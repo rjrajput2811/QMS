@@ -4891,192 +4891,192 @@ public class ProductValidationController : Controller
     #endregion
 
 
-    #region TemperatureRiseTest
-    public IActionResult TemperatureRiseTestOfLuminaire()
-    {
-        return View();
-    }
+    //#region TemperatureRiseTest
+    //public IActionResult TemperatureRiseTestOfLuminaire()
+    //{
+    //    return View();
+    //}
 
-    public async Task<ActionResult> GetTemperatureRiseList(DateTime? startDate = null, DateTime? endDate = null)
-    {
-        var result = await _temperatureRiseTestRepository.GetTemperatureRiseTestAsync(startDate, endDate);
-        return Json(result);
-    }
+    //public async Task<ActionResult> GetTemperatureRiseList(DateTime? startDate = null, DateTime? endDate = null)
+    //{
+    //    var result = await _temperatureRiseTestRepository.GetTemperatureRiseTestAsync(startDate, endDate);
+    //    return Json(result);
+    //}
 
-    public async Task<IActionResult> TemperatureRiseTestOfLuminaireDetails(int Id)
-    {
-        var model = new TemperatureRiseTestViewModel();
+    //public async Task<IActionResult> TemperatureRiseTestOfLuminaireDetails(int Id)
+    //{
+    //    var model = new TemperatureRiseTestViewModel();
 
-        if (Id > 0)
-        {
-            model = await _temperatureRiseTestRepository.GetTemperatureRiseTestByIdAsync(Id);
+    //    if (Id > 0)
+    //    {
+    //        model = await _temperatureRiseTestRepository.GetTemperatureRiseTestByIdAsync(Id);
 
-        }
-        else
-        {
-            model.ReportDate = DateTime.Now;
-        }
+    //    }
+    //    else
+    //    {
+    //        model.ReportDate = DateTime.Now;
+    //    }
 
-        return View(model);
-    }
+    //    return View(model);
+    //}
 
 
-    [HttpPost]
-    public async Task<IActionResult> ExportIngressProtectionToExcel(int id)
-    {
-        try
-        {
-            var model = await _ingressProtectionRepository.GetIngressProtectionByIdAsync(id);
-            if (model == null)
-                return NotFound();
+    //[HttpPost]
+    //public async Task<IActionResult> ExportIngressProtectionToExcel(int id)
+    //{
+    //    try
+    //    {
+    //        var model = await _ingressProtectionRepository.GetIngressProtectionByIdAsync(id);
+    //        if (model == null)
+    //            return NotFound();
 
-            var templatePath = Path.Combine(_env.WebRootPath, "templates", "V11. Ingress Protection (IP) Test Report_V.xlsx");
-            if (!System.IO.File.Exists(templatePath))
-                return NotFound("Ingress Protection template not found at " + templatePath);
+    //        var templatePath = Path.Combine(_env.WebRootPath, "templates", "V11. Ingress Protection (IP) Test Report_V.xlsx");
+    //        if (!System.IO.File.Exists(templatePath))
+    //            return NotFound("Ingress Protection template not found at " + templatePath);
 
-            using var wb = new XLWorkbook(templatePath);
-            var ws = wb.Worksheet(1);
+    //        using var wb = new XLWorkbook(templatePath);
+    //        var ws = wb.Worksheet(1);
 
-            // =========================
-            // HEADER (NO CHANGE)
-            // =========================
-            ws.Cell("F8").Value = "Report No :- " + (model.ReportNo ?? "");
-            ws.Cell("G9").Value = "Date :- " + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
-            ws.Cell("B9").Value = "Customer/Project Name :- " + (model.CustomerProjectName ?? "");
-            ws.Cell("B11").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
-            ws.Cell("E11").Value = "Product Description :- " + (model.ProductDescription ?? "");
-            ws.Cell("F11").Value = "Batch Code :- " + (model.BatchCode ?? "");
-            ws.Cell("G11").Value = "Quantity :- " + model.Quantity.ToString(CultureInfo.InvariantCulture);
-            ws.Cell("B12").Value = "IP Rating- 20/40/44/54/65/66/67/68 :- " + (model.IPRating ?? "");
-            ws.Cell("F12").Value = "PKD :- " + (model.PKD ?? "");
+    //        // =========================
+    //        // HEADER (NO CHANGE)
+    //        // =========================
+    //        ws.Cell("F8").Value = "Report No :- " + (model.ReportNo ?? "");
+    //        ws.Cell("G9").Value = "Date :- " + (model.ReportDate?.ToString("dd/MM/yyyy") ?? "");
+    //        ws.Cell("B9").Value = "Customer/Project Name :- " + (model.CustomerProjectName ?? "");
+    //        ws.Cell("B11").Value = "Product Cat Ref :- " + (model.ProductCatRef ?? "");
+    //        ws.Cell("E11").Value = "Product Description :- " + (model.ProductDescription ?? "");
+    //        ws.Cell("F11").Value = "Batch Code :- " + (model.BatchCode ?? "");
+    //        ws.Cell("G11").Value = "Quantity :- " + model.Quantity.ToString(CultureInfo.InvariantCulture);
+    //        ws.Cell("B12").Value = "IP Rating- 20/40/44/54/65/66/67/68 :- " + (model.IPRating ?? "");
+    //        ws.Cell("F12").Value = "PKD :- " + (model.PKD ?? "");
 
-            // =========================
-            // DETAILS (ONLY LOGIC CHANGE HERE)
-            // =========================
-            const int templateDetailRow = 15;        // first data row
-            const int templateFooterResultRow = 16;  // this is the footer row IN TEMPLATE (original position)
-            const int templateFooterSignRow = 17;    // this is the footer row IN TEMPLATE (original position)
+    //        // =========================
+    //        // DETAILS (ONLY LOGIC CHANGE HERE)
+    //        // =========================
+    //        const int templateDetailRow = 15;        // first data row
+    //        const int templateFooterResultRow = 16;  // this is the footer row IN TEMPLATE (original position)
+    //        const int templateFooterSignRow = 17;    // this is the footer row IN TEMPLATE (original position)
 
-            var details = (model.Details ?? new List<IngressProtectionTestDetailViewModel>())
-                            .Where(x => !x.Deleted)
-                            .ToList();
+    //        var details = (model.Details ?? new List<IngressProtectionTestDetailViewModel>())
+    //                        .Where(x => !x.Deleted)
+    //                        .ToList();
 
-            if (details.Count == 0)
-                details.Add(new IngressProtectionTestDetailViewModel());
+    //        if (details.Count == 0)
+    //            details.Add(new IngressProtectionTestDetailViewModel());
 
-            int extraRows = details.Count - 1;   // how many rows will be inserted
+    //        int extraRows = details.Count - 1;   // how many rows will be inserted
 
-            // 1) Capture merge structure of template detail row (NO CHANGE)
-            var templateMergedRanges = ws.MergedRanges
-                .Where(r => r.FirstRow().RowNumber() == templateDetailRow &&
-                            r.LastRow().RowNumber() == templateDetailRow)
-                .Select(r => (firstCol: r.FirstColumn().ColumnNumber(),
-                              lastCol: r.LastColumn().ColumnNumber()))
-                .ToList();
+    //        // 1) Capture merge structure of template detail row (NO CHANGE)
+    //        var templateMergedRanges = ws.MergedRanges
+    //            .Where(r => r.FirstRow().RowNumber() == templateDetailRow &&
+    //                        r.LastRow().RowNumber() == templateDetailRow)
+    //            .Select(r => (firstCol: r.FirstColumn().ColumnNumber(),
+    //                          lastCol: r.LastColumn().ColumnNumber()))
+    //            .ToList();
 
-            // 2) Insert rows if needed (NO CHANGE)
-            if (extraRows > 0)
-            {
-                ws.Row(templateDetailRow).InsertRowsBelow(extraRows);
+    //        // 2) Insert rows if needed (NO CHANGE)
+    //        if (extraRows > 0)
+    //        {
+    //            ws.Row(templateDetailRow).InsertRowsBelow(extraRows);
 
-                for (int i = 1; i < details.Count; i++)
-                    ws.Row(templateDetailRow).CopyTo(ws.Row(templateDetailRow + i));
-            }
+    //            for (int i = 1; i < details.Count; i++)
+    //                ws.Row(templateDetailRow).CopyTo(ws.Row(templateDetailRow + i));
+    //        }
 
-            // 3) Fill values + recreate merges + insert images (NO CHANGE)
-            for (int i = 0; i < details.Count; i++)
-            {
-                int row = templateDetailRow + i;
-                var d = details[i];
+    //        // 3) Fill values + recreate merges + insert images (NO CHANGE)
+    //        for (int i = 0; i < details.Count; i++)
+    //        {
+    //            int row = templateDetailRow + i;
+    //            var d = details[i];
 
-                foreach (var m in templateMergedRanges)
-                    ws.Range(row, m.firstCol, row, m.lastCol).Merge();
+    //            foreach (var m in templateMergedRanges)
+    //                ws.Range(row, m.firstCol, row, m.lastCol).Merge();
 
-                ws.Cell(row, 2).Value = i + 1;
-                ws.Cell(row, 3).Value = d.Ip_Test ?? "";
+    //            ws.Cell(row, 2).Value = i + 1;
+    //            ws.Cell(row, 3).Value = d.Ip_Test ?? "";
 
-                ws.Cell(row, 4).Value = "";
-                InsertImageIntoCell(ws, row, 4, d.Photo_During_Test, _env.WebRootPath);
+    //            ws.Cell(row, 4).Value = "";
+    //            InsertImageIntoCell(ws, row, 4, d.Photo_During_Test, _env.WebRootPath);
 
-                ws.Cell(row, 5).Value = "";
-                InsertImageIntoCell(ws, row, 5, d.Photo_After_Test, _env.WebRootPath);
+    //            ws.Cell(row, 5).Value = "";
+    //            InsertImageIntoCell(ws, row, 5, d.Photo_After_Test, _env.WebRootPath);
 
-                ws.Cell(row, 6).Value = d.Observation ?? "";
-                ws.Cell(row, 7).Value = d.Result ?? "";
-            }
+    //            ws.Cell(row, 6).Value = d.Observation ?? "";
+    //            ws.Cell(row, 7).Value = d.Result ?? "";
+    //        }
 
-            // =========================
-            // FOOTER (ONLY LOGIC CHANGE)
-            // =========================
-            // IMPORTANT:
-            // Do NOT copy footer rows.
-            // Just write into the same footer rows, but they have shifted down by extraRows.
+    //        // =========================
+    //        // FOOTER (ONLY LOGIC CHANGE)
+    //        // =========================
+    //        // IMPORTANT:
+    //        // Do NOT copy footer rows.
+    //        // Just write into the same footer rows, but they have shifted down by extraRows.
 
-            int rResult = templateFooterResultRow + extraRows;
-            int rSign = templateFooterSignRow + extraRows;
+    //        int rResult = templateFooterResultRow + extraRows;
+    //        int rSign = templateFooterSignRow + extraRows;
 
-            ws.Cell($"B{rResult}").Value = "Result (Pass/Fail) " + (model.TestResult ?? "");
-            ws.Cell($"B{rSign}").Value = "Checked By :- " + (model.TestedBy ?? "");
-            ws.Cell($"E{rSign}").Value = "Verified By :- " + (model.VerifiedBy ?? "");
+    //        ws.Cell($"B{rResult}").Value = "Result (Pass/Fail) " + (model.TestResult ?? "");
+    //        ws.Cell($"B{rSign}").Value = "Checked By :- " + (model.TestedBy ?? "");
+    //        ws.Cell($"E{rSign}").Value = "Verified By :- " + (model.VerifiedBy ?? "");
 
-            // =========================
-            // PRINT SETTINGS (minor adjust)
-            // =========================
-            ws.PageSetup.PrintAreas.Clear();
-            ws.PageSetup.PrintAreas.Add($"A1:J{rSign}");
-            ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
-            ws.PageSetup.FitToPages(1, 1);
+    //        // =========================
+    //        // PRINT SETTINGS (minor adjust)
+    //        // =========================
+    //        ws.PageSetup.PrintAreas.Clear();
+    //        ws.PageSetup.PrintAreas.Add($"A1:J{rSign}");
+    //        ws.PageSetup.PageOrientation = XLPageOrientation.Portrait;
+    //        ws.PageSetup.FitToPages(1, 1);
 
-            // =========================
-            // RETURN FILE
-            // =========================
-            using var stream = new MemoryStream();
-            wb.SaveAs(stream);
-            stream.Position = 0;
+    //        // =========================
+    //        // RETURN FILE
+    //        // =========================
+    //        using var stream = new MemoryStream();
+    //        wb.SaveAs(stream);
+    //        stream.Position = 0;
 
-            var fileName = $"IngressProtection_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
-            return File(stream.ToArray(),
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                fileName);
-        }
-        catch (Exception ex)
-        {
-            return BadRequest($"Error exporting: {ex.Message}");
-        }
-    }
+    //        var fileName = $"IngressProtection_{model.ReportNo}_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+    //        return File(stream.ToArray(),
+    //            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    //            fileName);
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        return BadRequest($"Error exporting: {ex.Message}");
+    //    }
+    //}
 
-    #endregion
-    // Helper methods remain the same
-    private void AddSectionHeader(IXLWorksheet worksheet, int row, string title)
-    {
-        worksheet.Cell(row, 1).Value = title;
-        worksheet.Range(row, 1, row, 21).Merge();
-        worksheet.Cell(row, 1).Style.Font.Bold = true;
-        worksheet.Cell(row, 1).Style.Font.FontSize = 12;
-        worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
-        worksheet.Cell(row, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
-    }
+    //#endregion
+    //// Helper methods remain the same
+    //private void AddSectionHeader(IXLWorksheet worksheet, int row, string title)
+    //{
+    //    worksheet.Cell(row, 1).Value = title;
+    //    worksheet.Range(row, 1, row, 21).Merge();
+    //    worksheet.Cell(row, 1).Style.Font.Bold = true;
+    //    worksheet.Cell(row, 1).Style.Font.FontSize = 12;
+    //    worksheet.Cell(row, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+    //    worksheet.Cell(row, 1).Style.Border.OutsideBorder = XLBorderStyleValues.Medium;
+    //}
 
-    private void AddDataRow(IXLWorksheet worksheet, int row, string label1, string value1,
-                           string label2, string value2, int startCol = 1, int endCol = 21)
-    {
-        int midCol = (endCol - startCol + 1) / 2 + startCol;
+    //private void AddDataRow(IXLWorksheet worksheet, int row, string label1, string value1,
+    //                       string label2, string value2, int startCol = 1, int endCol = 21)
+    //{
+    //    int midCol = (endCol - startCol + 1) / 2 + startCol;
 
-        worksheet.Cell(row, startCol).Value = label1;
-        worksheet.Cell(row, startCol).Style.Font.Bold = true;
-        worksheet.Cell(row, startCol + 1).Value = value1;
-        worksheet.Range(row, startCol + 1, row, midCol - 1).Merge();
+    //    worksheet.Cell(row, startCol).Value = label1;
+    //    worksheet.Cell(row, startCol).Style.Font.Bold = true;
+    //    worksheet.Cell(row, startCol + 1).Value = value1;
+    //    worksheet.Range(row, startCol + 1, row, midCol - 1).Merge();
 
-        if (!string.IsNullOrEmpty(label2))
-        {
-            worksheet.Cell(row, midCol).Value = label2;
-            worksheet.Cell(row, midCol).Style.Font.Bold = true;
-            worksheet.Cell(row, midCol + 1).Value = value2;
-            worksheet.Range(row, midCol + 1, row, endCol).Merge();
-        }
-    }
+    //    if (!string.IsNullOrEmpty(label2))
+    //    {
+    //        worksheet.Cell(row, midCol).Value = label2;
+    //        worksheet.Cell(row, midCol).Style.Font.Bold = true;
+    //        worksheet.Cell(row, midCol + 1).Value = value2;
+    //        worksheet.Range(row, midCol + 1, row, endCol).Merge();
+    //    }
+    //}
 
-    #endregion
+    //#endregion
 
 
     #region Regulatory

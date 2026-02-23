@@ -23,8 +23,8 @@ namespace QMS.Core.Models
         public string? Dispatch_Dc { get; set; }
         public string? Dispatch_Invoice { get; set; }
         public string? Non_Repairable { get; set; }
-        public string? Grand_Total { get; set; }
-        public string? To_Process { get; set; }
+        public double? Grand_Total { get; set; }
+        public double? To_Process { get; set; }
         public string? Remark { get; set; }
         public string? Vendor_Transporter { get; set; }
         public string? Vendor_LR_No { get; set; }
@@ -36,5 +36,6 @@ namespace QMS.Core.Models
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
+        public Guid? UniqueId { get; set; }
     }
 }

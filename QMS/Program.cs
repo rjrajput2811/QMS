@@ -26,6 +26,8 @@ using QMS.Core.Repositories.DropTestRepository;
 using QMS.Core.Repositories.ElectricalPerformanceRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepo;
 using QMS.Core.Repositories.ElectricalProtectionRepository;
+using QMS.Core.Repositories.EmailConfigurationRepository;
+using QMS.Core.Repositories.EmailOTPsRepository;
 using QMS.Core.Repositories.FIFOTrackerRepository;
 using QMS.Core.Repositories.GeneralObservationRepository;
 using QMS.Core.Repositories.GlowWireTestRepository;
@@ -149,6 +151,8 @@ builder.Services.AddTransient<INeedleFlameTestRepository, NeedleFlameTestReposit
 
 builder.Services.AddTransient<ITemperatureRiseTestRepository, TemperatureRiseTestRepository>();
 builder.Services.AddTransient<IValidationClosureRepository, ValidationClosureRepository>();
+builder.Services.AddTransient<IEmailConfigurationRepository, EmailConfigurationRepository>();
+builder.Services.AddTransient<IEmailOTPsRepository, EmailOTPsRepository>();
 
 //builder.Services.AddScoped<IDbConnection>(db => new SqlConnection(connstring));
 

@@ -11,10 +11,14 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
     public interface IJobWorkTracRepository
     {
         Task<List<JobWork_TracViewModel>> GetJobListAsync(DateTime? startDate = null, DateTime? endDate = null);
+        Task<List<JobWork_TracViewModel>> GetJobListFinalResultAsync(DateTime? startDate = null, DateTime? endDate = null);
         Task<JobWork_TracViewModel?> GetJobByIdAsync(int id);
         Task<OperationResult> CreateJobAsync(JobWork_Tracking_Service record, bool returnCreatedRecord = false);
         Task<OperationResult> UpdateJobAsync(JobWork_Tracking_Service record, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteJobAsync(int id);
         Task<BulkCreateJobResult> BulkCreateJobAsync(List<JobWork_TracViewModel> listOfData, string fileName, string uploadedBy, string recordType);
+        Task<int> UpdateVendorInputFieldsAsync(IEnumerable<JobWork_TracViewModel> vendorInputList);
+        Task<List<JobWork_TracViewModel>> GetJobWorkVendorListAsync(string vendor);
+
     }
 }

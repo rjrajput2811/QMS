@@ -1,4 +1,5 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using Dapper;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
@@ -6,6 +7,7 @@ using QMS.Core.Repositories.Shared;
 using QMS.Core.Services.SystemLogs;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -29,6 +31,63 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
             {
                 var result = await _dbContext.JobWorkTrac
                     .FromSqlRaw("EXEC sp_Get_JobTracking")
+                    .ToListAsync();
+
+                if (startDate.HasValue && endDate.HasValue)
+                {
+                    result = result
+                        .Where(x => x.Wipro_Dc_Date.HasValue &&
+                                    x.Wipro_Dc_Date.Value.Date >= startDate.Value.Date &&
+                                    x.Wipro_Dc_Date.Value.Date <= endDate.Value.Date)
+                        .ToList();
+                }
+
+                return result.Select(x => new JobWork_TracViewModel
+                {
+                    Id = x.Id,
+                    UniqueId = x.UniqueId,
+                    Deleted = x.Deleted,
+                    Vendor = x.Vendor,
+                    Wipro_Dc_No = x.Wipro_Dc_No,
+                    Wipro_Dc_Date = x.Wipro_Dc_Date,
+                    Dc_Sap_Code = x.Dc_Sap_Code,
+                    Qty_Wipro_Dc = x.Qty_Wipro_Dc,
+                    Wipro_Transporter = x.Wipro_Transporter,
+                    Wipro_LR_No = x.Wipro_LR_No,
+                    Wipro_LR_Date = x.Wipro_LR_Date,
+                    Actu_Rece_Qty = x.Actu_Rece_Qty,
+                    Dispatch_Dc = x.Dispatch_Dc,
+                    Dispatch_Invoice = x.Dispatch_Invoice,
+                    Non_Repairable = x.Non_Repairable,
+                    Grand_Total = x.Grand_Total,
+                    To_Process = x.To_Process,
+                    Remark = x.Remark,
+                    Vendor_Transporter = x.Vendor_Transporter,
+                    Vendor_LR_No = x.Vendor_LR_No,
+                    Vendor_LR_Date = x.Vendor_LR_Date,
+                    Write_Off_Approved = x.Write_Off_Approved,
+                    Write_Off_Date = x.Write_Off_Date,
+                    Pending_Write_Off = x.Pending_Write_Off,
+                    CreatedBy = x.CreatedBy,
+                    CreatedDate = x.CreatedDate,
+                    UpdatedBy = x.UpdatedBy,
+                    UpdatedDate = x.UpdatedDate
+
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<JobWork_TracViewModel>> GetJobListFinalResultAsync(DateTime? startDate = null, DateTime? endDate = null)
+        {
+            try
+            {
+                var result = await _dbContext.JobWorkTrac
+                    .FromSqlRaw("EXEC sp_Get_JobTracking_FinalResult")
                     .ToListAsync();
 
                 if (startDate.HasValue && endDate.HasValue)
@@ -233,50 +292,132 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
             }
         }
 
-       
 
-        public async Task<BulkCreateJobResult> BulkCreateJobAsync(List<JobWork_TracViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+
+        //public async Task<BulkCreateJobResult> BulkCreateJobAsync(List<JobWork_TracViewModel> listOfData, string fileName, string uploadedBy, string recordType)
+        //{
+        //    var result = new BulkCreateJobResult();
+        //    using var transaction = await _dbContext.Database.BeginTransactionAsync();
+
+        //    try
+        //    {
+        //        var seenKeys = new HashSet<string>(); 
+
+        //        foreach (var item in listOfData)
+        //        {
+        //            item.Vendor = item.Vendor;
+        //            item.Dc_Sap_Code = item.Dc_Sap_Code?.Trim();
+
+        //            var compositeKey = $"{item.Vendor}|{item.Dc_Sap_Code}";
+
+        //            if (string.IsNullOrWhiteSpace(item.Vendor) || string.IsNullOrWhiteSpace(item.Dc_Sap_Code))
+        //            {
+        //                result.FailedRecords.Add((item, "Missing Vendor or DC Sap Code."));
+        //                continue;
+        //            }
+
+        //            // Check if this key combination has already been seen in the batch
+        //            if (seenKeys.Contains(compositeKey))
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in uploaded file"));
+        //                continue;
+        //            }
+
+        //            seenKeys.Add(compositeKey); // Mark this combination as seen
+
+        //            // Now check against database
+        //            bool existsInDb = await _dbContext.JobWorkTrac
+        //                .AnyAsync(x => x.Vendor == item.Vendor && x.Dc_Sap_Code == item.Dc_Sap_Code);
+
+        //            if (existsInDb)
+        //            {
+        //                result.FailedRecords.Add((item, "Duplicate in database"));
+        //                continue;
+        //            }
+
+        //            // Passed all checks — add to DB
+        //            var entity = new JobWork_Tracking_Service
+        //            {
+        //                Vendor = item.Vendor,
+        //                Wipro_Dc_No = item.Wipro_Dc_No,
+        //                Wipro_Dc_Date = item.Wipro_Dc_Date,
+        //                Dc_Sap_Code = item.Dc_Sap_Code,
+        //                Qty_Wipro_Dc = item.Qty_Wipro_Dc,
+        //                Wipro_Transporter = item.Wipro_Transporter,
+        //                Wipro_LR_No = item.Wipro_LR_No,
+        //                Wipro_LR_Date = item.Wipro_LR_Date,
+        //                Write_Off_Approved = item.Write_Off_Approved,
+        //                Write_Off_Date = item.Write_Off_Date,
+        //                Pending_Write_Off = item.Pending_Write_Off,
+        //                CreatedBy = item.CreatedBy,
+        //                CreatedDate = item.CreatedDate
+        //            };
+
+        //            _dbContext.JobWorkTrac.Add(entity);
+        //        }
+
+        //        await _dbContext.SaveChangesAsync();
+
+        //        // Log the upload
+        //        var importLog = new FailedRecord_Log
+        //        {
+        //            FileName = fileName,
+        //            TotalRecords = listOfData.Count,
+        //            ImportedRecords = listOfData.Count - result.FailedRecords.Count,
+        //            FailedRecords = result.FailedRecords.Count,
+        //            RecordType = recordType,
+        //            UploadedBy = uploadedBy,
+        //            UploadedAt = DateTime.Now
+        //        };
+
+        //        _dbContext.FailedRecord_Log.Add(importLog);
+        //        await _dbContext.SaveChangesAsync();
+        //        await transaction.CommitAsync();
+
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = true,
+        //            Message = result.FailedRecords.Any()
+        //                ? "Import completed with some skipped records."
+        //                : "All records imported successfully."
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        await transaction.RollbackAsync();
+        //        result.Result = new OperationResult
+        //        {
+        //            Success = false,
+        //            Message = "Error during import: " + ex.Message
+        //        };
+        //    }
+
+        //    return result;
+        //}
+
+        public async Task<BulkCreateJobResult> BulkCreateJobAsync(
+    List<JobWork_TracViewModel> listOfData,
+    string fileName,
+    string uploadedBy,
+    string recordType)
         {
             var result = new BulkCreateJobResult();
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
 
             try
             {
-                var seenKeys = new HashSet<string>(); 
-
                 foreach (var item in listOfData)
                 {
-                    item.Vendor = item.Vendor;
                     item.Dc_Sap_Code = item.Dc_Sap_Code?.Trim();
 
-                    var compositeKey = $"{item.Vendor}|{item.Dc_Sap_Code}";
-
-                    if (string.IsNullOrWhiteSpace(item.Vendor) || string.IsNullOrWhiteSpace(item.Dc_Sap_Code))
+                    // Optional: Keep mandatory field validation
+                    if (string.IsNullOrWhiteSpace(item.Vendor) ||
+                        string.IsNullOrWhiteSpace(item.Dc_Sap_Code))
                     {
                         result.FailedRecords.Add((item, "Missing Vendor or DC Sap Code."));
                         continue;
                     }
 
-                    // Check if this key combination has already been seen in the batch
-                    if (seenKeys.Contains(compositeKey))
-                    {
-                        result.FailedRecords.Add((item, "Duplicate in uploaded file"));
-                        continue;
-                    }
-
-                    seenKeys.Add(compositeKey); // Mark this combination as seen
-
-                    // Now check against database
-                    bool existsInDb = await _dbContext.JobWorkTrac
-                        .AnyAsync(x => x.Vendor == item.Vendor && x.Dc_Sap_Code == item.Dc_Sap_Code);
-
-                    if (existsInDb)
-                    {
-                        result.FailedRecords.Add((item, "Duplicate in database"));
-                        continue;
-                    }
-
-                    // Passed all checks — add to DB
                     var entity = new JobWork_Tracking_Service
                     {
                         Vendor = item.Vendor,
@@ -290,8 +431,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                         Write_Off_Approved = item.Write_Off_Approved,
                         Write_Off_Date = item.Write_Off_Date,
                         Pending_Write_Off = item.Pending_Write_Off,
-                        CreatedBy = item.CreatedBy,
-                        CreatedDate = item.CreatedDate
+                        CreatedBy = uploadedBy,
+                        CreatedDate = DateTime.Now
                     };
 
                     _dbContext.JobWorkTrac.Add(entity);
@@ -313,6 +454,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
                 _dbContext.FailedRecord_Log.Add(importLog);
                 await _dbContext.SaveChangesAsync();
+
                 await transaction.CommitAsync();
 
                 result.Result = new OperationResult
@@ -326,6 +468,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
+
                 result.Result = new OperationResult
                 {
                     Success = false,
@@ -335,6 +478,145 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
 
             return result;
         }
-        
+
+
+        public async Task<int> UpdateVendorInputFieldsAsync(IEnumerable<JobWork_TracViewModel> vendorInputList)
+        {
+            try
+            {
+                // Build DataTable matching TVP_VendorInput structure
+                var dataTable = BuildVendorInputDataTable(vendorInputList);
+
+                using (var connection = _dbContext.Database.GetDbConnection())
+                {
+                    connection.Open();
+
+                    var parameters = new DynamicParameters();
+                    parameters.Add(
+                        "@TVPData",
+                        dataTable.AsTableValuedParameter("TVP_VendorInput")
+                    );
+
+                    var result = await connection.QuerySingleAsync<int>(
+                        "sp_Update_VendorInputFields",
+                        parameters,
+                        commandType: CommandType.StoredProcedure
+                    );
+
+                    return result; // returns UpdatedRows
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        private DataTable BuildVendorInputDataTable(IEnumerable<JobWork_TracViewModel> list)
+        {
+            try
+            {
+                var dt = new DataTable();
+
+                dt.Columns.Add("UniqueId", typeof(Guid));
+                dt.Columns.Add("Dc_Sap_Code", typeof(string));
+                dt.Columns.Add("Actu_Rece_Qty", typeof(int));
+                dt.Columns.Add("Dispatch_Dc", typeof(string));
+                dt.Columns.Add("Dispatch_Invoice", typeof(string));
+                dt.Columns.Add("Non_Repairable", typeof(string));
+                dt.Columns.Add("Grand_Total", typeof(double));
+                dt.Columns.Add("To_Process", typeof(double));
+                dt.Columns.Add("Remark", typeof(string));
+                dt.Columns.Add("Vendor_Transporter", typeof(string));
+                dt.Columns.Add("Vendor_LR_No", typeof(string));
+                dt.Columns.Add("Vendor_LR_Date", typeof(DateTime));
+                dt.Columns.Add("Updated_By", typeof(string));
+
+                foreach (var item in list)
+                {
+                    dt.Rows.Add(
+                        item.UniqueId,
+                        item.Dc_Sap_Code,
+                        (object)item.Actu_Rece_Qty ?? DBNull.Value,
+                        (object)item.Dispatch_Dc ?? DBNull.Value,
+                        (object)item.Dispatch_Invoice ?? DBNull.Value,
+                        (object)item.Non_Repairable ?? DBNull.Value,
+                        (object)item.Grand_Total ?? DBNull.Value,
+                        (object)item.To_Process ?? DBNull.Value,
+                        (object)item.Remark ?? DBNull.Value,
+                        (object)item.Vendor_Transporter ?? DBNull.Value,
+                        (object)item.Vendor_LR_No ?? DBNull.Value,
+                        (object)item.Vendor_LR_Date ?? DBNull.Value,
+                        (object)item.UpdatedBy ?? DBNull.Value
+                    );
+                }
+
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<JobWork_TracViewModel>> GetJobWorkVendorListAsync(string vendor)
+        {
+            try
+            {
+
+                var parameters = new[]
+                {
+                    new SqlParameter("@Vendor", vendor ?? (object)DBNull.Value),
+                };
+
+                //Execute the stored procedure and retrieve the results
+                var result = await _dbContext.JobWorkTrac
+                    .FromSqlRaw("EXEC sp_Get_JobWorkTrac_ById @vendor", parameters)
+                    .ToListAsync();
+
+                // Map results to ViewModel
+                var viewModelList = result.Select(x => new JobWork_TracViewModel
+                {
+                    Id = x.Id,
+                    UniqueId = x.UniqueId,
+                    Deleted = x.Deleted,
+                    Vendor = x.Vendor,
+                    Wipro_Dc_No = x.Wipro_Dc_No,
+                    Wipro_Dc_Date = x.Wipro_Dc_Date,
+                    Dc_Sap_Code = x.Dc_Sap_Code,
+                    Qty_Wipro_Dc = x.Qty_Wipro_Dc,
+                    Wipro_Transporter = x.Wipro_Transporter,
+                    Wipro_LR_No = x.Wipro_LR_No,
+                    Wipro_LR_Date = x.Wipro_LR_Date,
+                    Actu_Rece_Qty = x.Actu_Rece_Qty,
+                    Dispatch_Dc = x.Dispatch_Dc,
+                    Dispatch_Invoice = x.Dispatch_Invoice,
+                    Non_Repairable = x.Non_Repairable,
+                    Grand_Total = x.Grand_Total,
+                    To_Process = x.To_Process,
+                    Remark = x.Remark,
+                    Vendor_Transporter = x.Vendor_Transporter,
+                    Vendor_LR_No = x.Vendor_LR_No,
+                    Vendor_LR_Date = x.Vendor_LR_Date,
+                    Write_Off_Approved = x.Write_Off_Approved,
+                    Write_Off_Date = x.Write_Off_Date,
+                    Pending_Write_Off = x.Pending_Write_Off,
+                    CreatedBy = x.CreatedBy,
+                    CreatedDate = x.CreatedDate,
+                    UpdatedBy = x.UpdatedBy,
+                    UpdatedDate = x.UpdatedDate
+                }).ToList();
+
+                return viewModelList;
+
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
     }
 }

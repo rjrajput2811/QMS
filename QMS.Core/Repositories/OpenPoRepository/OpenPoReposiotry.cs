@@ -583,11 +583,9 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 dp.Add("@UploadedBy", uploadedBy, DbType.String, size: 100);
                 dp.Add("@BatchId", batchId, DbType.Guid);
                 dp.Add("@UploadTs", uploadTs, DbType.DateTime2);
-                dp.Add("@TOC_BRYG_Color", uploadTs, DbType.String);
-                dp.Add("@Vendor_Dispatch_Date", uploadTs, DbType.DateTime);
 
                 using var grid = await conn.QueryMultipleAsync(
-                    sql: "dbo.sp_OpenPo_BulkUpsert",
+                    sql: "dbo.sp_OpenPo_BulkUpsert_14_02_2026",
                     param: dp,
                     commandType: CommandType.StoredProcedure);
 
@@ -1966,7 +1964,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 dp.Add("@UploadTs", uploadTs, DbType.DateTime2);
 
                 using var multi = await conn.QueryMultipleAsync(
-                    sql: "dbo.sp_SalesOrder_BulkUpsert",
+                    sql: "dbo.sp_SalesOrder_BulkUpsert_17_02_2026",
                     param: dp,
                     commandType: CommandType.StoredProcedure,
                     transaction: tran

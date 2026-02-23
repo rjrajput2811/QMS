@@ -115,6 +115,7 @@ public class ProductValidationController : Controller
         _generalObservationRepository = generalObservationRepository;
         _env = env;
         _validationClosureRepository = validationClosureRepository;
+        _temperatureRiseTestRepository = temperatureRiseTestRepository;
     }
 
 
@@ -1006,9 +1007,6 @@ public class ProductValidationController : Controller
 
 
     #region RippleTest
-
-    [HttpPost]
-
 
     public IActionResult RippleTestReport()
     {
@@ -2468,6 +2466,7 @@ public class ProductValidationController : Controller
 
         return View();
     }
+
     //public IActionResult TemperatureRiseTestOfLuminaireDetails()
     //{
     //    return View();

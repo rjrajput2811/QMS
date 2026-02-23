@@ -385,7 +385,7 @@
                 </li>
 
                 <div class="navbar-brand">
-                    <span class="h5"><strong>Quality Management System (QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.5.1 13/02/2026</span>
+                    <span class="h5"><strong>Quality Management System (QMS) </strong></span><span id="versionSpan" onclick="" style="font-size: 14px; margin-left:8px; font-weight:500">Version - 1.5.3 17/02/2026</span>
                 </div>
 
             </ul>
@@ -536,16 +536,20 @@
                 { new {
                 name = "Open Service",
                 inputUrl = Url.Action("ServiceMenu", "Home"),
-                outputUrl = Url.Action("ServiceMenu", "Home")}}});
+                outputUrl = Url.Action("ServiceMenu", "Home")}}}
+            );
 
             vendorOptionGroupsServer.Add(new
             {
-                id = "NPI",
-                name = "NPI",
+                id = "EmailConfiguration",
+                name = "EmailConfiguration",
                 icon = "📋",
                 iconClass = "gi-product",
-                items = new object[] { } // empty => will open items view instead
-            });
+                items = new[] 
+                {  new {
+        name = "Email Configuration",
+        inputUrl = Url.Action("EmailConfiguration", "EmailConfiguration") }}
+                });
 
             vendorOptionGroupsServer.Add(new
             {
@@ -582,6 +586,19 @@
                 name = "Open Supply Chain",
                 inputUrl = Url.Action("Vendor", "OpenPo"),
     outputUrl = Url.Action("Vendor", "OpenPo") } }
+            });
+
+            vendorOptionGroupsServer.Add(new
+            {
+                id = "Service",
+                name = "Service",
+                icon = "🛠️",
+                iconClass = "gi-service",
+                items = new[] {
+                new {
+                name = "Open Service",
+                inputUrl = Url.Action("ServiceMenu", "Home"),
+                outputUrl = Url.Action("ServiceMenu", "Home") } }
             });
 
             vendorOptionGroupsServer.Add(new

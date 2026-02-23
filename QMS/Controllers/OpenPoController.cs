@@ -441,6 +441,54 @@ namespace QMS.Controllers
             return Json(saleOrderQtyList);
         }
 
+        private static DateTime? GetExcelDateSafe(IXLWorksheet ws, int row, int col)
+        {
+            var cell = ws.Cell(row, col);
+
+            if (cell == null || cell.IsEmpty())
+                return null;
+
+            // 1) If it's already a DateTime inside Excel
+            if (cell.TryGetValue<DateTime>(out var dt))
+                return dt;
+
+            // 2) If Excel stored date as a number (OADate)
+            if (cell.TryGetValue<double>(out var oa))
+            {
+                // guard against random numbers
+                if (oa > 20000 && oa < 60000)
+                    return DateTime.FromOADate(oa);
+
+                return null;
+            }
+
+            // 3) If it's a text date like "03.09.2024"
+            var s = cell.GetValue<string>()?.Trim();
+            if (string.IsNullOrWhiteSpace(s))
+                return null;
+
+            // remove extra spaces / non-breaking spaces
+            s = s.Replace("\u00A0", " ");
+
+            string[] formats =
+            {
+                "dd.MM.yyyy", "d.M.yyyy",
+                "dd/MM/yyyy", "d/M/yyyy",
+                "dd-MM-yyyy", "d-M-yyyy",
+                "yyyy-MM-dd",
+                "dd.MM.yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss",
+            };
+
+            if (DateTime.TryParseExact(s, formats, CultureInfo.InvariantCulture,
+                    DateTimeStyles.None, out var parsed))
+                return parsed;
+
+            // last fallback (handles some odd cases)
+            if (DateTime.TryParse(s, CultureInfo.InvariantCulture, DateTimeStyles.None, out parsed))
+                return parsed;
+
+            return null;
+        }
 
 
         [HttpPost]
@@ -473,10 +521,8 @@ namespace QMS.Controllers
                             var val = GetStr(col)?.Replace(",", "");
                             return double.TryParse(val, out var result) ? result : null;
                         }
-                        DateTime? GetDate(int col)
-                        {
-                            return worksheet.Cell(row, col).GetValue<DateTime?>();
-                        }
+
+                        DateTime? GetDate(int col) => GetExcelDateSafe(worksheet, row, col);
 
                         var model = new Sales_Order_ViewModel
                         {

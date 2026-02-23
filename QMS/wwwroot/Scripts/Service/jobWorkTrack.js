@@ -4,110 +4,154 @@ var tabledata1 = [];
 var finalTable = null;
 let filterStartJobDate = moment().startOf('month').format('YYYY-MM-DD');
 let filterEndJobDate = moment().endOf('month').format('YYYY-MM-DD');
+var userType = document.getElementById("hdnUserType").value;
+var vendorName = document.getElementById("hdnVendorName").value;
 
 $(document).ready(function () {
-    $('#jobRangeText').text(
-        moment(filterStartJobDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndJobDate).format('MMMM D, YYYY')
-    );
 
-    const picker = new Litepicker({
-        element: document.getElementById('jobDateTrigger'),
-        singleMode: false,
-        format: 'DD-MM-YYYY',
-        numberOfMonths: 2,
-        numberOfColumns: 2,
-        dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
-        plugins: ['ranges'],
-        setup: (picker) => {
-            picker.on('selected', (start, end) => {
-                filterStartJobDate = start.format('YYYY-MM-DD');
-                filterEndJobDate = end.format('YYYY-MM-DD');
-                $('#jobRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                loadJobData();
-            });
+    if (userType != "Vendor") {
+        $('#jobRangeText').text(
+            moment(filterStartJobDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndJobDate).format('MMMM D, YYYY')
+        );
 
-            picker.on('clear', () => {
-                filterStartJobDate = "";
-                filterEndJobDate = "";
-                $('#jobRangeText').text("Select Date Range");
-                loadJobData();
-            });
-        },
-        ranges: {
-            Today: [moment(), moment()],
-            Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-            'This Month': [moment().startOf('month'), moment().endOf('month')],
-            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-        },
-        startDate: moment().startOf('month').format('DD-MM-YYYY'),
-        endDate: moment().endOf('month').format('DD-MM-YYYY')
-    });
+        const picker = new Litepicker({
+            element: document.getElementById('jobDateTrigger'),
+            singleMode: false,
+            format: 'DD-MM-YYYY',
+            numberOfMonths: 2,
+            numberOfColumns: 2,
+            dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
+            plugins: ['ranges'],
+            setup: (picker) => {
+                picker.on('selected', (start, end) => {
+                    filterStartJobDate = start.format('YYYY-MM-DD');
+                    filterEndJobDate = end.format('YYYY-MM-DD');
+                    $('#jobRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                    loadJobData();
+                });
 
-    $('#jobDateTrigger').on('click', function () {
-        picker.show();
-    });
+                picker.on('clear', () => {
+                    filterStartJobDate = "";
+                    filterEndJobDate = "";
+                    $('#jobRangeText').text("Select Date Range");
+                    loadJobData();
+                });
+            },
+            ranges: {
+                Today: [moment(), moment()],
+                Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            startDate: moment().startOf('month').format('DD-MM-YYYY'),
+            endDate: moment().endOf('month').format('DD-MM-YYYY')
+        });
 
-    $('#FinaldateRangeText').text(
-        moment(filterStartJobDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndJobDate).format('MMMM D, YYYY')
-    );
+        $('#jobDateTrigger').on('click', function () {
+            picker.show();
+        });
 
-    const picker1 = new Litepicker({
-        element: document.getElementById('customDateTriggerFinal'),
-        singleMode: false,
-        format: 'DD-MM-YYYY',
-        numberOfMonths: 2,
-        numberOfColumns: 2,
-        dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
-        plugins: ['ranges'],
-        setup: (picker1) => {
-            picker1.on('selected', (start, end) => {
-                filterStartJobDate = start.format('YYYY-MM-DD');
-                filterEndJobDate = end.format('YYYY-MM-DD');
-                $('#FinaldateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                loadFinalJobData();
-            });
+        $('#FinaldateRangeText').text(
+            moment(filterStartJobDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndJobDate).format('MMMM D, YYYY')
+        );
 
-            picker1.on('clear', () => {
-                filterStartJobDate = "";
-                filterEndJobDate = "";
-                $('#FinaldateRangeText').text("Select Date Range");
-                loadFinalJobData();
-            });
-        },
-        ranges: {
-            Today: [moment(), moment()],
-            Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-            'This Month': [moment().startOf('month'), moment().endOf('month')],
-            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-        },
-        startDate: moment().startOf('week').format('DD-MM-YYYY'),
-        endDate: moment().endOf('week').format('DD-MM-YYYY')
-    });
+        const picker1 = new Litepicker({
+            element: document.getElementById('customDateTriggerFinal'),
+            singleMode: false,
+            format: 'DD-MM-YYYY',
+            numberOfMonths: 2,
+            numberOfColumns: 2,
+            dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
+            plugins: ['ranges'],
+            setup: (picker1) => {
+                picker1.on('selected', (start, end) => {
+                    filterStartJobDate = start.format('YYYY-MM-DD');
+                    filterEndJobDate = end.format('YYYY-MM-DD');
+                    $('#FinaldateRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                    loadFinalJobData();
+                });
 
-    $('#customDateTriggerFinal').on('click', function () {
-        picker1.show();
-    });
+                picker1.on('clear', () => {
+                    filterStartJobDate = "";
+                    filterEndJobDate = "";
+                    $('#FinaldateRangeText').text("Select Date Range");
+                    loadFinalJobData();
+                });
+            },
+            ranges: {
+                Today: [moment(), moment()],
+                Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            startDate: moment().startOf('week').format('DD-MM-YYYY'),
+            endDate: moment().endOf('week').format('DD-MM-YYYY')
+        });
 
-    document.getElementById('backButton').addEventListener('click', function () {
-        window.history.back();
-    });
+        $('#customDateTriggerFinal').on('click', function () {
+            picker1.show();
+        });
 
-    $('#upload-button').on('click', async function () {
-        var expectedColumns = [
-            'Vendor Name', 'Wipro DC No', 'Wipro DC Date', 'AS Per DC Sap code', 'Qty as per Wipro DC', 'Transporter', 'LR No', 'LR Date',
-            'Write Off Approved', 'Write Off Date', 'Pending for Write off'
-        ];
+        document.getElementById('backButton').addEventListener('click', function () {
+            window.history.back();
+        });
 
-        var url = '/Service/UploadJobWorkExcel';
-        handleImportExcelFile(url, expectedColumns);
-    });
+    }
 
+    if (userType != "Vendor") {
 
-    loadJobData();
+        $('#upload-button').on('click', async function () {
+            var expectedColumns = [
+                'Vendor Name', 'Wipro DC No', 'Wipro DC Date', 'AS Per DC Sap code', 'Qty as per Wipro DC', 'Transporter', 'LR No', 'LR Date',
+                'Write Off Approved', 'Write Off Date', 'Pending for Write off'
+            ];
+
+            var url = '/Service/UploadJobWorkExcel';
+            handleImportExcelFile(url, expectedColumns);
+        });
+    }
+    else {
+        $('#upload-button').on('click', async function () {
+            var expectedColumns = [
+                'SNo',
+                'Unique Id',
+                'Vendor Name',
+                'Wipro DC No',
+                'Wipro DC Date',
+                'AS Per DC Sap code',
+                'Qty as per Wipro DC',
+                'Transporter',
+                'LR no',
+                'LR date',
+                'Actual Received Qty',
+                'Dispatched through DC (No Problem Drivers)',
+                'Dispatched through Invoice',
+                'Non Repairable',
+                'Grand Total',
+                'To be processed',
+                'Special Remark if any',
+                'Transporter',
+                'LR no',
+                'LR date'
+            ];
+
+            var url = '/Service/UploadVendorInputExcel';
+            handleImportExcelFile(url, expectedColumns);
+        });
+    }
+
+    if (userType != "Vendor")
+    {
+        loadJobData();
+    }
+    else
+    {
+        loadVendorJobData();
+    }
 });
 
 function openUploadJob() {
@@ -146,6 +190,33 @@ function loadJobData() {
         }
     });
 }
+
+function loadVendorJobData() {
+    Blockloadershow();
+    $('#ftab2').hide();
+    $('#ftab1').show();
+    $.ajax({
+        url: '/Service/GetJobWorkById',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            vendor: vendorName
+        },
+        success: function (data) {
+            if (Array.isArray(data)) {
+                renderJobTable(data); // load into Tabulator or grid
+            } else {
+                showDangerAlert('No Data available.');
+            }
+            Blockloaderhide();
+        },
+
+        error: function (xhr, status, error) {
+            showDangerAlert('Error retrieving data: ' + error);
+            Blockloaderhide();
+        }
+    });
+}
 function renderJobTable(response) {
 
     Blockloadershow();
@@ -157,7 +228,7 @@ function renderJobTable(response) {
         Wipro_Dc_Date: item.wipro_Dc_Date ? new Date(item.wipro_Dc_Date).toLocaleDateString("en-GB") : "",
         Dc_Sap_Code: item.dc_Sap_Code,
         Qty_Wipro_Dc: item.qty_Wipro_Dc,
-        Wipro_Transporter: item.Wipro_Transporter,
+        Wipro_Transporter: item.wipro_Transporter,
         Wipro_LR_No: item.wipro_LR_No,
         Wipro_LR_Date: item.wipro_LR_Date ? new Date(item.wipro_LR_Date).toLocaleDateString("en-GB") : "",
 
@@ -175,6 +246,7 @@ function renderJobTable(response) {
         Write_Off_Approved: item.write_Off_Approved,
         Write_Off_Date: item.write_Off_Date ? new Date(item.write_Off_Date).toLocaleDateString("en-GB") : "",
         Pending_Write_Off: item.pending_Write_Off,
+        UniqueId: item.uniqueId,
 
         CreatedDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString("en-GB") : "",
         CreatedBy: item.createdBy,
@@ -184,6 +256,7 @@ function renderJobTable(response) {
 
     const columns = [
         { title: "SNo", field: "Sr_No", hozAlign: "center", headerHozAlign: "center", frozen: true },
+        { title: "Unique Id", field: "UniqueId", hozAlign: "left", headerHozAlign: "center", frozen: true },
 
         { title: "Vendor Name", field: "Vendor", frozen: true },
 
@@ -239,9 +312,9 @@ function renderJobTable(response) {
                     title: "For Wipro",
                     headerHozAlign: "center", // Center group header
                     columns: [
-                        { title: "Write OFF Approved", field: "Write_Off_Approved" },
-                        { title: "Write oFF Date", field: "Write_Off_Date" },
-                        { title: "Pending for Write off", field: "Pending_Write_Off" },
+                        { title: "Write OFF Approved", field: "Write_Off_Approved", dowload: false },
+                        { title: "Write oFF Date", field: "Write_Off_Date", dowload: false },
+                        { title: "Pending for Write off", field: "Pending_Write_Off", dowload: false },
                     ]
                 }
             ]
@@ -263,80 +336,143 @@ function renderJobTable(response) {
             columns: columns
         });
     }
-    
-    document.getElementById("exclExpButton").addEventListener("click", function () {
-        // Get only visible data from Tabulator (respects filters, sorting, pagination)
-        var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
 
-        // Get visible columns only
-        var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action");
+    if (userType != "Vendor") {
+        document.getElementById("exclExpButton").addEventListener("click", function () {
+            // Get only visible data from Tabulator (respects filters, sorting, pagination)
+            var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
 
-        // Prepare headers
-        var headers = visibleColumns.map(col => col.getDefinition().title);
+            // Get visible columns only
+            var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action"
+                && col.getField() !== "Write_Off_Approved" && col.getField() !== "Pending_Write_Off" && col.getField() !== "Write_Off_Date");
 
-        // Prepare data rows
-        var rows = visibleData.map(row => {
-            return visibleColumns.map(col => {
-                var field = col.getField();
-                return row[field] !== undefined ? row[field] : "";
+            // Prepare headers
+            var headers = visibleColumns.map(col => col.getDefinition().title);
+
+            // Prepare data rows
+            var rows = visibleData.map(row => {
+                return visibleColumns.map(col => {
+                    var field = col.getField();
+                    return row[field] !== undefined ? row[field] : "";
+                });
             });
+
+            // Create date range text
+            var dateRangeText = "";
+            if (filterStartJobDate && filterEndJobDate) {
+                dateRangeText = `Date Range: ${moment(filterStartJobDate).format('DD-MMM-YYYY')} to ${moment(filterEndJobDate).format('DD-MMM-YYYY')}`;
+            } else if (filterStartJobDate) {
+                dateRangeText = `Date From: ${moment(filterStartJobDate).format('DD-MMM-YYYY')}`;
+            } else if (filterEndJobDate) {
+                dateRangeText = `Date To: ${moment(filterEndJobDate).format('DD-MMM-YYYY')}`;
+            } else {
+                dateRangeText = "Date Range: All Dates";
+            }
+
+            // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
+            var exportData = [
+                [dateRangeText], // Row 1: Date range
+                [],              // Row 2: Empty row
+                headers,         // Row 3: Headers
+                ...rows          // Row 4+: Data
+            ];
+
+
+            // Create worksheet
+            var ws = XLSX.utils.aoa_to_sheet(exportData);
+
+            // Style header row (bold)
+            headers.forEach((header, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "D3D3D3" } },
+                    alignment: { horizontal: "center" }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
+            ws['!cols'] = columnWidths;
+
+            // Freeze first row
+            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+            // Set row heights
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 25 }; // Date range row height
+            ws['!rows'][1] = { hpt: 10 };  // Empty row height
+            ws['!rows'][2] = { hpt: 20 };  // Header row height
+
+            // Create workbook and download
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "JobWrkSpareIN");
+
+            var fileName = `JobWrkSpareIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
         });
+    }
+    else {
+        document.getElementById("exclVendorExpButton").addEventListener("click", function () {
+            // Get only visible data from Tabulator (respects filters, sorting, pagination)
+            var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
 
-        // Create date range text
-        var dateRangeText = "";
-        if (filterStartJobDate && filterEndJobDate) {
-            dateRangeText = `Date Range: ${moment(filterStartJobDate).format('DD-MMM-YYYY')} to ${moment(filterEndJobDate).format('DD-MMM-YYYY')}`;
-        } else if (filterStartJobDate) {
-            dateRangeText = `Date From: ${moment(filterStartJobDate).format('DD-MMM-YYYY')}`;
-        } else if (filterEndJobDate) {
-            dateRangeText = `Date To: ${moment(filterEndJobDate).format('DD-MMM-YYYY')}`;
-        } else {
-            dateRangeText = "Date Range: All Dates";
-        }
+            // Get visible columns only
+            var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action"
+                && col.getField() !== "Write_Off_Approved" && col.getField() !== "Pending_Write_Off" && col.getField() !== "Write_Off_Date");
 
-        // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
-        var exportData = [
-            [dateRangeText], // Row 1: Date range
-            [],              // Row 2: Empty row
-            headers,         // Row 3: Headers
-            ...rows          // Row 4+: Data
-        ];
+            // Prepare headers
+            var headers = visibleColumns.map(col => col.getDefinition().title);
+
+            // Prepare data rows
+            var rows = visibleData.map(row => {
+                return visibleColumns.map(col => {
+                    var field = col.getField();
+                    return row[field] !== undefined ? row[field] : "";
+                });
+            });
+
+            // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
+            var exportData = [
+                headers,         // Row 3: Headers
+                ...rows          // Row 4+: Data
+            ];
 
 
-        // Create worksheet
-        var ws = XLSX.utils.aoa_to_sheet(exportData);
+            // Create worksheet
+            var ws = XLSX.utils.aoa_to_sheet(exportData);
 
-        // Style header row (bold)
-        headers.forEach((header, index) => {
-            const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
-            if (!ws[cellRef]) return;
-            ws[cellRef].s = {
-                font: { bold: true },
-                fill: { fgColor: { rgb: "D3D3D3" } },
-                alignment: { horizontal: "center" }
-            };
+            // Style header row (bold)
+            headers.forEach((header, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "D3D3D3" } },
+                    alignment: { horizontal: "center" }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
+            ws['!cols'] = columnWidths;
+
+            // Freeze first row
+            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+            // Set row heights
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 25 }; // Date range row height
+
+            // Create workbook and download
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "JobWrkSpareIN");
+
+            var fileName = `JobWrkSpareIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
         });
-
-        // Auto-width calculation
-        const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
-        ws['!cols'] = columnWidths;
-
-        // Freeze first row
-        ws['!freeze'] = { xSplit: 0, ySplit: 1 };
-
-        // Set row heights
-        if (!ws['!rows']) ws['!rows'] = [];
-        ws['!rows'][0] = { hpt: 25 }; // Date range row height
-        ws['!rows'][1] = { hpt: 10 };  // Empty row height
-        ws['!rows'][2] = { hpt: 20 };  // Header row height
-
-        // Create workbook and download
-        var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "JobWrkSpareIN");
-
-        var fileName = `JobWrkSpareIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
-        XLSX.writeFile(wb, fileName);
-    });
+    }
     Blockloaderhide();
 }
 
@@ -502,6 +638,43 @@ function BlankJobWorkTrackDown() {
     Blockloaderhide();
 };
 
+//function BlankVendorJobWorkTrackDown() {
+//    Blockloadershow();
+
+//    var expectedColumns = [
+//        'Actual\n Received\n Qty', 'Dispatched through\nDC (No Problem\n Drivers)', 'Dispatched\n through\n Invoice', 'Non\n Repairable ', 'Grand\n Total', 'To be\n processed', 'Special\n Remark if\n any ', 'Transporter',
+//        'LR no', 'LR date'
+//    ];
+
+//    // Create worksheet with only the header row
+//    var data = [expectedColumns];
+//    var ws = XLSX.utils.aoa_to_sheet(data);
+
+//    // Apply bold style to header cells
+//    expectedColumns.forEach((col, index) => {
+//        const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
+//        if (!ws[cellRef]) return;
+//        ws[cellRef].s = {
+//            font: {
+//                bold: true
+//            }
+//        };
+//    });
+
+//    // Auto-width calculation
+//    const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
+//    ws['!cols'] = columnWidths;
+
+
+//    // Create workbook and export
+//    var wb = XLSX.utils.book_new();
+//    XLSX.utils.book_append_sheet(wb, ws, "Vendor Jobwork Spares Tracking");
+
+//    XLSX.writeFile(wb, "Vendor_Spares_Tracking.xlsx");
+
+//    Blockloaderhide();
+//};
+
 function clearForm() {
     // Clear all input fields
     document.querySelectorAll('.form-control').forEach(function (input) {
@@ -527,7 +700,7 @@ function loadFinalJobData() {
     $('#ftab1').hide();
     $('#ftab2').show();
     $.ajax({
-        url: '/Service/GetJobWorkAll',
+        url: '/Service/GetJobListFinalResult',
         type: 'GET',
         dataType: 'json',
         data: {

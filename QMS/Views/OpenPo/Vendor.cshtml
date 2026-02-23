@@ -722,7 +722,7 @@
                         Cleared_Date: formatDate(item.cleared_Date),
                         TOC_BRYG_Color : item.toC_BRYG_Color,
                         Vendor_Dispatch_Date :  formatDate(item.vendor_Dispatch_Date),
-
+                        LastUploadedAt : formatDate(item.lastUploadedAt),
                         Key1 : item.key1,
                         Comit_Date : formatDate(item.comit_Date),
                         Comit_Qty : item.comit_Qty,
@@ -898,31 +898,31 @@
                 //     headerTooltip: "Select row"
                 // });
 
-                        columns.push({
-                          title: "<input type='checkbox' class='large-checkbox' onclick='toggleAllCheckboxes(this)' style='left:4px'/>",
-                          field: "Selected",
-                          hozAlign: "center",
-                          width: 45,
-                          headerSort: false,
+                        // columns.push({
+                        //   title: "<input type='checkbox' class='large-checkbox' onclick='toggleAllCheckboxes(this)' style='left:4px'/>",
+                        //   field: "Selected",
+                        //   hozAlign: "center",
+                        //   width: 45,
+                        //   headerSort: false,
 
-                          formatter: function (cell) {
-                            const row = cell.getRow();
-                            const data = row.getData();
+                        //   formatter: function (cell) {
+                        //     const row = cell.getRow();
+                        //     const data = row.getData();
 
-                            // ❌ hide checkbox for child header
-                            if (data._isChildHeader) return "";
+                        //     // ❌ hide checkbox for child header
+                        //     if (data._isChildHeader) return "";
 
-                            // ❌ hide checkbox for child rows
-                            if (row.getTreeParent && row.getTreeParent()) return "";
+                        //     // ❌ hide checkbox for child rows
+                        //     if (row.getTreeParent && row.getTreeParent()) return "";
 
-                            // ✅ show checkbox ONLY for parent rows
-                            const isChecked = cell.getValue() ? "checked" : "";
-                            return `<input type="checkbox"
-                                          class="large-checkbox"
-                                          ${isChecked}
-                                          onchange="onSelectCheckboxChange(this, ${data.Id})">`;
-                          }
-                        });
+                        //     // ✅ show checkbox ONLY for parent rows
+                        //     const isChecked = cell.getValue() ? "checked" : "";
+                        //     return `<input type="checkbox"
+                        //                   class="large-checkbox"
+                        //                   ${isChecked}
+                        //                   onchange="onSelectCheckboxChange(this, ${data.Id})">`;
+                        //   }
+                        // });
 
 
 
@@ -979,6 +979,7 @@
                         });
                     }
 
+                    columns.push({ title: "LastUploadedAt", field: "LastUploadedAt", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "Key", field: "Key", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                     if (userType != "Vendor") {
                         columns.push({ title: "Key1", field: "Key1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
@@ -1160,7 +1161,15 @@
                     pagination: "local", // Enable pagination
                     paginationSize: 10, // Rows per page
                     paginationSizeSelector: [50, 100, 500, 1500, 2000],
-                    paginationCounter: "rows",
+                    // paginationCounter: "rows",
+                            paginationCounter: function (pageSize, currentRow, currentPage, totalRows, totalPages) {
+                        // totalRows = rows AFTER filters (Tabulator gives filtered count)
+                        // We need to count only parents among filtered rows
+                        const data = table ? table.getData(true) : [];
+                        const parentCount = data.filter(d => d && !d._isChildHeader && !d.Ven_PoId && d.Id).length;
+
+                        return `Parents: ${parentCount} | Rows: ${totalRows}`;
+                    },
                     layout: "fitDataFill",
                     dataTree: true,
                     dataTreeStartExpanded: true,
@@ -1184,6 +1193,7 @@
                     //      });
                     //    }
                     // },
+
                     rowFormatter: function(row) {
                         const d = row.getData();
                         const el = row.getElement();
@@ -1494,14 +1504,14 @@
             Blockloaderhide();
         }
 
-        function onSelectCheckboxChange(checkbox, rowId) {
-            let row = table.getRow(rowId);
-            if (row) {
-               const data = row.getData();
-               data.Selected = checkbox.checked;
-               row.update(data); // apply update
-            }
-        }
+        // function onSelectCheckboxChange(checkbox, rowId) {
+        //     let row = table.getRow(rowId);
+        //     if (row) {
+        //        const data = row.getData();
+        //        data.Selected = checkbox.checked;
+        //        row.update(data); // apply update
+        //     }
+        // }
 
         // function toggleAllCheckboxes(headerCheckbox) {
         //     const table = Tabulator.findTable("#openPo_Table")[0];
@@ -1519,15 +1529,15 @@
         //     table.replaceData(allData);
         // }
 
-        function toggleAllCheckboxes(master) {
-          const checked = master.checked;
+        // function toggleAllCheckboxes(master) {
+        //   const checked = master.checked;
 
-          table.getRows().forEach(row => {
-            if (!row.getTreeParent()) {   // ✅ only parent rows
-              row.update({ Selected: checked });
-            }
-          });
-        }
+        //   table.getRows().forEach(row => {
+        //     if (!row.getTreeParent()) {   // ✅ only parent rows
+        //       row.update({ Selected: checked });
+        //     }
+        //   });
+        // }
 
 
         // function setIsSubmitted()
@@ -1585,26 +1595,180 @@
         //     });
         // }
 
-                        function setIsSubmitted() {
+        //                 function setIsSubmitted() {
+        //     debugger;
+        //     Blockloadershow();
+
+        //     const selectedRows = table.getData().filter(row => row.Selected);
+
+        //     // Check if no rows are selected
+        //     if (selectedRows.length === 0) {
+        //         Blockloaderhide();
+        //         showDangerAlert('Please select at least one record to submit.');
+        //         return;
+        //     }
+
+        //     // Validation: Check all selected rows and their children
+        //     const validationErrors = [];
+
+        //     selectedRows.forEach((row, index) => {
+        //         const rowIdentifier = `Row ${index + 1} (PO No: ${row.PO_No || 'N/A'}, Key: ${row.Key || 'N/A'})`;
+        //         const children = Array.isArray(row._children) ? row._children : [];
+        //         const realChildren = children.filter(ch => !ch?._isChildHeader);
+
+        //         // If no delivery schedule exists
+        //         if (realChildren.length === 0) {
+        //             validationErrors.push({
+        //                 RowNumber: index + 1,
+        //                 Key: row.Key || '',
+        //                 PRNo: row.PR_No || '',
+        //                 PONo: row.PO_No || '',
+        //                 Vendor: row.Vendor || '',
+        //                 DeliveryScheduleNo: 'N/A',
+        //                 ErrorType: 'Missing Delivery Schedule',
+        //                 ErrorMessage: 'No delivery schedule found. Please add at least one delivery schedule.',
+        //                 DeliveryDate: '',
+        //                 DeliveryQty: '',
+        //                 DeliveryRemark: ''
+        //             });
+        //             return;
+        //         }
+
+        //         // Check each child delivery schedule
+        //         realChildren.forEach((child, childIndex) => {
+        //             const hasDeliveryDate = child.Delivery_Date && String(child.Delivery_Date).trim() !== "";
+        //             const hasDeliveryQty = child.Hold_Date != null && String(child.Hold_Date).trim() !== "" && child.Hold_Date !== 0;
+        //             const hasDeliveryRemark = child.Cleared_Date && String(child.Cleared_Date).trim() !== "";
+
+        //             let errorType = '';
+        //             let errorMessage = '';
+
+        //             // Validation Rule 1: If Delivery_Date exists, Delivery_Qty must exist
+        //             if (hasDeliveryDate && !hasDeliveryQty) {
+        //                 errorType = 'Missing Delivery Qty';
+        //                 errorMessage = 'Delivery Date is provided but Delivery Qty is missing.';
+        //             }
+        //             // Validation Rule 1: If Delivery_Qty exists, Delivery_Date must exist
+        //             else if (hasDeliveryQty && !hasDeliveryDate) {
+        //                 errorType = 'Missing Delivery Date';
+        //                 errorMessage = 'Delivery Qty is provided but Delivery Date is missing.';
+        //             }
+        //             // Validation Rule 2 & 3: If neither Date nor Qty exist, Remark must exist
+        //             else if (!hasDeliveryDate && !hasDeliveryQty && !hasDeliveryRemark) {
+        //                 errorType = 'All Fields Empty';
+        //                 errorMessage = 'All fields (Delivery Date, Qty, and Remark) are empty. Please fill at least Delivery Date & Qty OR Remark.';
+        //             }
+
+        //             // If there's an error, add to validation errors array
+        //             if (errorType) {
+        //                 validationErrors.push({
+        //                     RowNumber: index + 1,
+        //                     Key: row.Key || '',
+        //                     PRNo: row.PR_No || '',
+        //                     PONo: row.PO_No || '',
+        //                     Vendor: row.Vendor || '',
+        //                     DeliveryScheduleNo: childIndex + 1,
+        //                     ErrorType: errorType,
+        //                     ErrorMessage: errorMessage,
+        //                     DeliveryDate: child.Delivery_Date || '',
+        //                     DeliveryQty: child.Hold_Date || '',
+        //                     DeliveryRemark: child.Cleared_Date || ''
+        //                 });
+        //             }
+        //         });
+        //     });
+
+        //     // If validation errors exist, generate Excel log and stop submission
+        //     if (validationErrors.length > 0) {
+        //         Blockloaderhide();
+
+        //         // Generate Excel Error Log
+        //         generateValidationErrorExcel(validationErrors);
+
+        //         // Clear selections after showing errors
+        //         clearAllSelections();
+
+        //         // Show summary alert
+        //         showDangerAlert(`Validation Failed: ${validationErrors.length} error(s) found.\n\nAn Excel error log has been downloaded. Please fix the errors and try again.`);
+        //         return;
+        //     }
+
+        //     // Proceed with submission if validation passes
+        //     const selectedIds = selectedRows.map(row => row.Id);
+
+        //     $.ajax({
+        //         type: "POST",
+        //         url: '@Url.Action("SetIsSubmitted", "OpenPo")',
+        //         data: JSON.stringify(selectedIds),
+        //         contentType: "application/json",
+        //         success: function (response) {
+        //             Blockloaderhide();
+        //             if (response.success) {
+        //                 showSuccessAlert("Delivery Schedule is submitted successfully!");
+
+        //                 // Clear all selections after successful submission
+        //                 clearAllSelections();
+
+        //                 setTimeout(function () {
+        //                     window.location.reload();
+        //                 }, 1500);
+        //             }
+        //             else {
+        //                 var errorMessg = "";
+        //                 for (var error in response.errors) {
+        //                     errorMessg += error + "\n";
+        //                 }
+        //                 if (errorMessg != "") {
+        //                     showDangerAlert(errorMessg);
+        //                 }
+        //                 else {
+        //                     showDangerAlert(response.Message);
+        //                 }
+        //             }
+        //         },
+        //         error: function (xhr, status, errors) {
+        //             Blockloaderhide();
+        //             showDangerAlert("An unexpected error occurred, please refresh the page and try again.");
+        //         }
+        //     });
+        // }
+
+
+        function setIsSubmitted() {
             debugger;
             Blockloadershow();
 
-            const selectedRows = table.getData().filter(row => row.Selected);
-
-            // Check if no rows are selected
-            if (selectedRows.length === 0) {
+            if (!window.table) {
                 Blockloaderhide();
-                showDangerAlert('Please select at least one record to submit.');
+                showDangerAlert("Tabulator table not loaded.");
                 return;
             }
 
-            // Validation: Check all selected rows and their children
+            // ✅ Get ONLY visible rows (respects filter/search/toggle/pagination)
+            // ✅ Keep ONLY parent rows (exclude child rows + child header)
+            const visibleParentRows = table.getRows(true)
+                .map(r => r.getData())
+                .filter(d => {
+                    if (!d) return false;
+                    if (d._isChildHeader) return false;   // child header row
+                    if (d.Ven_PoId) return false;         // child row (you set Ven_PoId in child)
+                    return !!d.Id;                         // must be a valid parent id
+                });
+
+            if (visibleParentRows.length === 0) {
+                Blockloaderhide();
+                showDangerAlert("No records found to submit.");
+                return;
+            }
+
+            // ===============================
+            // ✅ VALIDATE ALL VISIBLE PARENTS
+            // ===============================
             const validationErrors = [];
 
-            selectedRows.forEach((row, index) => {
-                const rowIdentifier = `Row ${index + 1} (PO No: ${row.PO_No || 'N/A'}, Key: ${row.Key || 'N/A'})`;
+            visibleParentRows.forEach((row, index) => {
                 const children = Array.isArray(row._children) ? row._children : [];
-                const realChildren = children.filter(ch => !ch?._isChildHeader);
+                const realChildren = children.filter(ch => ch && !ch._isChildHeader);
 
                 // If no delivery schedule exists
                 if (realChildren.length === 0) {
@@ -1627,29 +1791,31 @@
                 // Check each child delivery schedule
                 realChildren.forEach((child, childIndex) => {
                     const hasDeliveryDate = child.Delivery_Date && String(child.Delivery_Date).trim() !== "";
-                    const hasDeliveryQty = child.Hold_Date != null && String(child.Hold_Date).trim() !== "" && child.Hold_Date !== 0;
+                    const hasDeliveryQty =
+                        child.Hold_Date != null &&
+                        String(child.Hold_Date).trim() !== "" &&
+                        Number(child.Hold_Date) !== 0;
                     const hasDeliveryRemark = child.Cleared_Date && String(child.Cleared_Date).trim() !== "";
 
                     let errorType = '';
                     let errorMessage = '';
 
-                    // Validation Rule 1: If Delivery_Date exists, Delivery_Qty must exist
+                    // Rule 1: If Delivery_Date exists => Qty required
                     if (hasDeliveryDate && !hasDeliveryQty) {
                         errorType = 'Missing Delivery Qty';
                         errorMessage = 'Delivery Date is provided but Delivery Qty is missing.';
                     }
-                    // Validation Rule 1: If Delivery_Qty exists, Delivery_Date must exist
-                    else if (hasDeliveryQty && !hasDeliveryDate) {
-                        errorType = 'Missing Delivery Date';
-                        errorMessage = 'Delivery Qty is provided but Delivery Date is missing.';
-                    }
-                    // Validation Rule 2 & 3: If neither Date nor Qty exist, Remark must exist
+                    // Rule 1: If Qty exists => Delivery_Date required
+                    // else if (hasDeliveryQty && !hasDeliveryDate) {
+                    //     errorType = 'Missing Delivery Date';
+                    //     errorMessage = 'Delivery Qty is provided but Delivery Date is missing.';
+                    // }
+                    // Rule 2: If neither Date nor Qty => Remark required
                     else if (!hasDeliveryDate && !hasDeliveryQty && !hasDeliveryRemark) {
                         errorType = 'All Fields Empty';
                         errorMessage = 'All fields (Delivery Date, Qty, and Remark) are empty. Please fill at least Delivery Date & Qty OR Remark.';
                     }
 
-                    // If there's an error, add to validation errors array
                     if (errorType) {
                         validationErrors.push({
                             RowNumber: index + 1,
@@ -1661,7 +1827,7 @@
                             ErrorType: errorType,
                             ErrorMessage: errorMessage,
                             DeliveryDate: child.Delivery_Date || '',
-                            DeliveryQty: child.Hold_Date || '',
+                            DeliveryQty: child.Hold_Date ?? '',
                             DeliveryRemark: child.Cleared_Date || ''
                         });
                     }
@@ -1671,81 +1837,76 @@
             // If validation errors exist, generate Excel log and stop submission
             if (validationErrors.length > 0) {
                 Blockloaderhide();
-
-                // Generate Excel Error Log
                 generateValidationErrorExcel(validationErrors);
 
-                // Clear selections after showing errors
-                clearAllSelections();
-
-                // Show summary alert
-                showDangerAlert(`Validation Failed: ${validationErrors.length} error(s) found.\n\nAn Excel error log has been downloaded. Please fix the errors and try again.`);
+                showDangerAlert(
+                    `Validation Failed: ${validationErrors.length} error(s) found.\n\n` +
+                    `An Excel error log has been downloaded. Please fix the errors and try again.`
+                );
                 return;
             }
 
-            // Proceed with submission if validation passes
-            const selectedIds = selectedRows.map(row => row.Id);
+            // ===============================
+            // ✅ SUBMIT ALL VISIBLE PARENT IDS
+            // ===============================
+            const submitIds = visibleParentRows.map(r => r.Id);
 
             $.ajax({
                 type: "POST",
                 url: '@Url.Action("SetIsSubmitted", "OpenPo")',
-                data: JSON.stringify(selectedIds),
+                data: JSON.stringify(submitIds),
                 contentType: "application/json",
                 success: function (response) {
                     Blockloaderhide();
-                    if (response.success) {
-                        showSuccessAlert("Delivery Schedule is submitted successfully!");
 
-                        // Clear all selections after successful submission
-                        clearAllSelections();
+                    if (response && response.success) {
+                        showSuccessAlert("Delivery Schedule is submitted successfully!");
 
                         setTimeout(function () {
                             window.location.reload();
                         }, 1500);
-                    }
-                    else {
-                        var errorMessg = "";
-                        for (var error in response.errors) {
-                            errorMessg += error + "\n";
+                    } else {
+                        let errorMessg = "";
+
+                        if (response && response.errors) {
+                            for (var error in response.errors) {
+                                errorMessg += error + "\n";
+                            }
                         }
-                        if (errorMessg != "") {
-                            showDangerAlert(errorMessg);
-                        }
-                        else {
-                            showDangerAlert(response.Message);
-                        }
+
+                        showDangerAlert(errorMessg || (response && response.Message) || "Submission failed.");
                     }
                 },
-                error: function (xhr, status, errors) {
+                error: function () {
                     Blockloaderhide();
                     showDangerAlert("An unexpected error occurred, please refresh the page and try again.");
                 }
             });
         }
 
-        // Function to clear all selections - BEST METHOD
-        function clearAllSelections() {
-            if (!table) return;
+        // // Function to clear all selections - BEST METHOD
+        // function clearAllSelections() {
+        //     if (!table) return;
 
-            // Get current table data
-            const tableData = table.getData();
+        //     // Get current table data
+        //     const tableData = table.getData();
 
-            // Update Selected field to false for all rows
-            tableData.forEach(item => {
-                item.Selected = false;
-            });
+        //     // Update Selected field to false for all rows
+        //     tableData.forEach(item => {
+        //         item.Selected = false;
+        //     });
 
-            // Replace table data (forces full re-render with checkboxes unchecked)
-            table.replaceData(tableData).then(() => {
-                // Uncheck header checkbox after data is replaced
-                const headerCheckbox = document.querySelector('#openPo_Table input.large-checkbox[onclick*="toggleAllCheckboxes"]');
-                if (headerCheckbox) {
-                    headerCheckbox.checked = false;
-                }
-            }).catch(err => {
-                console.error("Error clearing selections:", err);
-            });
-        }
+        //     // Replace table data (forces full re-render with checkboxes unchecked)
+        //     table.replaceData(tableData).then(() => {
+        //         // Uncheck header checkbox after data is replaced
+        //         const headerCheckbox = document.querySelector('#openPo_Table input.large-checkbox[onclick*="toggleAllCheckboxes"]');
+        //         if (headerCheckbox) {
+        //             headerCheckbox.checked = false;
+        //         }
+        //     }).catch(err => {
+        //         console.error("Error clearing selections:", err);
+        //     });
+        // }
 
         // Function to generate Excel file for validation errors
         async function generateValidationErrorExcel(errors) {

@@ -684,7 +684,7 @@
                         Cleared_Date: formatDate(item.cleared_Date),
                         TOC_BRYG_Color : item.toC_BRYG_Color,
                         Vendor_Dispatch_Date : formatDate(item.vendor_Dispatch_Date),
-
+                        LastUploadedAt : formatDate(item.lastUploadedAt),
                         Key1 : item.key1,
                         Comit_Date : formatDate(item.comit_Date),
                         Comit_Qty : item.comit_Qty,
@@ -858,6 +858,7 @@
                         title: "SNo", field: "Sr_No", sorter: "number", width: 65, headerMenu: headerMenu, hozAlign: "center", headerHozAlign: "left"
                     });
 
+                    columns.push({ title: "LastUploadedAt", field: "LastUploadedAt", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                     columns.push({ title: "Key", field: "Key", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });
                     if (userType != "Vendor") {
                         columns.push({ title: "Key1", field: "Key1", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "left" });

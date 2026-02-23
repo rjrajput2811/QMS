@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
 using QMS.Core.Repositories.COPQComplaintDumpRepository;
@@ -1459,11 +1460,20 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetJobWorkById(int id)
+        public async Task<JsonResult> GetJobListFinalResult(DateTime? startDate, DateTime? endDate)
         {
-            var item = await _jobWorkRepository.GetJobByIdAsync(id);
+            var list = await _jobWorkRepository.GetJobListFinalResultAsync(startDate, endDate);
+            return Json(list);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetJobWorkById(string vendor)
+        {
+            var item = await _jobWorkRepository.GetJobWorkVendorListAsync(vendor);
             return Json(item);
         }
+
+        
 
         [HttpPost]
         public async Task<JsonResult> CreateJobWorkAsync([FromBody] JobWork_Tracking_Service model)
@@ -1612,6 +1622,122 @@ namespace QMS.Controllers
                     success = false,
                     message = "Import failed: " + ex.Message
                 });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadVendorInputExcel(IFormFile file)
+        {
+            var vendorInputList = new List<JobWork_TracViewModel>();
+            var errorRows = new List<(int Row, string Reason)>();
+
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "Please upload a valid Excel file." });
+
+                var uploadedBy = HttpContext.Session.GetString("FullName");
+
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.RowsUsed().Count();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    // Required field validation
+                    var uniqueIdStr = worksheet.Cell(row, 2).GetString().Trim();
+                    var dcSapCode = worksheet.Cell(row, 6).GetString().Trim();
+
+                    if (string.IsNullOrWhiteSpace(uniqueIdStr) || string.IsNullOrWhiteSpace(dcSapCode))
+                    {
+                        errorRows.Add((row, "UniqueId or Dc_Sap_Code is missing."));
+                        continue;
+                    }
+
+                    if (!Guid.TryParse(uniqueIdStr, out Guid uniqueId))
+                    {
+                        errorRows.Add((row, $"UniqueId '{uniqueIdStr}' is not a valid GUID."));
+                        continue;
+                    }
+
+                    var dto = new JobWork_TracViewModel
+                    {
+                        UniqueId = uniqueId,
+                        Dc_Sap_Code = dcSapCode,
+                        Actu_Rece_Qty = worksheet.Cell(row, 11).TryGetValue(out int qty) ? qty : (int?)null,
+                        Dispatch_Dc = worksheet.Cell(row, 12).GetString().Trim(),
+                        Dispatch_Invoice = worksheet.Cell(row, 13).GetString().Trim(),
+                        Non_Repairable = worksheet.Cell(row, 14).GetString().Trim(),
+                        Grand_Total = worksheet.Cell(row, 15).TryGetValue(out double grand) ? grand : (double?)null,
+                        To_Process = worksheet.Cell(row, 16).TryGetValue(out double toProcess) ? toProcess : (double?)null,
+                        Remark = worksheet.Cell(row, 17).GetString().Trim(),
+                        Vendor_Transporter = worksheet.Cell(row, 18).GetString().Trim(),
+                        Vendor_LR_No = worksheet.Cell(row, 19).GetString().Trim(),
+                        Vendor_LR_Date = worksheet.Cell(row, 20).TryGetValue(out DateTime lrDate) ? lrDate : (DateTime?)null,
+                        UpdatedBy = uploadedBy,
+                        UpdatedDate = DateTime.Now
+                    };
+
+                    vendorInputList.Add(dto);
+                }
+
+                if (!vendorInputList.Any() && errorRows.Any())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"No valid rows found. {errorRows.Count} row(s) had errors.",
+                        errors = errorRows.Select(e => new { e.Row, e.Reason })
+                    });
+                }
+
+                int updatedRows = await _jobWorkRepository.UpdateVendorInputFieldsAsync(vendorInputList);
+
+                // Return failed records Excel if any
+                if (errorRows.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "Row No";
+                    failSheet.Cell(1, 2).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var (Row, Reason) in errorRows)
+                    {
+                        failSheet.Cell(i, 1).Value = Row;
+                        failSheet.Cell(i, 2).Value = Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"VendorInput_Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    Response.Headers["X-Upload-Summary"] =
+                        $"Updated:{updatedRows};Failed:{errorRows.Count}";
+                    Response.Headers["Content-Disposition"] =
+                        $"attachment; filename={failedFileName}";
+
+                    return File(
+                        failStream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    );
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Update completed. Total Read: {vendorInputList.Count}, Updated in DB: {updatedRows}."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Upload failed: " + ex.Message });
             }
         }
 

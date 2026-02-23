@@ -5,8 +5,22 @@
 <link href="~/css/fontawesome/styles.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator.min.css" rel="stylesheet" />
 <link href="~/css/tabulator/tabulator_bootstrap4.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="~/js/jquery.min.js"></script>
+<script src="~/js/jquery.datatables.js"></script>
 <link href="~/css/pnotify.css" rel="stylesheet" />
-<link rel="stylesheet" href="~/lib/bootstrap/dist/css/LitePicker.css" />
+<script src="~/lib/bootstrap/dist/js/noty.min.js"></script>
+<script src="~/js/pnotify.js"></script>
+<script src="~/js/pnotify.confirm.js"></script>
+<script src="~/lib/bootstrap/dist/js/datatables.buttons.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/popupAlert.js"></script>
+<script src="~/lib/bootstrap/dist/js/jszip.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/buttons.html5.min.js"></script>
+<script src="~/js/common.js"></script>
+<script src="~/lib/bootstrap/dist/js/noty.min.js"></script>
+@* <script src="~/js/xlsx.min.js"></script> *@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
+
 
 <style>
     .header-card {
@@ -16,7 +30,7 @@
     }
 
     .header-title {
-        font-size: large;
+        font-size: large; /* smaller, consistent with Electrical Protection */
         color: #4682B4;
         font-weight: 700;
     }
@@ -35,8 +49,79 @@
     .mr-2 {
         margin-right: 8px;
     }
-</style>
 
+    .tabulator .tabulator-header .tabulator-col {
+        font-size: 14px;
+        background-color: #D6E4F0;
+        font-weight: 600;
+        border-right: 1px solid #ccc;
+    }
+
+    .tabulator-row .tabulator-cell {
+        padding: 5px 5px;
+        font-size: 14px;
+        height: 35px;
+    }
+
+    .tabulator-cell:hover {
+        color: #4682B4 !important;
+        cursor: pointer !important;
+        font-weight: bold;
+    }
+
+    .form-group {
+        margin-bottom: 0.5rem; /* Reduce space between each input group */
+    }
+
+    .calendar-container {
+        cursor: pointer;
+        padding: 8px 8px;
+        width: 100%;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        transition: background-color 0.3s, box-shadow 0.3s;
+        gap: 8px;
+        border: 1px solid slategray;
+    }
+
+        .calendar-container:hover {
+            background-color: #e3f2fd;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .calendar-container i.fa-calendar {
+            color: #2196f3;
+            font-size: 1.2em;
+            padding-left: 20px;
+        }
+
+        .calendar-container span {
+            color: #4682B4;
+            margin: 0;
+            font-size: 14px;
+        }
+
+    .container__predefined-ranges {
+        font-size: 14px;
+    }
+
+    .month-item {
+        font-size: 14px;
+    }
+
+
+    @@keyframes flash-bg {
+        0% {
+            background-color: #fff3cd;
+        }
+        /* light warning */
+        100% {
+            background-color: #e6e6e6;
+        }
+    }
+</style>
 <div class="content">
 
     <div class="card shadow-sm mb-3 header-card">
@@ -68,7 +153,7 @@
                 <button id="backButton"
                         type="button"
                         class="btn btn-outline-primary header-btn"
-                        onclick="location.href='@Url.Action("TrackerMenu", "Home")'">
+                        onclick="location.href='@Url.Action("ProductValidation", "Home")'">
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
             </div>
@@ -95,11 +180,13 @@
 @section Scripts {
     <script src="~/js/tabulator.js"></script>
     <script src="~/js/tabulator.min.js"></script>
-    <script src="~/js/dashboard/moment/moment.min.js"></script>
+    @* <script src="~/js/dashboard/moment/moment.min.js"></script> *@
     <script src="~/js/select2.min.js"></script>
 
     <!-- Moment.js and Litepicker -->
-    <script src="~/lib/bootstrap/dist/js/LitePicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/moment/min/moment.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/litepicker.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/plugins/ranges.js"></script>
 
     @* <script src="~/js/litepicker.js"></script> *@
     <script src="~/js/exceljs.min.js"></script>
@@ -166,6 +253,7 @@
         });
 
         function loadTemperatureRiseGridData() {
+            debugger;
             Blockloadershow();
             $.ajax({
                 url: '@Url.Action("GetTemperatureRiseList", "ProductValidation")',

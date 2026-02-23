@@ -113,6 +113,10 @@ namespace QMS.Core.DatabaseContext
         public DbSet<MTAMaster_SCM> MTAMaster { get; set; }
         //// ------- Supply Chain Management -------- ////
 
+
+        public DbSet<EmailConfiguration> EmailConfigurations { get; set; }
+        public DbSet<EmailOTP> EmailOTPs { get; set; }
+
         // Keyless type used for SP projections
         public class InspectionResult
         {

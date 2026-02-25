@@ -59,6 +59,7 @@ namespace QMS.Core.DatabaseContext
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
+        public Guid? UniqueId { get; set; }
     }
 
     public class BulkCreateRLTResult

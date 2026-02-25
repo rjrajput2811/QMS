@@ -1761,9 +1761,9 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetRLTById(int id)
+        public async Task<JsonResult> GetRLTById(string vendor)
         {
-            var item = await _rLTTracRepository.GetRLTByIdAsync(id);
+            var item = await _rLTTracRepository.GetRLTVendorListAsync(vendor);
             return Json(item);
         }
 
@@ -2126,6 +2126,112 @@ namespace QMS.Controllers
         {
             var list = await _rLTTracRepository.GetFinalRLTListAsync();
             return Json(list);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadRLTVendorInputExcel(IFormFile file)
+        {
+            var vendorInputList = new List<RLT_TracViewModel>();
+            var errorRows = new List<(int Row, string Reason)>();
+
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return Json(new { success = false, message = "Please upload a valid Excel file." });
+
+                var uploadedBy = HttpContext.Session.GetString("FullName");
+
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.RowsUsed().Count();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    // Required field validation
+                    var uniqueIdStr = worksheet.Cell(row, 2).GetString().Trim();
+
+                    if (string.IsNullOrWhiteSpace(uniqueIdStr))
+                    {
+                        errorRows.Add((row, "UniqueId is missing."));
+                        continue;
+                    }
+
+                    if (!Guid.TryParse(uniqueIdStr, out Guid uniqueId))
+                    {
+                        errorRows.Add((row, $"UniqueId '{uniqueIdStr}' is not a valid GUID."));
+                        continue;
+                    }
+
+                    var dto = new RLT_TracViewModel
+                    {
+                        UniqueId = uniqueId,
+                        Dispatch_Date = worksheet.Cell(row, 16).TryGetValue(out DateTime lrDate) ? lrDate : (DateTime?)null,
+                        Remark = worksheet.Cell(row, 17).GetString().Trim(),
+                        UpdatedBy = uploadedBy,
+                        UpdatedDate = DateTime.Now
+                    };
+
+                    vendorInputList.Add(dto);
+                }
+
+                if (!vendorInputList.Any() && errorRows.Any())
+                {
+                    return Json(new
+                    {
+                        success = false,
+                        message = $"No valid rows found. {errorRows.Count} row(s) had errors.",
+                        errors = errorRows.Select(e => new { e.Row, e.Reason })
+                    });
+                }
+
+                int updatedRows = await _rLTTracRepository.UpdateRLTVendorInputFieldsAsync(vendorInputList);
+
+                // Return failed records Excel if any
+                if (errorRows.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "Row No";
+                    failSheet.Cell(1, 2).Value = "Reason";
+
+                    int i = 2;
+                    foreach (var (Row, Reason) in errorRows)
+                    {
+                        failSheet.Cell(i, 1).Value = Row;
+                        failSheet.Cell(i, 2).Value = Reason;
+                        i++;
+                    }
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"RLTVendorInput_Failed_{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    Response.Headers["X-Upload-Summary"] =
+                        $"Updated:{updatedRows};Failed:{errorRows.Count}";
+                    Response.Headers["Content-Disposition"] =
+                        $"attachment; filename={failedFileName}";
+
+                    return File(
+                        failStream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    );
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Update completed. Total Read: {vendorInputList.Count}, Updated in DB: {updatedRows}."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Upload failed: " + ex.Message });
+            }
         }
 
 

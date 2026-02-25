@@ -18,5 +18,7 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
         Task<OperationResult> DeleteRLTAsync(int id);
         Task<BulkCreateRLTResult> BulkCreateRLTAsync(List<RLT_TracViewModel> listOfData, string fileName, string uploadedBy, string recordType);
         Task<List<FinalRLTOutput>> GetFinalRLTListAsync();
+        Task<int> UpdateRLTVendorInputFieldsAsync(IEnumerable<RLT_TracViewModel> vendorInputList);
+        Task<List<RLT_TracViewModel>> GetRLTVendorListAsync(string vendor);
     }
 }

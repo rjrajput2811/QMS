@@ -65,7 +65,8 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                     CreatedBy = x.CreatedBy,
                     CreatedDate = x.CreatedDate,
                     UpdatedBy = x.UpdatedBy,
-                    UpdatedDate = x.UpdatedDate
+                    UpdatedDate = x.UpdatedDate,
+                    UniqueId = x.UniqueId
 
                 }).ToList();
             }
@@ -512,6 +513,113 @@ namespace QMS.Core.Repositories.COPQComplaintDumpRepository
                 );
 
                 return result.ToList();
+            }
+        }
+
+        public async Task<List<RLT_TracViewModel>> GetRLTVendorListAsync(string vendor)
+        {
+            try
+            {
+                var parameters = new[] { new SqlParameter("@vendor", vendor) };
+
+                var result = await _dbContext.RLTTrac
+                    .FromSqlRaw("EXEC sp_Get_RLTTrack_ById @vendor", parameters)
+                    .ToListAsync();
+
+                return result.Select(x => new RLT_TracViewModel
+                {
+                    Id = x.Id,
+                    Deleted = x.Deleted,
+                    Vendor = x.Vendor,
+                    Material = x.Material,
+                    Ref_No = x.Ref_No,
+                    Po_No = x.Po_No,
+                    Po_Date = x.Po_Date,
+                    PR_No = x.PR_No,
+                    Batch_No = x.Batch_No,
+                    Po_Qty = x.Po_Qty,
+                    Balance_Qty = x.Balance_Qty,
+                    Destination = x.Destination,
+                    Balance_Value = x.Balance_Value,
+                    Lead_Time = x.Lead_Time,
+                    Lead_Time_Range = x.Lead_Time_Range,
+                    Dispatch_Date = x.Dispatch_Date,
+                    Remark = x.Remark,
+                    Wipro_Remark = x.Wipro_Remark,
+                    CreatedBy = x.CreatedBy,
+                    CreatedDate = x.CreatedDate,
+                    UpdatedBy = x.UpdatedBy,
+                    UpdatedDate = x.UpdatedDate,
+                    UniqueId = x.UniqueId
+                }).ToList();
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<int> UpdateRLTVendorInputFieldsAsync(IEnumerable<RLT_TracViewModel> vendorInputList)
+        {
+            try
+            {
+                // Build DataTable matching TVP_VendorInput structure
+                var dataTable = BuildVendorInputDataTable(vendorInputList);
+
+                using (var connection = _dbContext.Database.GetDbConnection())
+                {
+                    connection.Open();
+
+                    var parameters = new DynamicParameters();
+                    parameters.Add(
+                        "@TVPData",
+                        dataTable.AsTableValuedParameter("TVP_RLTVendorInput")
+                    );
+
+                    var result = await connection.QuerySingleAsync<int>(
+                        "sp_Update_RLTVendorInputFields",
+                        parameters,
+                        commandType: CommandType.StoredProcedure
+                    );
+
+                    return result; // returns UpdatedRows
+                }
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        private DataTable BuildVendorInputDataTable(IEnumerable<RLT_TracViewModel> list)
+        {
+            try
+            {
+                var dt = new DataTable();
+
+                dt.Columns.Add("UniqueId", typeof(Guid));
+                dt.Columns.Add("Dispatch_Date", typeof(DateTime));
+                dt.Columns.Add("Remark", typeof(string));
+                dt.Columns.Add("Updated_By", typeof(string));
+
+                foreach (var item in list)
+                {
+                    dt.Rows.Add(
+                        item.UniqueId,
+                        (object)item.Dispatch_Date ?? DBNull.Value,
+                        (object)item.Remark ?? DBNull.Value,
+                        (object)item.UpdatedBy ?? DBNull.Value
+                    );
+                }
+
+                return dt;
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
             }
         }
     }

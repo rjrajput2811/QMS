@@ -5,67 +5,88 @@ var tabledata1 = [];
 var finalTable = null;
 let filterStartRLTDate = moment().startOf('month').format('YYYY-MM-DD');
 let filterEndRLTDate = moment().endOf('month').format('YYYY-MM-DD');
+var userType = document.getElementById("hdnUserType").value;
+var vendorName = document.getElementById("hdnVendorName").value;
 
 $(document).ready(function () {
-    $('#rLTRangeText').text(
-        moment(filterStartRLTDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndRLTDate).format('MMMM D, YYYY')
-    );
+    if (userType != "Vendor") {
+        $('#rLTRangeText').text(
+            moment(filterStartRLTDate).format('MMMM D, YYYY') + ' - ' + moment(filterEndRLTDate).format('MMMM D, YYYY')
+        );
 
-    const picker = new Litepicker({
-        element: document.getElementById('rLTDateTrigger'),
-        singleMode: false,
-        format: 'DD-MM-YYYY',
-        numberOfMonths: 2,
-        numberOfColumns: 2,
-        dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
-        plugins: ['ranges'],
-        setup: (picker) => {
-            picker.on('selected', (start, end) => {
-                filterStartRLTDate = start.format('YYYY-MM-DD');
-                filterEndRLTDate = end.format('YYYY-MM-DD');
-                $('#rLTRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
-                loadRLTData();
-            });
+        const picker = new Litepicker({
+            element: document.getElementById('rLTDateTrigger'),
+            singleMode: false,
+            format: 'DD-MM-YYYY',
+            numberOfMonths: 2,
+            numberOfColumns: 2,
+            dropdowns: { minYear: 2020, maxYear: null, months: true, years: true },
+            plugins: ['ranges'],
+            setup: (picker) => {
+                picker.on('selected', (start, end) => {
+                    filterStartRLTDate = start.format('YYYY-MM-DD');
+                    filterEndRLTDate = end.format('YYYY-MM-DD');
+                    $('#rLTRangeText').text(`${start.format('MMMM D, YYYY')} - ${end.format('MMMM D, YYYY')}`);
+                    loadRLTData();
+                });
 
-            picker.on('clear', () => {
-                filterStartRLTDate = "";
-                filterEndRLTDate = "";
-                $('#rLTRangeText').text("Select Date Range");
-                loadRLTData();
-            });
-        },
-        ranges: {
-            Today: [moment(), moment()],
-            Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-            'This Month': [moment().startOf('month'), moment().endOf('month')],
-            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-        },
-        startDate: moment().startOf('month').format('DD-MM-YYYY'),
-        endDate: moment().endOf('month').format('DD-MM-YYYY')
-    });
+                picker.on('clear', () => {
+                    filterStartRLTDate = "";
+                    filterEndRLTDate = "";
+                    $('#rLTRangeText').text("Select Date Range");
+                    loadRLTData();
+                });
+            },
+            ranges: {
+                Today: [moment(), moment()],
+                Yesterday: [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            },
+            startDate: moment().startOf('month').format('DD-MM-YYYY'),
+            endDate: moment().endOf('month').format('DD-MM-YYYY')
+        });
 
-    $('#rLTDateTrigger').on('click', function () {
-        picker.show();
-    });
+        $('#rLTDateTrigger').on('click', function () {
+            picker.show();
+        });
 
-    document.getElementById('backButton').addEventListener('click', function () {
-        window.history.back();
-    });
+        document.getElementById('backButton').addEventListener('click', function () {
+            window.history.back();
+        });
+    }
 
-    $('#upload-button').on('click', async function () {
-        var expectedColumns = [
-            'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty',
-            'Balance Qty', 'Destination', 'Balance Value', 'Lead time', 'Lead time Range', 'Wipro Remark'
-        ];
+    if (userType != "Vendor") {
+        $('#upload-button').on('click', async function () {
+            var expectedColumns = [
+                'Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty',
+                'Balance Qty', 'Destination', 'Balance Value', 'Lead time', 'Lead time Range', 'Wipro Remark'
+            ];
 
-        var url = '/Service/UploadRLTExcel';
-        handleImportExcelFileBak(url, expectedColumns);
-    });
+            var url = '/Service/UploadRLTExcel';
+            handleImportExcelFileBak(url, expectedColumns);
+        });
+    }
+    else {
+        $('#upload-button').on('click', async function () {
+            var expectedColumns = [
+                'SNo','Unique Id','Vendor', 'Material', 'Reference No', 'PO No', 'PO Date', 'PR No', 'Batch No', 'PO Qty',
+                'Balance Qty', 'Destination', 'Balance Value', 'Lead time', 'Lead time Range', 'Dispatch Date','Remark'
+            ];
 
+            var url = '/Service/UploadRLTVendorInputExcel';
+            handleImportExcelFile(url, expectedColumns);
+        });
+    }
 
-    loadRLTData();
+    if (userType != "Vendor") {
+        loadRLTData();
+    }
+    else {
+        loadVendorRLTData();
+    }
 });
 
 function openUploadRLT() {
@@ -104,6 +125,33 @@ function loadRLTData() {
         }
     });
 }
+
+function loadVendorRLTData() {
+    Blockloadershow();
+    $('#ftab2').hide();
+    $('#ftab1').show();
+    $.ajax({
+        url: '/Service/GetRLTById',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            vendor: vendorName
+        },
+        success: function (data) {
+            if (Array.isArray(data)) {
+                renderRLTTable(data); // load into Tabulator or grid
+            } else {
+                showDangerAlert('No Data available.');
+            }
+            Blockloaderhide();
+        },
+
+        error: function (xhr, status, error) {
+            showDangerAlert('Error retrieving data: ' + error);
+            Blockloaderhide();
+        }
+    });
+}
 function renderRLTTable(response) {
 
     Blockloadershow();
@@ -117,7 +165,7 @@ function renderRLTTable(response) {
         Po_Date: item.po_Date ? new Date(item.po_Date).toLocaleDateString("en-GB") : "",
         PR_No: item.pR_No,
         Batch_No: item.batch_No,
-        Po_Qty: item.po_Qty ,
+        Po_Qty: item.po_Qty,
 
         Balance_Qty: item.balance_Qty,
         Destination: item.destination,
@@ -128,6 +176,7 @@ function renderRLTTable(response) {
 
         Remark: item.Remark,
         Wipro_Remark: item.wipro_Remark,
+        UniqueId: item.uniqueId,
 
         CreatedDate: item.createdDate ? new Date(item.createdDate).toLocaleDateString("en-GB") : "",
         CreatedBy: item.createdBy,
@@ -136,13 +185,15 @@ function renderRLTTable(response) {
     }));
 
     const columns = [
-        
+
 
         {
             title: "Input for Wipro",
             headerHozAlign: "center", // Center group header
             columns: [
+
                 { title: "SNo", field: "Sr_No", hozAlign: "center", headerHozAlign: "center", frozen: true },
+                { title: "Unique Id", field: "UniqueId", hozAlign: "left", headerHozAlign: "center", frozen: true },
                 { title: "Vendor", field: "Vendor", frozen: true },
                 { title: "Material", field: "Material", hozAlign: "center", headerHozAlign: "center", },
                 { title: "Reference No", field: "Ref_No" },
@@ -179,7 +230,7 @@ function renderRLTTable(response) {
             title: "Wipro Remark",
             headerHozAlign: "center", // Center group header
             columns: [
-                { title: "Wipro Remark", field: "Wipro_Remark" },
+                { title: "Wipro Remark", field: "Wipro_Remark", dowload: false },
             ]
         }
     ];
@@ -199,82 +250,142 @@ function renderRLTTable(response) {
             columns: columns
         });
     }
- 
 
-    document.getElementById("exclExpButton").addEventListener("click", function () {
-        // Get only visible data from Tabulator (respects filters, sorting, pagination)
-        var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
+    if (userType != "Vendor") {
+        document.getElementById("exclExpButton").addEventListener("click", function () {
+            // Get only visible data from Tabulator (respects filters, sorting, pagination)
+            var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
 
-        // Get visible columns only
-        var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action");
+            // Get visible columns only
+            var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action");
 
-        // Prepare headers
-        var headers = visibleColumns.map(col => col.getDefinition().title);
+            // Prepare headers
+            var headers = visibleColumns.map(col => col.getDefinition().title);
 
-        // Prepare data rows
-        var rows = visibleData.map(row => {
-            return visibleColumns.map(col => {
-                var field = col.getField();
-                return row[field] !== undefined ? row[field] : "";
+            // Prepare data rows
+            var rows = visibleData.map(row => {
+                return visibleColumns.map(col => {
+                    var field = col.getField();
+                    return row[field] !== undefined ? row[field] : "";
+                });
             });
+
+            // Create date range text
+            var dateRangeText = "";
+            if (filterStartRLTDate && filterEndRLTDate) {
+                dateRangeText = `Date Range: ${moment(filterStartRLTDate).format('DD-MMM-YYYY')} to ${moment(filterEndRLTDate).format('DD-MMM-YYYY')}`;
+            } else if (filterStartRLTDate) {
+                dateRangeText = `Date From: ${moment(filterStartRLTDate).format('DD-MMM-YYYY')}`;
+            } else if (filterEndRLTDate) {
+                dateRangeText = `Date To: ${moment(filterEndRLTDate).format('DD-MMM-YYYY')}`;
+            } else {
+                dateRangeText = "Date Range: All Dates";
+            }
+
+            // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
+            var exportData = [
+                [dateRangeText], // Row 1: Date range
+                [],              // Row 2: Empty row
+                headers,         // Row 3: Headers
+                ...rows          // Row 4+: Data
+            ];
+
+
+            // Create worksheet
+            var ws = XLSX.utils.aoa_to_sheet(exportData);
+
+            // Style header row (bold)
+            headers.forEach((header, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "D3D3D3" } },
+                    alignment: { horizontal: "center" }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
+            ws['!cols'] = columnWidths;
+
+            // Freeze first row
+            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+            // Set row heights
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 25 }; // Date range row height
+            ws['!rows'][1] = { hpt: 10 };  // Empty row height
+            ws['!rows'][2] = { hpt: 20 };  // Header row height
+
+            // Create workbook and download
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "RLTTrackIN");
+
+            var fileName = `RLTTrackIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
         });
+    }
+    else {
+        document.getElementById("exclVendorExpButton").addEventListener("click", function () {
+            // Get only visible data from Tabulator (respects filters, sorting, pagination)
+            var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
 
-        // Create date range text
-        var dateRangeText = "";
-        if (filterStartRLTDate && filterEndRLTDate) {
-            dateRangeText = `Date Range: ${moment(filterStartRLTDate).format('DD-MMM-YYYY')} to ${moment(filterEndRLTDate).format('DD-MMM-YYYY')}`;
-        } else if (filterStartRLTDate) {
-            dateRangeText = `Date From: ${moment(filterStartRLTDate).format('DD-MMM-YYYY')}`;
-        } else if (filterEndRLTDate) {
-            dateRangeText = `Date To: ${moment(filterEndRLTDate).format('DD-MMM-YYYY')}`;
-        } else {
-            dateRangeText = "Date Range: All Dates";
-        }
+            // Get visible columns only
+            var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action"
+                && col.getField() !== "Wipro_Remark");
 
-        // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
-        var exportData = [
-            [dateRangeText], // Row 1: Date range
-            [],              // Row 2: Empty row
-            headers,         // Row 3: Headers
-            ...rows          // Row 4+: Data
-        ];
+            // Prepare headers
+            var headers = visibleColumns.map(col => col.getDefinition().title);
+
+            // Prepare data rows
+            var rows = visibleData.map(row => {
+                return visibleColumns.map(col => {
+                    var field = col.getField();
+                    return row[field] !== undefined ? row[field] : "";
+                });
+            });
+
+            // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
+            var exportData = [
+                headers,         // Row 3: Headers
+                ...rows          // Row 4+: Data
+            ];
 
 
-        // Create worksheet
-        var ws = XLSX.utils.aoa_to_sheet(exportData);
+            // Create worksheet
+            var ws = XLSX.utils.aoa_to_sheet(exportData);
 
-        // Style header row (bold)
-        headers.forEach((header, index) => {
-            const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
-            if (!ws[cellRef]) return;
-            ws[cellRef].s = {
-                font: { bold: true },
-                fill: { fgColor: { rgb: "D3D3D3" } },
-                alignment: { horizontal: "center" }
-            };
+            // Style header row (bold)
+            headers.forEach((header, index) => {
+                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
+                if (!ws[cellRef]) return;
+                ws[cellRef].s = {
+                    font: { bold: true },
+                    fill: { fgColor: { rgb: "D3D3D3" } },
+                    alignment: { horizontal: "center" }
+                };
+            });
+
+            // Auto-width calculation
+            const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
+            ws['!cols'] = columnWidths;
+
+            // Freeze first row
+            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+
+            // Set row heights
+            if (!ws['!rows']) ws['!rows'] = [];
+            ws['!rows'][0] = { hpt: 25 }; // Date range row height
+
+            // Create workbook and download
+            var wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "RLTTrackIN");
+
+            var fileName = `RLTTrackIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+            XLSX.writeFile(wb, fileName);
         });
-
-        // Auto-width calculation
-        const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
-        ws['!cols'] = columnWidths;
-
-        // Freeze first row
-        ws['!freeze'] = { xSplit: 0, ySplit: 1 };
-
-        // Set row heights
-        if (!ws['!rows']) ws['!rows'] = [];
-        ws['!rows'][0] = { hpt: 25 }; // Date range row height
-        ws['!rows'][1] = { hpt: 10 };  // Empty row height
-        ws['!rows'][2] = { hpt: 20 };  // Header row height
-
-        // Create workbook and download
-        var wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "RLTTrackIN");
-
-        var fileName = `RLTTrackIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
-        XLSX.writeFile(wb, fileName);
-    });
-
+    }
     Blockloaderhide();
 }
 
@@ -500,7 +611,7 @@ function renderFinalRLTTable(response) {
     }));
 
     const columns = [
-        { title: "SNo", field: "Sr_No", width: 80,hozAlign: "center", headerHozAlign: "center", },
+        { title: "SNo", field: "Sr_No", width: 80, hozAlign: "center", headerHozAlign: "center", },
         { title: "Vendor", field: "Vendor", width: 304, hozAlign: "left", headerHozAlign: "left", headerMenu: headerMenu, headerFilter: "input" },
         { title: "0-5 Days", field: "Day0To5", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu, headerFilter: "input" },
         { title: "6-10 Days", field: "Day6To10", hozAlign: "center", headerHozAlign: "center", headerMenu: headerMenu, headerFilter: "input" },

@@ -48,6 +48,8 @@ namespace QMS.Core.Models
         public DateTime? CreatedDate { get; set; }
         public string? UpdatedBy { get; set; }
         public DateTime? UpdatedDate { get; set; }
+
+        public Guid? UniqueId { get; set; }
     }
 
     public class FinalRLTOutput

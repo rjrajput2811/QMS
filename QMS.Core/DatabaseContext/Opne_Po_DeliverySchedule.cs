@@ -53,6 +53,8 @@ namespace QMS.Core.DatabaseContext
         public string? CreatedBy { get; set; }
         public DateTime? CreatedDate { get; set; }
         public  bool Status { get; set; }
+        public int? Comit_Planner_Qty { get; set; }
+        public string? Comit_Planner_Remark { get; set; }
 
     }
 }

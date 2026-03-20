@@ -217,6 +217,52 @@ function loadVendorJobData() {
         }
     });
 }
+
+var headerMenu = function () {
+    var menu = [];
+    var columns = this.getColumns();
+
+    for (let column of columns) {
+
+        //create checkbox element using font awesome icons
+        let icon = document.createElement("i");
+        icon.classList.add("fas");
+        icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+        //build label
+        let label = document.createElement("span");
+        let title = document.createElement("span");
+
+        title.textContent = " " + column.getDefinition().title;
+
+        label.appendChild(icon);
+        label.appendChild(title);
+
+        //create menu item
+        menu.push({
+            label: label,
+            action: function (e) {
+                //prevent menu closing
+                e.stopPropagation();
+
+                //toggle current column visibility
+                column.toggle();
+
+                //change menu item icon
+                if (column.isVisible()) {
+                    icon.classList.remove("fa-square");
+                    icon.classList.add("fa-check-square");
+                } else {
+                    icon.classList.remove("fa-check-square");
+                    icon.classList.add("fa-square");
+                }
+            }
+        });
+    }
+
+    return menu;
+};
+
 function renderJobTable(response) {
 
     Blockloadershow();
@@ -258,7 +304,7 @@ function renderJobTable(response) {
         { title: "SNo", field: "Sr_No", hozAlign: "center", headerHozAlign: "center", frozen: true },
         { title: "Unique Id", field: "UniqueId", hozAlign: "left", headerHozAlign: "center", frozen: true },
 
-        { title: "Vendor Name", field: "Vendor", frozen: true },
+        { title: "Vendor Name", field: "Vendor", frozen: true,headerMenu: headerMenu, headerFilter: "input" },
 
         {
             title: "Input for Wipro",
@@ -268,13 +314,13 @@ function renderJobTable(response) {
                     title: "For Wipro",
                     headerHozAlign: "center", // Center group header
                     columns: [
-                        { title: "Wipro DC No", field: "Wipro_Dc_No" },
-                        { title: "Wipro DC Date", field: "Wipro_Dc_Date" },
-                        { title: "AS Per DC Sap code", field: "Dc_Sap_Code" },
-                        { title: "Qty as per Wipro DC", field: "Qty_Wipro_Dc" },
-                        { title: "Transporter", field: "Wipro_Transporter" },
-                        { title: "LR no", field: "Wipro_LR_No" },
-                        { title: "LR date", field: "Wipro_LR_Date" },
+                        { title: "Wipro DC No", field: "Wipro_Dc_No", headerMenu: headerMenu, headerFilter: "input" },
+                        { title: "Wipro DC Date", field: "Wipro_Dc_Date", headerMenu: headerMenu, headerFilter: "input" },
+                        { title: "AS Per DC Sap code", field: "Dc_Sap_Code", headerMenu: headerMenu, headerFilter: "input" },
+                        { title: "Qty as per Wipro DC", field: "Qty_Wipro_Dc", headerMenu: headerMenu, headerFilter: "input" },
+                        { title: "Transporter", field: "Wipro_Transporter", headerMenu: headerMenu, headerFilter: "input" },
+                        { title: "LR no", field: "Wipro_LR_No", headerMenu: headerMenu, headerFilter: "input" },
+                        { title: "LR date", field: "Wipro_LR_Date", headerMenu: headerMenu, headerFilter: "input" },
 
                     ],
                 },
@@ -289,16 +335,16 @@ function renderJobTable(response) {
                     title: "For Vendor",
                     headerHozAlign: "center", // Center group header
                     columns: [
-                        { title: "Actual Received Qty", field: "Actu_Rece_Qty" },
-                        { title: "Dispatched through DC (No Problem Drivers)", field: "Dispatch_Dc" },
-                        { title: "Dispatched through Invoice", field: "Dispatch_Invoice" },
-                        { title: "Non Repairable", field: "Non_Repairable" },
-                        { title: "Grand Total", field: "Grand_Total" },
-                        { title: "To be processed", field: "To_Process" },
-                        { title: "Special Remark if any", field: "Remark" },
-                        { title: "Transporter", field: "Vendor_Transporter" },
-                        { title: "LR no", field: "Vendor_LR_No" },
-                        { title: "LR date", field: "Vendor_LR_Date" },
+                        { title: "Actual Received Qty", field: "Actu_Rece_Qty", headerMenu: headerMenu, headerFilter: "input" },
+                        { title: "Dispatched through DC (No Problem Drivers)", field: "Dispatch_Dc", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "Dispatched through Invoice", field: "Dispatch_Invoice", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "Non Repairable", field: "Non_Repairable", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "Grand Total", field: "Grand_Total", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "To be processed", field: "To_Process", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "Special Remark if any", field: "Remark", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "Transporter", field: "Vendor_Transporter", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "LR no", field: "Vendor_LR_No", headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "LR date", field: "Vendor_LR_Date", headerMenu: headerMenu,headerFilter: "input" },
                     ]
                 }
             ]
@@ -312,13 +358,18 @@ function renderJobTable(response) {
                     title: "For Wipro",
                     headerHozAlign: "center", // Center group header
                     columns: [
-                        { title: "Write OFF Approved", field: "Write_Off_Approved", dowload: false },
-                        { title: "Write oFF Date", field: "Write_Off_Date", dowload: false },
-                        { title: "Pending for Write off", field: "Pending_Write_Off", dowload: false },
+                        { title: "Write OFF Approved", field: "Write_Off_Approved", dowload: false, headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "Write oFF Date", field: "Write_Off_Date", dowload: false, headerMenu: headerMenu,headerFilter: "input" },
+                        { title: "Pending for Write off", field: "Pending_Write_Off", dowload: false, headerMenu: headerMenu,headerFilter: "input" },
                     ]
                 }
             ]
-        }
+        },
+
+        { title: "Created By", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", dowload: false, hozAlign: "center", headerHozAlign: "center" },
+        { title: "Created Date", field: "CreatedDate", headerMenu: headerMenu, headerFilter: "input", dowload: false, hozAlign: "center", headerHozAlign: "center" },
+        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", dowload: false, hozAlign: "center", headerHozAlign: "center" },
+        { title: "Updated Date", field: "UpdatedDate", headerMenu: headerMenu, headerFilter: "input", dowload: false, hozAlign: "center", headerHozAlign: "center" }
     ];
 
     if (typeof table !== 'undefined' && table instanceof Tabulator) {
@@ -414,18 +465,16 @@ function renderJobTable(response) {
         });
     }
     else {
-        document.getElementById("exclVendorExpButton").addEventListener("click", function () {
-            // Get only visible data from Tabulator (respects filters, sorting, pagination)
-            var visibleData = table.getData("active"); // "active" gets only visible/filtered rows
+        document.getElementById("exclVendorExpButton").addEventListener("click", async function () {
+            var visibleData = table.getData("active");
+            var visibleColumns = table.getColumns().filter(col => col.isVisible()
+                && col.getField() !== "Action"
+                && col.getField() !== "Write_Off_Approved"
+                && col.getField() !== "Pending_Write_Off"
+                && col.getField() !== "Write_Off_Date");
 
-            // Get visible columns only
-            var visibleColumns = table.getColumns().filter(col => col.isVisible() && col.getField() !== "Action"
-                && col.getField() !== "Write_Off_Approved" && col.getField() !== "Pending_Write_Off" && col.getField() !== "Write_Off_Date");
-
-            // Prepare headers
             var headers = visibleColumns.map(col => col.getDefinition().title);
 
-            // Prepare data rows
             var rows = visibleData.map(row => {
                 return visibleColumns.map(col => {
                     var field = col.getField();
@@ -433,44 +482,74 @@ function renderJobTable(response) {
                 });
             });
 
-            // Combine: date range (row 1), empty row (row 2), headers (row 3), data (row 4+)
-            var exportData = [
-                headers,         // Row 3: Headers
-                ...rows          // Row 4+: Data
-            ];
+            // ── ExcelJS workbook ──────────────────────────────────────────────
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet("JobWrkSpareIN");
 
+            // Auto column widths based on header length
+            worksheet.columns = headers.map(h => ({
+                //header: "",          // we'll set header manually below
+                width: Math.max(h.length + 4, 12)
+            }));
 
-            // Create worksheet
-            var ws = XLSX.utils.aoa_to_sheet(exportData);
+            // ── Header row ────────────────────────────────────────────────────
+            const headerRow = worksheet.addRow(headers);
+            headerRow.height = 25;
 
-            // Style header row (bold)
-            headers.forEach((header, index) => {
-                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 });
-                if (!ws[cellRef]) return;
-                ws[cellRef].s = {
-                    font: { bold: true },
-                    fill: { fgColor: { rgb: "D3D3D3" } },
-                    alignment: { horizontal: "center" }
+            headerRow.eachCell((cell) => {
+                cell.value = cell.value;          // keep value
+                cell.font = { bold: true, size: 14, color: { argb: "FF000000" } };
+                cell.fill = {
+                    type: "pattern",
+                    pattern: "solid",
+                    fgColor: { argb: "FFD6E4F0" }   // same blue-grey you use in Tabulator header
+                };
+                cell.alignment = { horizontal: "center", vertical: "middle" };
+                cell.border = {
+                    top: { style: "thin" },
+                    left: { style: "thin" },
+                    bottom: { style: "thin" },
+                    right: { style: "thin" }
                 };
             });
 
-            // Auto-width calculation
-            const columnWidths = headers.map(header => ({ wch: Math.max(header.length + 2, 10) }));
-            ws['!cols'] = columnWidths;
+            // Freeze header row
+            worksheet.views = [{ state: "frozen", ySplit: 1 }];
 
-            // Freeze first row
-            ws['!freeze'] = { xSplit: 0, ySplit: 1 };
+            // ── Data rows ─────────────────────────────────────────────────────
+            rows.forEach((rowData, idx) => {
+                const dataRow = worksheet.addRow(rowData);
+                dataRow.height = 20;
 
-            // Set row heights
-            if (!ws['!rows']) ws['!rows'] = [];
-            ws['!rows'][0] = { hpt: 25 }; // Date range row height
+                dataRow.eachCell({ includeEmpty: true }, (cell) => {
+                    cell.font = { size: 12 };
+                    cell.alignment = { vertical: "middle" };
+                    // Alternate row shading (optional)
+                    if (idx % 2 === 0) {
+                        cell.fill = {
+                            type: "pattern",
+                            pattern: "solid",
+                            fgColor: { argb: "FFF5F5F5" }
+                        };
+                    }
+                    cell.border = {
+                        top: { style: "thin", color: { argb: "FFCCCCCC" } },
+                        left: { style: "thin", color: { argb: "FFCCCCCC" } },
+                        bottom: { style: "thin", color: { argb: "FFCCCCCC" } },
+                        right: { style: "thin", color: { argb: "FFCCCCCC" } }
+                    };
+                });
+            });
 
-            // Create workbook and download
-            var wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "JobWrkSpareIN");
-
-            var fileName = `JobWrkSpareIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
-            XLSX.writeFile(wb, fileName);
+            // ── Download ──────────────────────────────────────────────────────
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `JobWrkSpareIN_${moment().format('YYYYMMDD_HHmmss')}.xlsx`;
+            a.click();
+            URL.revokeObjectURL(url);
         });
     }
     Blockloaderhide();
@@ -601,42 +680,107 @@ function delConfirm(Id, element) {
     });
 }
 
-function BlankJobWorkTrackDown() {
+//function BlankJobWorkTrackDown() {
+//    Blockloadershow();
+
+//    var expectedColumns = [
+//        'Vendor Name', 'Wipro DC No', 'Wipro DC Date', 'AS Per DC Sap code', 'Qty as per Wipro DC', 'Transporter', 'LR No', 'LR Date',
+//        'Write Off Approved', 'Write Off Date', 'Pending for Write off'
+//    ];
+
+//    // Create worksheet with only the header row
+//    var data = [expectedColumns];
+//    var ws = XLSX.utils.aoa_to_sheet(data);
+
+//    // Apply bold style to header cells
+//    expectedColumns.forEach((col, index) => {
+//        const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
+//        if (!ws[cellRef]) return;
+//        ws[cellRef].s = {
+//            font: {
+//                bold: true
+//            }
+//        };
+//    });
+
+//    // Auto-width calculation
+//    const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
+//    ws['!cols'] = columnWidths;
+
+
+//    // Create workbook and export
+//    var wb = XLSX.utils.book_new();
+//    XLSX.utils.book_append_sheet(wb, ws, "Jobwork Spares Tracking");
+
+//    XLSX.writeFile(wb, "Jobwork_Spares_Tracking.xlsx");
+
+//    Blockloaderhide();
+//};
+
+
+async function BlankJobWorkTrackDown() {
     Blockloadershow();
 
-    var expectedColumns = [
-        'Vendor Name', 'Wipro DC No', 'Wipro DC Date', 'AS Per DC Sap code', 'Qty as per Wipro DC', 'Transporter', 'LR No', 'LR Date',
+    const expectedColumns = [
+        'Vendor Name', 'Wipro DC No', 'Wipro DC Date', 'AS Per DC Sap code',
+        'Qty as per Wipro DC', 'Transporter', 'LR No', 'LR Date',
         'Write Off Approved', 'Write Off Date', 'Pending for Write off'
     ];
 
-    // Create worksheet with only the header row
-    var data = [expectedColumns];
-    var ws = XLSX.utils.aoa_to_sheet(data);
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Jobwork Spares Tracking');
 
-    // Apply bold style to header cells
-    expectedColumns.forEach((col, index) => {
-        const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
-        if (!ws[cellRef]) return;
-        ws[cellRef].s = {
-            font: {
-                bold: true
-            }
+    // Set column widths FIRST (before adding any rows)
+    worksheet.columns = expectedColumns.map((col) => ({
+        width: col.length + 4
+    }));
+
+    // Now add header row
+    const headerRow = worksheet.addRow(expectedColumns);
+
+    // Apply styles to each header cell
+    headerRow.eachCell((cell) => {
+        cell.font = {
+            bold: true,
+            size: 14,
+            color: { argb: 'FF000000' }  // White text
+        };
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFD6E4F0' }  // Blue background
+        };
+        cell.alignment = {
+            vertical: 'middle',
+            horizontal: 'center'
+        };
+        cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
         };
     });
 
-    // Auto-width calculation
-    const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
-    ws['!cols'] = columnWidths;
+    // Set row height for header
+    headerRow.height = 22;
 
-
-    // Create workbook and export
-    var wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Jobwork Spares Tracking");
-
-    XLSX.writeFile(wb, "Jobwork_Spares_Tracking.xlsx");
+    // Export as blob and trigger download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Jobwork_Spares_Tracking.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
 
     Blockloaderhide();
-};
+}
 
 //function BlankVendorJobWorkTrackDown() {
 //    Blockloadershow();

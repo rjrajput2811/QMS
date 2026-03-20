@@ -27,88 +27,154 @@ namespace QMS.Controllers
         }
 
         // POST request to handle the creation of a certificate
-      
+
+        //[HttpPost]
+        //public async Task<JsonResult> Create(CertificateMaster model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        try
+        //        {
+        //            // Check if a certificate with the same name already exists
+        //            bool exists = await _certRepository.CheckDuplicate(model.CertificateName.Trim(), 0);
+        //            if (exists)
+        //            {
+        //                return Json(new { success = false, message = "Certificate already exists." });
+        //            }
+
+        //            // Set audit fields
+        //            model.CreatedDate = DateTime.Now;
+        //            model.CreatedBy = HttpContext.Session.GetString("FullName");
+
+        //            // Save the certificate
+        //            var operationResult = await _certRepository.CreateCertificateAsync(model, false);
+
+        //            if (operationResult != null && operationResult.Success)
+        //            {
+        //                return Json(new { success = true, message = "Certificate created successfully." });
+        //            }
+
+        //            return Json(new { success = false, message = "Failed to create certificate." });
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _systemLogService.WriteLog(ex.Message);
+        //            return Json(new { success = false, message = "An error occurred while creating the certificate." });
+        //        }
+        //    }
+
+        //    return Json(new { success = false, message = "Validation failed." });
+        //}
+
         [HttpPost]
-        public async Task<JsonResult> Create(CertificateMaster model)
+        public async Task<JsonResult> CreateCertiAsync([FromBody] CertificateMasterViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    // Check if a certificate with the same name already exists
-                    bool exists = await _certRepository.CheckDuplicate(model.CertificateName.Trim(), 0);
-                    if (exists)
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _certRepository.CheckDuplicate(model.CertificateName.Trim(), 0);
+                    if (!existingResult)
                     {
-                        return Json(new { success = false, message = "Certificate already exists." });
+                        model.CreatedBy = HttpContext.Session.GetString("FullName");
+                        model.CreatedDate = DateTime.Now;
+                        operationResult = await _certRepository.CreateCertificateAsync(model);
+                        return Json(operationResult);
                     }
-
-                    // Set audit fields
-                    model.CreatedDate = DateTime.Now;
-                    model.CreatedBy = HttpContext.Session.GetString("FullName");
-
-                    // Save the certificate
-                    var operationResult = await _certRepository.CreateCertificateAsync(model, false);
-
-                    if (operationResult != null && operationResult.Success)
+                    else
                     {
-                        return Json(new { success = true, message = "Certificate created successfully." });
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
                     }
-
-                    return Json(new { success = false, message = "Failed to create certificate." });
                 }
-                catch (Exception ex)
-                {
-                    _systemLogService.WriteLog(ex.Message);
-                    return Json(new { success = false, message = "An error occurred while creating the certificate." });
-                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
             }
-
-            return Json(new { success = false, message = "Validation failed." });
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
+
+
+        //[HttpPost]
+        //public async Task<JsonResult> Update(CertificateMaster model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        try
+        //        {
+        //            // Use model.CertificateID instead of an undefined 'id' variable
+        //            var existingCertificate = await _certRepository.GetCertificateByIdAsync(model.Id);
+        //            if (existingCertificate == null)
+        //            {
+        //                return Json(new { success = false, message = "Certificate not found." });
+        //            }
+
+        //            // Check for duplicate name, excluding current record
+        //            bool exists = await _certRepository.CheckDuplicate(model.CertificateName.Trim(), model.Id);
+        //            if (exists)
+        //            {
+        //                return Json(new { success = false, message = "Certificate with this name already exists." });
+        //            }
+
+        //            // Update properties
+        //            existingCertificate.CertificateName = model.CertificateName;
+        //            existingCertificate.UpdatedDate = DateTime.Now;
+        //            existingCertificate.UpdatedBy = HttpContext.Session.GetString("FullName");
+
+        //            // Perform the update
+        //            var operationResult = await _certRepository.UpdateCertificateAsync(existingCertificate);
+
+        //            if (operationResult != null && operationResult.Success)
+        //            {
+        //                return Json(new { success = true, message = "Certificate updated successfully." });
+        //            }
+
+        //            return Json(new { success = false, message = "Failed to update certificate." });
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _systemLogService.WriteLog(ex.Message);
+        //            return Json(new { success = false, message = "An error occurred while updating the certificate." });
+        //        }
+        //    }
+
+        //    return Json(new { success = false, message = "Validation failed. Please check the input." });
+        //}
+
         [HttpPost]
-        public async Task<JsonResult> Update(CertificateMaster model)
+        public async Task<JsonResult> UpdateCertiAsync([FromBody] CertificateMasterViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
-                    // Use model.CertificateID instead of an undefined 'id' variable
-                    var existingCertificate = await _certRepository.GetCertificateByIdAsync(model.Id);
-                    if (existingCertificate == null)
+                    var operationResult = new OperationResult();
+                    bool existingResult = await _certRepository.CheckDuplicate(model.CertificateName.Trim(), model.CertificateID);
+                    if (!existingResult)
                     {
-                        return Json(new { success = false, message = "Certificate not found." });
+                        model.UpdatedDate = DateTime.Now;
+                        model.UpdatedBy = HttpContext.Session.GetString("FullName");
+                        operationResult = await _certRepository.UpdateCertiAsync(model);
+                        return Json(operationResult);
                     }
-
-                    // Check for duplicate name, excluding current record
-                    bool exists = await _certRepository.CheckDuplicate(model.CertificateName.Trim(), model.Id);
-                    if (exists)
+                    else
                     {
-                        return Json(new { success = false, message = "Certificate with this name already exists." });
+                        operationResult.Message = "Exist";
+                        return Json(operationResult);
                     }
-
-                    // Update properties
-                    existingCertificate.CertificateName = model.CertificateName;
-                    existingCertificate.UpdatedDate = DateTime.Now;
-                    existingCertificate.UpdatedBy = HttpContext.Session.GetString("FullName");
-
-                    // Perform the update
-                    var operationResult = await _certRepository.UpdateCertificateAsync(existingCertificate);
-
-                    if (operationResult != null && operationResult.Success)
-                    {
-                        return Json(new { success = true, message = "Certificate updated successfully." });
-                    }
-
-                    return Json(new { success = false, message = "Failed to update certificate." });
                 }
-                catch (Exception ex)
-                {
-                    _systemLogService.WriteLog(ex.Message);
-                    return Json(new { success = false, message = "An error occurred while updating the certificate." });
-                }
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return Json(new { Success = false, Errors = errors });
             }
-
-            return Json(new { success = false, message = "Validation failed. Please check the input." });
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
 
         [HttpPost]
@@ -154,6 +220,13 @@ namespace QMS.Controllers
                 _systemLogService.WriteLog(ex.Message);
                 return Json(new { success = false, message = "Failed to retrieve certificates." });
             }
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetAllCerti()
+        {
+            var vendorList = await _certRepository.GetAllCertiAsync();
+            return Json(vendorList);
         }
     }
 }

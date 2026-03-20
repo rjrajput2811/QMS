@@ -129,10 +129,10 @@
     }
 
     /* .tabulator-row.tabulator-tree-level-0 {
-                font-size: large;
-                color: #4682B4 !important;
-                font-weight: 600;
-            } */
+                    font-size: large;
+                    color: #4682B4 !important;
+                    font-weight: 600;
+                } */
 
     .tabulator-row.tabulator-tree-level-1 {
         font-size: medium;
@@ -192,30 +192,20 @@
             </div>
             <!-- Back Button -->
             <div>
-                @*  <button id="download-template" class="btn btn-outline-secondary legitRipple" style="font-size:14px">
-                    <i class="fas fa-regular fa-file-excel mr-2"></i>Download Blank Exl
-                </button> *@
+                
                 <div class="ml-auto">
-                    @if (userType == "Vendor")
-                    {
-                        <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
-                            <i class="fas fa-upload mr-2"></i>Upload Xl
-                        </button>
-                    }
+
+                    <button type="button" class="btn btn btn-outline-primary legitRipple" onclick="openUpload()" style="margin: 1px 0px; width: 143px;font-size:14px">
+                        <i class="fas fa-upload mr-2"></i>Upload Xl
+                    </button>
+
                     <button type="button" id="exportExcel" class="btn btn btn-outline-danger legitRipple" onclick="" style="margin: 1px 0px; width: 140px;font-size:14px">
                         <i class="fas fa-regular fa-file-excel mr-2"></i>Export Xl
                     </button>&nbsp;
-                    @if (userType != "Vendor")
-                    {
-                        <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("SCMMenu","Home")'" style="font-size:14px">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </button>
-                    }
-                    else{
-                        <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("VendorOptionSelection","Home")'" style="font-size:14px">
-                            <i class="fas fa-arrow-left"></i> Back
-                        </button>
-                    }
+
+                    <button id="backButton" class="btn btn-outline-warning legitRipple" onclick="location.href='@Url.Action("SCMMenu","Home")'" style="font-size:14px">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
                 </div>
 
             </div>
@@ -244,12 +234,23 @@
                                     <input class="form-check-input" type="checkbox" id="deliveryRows">
                                 </div>
                             </div>
+                            <label class="col-1.5" for="Vendor" style="font-weight:600;font-size:14px;">Vendor :</label>
+                            <div class="col-7" id="Vendor_Dropdwon">
+                                <select name="drpVendor" id="drpVendor" class="select2 form-control" style="width:100%;" multiple="multiple" onchange="loadData()">
+                                    <option value=""></option>
+                                    @foreach (var item in ViewBag.Vendor)
+                                    {
+                                        <option value="@item.Label">@item.Label</option>
+                                    }
+                                </select>
+                            </div>
+
                         </div>
 
                         @* <div class="row form-group align-items-center mb-2">
                             
                         </div> *@
-                        
+
 
                         @* <div class="form-check mb-2">
                             <input class="form-check-input" type="checkbox" id="toggleExpandRows">
@@ -359,13 +360,21 @@
 
 
          $(document).ready(function () {
+
+
+            $('#drpVendor').select2({
+                placeholder: "Select Vendor", // Placeholder text
+                allowClear: true,
+            });
+
              $('#upload-button').on('click', async function () {
                     var expectedColumns = [
-                        'Key','PR No','Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'BalanceQty', 'Destination', 'Delivery Date',
-                        'Date PC Week', 'Qty', 'Remark'
+                        'Key','Key1','PR Type','PR Description','Requisitioner','Tracking No','PR No','Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'BalanceQty', 'Balance Value','Destination', 'Delivery Date',
+                        'Date PC Week', 'Qty', 'Remark','Buffer Day','Planner Date','Planner Date in PC Week','Planner Qty','Planner Remark','1st Commitment Date','1st Commitment Qty','2nd Commitment Date','2nd Commitment Qty',
+                        '3rd Commitment Date','3rd Commitment Qty','Material','Hold Date','Cleared Date','Vendor Date','Vendor Qty','Vendor Dispatch Date'
                     ];
 
-                    var url = '@Url.Action("UploadOpenPoDeliveryExcel", "OpenPo")';
+                    var url = '@Url.Action("UploadOpenPoDelivery_ByPlanner", "OpenPo")';
                     handleImportExcelFile(url, expectedColumns);
              });
 
@@ -451,12 +460,14 @@
 
 
         function loadData() {
-
+            debugger;
+            var vendorName = ($('#drpVendor').val() || []).join(',');
             Blockloadershow();
 
             $.ajax({
                 url: '@Url.Action("GetOpenPOWithDelivery", "OpenPo")',
                 type: 'GET',
+                data: { vendorName: vendorName },
                 success: function (data) {
                     Blockloaderhide();
                     if (data && Array.isArray(data.poHeaders)) {
@@ -527,7 +538,6 @@
         }
 
         function loadVendorData() {
-
             Blockloadershow();
             $.ajax({
                 url: '@Url.Action("GetOpenPOWithDelivery", "OpenPo")',
@@ -648,7 +658,7 @@
                         return value ? new Date(value).toLocaleDateString("en-GB") : "";
                 }
 
-                
+
 
                  function isTrue(v) {
                   return v === true || v === 1 || v === "1" ||
@@ -756,6 +766,8 @@
                             Buffer_Day : this.buffer_Day,
                             Comit_Planner_date: formatDate(this.planner_Date),
                             PCWeekDate: this.planner_PC_Date,
+                            Comit_Planner_Qty : this.comit_Planner_Qty,
+                            Comit_Planner_Remark: this.comit_Planner_Remark,
                             Comit_Date : formatDate(this.comit_Date),
                             Comit_Qty : this.comit_Qty,
                             "1stcommit": firstCommit,
@@ -908,7 +920,7 @@
                                             </div>`;
                                     }
 
-                                    function parseDateString(str) 
+                                    function parseDateString(str)
                                     {
                                         const parts = str?.split("/");
                                         if (parts?.length === 3) {
@@ -920,7 +932,7 @@
                                         return null;
                                     }
 
-                                if (data.Id) 
+                                if (data.Id)
                                 {
                                     let latestDate = "";
 
@@ -999,8 +1011,8 @@
                             // editable: true
                         });
                         columns.push({ title: "Planner Date in PC Week", field: "PCWeekDate", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "date", editable: false });
-                        columns.push({ title: "Planner Qty", field: "Comit_Planner_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center", editor: "number", editable: isEditable });
-                        columns.push({ title: "Planner Remark", field: "Comit_Planner_Remark", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "center", editor: "input", editable: isEditable });
+                        columns.push({ title: "Planner Qty", field: "Comit_Planner_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center",editor: "number", editable: cell => !!cell.getRow().getTreeParent() });
+                        columns.push({ title: "Planner Remark", field: "Comit_Planner_Remark", headerMenu: headerMenu, headerFilter: "input", hozAlign: "left", headerHozAlign: "center", editor: "input", editable: cell => !!cell.getRow().getTreeParent() });
                         columns.push({ title: "1st Commitment Date", field: "Comit_Date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "1st Commitment Qty", field: "Comit_Qty", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
                         columns.push({ title: "PC Week in 1st Commitment", field: "1stcommit", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" });
@@ -1065,7 +1077,7 @@
                     rowFormatter: function(row) {
                         const d = row.getData();
                         const el = row.getElement();
-                        
+
                         // Reset recycled styles
                         el.style.background = "";
                         el.style.fontWeight = "";
@@ -1073,7 +1085,7 @@
                         row.getCells().forEach(c => {
                           c.getElement().style.pointerEvents = "";
                         });
-                        
+
                         // 1️⃣ Style child headers
                         if (d._isChildHeader) {
                           el.style.fontWeight = "700";
@@ -1083,7 +1095,7 @@
                           });
                           return;
                         }
-                        
+
                         // 2️⃣ For parent rows — check if any child row has Delivery_Date
                         const children = row.getTreeChildren?.() || []; // Tabulator tree structure support
                         const hasDelivery = children.some(
@@ -1092,7 +1104,7 @@
                             return cd.Delivery_Date && String(cd.Delivery_Date).trim() !== "";
                           }
                         );
-                        
+
                         if (hasDelivery) {
                           el.style.background = "#dcfce7"; // Tailwind green-100
                           el.style.color = "#166534";      // Tailwind green-800
@@ -1120,7 +1132,15 @@
                         const buf = parseInt(data.Buffer_Day, 10) || 0;
                         if (deliveryId == null) return;
                         saveBuffForPO(deliveryId, buf, row);
-                       
+
+                    }
+                    else if(isChild && field === "Comit_Planner_Qty")
+                    {
+                        debugger;
+                        const deliveryId = data.DeliverySchu_Id;
+                        const qty = parseInt(data.Comit_Planner_Qty, 10) || 0;
+                        if (deliveryId == null) return;
+                        savePlannerQtyForPO(deliveryId, qty, row);
                     }
                     else{
                         if(!isChild){
@@ -1162,176 +1182,439 @@
 
                     if (userType != "Vendor")
                     {
-                        document.getElementById("exportExcel").addEventListener("click", function () {
-                            table.download("xlsx", "Open Po List.xlsx", { sheetName: "Open Po List" });
+                        // document.getElementById("exportExcel").addEventListener("click", function () {
+                        //     table.download("xlsx", "Open Po List.xlsx", { sheetName: "Open Po List" });
+                        // });
+
+                        document.getElementById("exportExcel").addEventListener("click", async function () {
+                            if (!window.table) { alert("Tabulator table not found."); return; }
+                            if (!window.ExcelJS) { alert("ExcelJS not found."); return; }
+
+                            const CHILD_FIELD = "_children";
+
+                            const columns = [
+                              { key: "Key",          label: "Key" },
+                              { key: "Key1",         label: "Key1" },
+                              { key: "PRType",         label: "PR Type" },
+                              { key: "PRDescription",         label: "PR Description" },
+                              { key: "Requisitioner",         label: "Requisitioner" },
+                              { key: "TrackingNo",         label: "Tracking No" },
+                              { key: "PRNo",         label: "PR No" },
+                              { key: "BatchNo",      label: "Batch No" },
+                              { key: "ReferenceNo",  label: "Reference No" },
+                              { key: "Vendor",       label: "Vendor" },
+                              { key: "PONo",         label: "PO No" },
+                              { key: "PODate",       label: "PO Date", type: "date" },
+                              { key: "POQty",        label: "PO Qty" },
+                              { key: "BalanceQty",   label: "BalanceQty" },
+                              { key: "BalanceValue",  label: "Balance Value" },
+                              { key: "Destination",  label: "Destination" },
+                              { key: "DeliveryDate", label: "Delivery Date", type: "date" },
+                              { key: "DatePCWeek",   label: "Date PC Week" },
+                              { key: "Qty",          label: "Qty" },
+                              { key: "Remark",       label: "Remark" },
+                              { key: "BufferDay",  label: "Buffer Day" },
+                              { key: "PlannerDate",  label: "Planner Date" },
+                              { key: "PlannerDateinPCWeek",  label: "Planner Date in PC Week" },
+                              { key: "PlannerQty",  label: "Planner Qty" },
+                              { key: "PlannerRemark",  label: "Planner Remark" },
+                              { key: "CommitmentDate1",  label: "1st Commitment Date" },
+                              { key: "CommitmentQty1",  label: "1st Commitment Qty" },
+                              { key: "CommitmentDate2",  label: "2nd Commitment Date" },
+                              { key: "CommitmentQty2",  label: "2nd Commitment Qty" },
+                              { key: "CommitmentDate3",  label: "3rd Commitment Date" },
+                              { key: "CommitmentQty3",  label: "3rd Commitment Qty" },
+                              { key: "Material",  label: "Material" },
+                              { key: "HoldDate", label: "Hold Date", type: "date" },
+                              { key: "ClearedDate", label: "Cleared Date", type: "date" },
+                              { key: "Vendor Date",  label: "Vendor Date", type: "date" },
+                              { key: "VendorQty",  label: "Vendor Qty" },
+                              { key: "VendorDispatchDate",  label: "Vendor Dispatch Date" , type: "date"}
+
+                            ];
+
+                            const COLORS = { HEADER_BG: "FF1F4E79", HEADER_FG: "FFFFFFFF" };
+
+                            const thinBorder = {
+                              top:    { style: "thin" },
+                              bottom: { style: "thin" },
+                              left:   { style: "thin" },
+                              right:  { style: "thin" }
+                            };
+
+                            function toDate(val) {
+                              if (!val) return null;
+                              if (val instanceof Date && !isNaN(val.getTime())) return val;
+
+                              const s = String(val).trim();
+
+                              // dd/mm/yyyy
+                              let m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                              if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+
+                              // dd-mm-yyyy
+                              m = s.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+                              if (m) return new Date(+m[3], +m[2] - 1, +m[1]);
+
+                              // ISO / other
+                              const d = new Date(s);
+                              return isNaN(d.getTime()) ? null : d;
+                            }
+
+                            // ✅ Auto width based on MAX(header + data)
+                            function autoSizeColumns(ws, minWidth = 10, maxWidth = 40) {
+                              ws.columns.forEach(col => {
+                                let maxLen = 0;
+
+                                // Include header text
+                                const headerVal = col.header;
+                                if (headerVal) maxLen = Math.max(maxLen, String(headerVal).length);
+
+                                col.eachCell({ includeEmpty: true }, cell => {
+                                  let txt = "";
+                                  const v = cell.value;
+
+                                  if (v === null || v === undefined) txt = "";
+                                  else if (v instanceof Date) txt = "dd/mm/yyyy";
+                                  else if (typeof v === "object" && v.richText) txt = v.richText.map(t => t.text).join("");
+                                  else txt = String(v);
+
+                                  maxLen = Math.max(maxLen, txt.length);
+                                });
+
+                                col.width = Math.min(maxWidth, Math.max(minWidth, maxLen + 2));
+                              });
+                            }
+
+                            // ---------- BUILD EXPORT DATA FROM TABULATOR ----------
+                            const data = table.getData(true);
+                            if (!data || data.length === 0) 
+                            {
+                              showDangerAlert("No records found. Please load or filter data before exporting.");
+                              return;
+                            }
+                            const out = [];
+
+                            data.forEach(parent => {
+                              const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
+                              const realChildren = children.filter(ch => !ch?._isChildHeader);
+
+                              const base = {
+                                Key: parent.Key || "",
+                                Key1: parent.Key1 || "",
+                                PRType: parent.PR_Type || "",
+                                PRDescription: parent.PR_Desc || "",
+                                Requisitioner: parent.Requisitioner || "",
+                                TrackingNo: parent.Tracking_No || "",
+                                PRNo: parent.PR_No || "",
+                                BatchNo: parent.Batch_No || "",
+                                ReferenceNo: parent.Reference_No || "",
+                                Vendor: parent.Vendor || "",
+                                PONo: parent.PO_No || "",
+                                PODate: parent.PO_Date || "",
+                                POQty: parent.PO_Qty ?? "",
+                                BalanceQty: parent.Balance_Qty ?? "",
+                                BalanceValue: parent.Balance_Value ?? "",
+                                Destination: parent.Destination || "",
+                                Material: parent.Material || "",
+                                HoldDate: parent.Hold_Date || "",
+                                ClearedDate: parent.Cleared_Date || "",
+                                VendorDate: parent.Comit_Vendor_Date || "",
+                                VendorQty: parent.Comit_Vendor_Qty || "",
+                                TOCBRYGColor: parent.TOC_BRYG_Color || "",
+                                VendorDispatchDate: parent.Vendor_Dispatch_Date || "",
+                              };
+
+                              if (realChildren.length === 0) {
+                                out.push({
+                                  ...base,
+                                  DeliveryDate: "",
+                                  DatePCWeek: "",
+                                  Qty: "",
+                                  Remark: "",
+                                  BufferDay: "",
+                                  PlannerDate: "",
+                                  PlannerDateinPCWeek: "",
+                                  PlannerQty: "",
+                                  PlannerRemark: ""
+                                });
+                                return;
+                              }
+
+                              realChildren.forEach((ch) => {
+                                  debugger;
+                                out.push({
+                                  ...base,
+                                  DeliveryDate: ch.Delivery_Date || "",
+                                  DatePCWeek: ch.Material || "",
+                                  Qty: ch.Hold_Date ?? "",
+                                  Remark: ch.Cleared_Date || "",
+                                  BufferDay: ch.Buffer_Day,
+                                  PlannerDate: ch.Comit_Planner_date,
+                                  PlannerDateinPCWeek: ch.PCWeekDate,
+                                  PlannerQty: ch.Comit_Planner_Qty,
+                                  PlannerRemark: ch.Comit_Planner_Remark,
+                                  CommitmentDate1: ch.Comit_Date || ""  ,
+                                  CommitmentQty1: ch.Comit_Qty ,
+                                  CommitmentDate2: ch.Comit_Date1 || "" ,
+                                  CommitmentQty2: ch.Comit_Qty1  ,
+                                  CommitmentDate3: ch.Comit_Final_Date || ""  ,
+                                  CommitmentQty3 : ch.Comit_Final_Qty,
+                                });
+                              });
+                            });
+
+                            const hasData = out.some(r =>
+                              Object.entries(r).some(([k, v]) =>
+                                k !== "TOCBRYGColor" && v !== "" && v !== null && v !== undefined
+                              )
+                            );
+
+                            if (!hasData) {
+                              showDangerAlert("No data available to export. Please apply filters or load data first.");
+                              return;
+                            }
+
+                            // ---------- WORKBOOK / SHEET ----------
+                            const wb = new ExcelJS.Workbook();
+                            const ws = wb.addWorksheet("Open Po List", {
+                              views: [{ state: "frozen", xSplit: 0, ySplit: 1 }] // ✅ Freeze top row
+                            });
+
+                            // Define columns (temporary width; will autosize later)
+                            ws.columns = columns.map(c => ({
+                              header: c.label,
+                              key: c.key,
+                              width: 15
+                            }));
+
+                            // Header row styling
+                            const headerRow = ws.getRow(1);
+                            headerRow.height = 22;
+
+                            headerRow.eachCell(cell => {
+                              cell.font = { bold: true, color: { argb: COLORS.HEADER_FG } };
+                              cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: COLORS.HEADER_BG } };
+                              cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+                              cell.border = thinBorder;
+                            });
+
+                            // Add data rows + styles
+                            out.forEach((r) => {
+                              const row = ws.addRow(r);
+                              row.height = 18;
+
+                              // ✅ Convert true date cells
+                              const poD = toDate(r.PODate);
+                              if (poD) {
+                                const c = row.getCell("PODate");
+                                c.value = poD;
+                                c.numFmt = "dd/mm/yyyy";
+                              }
+
+                              const delD = toDate(r.DeliveryDate);
+                              if (delD) {
+                                const c = row.getCell("DeliveryDate");
+                                c.value = delD;
+                                c.numFmt = "dd/mm/yyyy";
+                              }
+
+                              row.eachCell(cell => {
+                                cell.alignment = cell.alignment || {};
+                                cell.alignment.vertical = "middle";
+                                cell.border = thinBorder;
+                              });
+                            });
+
+                            // ✅ AutoFilter (row 1)
+                            ws.autoFilter = {
+                              from: { row: 1, column: 1 },
+                              to: { row: 1, column: columns.length }
+                            };
+
+                            // ✅ Auto-size columns AFTER data is filled
+                            autoSizeColumns(ws, 10, 45);
+
+                            // ---------- DOWNLOAD ----------
+                            const buffer = await wb.xlsx.writeBuffer();
+                            const blob = new Blob([buffer], {
+                              type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            });
+
+                            const link = document.createElement("a");
+                            link.href = URL.createObjectURL(blob);
+                            link.download = "Open Po List.xlsx";
+                            document.body.appendChild(link);
+                            link.click();
+                            link.remove();
                         });
                     }
                     else
                     {
 
-                        document.getElementById("exportExcel").addEventListener("click", function () {
-                            if (!window.table) { alert("Tabulator table not found."); return; }
-                            if (!window.XLSX) { alert("XLSX not found. Use xlsx-js-style for styling."); return; }
+                        // document.getElementById("exportExcel").addEventListener("click", function () {
+                        //     if (!window.table) { alert("Tabulator table not found."); return; }
+                        //     if (!window.XLSX) { alert("XLSX not found. Use xlsx-js-style for styling."); return; }
 
-                            // ✅ Your child field is _children (DataTree)
-                            const CHILD_FIELD = "_children";
+                        //     // ✅ Your child field is _children (DataTree)
+                        //     const CHILD_FIELD = "_children";
 
-                            const columns = [
-                                { key: "Key", label: "Key" },
-                                { key: "PRNo", label: "PR No" },
-                                { key: "BatchNo", label: "Batch No" },
-                                { key: "ReferenceNo", label: "Reference No" },
-                                { key: "Vendor", label: "Vendor" },
-                                { key: "PONo", label: "PO No" },
-                                { key: "PODate", label: "PO Date" },
-                                { key: "POQty", label: "PO Qty" },
-                                { key: "BalanceQty", label: "BalanceQty" },
-                                { key: "Destination", label: "Destination" },
+                        //     const columns = [
+                        //         { key: "Key", label: "Key" },
+                        //         { key: "PRNo", label: "PR No" },
+                        //         { key: "BatchNo", label: "Batch No" },
+                        //         { key: "ReferenceNo", label: "Reference No" },
+                        //         { key: "Vendor", label: "Vendor" },
+                        //         { key: "PONo", label: "PO No" },
+                        //         { key: "PODate", label: "PO Date" },
+                        //         { key: "POQty", label: "PO Qty" },
+                        //         { key: "BalanceQty", label: "BalanceQty" },
+                        //         { key: "Destination", label: "Destination" },
 
-                                // child values
-                                { key: "DeliveryDate", label: "Delivery Date" },
-                                { key: "DatePCWeek", label: "Date PC Week" },
-                                { key: "Qty", label: "Qty" },
-                                { key: "Remark", label: "Remark" }
-                            ];
+                        //         // child values
+                        //         { key: "DeliveryDate", label: "Delivery Date" },
+                        //         { key: "DatePCWeek", label: "Date PC Week" },
+                        //         { key: "Qty", label: "Qty" },
+                        //         { key: "Remark", label: "Remark" }
+                        //     ];
 
-                            const COLORS = {
-                                HEADER_BG: "1F4E79",
-                                HEADER_FG: "FFFFFF",
-                                PARENT_BG: "D9E1F2",
-                                CHILD_BG:  "FFFFFF",
-                                CHILD_HEADER_BG: "F1F5F9" // optional for your child header row
-                            };
+                        //     const COLORS = {
+                        //         HEADER_BG: "1F4E79",
+                        //         HEADER_FG: "FFFFFF",
+                        //         PARENT_BG: "D9E1F2",
+                        //         CHILD_BG:  "FFFFFF",
+                        //         CHILD_HEADER_BG: "F1F5F9" // optional for your child header row
+                        //     };
 
-                            const thinBorder = {
-                                top:    { style: "thin", color: { rgb: "BFBFBF" } },
-                                bottom: { style: "thin", color: { rgb: "BFBFBF" } },
-                                left:   { style: "thin", color: { rgb: "BFBFBF" } },
-                                right:  { style: "thin", color: { rgb: "BFBFBF" } }
-                            };
+                        //     const thinBorder = {
+                        //         top:    { style: "thin", color: { rgb: "BFBFBF" } },
+                        //         bottom: { style: "thin", color: { rgb: "BFBFBF" } },
+                        //         left:   { style: "thin", color: { rgb: "BFBFBF" } },
+                        //         right:  { style: "thin", color: { rgb: "BFBFBF" } }
+                        //     };
 
-                            function formatDate(val) {
-                                if (!val) return "";
-                                const d = new Date(val);
-                                if (isNaN(d.getTime())) return String(val); // already dd/MM/yyyy
-                                const dd = String(d.getDate()).padStart(2, "0");
-                                const mm = String(d.getMonth() + 1).padStart(2, "0");
-                                const yy = d.getFullYear();
-                                return `${dd}/${mm}/${yy}`;
-                            }
+                        //     function formatDate(val) {
+                        //         if (!val) return "";
+                        //         const d = new Date(val);
+                        //         if (isNaN(d.getTime())) return String(val); // already dd/MM/yyyy
+                        //         const dd = String(d.getDate()).padStart(2, "0");
+                        //         const mm = String(d.getMonth() + 1).padStart(2, "0");
+                        //         const yy = d.getFullYear();
+                        //         return `${dd}/${mm}/${yy}`;
+                        //     }
 
-                            function styleRow(ws, rowIndex, colCount, bgRgb, options) {
-                                for (let c = 0; c < colCount; c++) {
-                                    const addr = XLSX.utils.encode_cell({ r: rowIndex, c });
-                                    if (!ws[addr]) continue;
+                        //     function styleRow(ws, rowIndex, colCount, bgRgb, options) {
+                        //         for (let c = 0; c < colCount; c++) {
+                        //             const addr = XLSX.utils.encode_cell({ r: rowIndex, c });
+                        //             if (!ws[addr]) continue;
 
-                                    ws[addr].s = ws[addr].s || {};
-                                    ws[addr].s.fill = { patternType: "solid", fgColor: { rgb: bgRgb } };
+                        //             ws[addr].s = ws[addr].s || {};
+                        //             ws[addr].s.fill = { patternType: "solid", fgColor: { rgb: bgRgb } };
 
-                                    if (options?.font) ws[addr].s.font = options.font;
-                                    if (options?.alignment) ws[addr].s.alignment = options.alignment;
-                                    if (options?.border) ws[addr].s.border = options.border;
-                                }
-                            }
+                        //             if (options?.font) ws[addr].s.font = options.font;
+                        //             if (options?.alignment) ws[addr].s.alignment = options.alignment;
+                        //             if (options?.border) ws[addr].s.border = options.border;
+                        //         }
+                        //     }
 
-                            // ✅ Important: dataTree children are inside parent._children
-                            const data = table.getData(true);
+                        //     // ✅ Important: dataTree children are inside parent._children
+                        //     const data = table.getData(true);
 
-                            const out = [];
+                        //     const out = [];
 
-                            data.forEach(parent => {
-                                const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
+                        //     data.forEach(parent => {
+                        //         const children = Array.isArray(parent[CHILD_FIELD]) ? parent[CHILD_FIELD] : [];
 
-                                // Remove the fake "header" child row from export
-                                const realChildren = children.filter(ch => !ch?._isChildHeader);
+                        //         // Remove the fake "header" child row from export
+                        //         const realChildren = children.filter(ch => !ch?._isChildHeader);
 
-                                // If no children, export only parent row (optional)
-                                if (realChildren.length === 0) {
-                                    out.push({
-                                        __rowType: "parent",
-                                        Key: parent.Key || "",
-                                        PRNo: parent.PR_No || "",
-                                        BatchNo: parent.Batch_No || "",
-                                        ReferenceNo: parent.Reference_No || "",
-                                        Vendor: parent.Vendor || "",
-                                        PONo: parent.PO_No || "",
-                                        PODate: parent.PO_Date || "",
-                                        POQty: parent.PO_Qty ?? "",
-                                        BalanceQty: parent.Balance_Qty ?? "",
-                                        Destination: parent.Destination || "",
+                        //         // If no children, export only parent row (optional)
+                        //         if (realChildren.length === 0) {
+                        //             out.push({
+                        //                 __rowType: "parent",
+                        //                 Key: parent.Key || "",
+                        //                 PRNo: parent.PR_No || "",
+                        //                 BatchNo: parent.Batch_No || "",
+                        //                 ReferenceNo: parent.Reference_No || "",
+                        //                 Vendor: parent.Vendor || "",
+                        //                 PONo: parent.PO_No || "",
+                        //                 PODate: parent.PO_Date || "",
+                        //                 POQty: parent.PO_Qty ?? "",
+                        //                 BalanceQty: parent.Balance_Qty ?? "",
+                        //                 Destination: parent.Destination || "",
 
-                                        DeliveryDate: "",
-                                        DatePCWeek: "",
-                                        Qty: "",
-                                        Remark: ""
-                                    });
-                                    return;
-                                }
+                        //                 DeliveryDate: "",
+                        //                 DatePCWeek: "",
+                        //                 Qty: "",
+                        //                 Remark: ""
+                        //             });
+                        //             return;
+                        //         }
 
-                                // Export each child as its own row with parent repeated
-                                realChildren.forEach((ch, idx) => {
-                                    out.push({
-                                        __rowType: idx === 0 ? "parent" : "child", // first child row gets parent BG
-                                        Key: parent.Key || "",
-                                        PRNo: parent.PR_No || "",
-                                        BatchNo: parent.Batch_No || "",
-                                        ReferenceNo: parent.Reference_No || "",
-                                        Vendor: parent.Vendor || "",
-                                        PONo: parent.PO_No || "",
-                                        PODate: parent.PO_Date || "",
-                                        POQty: parent.PO_Qty ?? "",
-                                        BalanceQty: parent.Balance_Qty ?? "",
-                                        Destination: parent.Destination || "",
+                        //         // Export each child as its own row with parent repeated
+                        //         realChildren.forEach((ch, idx) => {
+                        //             out.push({
+                        //                 __rowType: idx === 0 ? "parent" : "child", // first child row gets parent BG
+                        //                 Key: parent.Key || "",
+                        //                 PRNo: parent.PR_No || "",
+                        //                 BatchNo: parent.Batch_No || "",
+                        //                 ReferenceNo: parent.Reference_No || "",
+                        //                 Vendor: parent.Vendor || "",
+                        //                 PONo: parent.PO_No || "",
+                        //                 PODate: parent.PO_Date || "",
+                        //                 POQty: parent.PO_Qty ?? "",
+                        //                 BalanceQty: parent.Balance_Qty ?? "",
+                        //                 Destination: parent.Destination || "",
 
-                                        // child mapping (your child fields are stored in these columns)
-                                        DeliveryDate: ch.Delivery_Date || "",
-                                        DatePCWeek: ch.Material || "",
-                                        Qty: ch.Hold_Date ?? "",
-                                        Remark: ch.Cleared_Date || ""
-                                    });
-                                });
-                            });
+                        //                 // child mapping (your child fields are stored in these columns)
+                        //                 DeliveryDate: ch.Delivery_Date || "",
+                        //                 DatePCWeek: ch.Material || "",
+                        //                 Qty: ch.Hold_Date ?? "",
+                        //                 Remark: ch.Cleared_Date || ""
+                        //             });
+                        //         });
+                        //     });
 
-                            // Build AOA
-                            const header = columns.map(c => c.label);
-                            const rows = out.map(r => columns.map(c => r[c.key] ?? ""));
+                        //     // Build AOA
+                        //     const header = columns.map(c => c.label);
+                        //     const rows = out.map(r => columns.map(c => r[c.key] ?? ""));
 
-                            const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+                        //     const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
 
-                            ws["!freeze"] = { xSplit: 0, ySplit: 1 };
-                            ws["!autofilter"] = {
-                                ref: XLSX.utils.encode_range({
-                                    s: { r: 0, c: 0 },
-                                    e: { r: rows.length, c: header.length - 1 }
-                                })
-                            };
+                        //     ws["!freeze"] = { xSplit: 0, ySplit: 1 };
+                        //     ws["!autofilter"] = {
+                        //         ref: XLSX.utils.encode_range({
+                        //             s: { r: 0, c: 0 },
+                        //             e: { r: rows.length, c: header.length - 1 }
+                        //         })
+                        //     };
 
-                            ws["!cols"] = header.map(h => ({ wch: Math.max(12, h.length + 2) }));
+                        //     ws["!cols"] = header.map(h => ({ wch: Math.max(12, h.length + 2) }));
 
-                            const totalCols = header.length;
+                        //     const totalCols = header.length;
 
-                            // Header style
-                            styleRow(ws, 0, totalCols, COLORS.HEADER_BG, {
-                                font: { bold: true, color: { rgb: COLORS.HEADER_FG } },
-                                alignment: { horizontal: "center", vertical: "center" },
-                                border: thinBorder
-                            });
+                        //     // Header style
+                        //     styleRow(ws, 0, totalCols, COLORS.HEADER_BG, {
+                        //         font: { bold: true, color: { rgb: COLORS.HEADER_FG } },
+                        //         alignment: { horizontal: "center", vertical: "center" },
+                        //         border: thinBorder
+                        //     });
 
-                            // Row style: parent/child coloring
-                            for (let i = 0; i < out.length; i++) {
-                                const excelRow = i + 1;
-                                const bg = (out[i].__rowType === "parent") ? COLORS.PARENT_BG : COLORS.CHILD_BG;
+                        //     // Row style: parent/child coloring
+                        //     for (let i = 0; i < out.length; i++) {
+                        //         const excelRow = i + 1;
+                        //         const bg = (out[i].__rowType === "parent") ? COLORS.PARENT_BG : COLORS.CHILD_BG;
 
-                                styleRow(ws, excelRow, totalCols, bg, {
-                                    alignment: { vertical: "center" },
-                                    border: thinBorder
-                                });
-                            }
+                        //         styleRow(ws, excelRow, totalCols, bg, {
+                        //             alignment: { vertical: "center" },
+                        //             border: thinBorder
+                        //         });
+                        //     }
 
-                            const wb = XLSX.utils.book_new();
-                            XLSX.utils.book_append_sheet(wb, ws, "Open Po List");
-                            XLSX.writeFile(wb, "Open Po List.xlsx");
-                        });
+                        //     const wb = XLSX.utils.book_new();
+                        //     XLSX.utils.book_append_sheet(wb, ws, "Open Po List");
+                        //     XLSX.writeFile(wb, "Open Po List.xlsx");
+                        // });
 
 
                     }
@@ -1954,6 +2237,60 @@
             });
         }
 
+
+        function savePlannerQtyForPO(deliveryId, qty) {
+            debugger
+            if (deliveryId == null || Number.isNaN(qty)) {
+                showDangerAlert("Invalid data provided (id/qty).");
+                return;
+            }
+
+            Blockloadershow();
+            var errorMsg = "";
+
+            if (errorMsg !== "") {
+                Blockloaderhide();
+                showDangerAlert(errorMsg);
+                return false;
+            }
+
+            $.ajax({
+                url: '@Url.Action("UpdatePlannerData", "OpenPo")',  // your qty action
+                type: "POST",
+                dataType: "json",
+                data: { id: deliveryId, qty: qty },  // only sends qty
+                success: function (response) {
+                    Blockloaderhide();
+                    $(".alert-success").remove();
+                    if (response.success) {
+                        showSuccessPoAlert('Planner Quantity saved successfully!');
+                        if (userType == "Vendor") {
+                            loadVendorData();
+                        } else {
+                            loadPCCalendar().always(function () {
+                                loadData();
+                            });
+                        }
+                    } else {
+                        let errorMessg = "";
+                        if (response.errors) {
+                            for (var error in response.errors) {
+                                if (response.errors.hasOwnProperty(error)) {
+                                    errorMessg += `${response.errors[error]}\n`;
+                                }
+                            }
+                        }
+                        showDangerAlert(errorMessg || response.message || "An error occurred while updating quantity.");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    Blockloaderhide();
+                    showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
+                }
+            });
+        }
+
+
         function openUpload() {
 
             clearForm();
@@ -1962,11 +2299,11 @@
             }
             $('#uploadModal').modal('show');
         }
-       
+
     </script>
 }
 @section HideSidebar { }
-@await Html.PartialAsync("_UploadModalpartial")
+    @await Html.PartialAsync("_UploadModalpartial")
 
 
 

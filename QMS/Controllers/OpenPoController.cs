@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using QMS.Core.DatabaseContext;
 using QMS.Core.Models;
+using QMS.Core.Repositories.COPQComplaintDumpRepository;
 using QMS.Core.Repositories.OpenPoRepository;
 using QMS.Core.Services.SystemLogs;
 using System.Globalization;
@@ -13,14 +14,17 @@ namespace QMS.Controllers
 
         private readonly IOpenPoReposiotry _openPoReposiotry;
         private readonly ISystemLogService _systemLogService;
+        private readonly IComplaintIndentDumpRepository _copqRepository;
 
-        public OpenPoController(ISystemLogService systemLogService, IOpenPoReposiotry openPoReposiotry)
+        public OpenPoController(ISystemLogService systemLogService, IOpenPoReposiotry openPoReposiotry, IComplaintIndentDumpRepository copqRepository)
         {
             _openPoReposiotry = openPoReposiotry;
             _systemLogService = systemLogService;
+            _copqRepository = copqRepository;
         }
-        public IActionResult OpenPo()
+        public async Task<IActionResult> OpenPo()
         {
+            ViewBag.Vendor = await _copqRepository.GetVendorDropdownAsync();
             return View();
         }
 
@@ -133,6 +137,109 @@ namespace QMS.Controllers
                     failStream.Position = 0;
 
                     var failedFileName = $"FailedOpenPoDelivery__{DateTime.Now:yyyyMMddHHmmss}.xlsx";
+                    return File(
+                        failStream.ToArray(),
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        failedFileName);
+                }
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Import completed. Total: {importResult.TotalRecords}, Imported: {importResult.ImportedRecords}, Failed: {importResult.FailedCount}"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Import failed: " + ex.Message
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadOpenPoDelivery_ByPlanner(IFormFile file, int recordCount)
+        {
+            var rowsToAdd = new List<OpenPoDeliveryRow_ByPlanner>();
+
+            try
+            {
+                var uploadedBy = HttpContext.Session.GetString("FullName") ?? "System";
+                bool status = true;
+
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+                using var workbook = new XLWorkbook(stream);
+                var worksheet = workbook.Worksheet(1);
+                var rowCount = worksheet.RowsUsed().Count();
+
+                for (int row = 2; row <= rowCount; row++)
+                {
+                    var key = worksheet.Cell(row, 1).GetString().Trim();
+                    if (string.IsNullOrWhiteSpace(key))
+                        continue;
+
+
+                    var model = new OpenPoDeliveryRow_ByPlanner
+                    {
+                        ExcelRowNo = row,
+                        Key = key,
+                        Vendor = worksheet.Cell(row, 10).GetString().Trim(),
+                        PO_No = worksheet.Cell(row, 11).GetString().Trim(),
+                        PO_Date = GetExcelDate(worksheet.Cell(row, 12)),
+                        PO_Qty = worksheet.Cell(row, 13).GetValue<int?>(),
+                        BalanceQty = worksheet.Cell(row, 14).GetValue<int?>(),
+                        Delivery_Date = GetExcelDate(worksheet.Cell(row, 17)),
+                        Date_PC_Week = worksheet.Cell(row, 18).GetString().Trim(),
+                        Qty = worksheet.Cell(row, 19).GetValue<int?>(),
+                        Remark = worksheet.Cell(row, 20).GetString().Trim(),
+                        Buffer_Day = worksheet.Cell(row, 21).GetValue<int?>(),
+                        Planner_Date = GetExcelDate(worksheet.Cell(row, 22)),
+                        Comit_Planner_Qty = worksheet.Cell(row, 24).GetValue<int?>(),
+                        Comit_Planner_Remark = worksheet.Cell(row, 25).GetString().Trim()
+                    };
+
+                    rowsToAdd.Add(model);
+                }
+
+                var importResult = await _openPoReposiotry.BulkCreateDeliveryScheduleByPlannerAsync(rowsToAdd, uploadedBy, status);
+
+                // If failed -> return failed excel (same style)
+                if (importResult.FailedRecords.Any())
+                {
+                    using var failStream = new MemoryStream();
+                    using var failWb = new XLWorkbook();
+                    var failSheet = failWb.Worksheets.Add("Failed Records");
+
+                    failSheet.Cell(1, 1).Value = "ExcelRowNo";
+                    failSheet.Cell(1, 2).Value = "Key";
+                    failSheet.Cell(1, 3).Value = "PO_No";
+                    failSheet.Cell(1, 4).Value = "Reason";
+
+                    // Header style (optional)
+                    var headerRange = failSheet.Range(1, 1, 1, 4);
+                    headerRange.Style.Font.Bold = true;
+                    headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+                    int i = 2;
+                    foreach (var fail in importResult.FailedRecords)
+                    {
+                        failSheet.Cell(i, 1).Value = fail.Record.ExcelRowNo;
+                        failSheet.Cell(i, 2).Value = fail.Record.Key;
+                        failSheet.Cell(i, 3).Value = fail.Record.PO_No;
+                        failSheet.Cell(i, 4).Value = fail.Reason;
+                        i++;
+                    }
+
+                    failSheet.Columns().AdjustToContents();
+
+                    failWb.SaveAs(failStream);
+                    failStream.Position = 0;
+
+                    var failedFileName = $"FailedOpenPoDeliveryByPlanner__{DateTime.Now:yyyyMMddHHmmss}.xlsx";
                     return File(
                         failStream.ToArray(),
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -307,15 +414,15 @@ namespace QMS.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> GetOpenPOWithDelivery(string vendor)
+        public async Task<JsonResult> GetOpenPOWithDelivery(string vendorName)
         {
             // If you still want to read vendor from session:
-            if (string.IsNullOrEmpty(vendor))
+            if (string.IsNullOrEmpty(vendorName))
             {
-                vendor = HttpContext.Session.GetString("VendorName") ?? "";
+                vendorName = HttpContext.Session.GetString("VendorName") ?? "";
             }
 
-            var result = await _openPoReposiotry.GetOpenPOWithDeliveryScheduleAsync(vendor);
+            var result = await _openPoReposiotry.GetOpenPOWithDeliveryScheduleAsync(vendorName);
 
             var response = new
             {
@@ -355,6 +462,22 @@ namespace QMS.Controllers
                 //model.UpdatedBy = HttpContext.Session.GetString("FullName");
 
                 var operationResult = await _openPoReposiotry.SaveBuffScheduleAsync(id, buff,"");
+
+                return Json(operationResult);
+            }
+            var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+            return Json(new { Success = false, Errors = errors });
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> UpdatePlannerDataAsync(int id, int qty)
+        {
+            if (ModelState.IsValid)
+            {
+                //model.UpdatedDate = DateTime.Now;
+                //model.UpdatedBy = HttpContext.Session.GetString("FullName");
+
+                var operationResult = await _openPoReposiotry.SavePlannerDataAsync(id, qty);
 
                 return Json(operationResult);
             }

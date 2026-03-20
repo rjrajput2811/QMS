@@ -1,6 +1,8 @@
 ﻿var tabledata = [];
 var table = '';
 var certificateTable;
+var tableCerti = '';
+var tabledataCerti = [];
 $(document).ready(function () {
     loadCertificateData();
    
@@ -855,5 +857,256 @@ $('#download-template').on('click', function () {
     XLSX.writeFile(workbook, "Certificate Template.xlsx");
 });
 
+function editableColumn(title, field, editorType = true, align = "center", headerFilterType = "input", headerFilterParams = {}, editorParams = {}, formatter = null) {
+    let columnDef = {
+        title: title,
+        field: field,
+        editor: editorType,
+        editorParams: editorParams,
+        formatter: formatter,
+        headerFilter: headerFilterType,
+        headerFilterParams: headerFilterParams,
+        headerMenu: headerMenu,
+        hozAlign: align,
+        headerHozAlign: "left"
+    };
 
+    return columnDef;
+}
+
+function loadCertiMaster() {
+    $('#certiMasterModal').modal('show');
+    loadCertiMasterData();
+}
+
+function loadCertiMasterData() {
+    Blockloadershow();
+    $.ajax({
+        url: '/Certification/GetAllCerti',
+        type: 'GET',
+        success: function (data) {
+            Blockloaderhide();
+            if (data && Array.isArray(data)) {
+                OnCertiMasterTabGridLoad(data);
+            } else {
+                showDangerAlert('No data available to load.');
+            }
+        },
+        error: function (xhr, status, error) {
+            Blockloaderhide();
+            showDangerAlert('Error retrieving data: ' + error);
+        }
+    });
+}
+
+function OnCertiMasterTabGridLoad(response) {
+    debugger;
+    Blockloadershow();
+
+    tabledataCerti = [];
+    let columns = [];
+
+    // Map the response to the table format
+    if (response.length > 0) {
+        $.each(response, function (index, item) {
+
+            function formatDate(value) {
+                return value ? new Date(value).toLocaleDateString("en-GB") : "";
+            }
+
+            tabledataCerti.push({
+                Sr_No: index + 1,
+                CertificateID: item.certificateID,
+                CertificateName: item.certificateName,
+                CreatedBy: item.createdBy,
+                UpdatedBy: item.updatedBy,
+                UpdatedDate: formatDate(item.updatedDate),
+                CreatedDate: formatDate(item.createdDate),
+            });
+        });
+    }
+
+    if (tabledataCerti.length === 0 && tableCerti) {
+        tableCerti.clearData();
+        Blockloaderhide();
+        return;
+    }
+
+    columns.push(
+        {
+            title: "Action",
+            field: "Action",
+            width: 46,
+            hozAlign: "center",
+            headerHozAlign: "center",
+            formatter: function (cell, formatterParams) {
+                const rowData = cell.getRow().getData();
+                let actionButtons = "";
+
+                actionButtons += `<i onclick="delCertiConfirm(${rowData.CertificateID},this)" class="fas fa-trash-alt mr-2 fa-1x" title="Delete" style="color:red;cursor:pointer;margin-left: 5px;"></i>`
+
+                return actionButtons;
+            }
+        },
+        {
+            title: "SNo", field: "Sr_No", width: 48, sorter: "number", hozAlign: "center", headerHozAlign: "left"
+        },
+        editableColumn("Certificate Name", "CertificateName", true),
+        { title: "Created By", field: "CreatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Created Date", field: "CreatedDate", width: 129, sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Updated By", field: "UpdatedBy", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+        { title: "Update Date", field: "UpdatedDate", sorter: "date", headerMenu: headerMenu, headerFilter: "input", hozAlign: "center", headerHozAlign: "center" },
+    );
+
+    // // Initialize Tabulator
+    tableCerti = new Tabulator("#certi_Table", {
+        data: tabledataCerti,
+        renderHorizontal: "virtual",
+        movableColumns: true,
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [50, 100, 500, 1500, 2000],
+        paginationCounter: "rows",
+        dataEmpty: "<div style='text-align: center; font-size: 1rem; color: gray;'>No data available</div>", // Placeholder message
+        columns: columns
+    });
+
+    tableCerti.on("cellEdited", function (cell) {
+        InsertUpdateCerti(cell.getRow().getData());
+    });
+
+    $("#addCertiBtn").on("click", function () {
+        const newRow1 = {
+            Sr_No: tableCerti.getDataCount() + 1,
+            CertificateID: 0,
+            CertificateName: "",
+            CreatedBy: "",
+            UpdatedBy: "",
+            UpdatedDate: "",
+            CreatedDate: ""
+        };
+        tableCerti.addRow(newRow1, false);
+    });
+
+    Blockloaderhide();
+}
+
+function InsertUpdateCerti(rowData) {
+    debugger
+    if (!rowData) {
+        showDangerAlert("Invalid data provided.");
+        return;
+    }
+
+    Blockloadershow();
+    var errorMsg = "";
+
+    if (errorMsg !== "") {
+        Blockloaderhide();
+        showDangerAlert(errorMsg);
+        return false;
+    }
+
+    var Model = {
+        CertificateID: rowData.CertificateID || 0,
+        CertificateName: rowData.CertificateName || null,
+    };
+
+    var ajaxUrl = Model.CertificateID === 0 ? '/Certification/CreateCerti' : '/Certification/UpdateCerti';
+
+    $.ajax({
+        url: ajaxUrl,
+        type: "POST",
+        data: JSON.stringify(Model),
+        contentType: 'application/json',
+        success: function (response) {
+            Blockloaderhide();
+            if (response.success) {
+                const msg = Model.CertificateID != 0
+                    ? "Certificate updated successfully!"
+                    : "Certificate saved successfully!";
+                showSuccessAlert(msg);
+                loadCertificateDropdown();
+            }
+            else if (response.message === "Exist") {
+                showDangerAlert("Certificate already exists.");
+            }
+            else {
+                var errorMessg = "";
+                if (response.errors) {
+                    for (var error in response.errors) {
+                        if (response.errors.hasOwnProperty(error)) {
+                            errorMessg += `${response.errors[error]}\n`;
+                        }
+                    }
+                }
+                showDangerAlert(errorMessg || response.message || "An error occurred while saving.");
+            }
+        },
+        error: function (xhr, status, error) {
+            Blockloaderhide();
+            showDangerAlert("An unexpected error occurred. Please refresh the page and try again.");
+        }
+    });
+}
+
+$('#certiMasterModal').on('hidden.bs.modal', function () {
+    loadCertificateDropdown(); // uncomment if you want full reload
+});
+
+function delCertiConfirm(recid, element) {
+    debugger;
+
+    if (!recid || recid <= 0) {
+        const rowEl = $(element).closest(".tabulator-row")[0];
+        const row = tableCerti.getRow(rowEl);
+        if (row) {
+            row.delete();
+        }
+        return;
+    }
+
+    PNotify.prototype.options.styling = "bootstrap3";
+    (new PNotify({
+        title: 'Confirmation Needed',
+        text: 'Are you sure to delete? It will not delete if this record is used in transactions.',
+        icon: 'glyphicon glyphicon-question-sign',
+        hide: false,
+        confirm: {
+            confirm: true
+        },
+        buttons: {
+            closer: false,
+            sticker: false
+        },
+        history: {
+            history: false
+        },
+    })).get().on('pnotify.confirm', function () {
+        $.ajax({
+            url: '/Certification/Delete',
+            type: 'POST',
+            data: { id: recid },
+            success: function (data) {
+                if (data.success == true) {
+                    showSuccessNewAlert("Certificate Deleted successfully.");
+                    setTimeout(function () {
+                        window.location.reload();
+                    }, 2500);
+                }
+                else if (data.success == false && data.message == "Not_Deleted") {
+                    showDangerAlert("Record is used in QMS Log transactions.");
+                }
+                else {
+                    showDangerAlert(data.message);
+                }
+            },
+            error: function () {
+                showDangerAlert('Error retrieving data.');
+            }
+        });
+    }).on('pnotify.cancel', function () {
+        loadCertificateDropdown();
+    });
+}
 

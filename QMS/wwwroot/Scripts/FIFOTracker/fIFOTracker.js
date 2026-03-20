@@ -970,12 +970,15 @@ function OnTabGridLoad(response) {
         editableColumn("Responsbility", "Responsbility", true),
 
         editableColumn("Test Completion Date", "Test_Completion_Date", "date", "center"),
+        
+        editableColumn("Report Release Date", "Report_Release_Date", "date", "center"),
+
         {
             title: "Delayed Days",
             field: "Delayed_Days",
             mutator: function (value, data) {
                 const start = parseDate(data.Sample_Recv_Date);
-                const end = parseDate(data.Test_Completion_Date);
+                const end = parseDate(data.Report_Release_Date);
                 if (start && end) return Math.floor((end - start) / (1000 * 60 * 60 * 24));
                 return "";
             },
@@ -984,7 +987,6 @@ function OnTabGridLoad(response) {
             hozAlign: "center",
             headerHozAlign: "center"
         },
-        editableColumn("Report Release Date", "Report_Release_Date", "date", "center"),
         editableColumn("NABL Released Date", "NABL_Released_Date", "date", "center"),
 
         editableColumn("Current Status", "Current_Status", true),
@@ -1045,9 +1047,9 @@ function OnTabGridLoad(response) {
             return;
         }
 
-        if (["Sample_Recv_Date", "Test_Completion_Date"].includes(field)) {
+        if (["Sample_Recv_Date", "Report_Release_Date"].includes(field)) {
             const start = parseDate(data.Sample_Recv_Date);
-            const end = parseDate(data.Test_Completion_Date);
+            const end = parseDate(data.Report_Release_Date);
             const diff = start && end ? Math.floor((end - start) / (1000 * 60 * 60 * 24)) : "";
             row.update({ Delayed_Days: diff.toString() });
         }
@@ -1070,9 +1072,9 @@ function OnTabGridLoad(response) {
         }
 
         if (field === "NABL_Released_Date" &&
-            isEmpty(data.Test_Completion_Date) &&
+            isEmpty(data.Report_Release_Date) &&
             !isEmpty(cell.getValue())) {
-            showDangerAlert("Please enter Test Completion Date first.");
+            showDangerAlert("Please enter Report Release Date first.");
             row.update({ NABL_Released_Date: "" });
             return;
         }
@@ -1508,7 +1510,7 @@ function OnTabGridLoad(response) {
         const HEADER_TOP = 1;
         const HEADER_BOTTOM = 5;
         const GRID_HEADER_ROW = HEADER_BOTTOM + 1; // row 6
-        const TITLE_TEXT = "Test request tracker : In-house lab";
+        const TITLE_TEXT = "Testing Tracker(Internal)";
 
         const LOGO_COL_START = 1, LOGO_COL_END = 2;
         const LOGO_ROW_START = HEADER_TOP, LOGO_ROW_END = HEADER_BOTTOM;

@@ -443,41 +443,105 @@
             Blockloaderhide();
         }
 
-        function BlankOpenPoDown() {
+        // function BlankOpenPoDown() {
+        //     Blockloadershow();
+
+        //     var expectedColumns = [
+        //                 'Key', 'PR Type', 'PR Description', 'Requisioner', 'Tracking No', 'PR No',
+        //                 'Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'Balance Qty', 'Destination', 'Delivery Date',
+        //                 'Balance Value', 'Material', 'Hold Date', 'Cleared Date','TOC BRYG Color Code','Vendor Dispatch Date'
+        //             ];
+
+        //     var data = [expectedColumns];
+        //     var ws = XLSX.utils.aoa_to_sheet(data);
+
+        //     // Apply bold style to header cells
+        //     expectedColumns.forEach((col, index) => {
+        //         const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
+        //         if (!ws[cellRef]) return;
+        //         ws[cellRef].s = {
+        //             font: {
+        //                 bold: true
+        //             }
+        //         };
+        //     });
+
+        //     // Auto-width calculation
+        //     const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
+        //     ws['!cols'] = columnWidths;
+
+        //     // Create workbook and export
+        //     var wb = XLSX.utils.book_new();
+        //     XLSX.utils.book_append_sheet(wb, ws, "Open Po Temaplate");
+
+        //     XLSX.writeFile(wb, "Open Po Temaplate.xlsx");
+
+        //     Blockloaderhide();
+        // };
+
+        async function BlankOpenPoDown() {
             Blockloadershow();
 
             var expectedColumns = [
-                        'Key', 'PR Type', 'PR Description', 'Requisioner', 'Tracking No', 'PR No',
-                        'Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'Balance Qty', 'Destination', 'Delivery Date',
-                        'Balance Value', 'Material', 'Hold Date', 'Cleared Date','TOC BRYG Color Code','Vendor Dispatch Date'
-                    ];
+               'Key', 'PR Type', 'PR Description', 'Requisioner', 'Tracking No', 'PR No',
+               'Batch No', 'Reference No', 'Vendor', 'PO No', 'PO Date', 'PO Qty', 'Balance Qty', 'Destination', 'Delivery Date',
+               'Balance Value', 'Material', 'Hold Date', 'Cleared Date','TOC BRYG Color Code','Vendor Dispatch Date'
+            ];
 
-            var data = [expectedColumns];
-            var ws = XLSX.utils.aoa_to_sheet(data);
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Jobwork Spares Tracking');
 
-            // Apply bold style to header cells
-            expectedColumns.forEach((col, index) => {
-                const cellRef = XLSX.utils.encode_cell({ c: index, r: 0 }); // r: 0 => first row
-                if (!ws[cellRef]) return;
-                ws[cellRef].s = {
-                    font: {
-                        bold: true
-                    }
+            // Set column widths FIRST (before adding any rows)
+            worksheet.columns = expectedColumns.map((col) => ({
+                width: col.length + 4
+            }));
+
+            // Now add header row
+            const headerRow = worksheet.addRow(expectedColumns);
+
+            // Apply styles to each header cell
+            headerRow.eachCell((cell) => {
+                cell.font = {
+                    bold: true,
+                    size: 14,
+                    color: { argb: 'FF000000' }  // White text
+                };
+                cell.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: 'FFD6E4F0' }  // Blue background
+                };
+                cell.alignment = {
+                    vertical: 'middle',
+                    horizontal: 'center'
+                };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FF000000' } },
+                    left: { style: 'thin', color: { argb: 'FF000000' } },
+                    bottom: { style: 'thin', color: { argb: 'FF000000' } },
+                    right: { style: 'thin', color: { argb: 'FF000000' } }
                 };
             });
 
-            // Auto-width calculation
-            const columnWidths = expectedColumns.map(col => ({ wch: col.length + 2 }));
-            ws['!cols'] = columnWidths;
+            // Set row height for header
+            headerRow.height = 22;
 
-            // Create workbook and export
-            var wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Open Po Temaplate");
-
-            XLSX.writeFile(wb, "Open Po Temaplate.xlsx");
+            // Export as blob and trigger download
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Open Po Temaplate.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
 
             Blockloaderhide();
-        };
+        }
        
     </script>
 }

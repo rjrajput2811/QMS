@@ -318,7 +318,8 @@
                         Lab: item.lab,
                         Start_Date: formatDate(item.start_Date),
                         Submitted_Date: formatDate(item.submitted_Date),
-                        Current_Status: item.current_Status
+                        Current_Status: item.current_Status,
+                        BIS_Attachment: item.biS_Attachment
                     });
                 });
             }
@@ -410,7 +411,36 @@
                     hozAlign: "left",
                     headerHozAlign: "center",
                     headerMenu: headerMenu
-                }
+                },
+                // {
+                //     title: "BIS Attachment",
+                //     field: "BIS_Attachment",
+                //     headerFilter: "input",
+                //     hozAlign: "left",
+                //     headerHozAlign: "center",
+                //     headerMenu: headerMenu
+                // }
+                {
+                    title: "BIS Attachment",
+                    field: "BIS_Attachment",
+                    hozAlign: "center",
+                    headerHozAlign: "center",
+                    headerMenu: headerMenu,
+                    formatter: function (cell, formatterParams) {
+                        const rowData = cell.getRow().getData();
+                        const fileName = cell.getValue();
+                        const fileDisplay = fileName
+                            ? `<a href="/BISTrac_Attach/${rowData.Id}/${fileName}" target="_blank">${fileName}</a><br/>`
+                            : '';
+
+                        return `
+                    ${fileDisplay}`;
+                    },
+                    cellClick: function (e, cell) {
+                        // prevent Tabulator from swallowing the file input click
+                        e.stopPropagation();
+                    }
+                },
             );
 
             let table = new Tabulator("#bisProjectTracker_Table", {

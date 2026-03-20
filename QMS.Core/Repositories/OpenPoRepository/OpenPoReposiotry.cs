@@ -1214,7 +1214,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     if (connection.State != ConnectionState.Open)
                         await connection.OpenAsync();
 
-                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_OpenPO_With_DeliverySchedule_MultiVendor]", new { Vendor = vendor }, commandType: CommandType.StoredProcedure))
 
                     {
                         var poHeaders = (await multi.ReadAsync<Open_Po>()).ToList();
@@ -1281,6 +1281,53 @@ namespace QMS.Core.Repositories.OpenPoRepository
                 }
 
                 return new OperationResult { Success = true };
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
+        //public async Task<OperationResult> SaveBuffPlannerDataAsync(int id, int qty, string updatedBy, bool returnUpdatedRecord = false)
+        //{
+        //    try
+        //    {
+        //        var parameters = new[]
+        //        {
+        //            new SqlParameter("@DeliverySchu_Id", id),
+        //            new SqlParameter("@Ven_PoId", ""),
+        //            new SqlParameter("@Buffer_Day", buff),
+        //        };
+
+        //        var sql = @"EXEC sp_Update_OpenPo_Buffer @DeliverySchu_Id,@Ven_PoId,@Buffer_Day";
+
+        //        await _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
+
+        //        if (returnUpdatedRecord)
+        //        {
+        //            return new OperationResult
+        //            {
+        //                Success = true,
+        //            };
+        //        }
+
+        //        return new OperationResult { Success = true };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _systemLogService.WriteLog(ex.Message);
+        //        throw;
+        //    }
+        //}
+
+        public async Task<OperationResult> SavePlannerDataAsync(int id, int qty, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var plannerToUpdate = await base.GetByIdAsync<Opne_Po_DeliverySchedule>(id);
+                plannerToUpdate.Comit_Planner_Qty = qty;
+                return await base.UpdateAsync<Opne_Po_DeliverySchedule>(plannerToUpdate, returnUpdatedRecord);
             }
             catch (Exception ex)
             {
@@ -2577,6 +2624,125 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     }
 
                     result.FailedRecords.Add((row ?? new OpenPoDeliveryExcelRow
+                    {
+                        ExcelRowNo = f.ExcelRowNo ?? 0,
+                        Key = f.Key ?? "",
+                        PO_No = f.PO_No
+                    }, f.Reason ?? "Validation failed"));
+                }
+
+                // Success rule: partial success allowed
+                result.Result = new OperationResult
+                {
+                    Success = result.ImportedRecords > 0,
+                    Message = failedRows.Any()
+                        ? $"Import completed: {result.ImportedRecords}/{result.TotalRecords} imported, {result.FailedCount} failed."
+                        : $"All {result.ImportedRecords}/{result.TotalRecords} records imported successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                result.Result = new OperationResult
+                {
+                    Success = false,
+                    Message = "Error during import: " + ex.Message
+                };
+            }
+
+            return result;
+        }
+
+        public async Task<BulkOpenPoDeliveryByPlannerResult> BulkCreateDeliveryScheduleByPlannerAsync(List<OpenPoDeliveryRow_ByPlanner> listOfData, string uploadedBy, bool status)
+        {
+            var result = new BulkOpenPoDeliveryByPlannerResult();
+
+            // Build TVP DataTable
+            var tvp = new DataTable();
+            tvp.Columns.AddRange(new[]
+            {
+                new DataColumn("ExcelRowNo", typeof(int)),
+                new DataColumn("Key", typeof(string)),
+                new DataColumn("Vendor", typeof(string)),
+                new DataColumn("PO_No", typeof(string)),
+                new DataColumn("PO_Date", typeof(DateTime)),
+                new DataColumn("PO_Qty", typeof(int)),
+                new DataColumn("BalanceQty", typeof(int)),
+                new DataColumn("Delivery_Date", typeof(DateTime)),
+                new DataColumn("Date_PC_Week", typeof(string)),
+                new DataColumn("Qty", typeof(int)),
+                new DataColumn("Remark", typeof(string)),
+                new DataColumn("Planner_Date", typeof(DateTime)),
+                new DataColumn("Buffer_Day", typeof(int)),
+                new DataColumn("Comit_Planner_Qty", typeof(int)),
+                new DataColumn("Comit_Planner_Remark", typeof(string)),
+            });
+
+            string? trim(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+            foreach (var x in listOfData)
+            {
+                tvp.Rows.Add(
+                    x.ExcelRowNo,
+                    trim(x.Key) ?? "",
+                    trim(x.Vendor),
+                    trim(x.PO_No),
+                    x.PO_Date.HasValue ? x.PO_Date.Value : (object)DBNull.Value,
+                    x.PO_Qty.HasValue ? x.PO_Qty.Value : (object)DBNull.Value,
+                    x.BalanceQty.HasValue ? x.BalanceQty.Value : (object)DBNull.Value,
+                    x.Delivery_Date.HasValue ? x.Delivery_Date.Value : (object)DBNull.Value,
+                    trim(x.Date_PC_Week),
+                    x.Qty.HasValue ? x.Qty.Value : (object)DBNull.Value,
+                    trim(x.Remark),
+                    x.Planner_Date.HasValue ? x.Planner_Date.Value : (object)DBNull.Value,
+                    x.Buffer_Day.HasValue ? x.Buffer_Day.Value : (object)DBNull.Value,
+                    x.Comit_Planner_Qty.HasValue ? x.Comit_Planner_Qty.Value : (object)DBNull.Value,
+                    trim(x.Comit_Planner_Remark)
+                );
+            }
+
+            try
+            {
+                using var conn = _dbContext.Database.GetDbConnection();
+                await conn.OpenAsync();
+
+                var dp = new DynamicParameters();
+                dp.Add("@Rows", tvp.AsTableValuedParameter("dbo.OpenPoDelivery_ImportRowByPlanner"));
+                dp.Add("@UploadedBy", uploadedBy, DbType.String, size: 100);
+                dp.Add("@Status", status, DbType.Boolean);
+
+                using var grid = await conn.QueryMultipleAsync(
+                    sql: "dbo.sp_OpenPoDelivery_BulkImport_ByPlanner",
+                    param: dp,
+                    commandType: CommandType.StoredProcedure);
+
+                // 1) Summary
+                var summary = (await grid.ReadAsync<ImportSummaryDto>()).FirstOrDefault()
+                         ?? new ImportSummaryDto();
+                int total = (int)(summary?.TotalRecords ?? 0);
+                int imported = (int)(summary?.ImportedRecords ?? 0);
+                int failed = (int)(summary?.FailedRecords ?? 0);
+
+                // 2) Failed rows
+                var failedRows = (await grid.ReadAsync<FailedRowDto>()).ToList();
+
+                foreach (var f in failedRows)
+                {
+                    // Map back to original by ExcelRowNo (best) else Key|PO_No
+                    OpenPoDeliveryRow_ByPlanner? row = null;
+
+                    if (f.ExcelRowNo.HasValue)
+                    {
+                        row = listOfData.FirstOrDefault(r => r.ExcelRowNo == f.ExcelRowNo.Value);
+                    }
+
+                    if (row == null)
+                    {
+                        row = listOfData.FirstOrDefault(r =>
+                            string.Equals((r.Key ?? "").Trim(), (f.Key ?? "").Trim(), StringComparison.OrdinalIgnoreCase) &&
+                            string.Equals((r.PO_No ?? "").Trim(), (f.PO_No ?? "").Trim(), StringComparison.OrdinalIgnoreCase));
+                    }
+
+                    result.FailedRecords.Add((row ?? new OpenPoDeliveryRow_ByPlanner
                     {
                         ExcelRowNo = f.ExcelRowNo ?? 0,
                         Key = f.Key ?? "",

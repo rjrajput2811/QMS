@@ -9,10 +9,13 @@ namespace QMS.Core.Repositories.CertificateMasterRepository
     {
        Task<List<CertificateMasterViewModel>> GetCertificatesAsync();
         Task<CertificateMasterViewModel?> GetCertificateByIdAsync(int certificateId);
-        Task<OperationResult> CreateCertificateAsync(CertificateMaster model, bool checkDuplicate);
+        Task<OperationResult> CreateCertificateAsync(CertificateMasterViewModel model, bool returnCreatedRecord = false);
+        Task<OperationResult> UpdateCertiAsync(CertificateMasterViewModel updateCertiRecord, bool returnUpdatedRecord = false);
         Task<OperationResult> DeleteAsync(int Id, string updatedby);
         Task<bool> CheckDuplicate(string searchText, int Id);
-        Task<OperationResult> UpdateCertificateAsync(CertificateMasterViewModel model);
-   
+        //Task<OperationResult> UpdateCertificateAsync(CertificateMasterViewModel model);
+        Task<List<CertificateMasterViewModel>> GetAllCertiAsync();
+
+
     }
 }

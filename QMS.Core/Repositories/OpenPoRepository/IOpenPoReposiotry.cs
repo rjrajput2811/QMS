@@ -22,6 +22,8 @@ namespace QMS.Core.Repositories.OpenPoRepository
 
         Task<OperationResult> SaveBuffScheduleAsync(int id, int buff, string updatedBy, bool returnUpdatedRecord = false);
 
+        Task<OperationResult> SavePlannerDataAsync(int id, int qty, bool returnUpdatedRecord = false);
+
         Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleAsync(string vendor);
 
         Task<(List<Open_Po> poHeaders, List<Opne_Po_DeliverySchedule> deliverySchedules)> GetOpenPOWithDeliveryScheduleVendorAsync(string vendor);
@@ -48,5 +50,6 @@ namespace QMS.Core.Repositories.OpenPoRepository
         Task<List<MTAMasterViewModel>> GetMTAListAsync();
         Task<BulkMTACreateResult> BulkMTACreateAsync(List<MTAMasterViewModel> listOfData, string fileName, string uploadedBy);
         Task<BulkOpenPoDeliveryResult> BulkCreateDeliveryScheduleAsync_Dapper(List<OpenPoDeliveryExcelRow> listOfData, string uploadedBy, bool status);
+        Task<BulkOpenPoDeliveryByPlannerResult> BulkCreateDeliveryScheduleByPlannerAsync(List<OpenPoDeliveryRow_ByPlanner> listOfData, string uploadedBy, bool status);
     }
 }

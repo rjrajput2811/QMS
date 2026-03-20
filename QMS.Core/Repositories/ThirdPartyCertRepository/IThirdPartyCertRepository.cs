@@ -7,12 +7,13 @@ namespace QMS.Core.Repositories.ThirdPartyCertRepository
 {
     public interface IThirdPartyCertRepository
     {
-       Task<List<ThirdPartyCertificateMasterViewModel>> GetCertificatesAsync();
+        Task<List<ThirdPartyCertificateMasterViewModel>> GetCertificatesAsync();
+        Task<List<ThirdPartyCertificateMasterViewModel>> GetAllTPCertiAsync();
         Task<ThirdPartyCertificateMasterViewModel?> GetCertificateByIdAsync(int certificateId);
-        Task<OperationResult> CreateCertificateAsync(ThirdPartyCertificateMaster model, bool checkDuplicate);
-        Task<OperationResult> DeleteAsync(int Id,string updatedby);
+        Task<OperationResult> CreateTPCertificateAsync(ThirdPartyCertificateMasterViewModel model, bool returnCreatedRecord = false);
+        Task<OperationResult> DeleteAsync(int Id, string updatedby);
         Task<bool> CheckDuplicate(string searchText, int Id);
-        Task<OperationResult> UpdateCertificateAsync(ThirdPartyCertificateMasterViewModel model);
-   
+        Task<OperationResult> UpdateTPCertificateAsync(ThirdPartyCertificateMasterViewModel updateCertiRecord, bool returnUpdatedRecord = false);
+
     }
 }

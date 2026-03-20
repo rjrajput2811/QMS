@@ -37,6 +37,21 @@ namespace QMS.Core.Repositories.ThirdPartyCertRepository
                 .ToListAsync();
         }
 
+        public async Task<List<ThirdPartyCertificateMasterViewModel>> GetAllTPCertiAsync()
+        {
+            return await _dbContext.ThirdPartyCertificateMasters
+                .Where(c => c.Deleted == false)  // Filter for non-deleted records
+                .Select(c => new ThirdPartyCertificateMasterViewModel
+                {
+                    CertificateID = c.Id,
+                    CertificateName = c.CertificateName,
+                    CreatedBy = c.CreatedBy,
+                    UpdatedBy = c.UpdatedBy,
+                    CreatedDate = c.CreatedDate,
+                    UpdatedDate = c.UpdatedDate
+                })
+                .ToListAsync();
+        }
         public async Task<bool> CheckDuplicate(string searchText, int Id)
         {
             try
@@ -85,29 +100,64 @@ namespace QMS.Core.Repositories.ThirdPartyCertRepository
                 }).FirstOrDefaultAsync();
         }
 
-        public async Task<OperationResult> CreateCertificateAsync(ThirdPartyCertificateMaster model, bool checkDuplicate)
+        //public async Task<OperationResult> CreateCertificateAsync(ThirdPartyCertificateMaster model, bool checkDuplicate)
+        //{
+        //    var result = new OperationResult();
+
+        //    if (checkDuplicate)
+        //    {
+        //        bool exists = await CheckDuplicate(model.CertificateName, model.Id);
+        //        if (exists)
+        //        {
+        //            result.Success = false;
+        //            result.Message = "Exist";
+        //            return result;
+        //        }
+        //    }
+
+        //    _dbContext.ThirdPartyCertificateMasters.Add(model);
+        //    await _dbContext.SaveChangesAsync();
+
+        //    result.Success = true;
+        //    result.Message = "Saved";
+        //    result.ObjectId = model.Id;
+        //    return result;
+        //}
+
+        public async Task<OperationResult> CreateTPCertificateAsync(ThirdPartyCertificateMasterViewModel model, bool returnCreatedRecord = false)
         {
-            var result = new OperationResult();
-
-            if (checkDuplicate)
+            try
             {
-                bool exists = await CheckDuplicate(model.CertificateName, model.Id);
-                if (exists)
-                {
-                    result.Success = false;
-                    result.Message = "Exist";
-                    return result;
-                }
+                var certiToCreate = new ThirdPartyCertificateMaster();
+                certiToCreate.CertificateName = model.CertificateName;
+                certiToCreate.CreatedBy = model.CreatedBy;
+                certiToCreate.CreatedDate = DateTime.Now;
+                return await base.CreateAsync<ThirdPartyCertificateMaster>(certiToCreate, returnCreatedRecord);
             }
-
-            _dbContext.ThirdPartyCertificateMasters.Add(model);
-            await _dbContext.SaveChangesAsync();
-
-            result.Success = true;
-            result.Message = "Saved";
-            result.ObjectId = model.Id;
-            return result;
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
         }
+
+        public async Task<OperationResult> UpdateTPCertificateAsync(ThirdPartyCertificateMasterViewModel updateCertiRecord, bool returnUpdatedRecord = false)
+        {
+            try
+            {
+                var natToCreate = await base.GetByIdAsync<ThirdPartyCertificateMaster>(updateCertiRecord.CertificateID);
+                natToCreate.CertificateName = updateCertiRecord.CertificateName;
+                natToCreate.UpdatedBy = updateCertiRecord.UpdatedBy;
+                natToCreate.UpdatedDate = DateTime.Now;
+                return await base.UpdateAsync<ThirdPartyCertificateMaster>(natToCreate, returnUpdatedRecord);
+            }
+            catch (Exception ex)
+            {
+                _systemLogService.WriteLog(ex.Message);
+                throw;
+            }
+        }
+
         public async Task<OperationResult> DeleteAsync(int Id,string updatedby)
         {
             try
@@ -153,30 +203,30 @@ namespace QMS.Core.Repositories.ThirdPartyCertRepository
         }
 
 
-        public async Task<OperationResult> UpdateCertificateAsync(ThirdPartyCertificateMasterViewModel model)
-        {
-            try
-            {
-                var certificate = await _dbContext.ThirdPartyCertificateMasters
-                    .FirstOrDefaultAsync(c => c.Id == model.CertificateID);
+        //public async Task<OperationResult> UpdateCertificateAsync(ThirdPartyCertificateMasterViewModel model)
+        //{
+        //    try
+        //    {
+        //        var certificate = await _dbContext.ThirdPartyCertificateMasters
+        //            .FirstOrDefaultAsync(c => c.Id == model.CertificateID);
 
-                if (certificate == null)
-                    return new OperationResult { Success = false, Message = "Certificate not found." };
+        //        if (certificate == null)
+        //            return new OperationResult { Success = false, Message = "Certificate not found." };
 
-                certificate.CertificateName = model.CertificateName;
-                certificate.UpdatedBy = model.UpdatedBy;
-                certificate.UpdatedDate = model.UpdatedDate;
+        //        certificate.CertificateName = model.CertificateName;
+        //        certificate.UpdatedBy = model.UpdatedBy;
+        //        certificate.UpdatedDate = model.UpdatedDate;
 
-                await _dbContext.SaveChangesAsync();
+        //        await _dbContext.SaveChangesAsync();
 
-                return new OperationResult { Success = true, Message = "Certificate updated successfully." };
-            }
-            catch (Exception ex)
-            {
-                _systemLogService.WriteLog($"Error updating certificate: {ex.Message}");
-                return new OperationResult { Success = false, Message = "An error occurred while updating the certificate." };
-            }
-        }
+        //        return new OperationResult { Success = true, Message = "Certificate updated successfully." };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _systemLogService.WriteLog($"Error updating certificate: {ex.Message}");
+        //        return new OperationResult { Success = false, Message = "An error occurred while updating the certificate." };
+        //    }
+        //}
 
 
     }

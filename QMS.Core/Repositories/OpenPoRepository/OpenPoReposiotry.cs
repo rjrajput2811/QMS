@@ -1495,7 +1495,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
             {
                 await connection.OpenAsync();
 
-                using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report_1", new { Type = type }, commandType: CommandType.StoredProcedure))
+                using (var multi = await connection.QueryMultipleAsync("sp_PO_SO_Match_Report_20_03_2026", new { Type = type }, commandType: CommandType.StoredProcedure))
                 {
                     var matched = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
                     var deliverySch = (await multi.ReadAsync<MatchDeliverySchViewModel>()).ToList();
@@ -2366,7 +2366,7 @@ namespace QMS.Core.Repositories.OpenPoRepository
                     if (connection.State != ConnectionState.Open)
                         await connection.OpenAsync();
 
-                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_SO_OpenPO_Snapshots_ByType]", new { Type = type }, commandType: CommandType.StoredProcedure))
+                    using (var multi = await connection.QueryMultipleAsync("[dbo].[sp_Get_SO_OpenPO_Snapshots_ByType_19_03_2026]", new { Type = type }, commandType: CommandType.StoredProcedure))
 
                     {
                         var soHeaders = (await multi.ReadAsync<MatchedRecordViewModel>()).ToList();
